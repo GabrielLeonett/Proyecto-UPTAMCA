@@ -1,30 +1,112 @@
-/vendor/
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Datos de ejecución
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directorio para bibliotecas instrumentadas generadas por jscoverage/JSCover
+lib-cov
+
+# Directorio de cobertura utilizado por herramientas como istanbul
+coverage
+
+# Cobertura de pruebas de nyc
+.nyc_output
+
+# Almacenamiento intermedio de Grunt (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Directorio de dependencias de Bower (https://bower.io/)
+bower_components
+
+# Configuración de node-waf
+.lock-wscript
+
+# Complementos binarios compilados (https://nodejs.org/api/addons.html)
+build/Release
+
+# Directorios de dependencias
 node_modules/
-npm-debug.log
-yarn-error.log
+jspm_packages/
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
+# Directorio de dependencias de Snowpack (https://snowpack.dev/)
+web_modules/
 
-# Laravel 5 & Lumen specific
-public/storage
-public/hot
+# Caché de TypeScript
+*.tsbuildinfo
 
-# Laravel 5 & Lumen specific with changed public path
-public_html/storage
-public_html/hot
+# Directorio opcional de caché de npm
+.npm
 
-storage/*.key
+# Caché opcional de eslint
+.eslintcache
+
+# Caché de Microbundle
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Historial opcional de REPL
+.node_repl_history
+
+# Salida de 'npm pack'
+*.tgz
+
+# Archivo de integridad de Yarn
+.yarn-integrity
+
+# Archivo de variables de entorno dotenv
 .env
-Homestead.yaml
-Homestead.json
-/.vagrant
-.phpunit.result.cache
-
-/public/build
-/storage/pail
-.env.backup
+.env.test
 .env.production
-.phpactor.json
-auth.json
+
+# Caché de Parcel-bundler (https://parceljs.org/)
+.cache
+
+# Salida de construcción de Next.js
+.next
+
+# Salida de construcción / generación de Nuxt.js
+.nuxt
+dist
+
+# Archivos de Gatsby
+.cache/
+public
+
+# Salida de construcción de Vuepress
+.vuepress/dist
+
+# Directorios de Serverless
+.serverless/
+
+# Caché de FuseBox
+.fusebox/
+
+# Archivos locales de DynamoDB
+.dynamodb/
+
+# Archivo de puerto de TernJS
+.tern-port
+
+# Directorios de VS Code
+.vscode/*
+.history/*
+
+# React Native
+.expo/
+*.expo
+
+# Ignorar archivos de configuración específicos del entorno
+config/
+
+# Build directory
+build/
