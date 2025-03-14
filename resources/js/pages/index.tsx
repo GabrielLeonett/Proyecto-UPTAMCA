@@ -1,11 +1,11 @@
 import { Head } from "@inertiajs/react";
-import NavbarTop from "@/components/ui/navbarTop"
+import Navbar from "@/components/navbar";
 
 export default function Index() {
     return (
         <div>
             <Head title="Inicio" />
-            <NavbarTop>Inicio</NavbarTop>
+            <Navbar/>
         </div>
     );
 }
