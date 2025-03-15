@@ -1,42 +1,20 @@
-import { LucideIcon } from 'lucide-react';
-import type { Config } from 'ziggy-js';
+import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
-export interface Auth {
-    user: User;
+export type ColorBackgraund = `bg-${string}` | `bg-${string}-${number}` | `fill-${string}-${number}` | `fill-${string}`
+export type Shadow = `drop-shadow-${string}`
+
+export type LogoColores ={
+    Primary:ColorBackgraund,
+    Secundary:ColorBackgraund,
+    shadow?: Shadow
 }
 
-export interface BreadcrumbItem {
-    title: string;
-    href: string;
+export interface NavbarItemProps {
+  children?: string; // Explicitly define children as a string
+  icon?: IconProp; // Optional icon prop
+  url?: string;
 }
 
-export interface NavGroup {
-    title: string;
-    items: NavItem[];
-}
-
-export interface NavItem {
-    title: string;
-    href: string;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-}
-
-export interface SharedData {
-    name: string;
-    quote: { message: string; author: string };
-    auth: Auth;
-    ziggy: Config & { location: string };
-    [key: string]: unknown;
-}
-
-export interface User {
-    id: number;
-    name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
-    created_at: string;
-    updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
+export interface UXHigh{
+  darkmode?: boolean
 }

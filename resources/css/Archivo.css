@@ -53,6 +53,7 @@ h5 {
 .B1 {
   font-weight: 400;
   font-size: 16px;
+  font-style: normal;
   line-height: 24px;
 }
 
@@ -98,553 +99,257 @@ h5 {
   line-height: 16px;
 }
 
-.Botones-Tiny-Tercery, .Botones-Tiny-Secundary, .Botones-Tiny-Primary, .Botones-Small-Tercery, .Botones-Small-Secundary, .Botones-Small-Primary, .Botones-Medium-Tercery, .Botones-Medium-Secundary, .Botones-Medium-Primary, .Botones-Large-Tercery, .Botones-Large-Secundary, .Botones-Large-Primary, .Botones-Giants-Tercery, .Botones-Giants-Secundary, .Botones-Giants-Primary {
-  font-family: "Montserrat", serif;
-  font-weight: 600;
+.bg-primary {
+  background-color: #1C75BA;
+  fill: #1C75BA;
 }
 
-.Botones-Giants-Tercery, .Botones-Giants-Secundary, .Botones-Giants-Primary {
-  font-size: 18px;
-  line-height: 24px;
-  height: 56px;
-  padding: 16px 24px;
-  border-radius: 12px;
+.bg-primary-900 {
+  background-color: #1C75BA;
+  fill: #1C75BA;
 }
 
-.Botones-Large-Tercery, .Botones-Large-Secundary, .Botones-Large-Primary {
-  font-size: 16px;
-  line-height: 20px;
-  height: 48px;
-  padding: 14px 20px;
-  border-radius: 12px;
+.bg-primary-800 {
+  background-color: #1F82CF;
+  fill: #1F82CF;
 }
 
-.Botones-Medium-Tercery, .Botones-Medium-Secundary, .Botones-Medium-Primary {
-  font-size: 14px;
-  line-height: 16px;
-  height: 40px;
-  padding: 12px 16px;
-  border-radius: 12px;
+.bg-primary-700 {
+  background-color: #298FDF;
+  fill: #298FDF;
 }
 
-.Botones-Small-Tercery, .Botones-Small-Secundary, .Botones-Small-Primary {
-  font-size: 12px;
-  line-height: 16px;
-  border-radius: 8px;
-  height: 32px;
-  padding: 8px 12px;
+.bg-primary-600 {
+  background-color: #3E9AE2;
+  fill: #3E9AE2;
 }
 
-.Botones-Tiny-Tercery, .Botones-Tiny-Secundary, .Botones-Tiny-Primary {
-  font-size: 10px;
-  line-height: 12px;
-  border-radius: 8px;
-  height: 20px;
-  padding: 6px 8px;
+.bg-primary-500 {
+  background-color: #53A6E5;
+  fill: #53A6E5;
 }
 
-.bg-Primary {
-  background-color: #f4b910;
+.bg-primary-400 {
+  background-color: #69B1E8;
+  fill: #69B1E8;
 }
 
-.bg-Primary-800 {
-  background-color: #f5c028;
+.bg-primary-300 {
+  background-color: #7EBCEC;
+  fill: #7EBCEC;
 }
 
-.bg-Primary-700 {
-  background-color: #f6c740;
+.bg-primary-200 {
+  background-color: #94C7EF;
+  fill: #94C7EF;
 }
 
-.bg-Primary-600 {
-  background-color: #f7ce58;
+.bg-primary-100 {
+  background-color: #A9D2F2;
+  fill: #A9D2F2;
 }
 
-.bg-Primary-500 {
-  background-color: #f8d570;
+.bg-primary-50 {
+  background-color: #EAF4FC;
+  fill: #EAF4FC;
 }
 
-.bg-Primary-400 {
-  background-color: #fadc87;
+.bg-darkmode {
+  background-color: #262D33;
+  fill: #262D33;
 }
 
-.bg-Primary-300 {
-  background-color: #fbe39f;
+.bg-darkmode-900 {
+  background-color: #262D33;
+  fill: #262D33;
 }
 
-.bg-Primary-200 {
-  background-color: #fceab7;
+.bg-darkmode-800 {
+  background-color: #242B30;
+  fill: #242B30;
 }
 
-.bg-Primary-100 {
-  background-color: #fdf1cf;
+.bg-darkmode-700 {
+  background-color: #232A2F;
+  fill: #232A2F;
 }
 
-.bg-Primary-50 {
-  background-color: #fef8e7;
+.bg-darkmode-600 {
+  background-color: #22282E;
+  fill: #22282E;
 }
 
-.bg-Black {
-  background-color: #000000;
+.bg-darkmode-500 {
+  background-color: #21272D;
+  fill: #21272D;
 }
 
-.bg-Black-800 {
-  background-color: #000000;
-  opacity: 90%;
+.bg-darkmode-400 {
+  background-color: #20262B;
+  fill: #20262B;
 }
 
-.bg-Black-700 {
-  background-color: #000000;
-  opacity: 80%;
+.bg-darkmode-300 {
+  background-color: #1F252A;
+  fill: #1F252A;
 }
 
-.bg-Black-600 {
-  background-color: #000000;
-  opacity: 70%;
+.bg-darkmode-200 {
+  background-color: #1E2429;
+  fill: #1E2429;
 }
 
-.bg-Black-500 {
-  background-color: #000000;
-  opacity: 60%;
+.bg-darkmode-100 {
+  background-color: #1D2328;
+  fill: #1D2328;
 }
 
-.bg-Black-400 {
-  background-color: #000000;
-  opacity: 50%;
+.bg-darkmode-50 {
+  background-color: #1C2226;
+  fill: #1C2226;
 }
 
-.bg-Black-300 {
-  background-color: #000000;
-  opacity: 40%;
+.bg-secundary {
+  background-color: #FE8012;
+  fill: #FE8012;
 }
 
-.bg-Black-200 {
-  background-color: #000000;
-  opacity: 30%;
+.bg-secundary-900 {
+  background-color: #FE8012;
+  fill: #FE8012;
 }
 
-.bg-Black-100 {
-  background-color: #000000;
-  opacity: 20%;
+.bg-secundary-800 {
+  background-color: #FE8C28;
+  fill: #FE8C28;
 }
 
-.bg-Black-50 {
-  background-color: #000000;
-  opacity: 10%;
+.bg-secundary-700 {
+  background-color: #FE973D;
+  fill: #FE973D;
 }
 
-.bg-White {
-  background-color: #ffffff;
+.bg-secundary-600 {
+  background-color: #FEA353;
+  fill: #FEA353;
 }
 
-.bg-White-800 {
-  background-color: #ffffff;
-  opacity: 90%;
+.bg-secundary-500 {
+  background-color: #FEAE68;
+  fill: #FEAE68;
 }
 
-.bg-White-700 {
-  background-color: #ffffff;
-  opacity: 80%;
+.bg-secundary-400 {
+  background-color: #FEBA7E;
+  fill: #FEBA7E;
 }
 
-.bg-White-600 {
-  background-color: #ffffff;
-  opacity: 70%;
+.bg-secundary-300 {
+  background-color: #FFC593;
+  fill: #FFC593;
 }
 
-.bg-White-500 {
-  background-color: #ffffff;
-  opacity: 60%;
+.bg-secundary-200 {
+  background-color: #FFD1A9;
+  fill: #FFD1A9;
 }
 
-.bg-White-400 {
-  background-color: #ffffff;
-  opacity: 50%;
+.bg-secundary-100 {
+  background-color: #FFDCBE;
+  fill: #FFDCBE;
 }
 
-.bg-White-300 {
-  background-color: #ffffff;
-  opacity: 40%;
-}
-
-.bg-White-200 {
-  background-color: #ffffff;
-  opacity: 30%;
-}
-
-.bg-White-100 {
-  background-color: #ffffff;
-  opacity: 20%;
-}
-
-.bg-White-50 {
-  background-color: #ffffff;
-  opacity: 10%;
-}
-
-.bg-Green {
-  background-color: #1c4d27;
-}
-
-.bg-Green-800 {
-  background-color: #256533;
-}
-
-.bg-Green-700 {
-  background-color: #308242;
-}
-
-.bg-Green-600 {
-  background-color: #3da755;
-}
-
-.bg-Green-500 {
-  background-color: #43b75d;
-}
-
-.bg-Green-400 {
-  background-color: #69c57d;
-}
-
-.bg-Green-300 {
-  background-color: #81cf92;
-}
-
-.bg-Green-200 {
-  background-color: #a9deb4;
-}
-
-.bg-Green-100 {
-  background-color: #c5e9cd;
-}
-
-.bg-Green-50 {
-  background-color: #ecf8ef;
-}
-
-.bg-Yellow {
-  background-color: #6b4700;
-}
-
-.bg-Yellow-800 {
-  background-color: #8c5e00;
-}
-
-.bg-Yellow-700 {
-  background-color: #b57900;
-}
-
-.bg-Yellow-600 {
-  background-color: #e89b00;
-}
-
-.bg-Yellow-500 {
-  background-color: #ffaa00;
-}
-
-.bg-Yellow-400 {
-  background-color: #ffbb33;
-}
-
-.bg-Yellow-300 {
-  background-color: #ffc654;
-}
-
-.bg-Yellow-200 {
-  background-color: #ffd88a;
-}
-
-.bg-Yellow-100 {
-  background-color: #ffe5b0;
-}
-
-.bg-Yellow-50 {
-  background-color: #fff7e6;
-}
-
-.bg-Red {
-  background-color: #641d1a;
-}
-
-.bg-Red-800 {
-  background-color: #832523;
-}
-
-.bg-Red-700 {
-  background-color: #a9302d;
-}
-
-.bg-Red-600 {
-  background-color: #d93e39;
-}
-
-.bg-Red-500 {
-  background-color: #ee443f;
-}
-
-.bg-Red-400 {
-  background-color: #f16965;
-}
-
-.bg-Red-300 {
-  background-color: #f4827e;
-}
-
-.bg-Red-200 {
-  background-color: #f7a9a7;
-}
-
-.bg-Red-100 {
-  background-color: #fac5c3;
-}
-
-.bg-Red-50 {
-  background-color: #fdecec;
-}
-
-.bg-Blue {
-  background-color: #003f6b;
-}
-
-.bg-Blue-800 {
-  background-color: #00528c;
-}
-
-.bg-Blue-700 {
-  background-color: #006ab5;
-}
-
-.bg-Blue-600 {
-  background-color: #0088e8;
-}
-
-.bg-Blue-500 {
-  background-color: #0095ff;
-}
-
-.bg-Blue-400 {
-  background-color: #33aaff;
-}
-
-.bg-Blue-300 {
-  background-color: #54b8ff;
-}
-
-.bg-Blue-200 {
-  background-color: #8aceff;
-}
-
-.bg-Blue-100 {
-  background-color: #b0deff;
-}
-
-.bg-Blue-50 {
-  background-color: #b0deff;
-}
-
-.bg-DarkMode {
-  background-color: #26231a;
-}
-
-.bg-DarkMode-800 {
-  background-color: #252219;
-}
-
-.bg-DarkMode-700 {
-  background-color: #242119;
-}
-
-.bg-DarkMode-600 {
-  background-color: #232018;
-}
-
-.bg-DarkMode-500 {
-  background-color: #222017;
-}
-
-.bg-DarkMode-400 {
-  background-color: #211f17;
-}
-
-.bg-DarkMode-300 {
-  background-color: #201e16;
-}
-
-.bg-DarkMode-200 {
-  background-color: #1f1d15;
-}
-
-.bg-DarkMode-100 {
-  background-color: #1e1c15;
-}
-
-.bg-DarkMode-50 {
-  background-color: #1d1b14;
+.bg-secundary-50 {
+  background-color: #FFF3E9;
+  fill: #FFF3E9;
 }
 
 .primary-900 {
-  color: #f4b910;
+  color: #1C75BA;
+}
+
+.primary {
+  color: #1C75BA;
 }
 
 .primary-800 {
-  color: #f5c028;
+  color: #1F82CF;
 }
 
 .primary-700 {
-  color: #f6c740;
+  color: #298FDF;
 }
 
 .primary-600 {
-  color: #f7ce58;
+  color: #3E9AE2;
 }
 
 .primary-500 {
-  color: #f8d570;
+  color: #53A6E5;
 }
 
 .primary-400 {
-  color: #fadc87;
+  color: #69B1E8;
 }
 
 .primary-300 {
-  color: #fbe39f;
+  color: #7EBCEC;
 }
 
 .primary-200 {
-  color: #fceab7;
+  color: #94C7EF;
 }
 
 .primary-100 {
-  color: #fdf1cf;
+  color: #A9D2F2;
 }
 
 .primary-50 {
-  color: #fef8e7;
+  color: #EAF4FC;
 }
 
-.black {
-  color: #131927;
+.secundary {
+  color: #FE8012;
 }
 
-.white {
-  color: #ffffff;
+.secundary-900 {
+  color: #FE8012;
 }
 
-.grey-secondary {
-  color: #6d717f;
+.secundary-800 {
+  color: #FE8C28;
 }
 
-.grey {
-  color: #9ea2ae;
+.secundary-700 {
+  color: #FE973D;
 }
 
-.grey-light {
-  color: #d2d5db;
+.secundary-600 {
+  color: #FEA353;
 }
 
-.color-disabled {
-  color: #9ea2ae;
+.secundary-500 {
+  color: #FEAE68;
 }
 
-.color-accent {
-  color: #f8d570;
+.secundary-400 {
+  color: #FEBA7E;
 }
 
-.color-links {
-  color: #f8d570;
+.secundary-300 {
+  color: #FFC593;
 }
 
-.color-info {
-  color: #0095ff;
+.secundary-200 {
+  color: #FFD1A9;
 }
 
-.color-warning {
-  color: #ffaa00;
+.secundary-100 {
+  color: #FFDCBE;
 }
 
-.color-error {
-  color: #ee443f;
-}
-
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-.Botones-Tiny-Tercery, .Botones-Small-Tercery, .Botones-Medium-Tercery, .Botones-Large-Tercery, .Botones-Giants-Tercery, .Botones-Tiny-Secundary, .Botones-Small-Secundary, .Botones-Medium-Secundary, .Botones-Large-Secundary, .Botones-Giants-Secundary, .Botones-Tiny-Primary, .Botones-Small-Primary, .Botones-Medium-Primary, .Botones-Large-Primary, .Botones-Giants-Primary {
-  cursor: pointer;
-  width: auto;
-}
-
-.Botones-Tiny-Primary, .Botones-Small-Primary, .Botones-Medium-Primary, .Botones-Large-Primary, .Botones-Giants-Primary {
-  background-color: #f8d570;
-  color: white;
-  border: none;
-  transition: all 0.5s ease;
-}
-.Botones-Tiny-Primary:hover, .Botones-Small-Primary:hover, .Botones-Medium-Primary:hover, .Botones-Large-Primary:hover, .Botones-Giants-Primary:hover {
-  background-color: #f4b910;
-}
-.Botones-Tiny-Primary:active, .Botones-Small-Primary:active, .Botones-Medium-Primary:active, .Botones-Large-Primary:active, .Botones-Giants-Primary:active {
-  background-color: #f6c740;
-}
-
-.Botones-Tiny-Secundary, .Botones-Small-Secundary, .Botones-Medium-Secundary, .Botones-Large-Secundary, .Botones-Giants-Secundary {
-  background-color: #fdf1cf;
-  color: #f6c740;
-  border: 1.5px solid #f8d570;
-  transition: all 0.5s ease;
-}
-.Botones-Tiny-Secundary:hover, .Botones-Small-Secundary:hover, .Botones-Medium-Secundary:hover, .Botones-Large-Secundary:hover, .Botones-Giants-Secundary:hover {
-  background-color: #fadc87;
-}
-.Botones-Tiny-Secundary:active, .Botones-Small-Secundary:active, .Botones-Medium-Secundary:active, .Botones-Large-Secundary:active, .Botones-Giants-Secundary:active {
-  background-color: #f5c028;
-}
-
-.Botones-Tiny-Tercery, .Botones-Small-Tercery, .Botones-Medium-Tercery, .Botones-Large-Tercery, .Botones-Giants-Tercery {
-  background-color: #fef8e7;
-  color: #fadc87;
-  border: none;
-  transition: all 0.5s ease;
-}
-.Botones-Tiny-Tercery:hover, .Botones-Small-Tercery:hover, .Botones-Medium-Tercery:hover, .Botones-Large-Tercery:hover, .Botones-Giants-Tercery:hover {
-  background-color: #f6c740;
-}
-.Botones-Tiny-Tercery:active, .Botones-Small-Tercery:active, .Botones-Medium-Tercery:active, .Botones-Large-Tercery:active, .Botones-Giants-Tercery:active {
-  background-color: #f5c028;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-.App-header {
-  background-color: #26231a;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: #ffffff;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.secundary-50 {
+  color: #FFF3E9;
 }
 
 /*# sourceMappingURL=Archivo.css.map */
