@@ -1,5 +1,5 @@
 import { Head } from "@inertiajs/react";
-import Navbar from "@/components/navbar";
+import ResponsiveAppBar from "@/components/navbar";
 import { useState } from "react";
 
 export default function Index() {
@@ -8,7 +8,7 @@ export default function Index() {
     return (
         <div>
             <Head title="Inicio" />
-            <Navbar darkmode={darkmode}/>
+            <ResponsiveAppBar/>
             <br />
             <br />
             <button onClick={()=>{setDarkMode(!darkmode)}}>DarkMode</button>
