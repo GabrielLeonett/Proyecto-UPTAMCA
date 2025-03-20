@@ -7,7 +7,7 @@ export default function Navbar({darkmode} : UXHigh) {
     return (
         <div className={`flex items-center justify-between px-5 ${modo} h-25`}>
             <section>
-                <LogoTexto Primary="fill-white" Secundary='bg-secundary' shadow='drop-shadow-xl'/>
+                <LogoTexto Primary="bg-white" Secundary='bg-secundary' shadow='drop-shadow-xl'/>
             </section>
             <Button variant="text" className='bg-secundary'>Hola</Button>
         </div>
