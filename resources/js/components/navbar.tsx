@@ -140,17 +140,6 @@ function ResponsiveAppBar() {
       </Container>
     </AppBar>
   );
-
-export default function Navbar({darkmode} : UXHigh) {
-    const modo = darkmode ? 'bg-darkmode' :'bg-primary';
-    return (
-        <div className={`flex items-center justify-between px-5 ${modo} h-25`}>
-            <section>
-                <LogoTexto Primary="bg-white" Secundary='bg-secundary' shadow='drop-shadow-xl'/>
-            </section>
-            <Button variant="text" className='bg-secundary'>Hola</Button>
-        </div>
-    );
 }
 
 export default ResponsiveAppBar;
