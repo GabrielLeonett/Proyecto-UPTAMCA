@@ -3,14 +3,10 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import {Theme}  from '@/components/ui/theme';
 
-const darkTheme = createTheme({
-    palette: {
-        mode: 'dark',
-    },
-});
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -21,7 +17,7 @@ createInertiaApp({
         const root = createRoot(el);
 
         root.render(
-            <ThemeProvider theme={darkTheme}>
+            <ThemeProvider theme={Theme}>
                 <CssBaseline />
                 <App {...props} />
             </ThemeProvider>
