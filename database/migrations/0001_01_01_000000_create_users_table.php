@@ -26,17 +26,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Tabla de tokens para restablecer contraseñas
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email_usuarios')->primary();
+            $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
-        // Tabla de sesiones
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->string('cedula_usuarios')->nullable()->index(); // Clave foránea
+            $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
