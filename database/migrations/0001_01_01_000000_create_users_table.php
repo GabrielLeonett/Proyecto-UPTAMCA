@@ -11,18 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Tabla de usuarios
-        Schema::create('usuarios', function (Blueprint $table) {
-            $table->string('cedula_usuarios')->primary(); // Clave primaria personalizada
-            $table->string('nombres_usuarios');
-            $table->string('email_usuarios')->unique();
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombres')->nullable();
+            $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('contraseña_usuarios', 60); // Contraseña con longitud suficiente
-            $table->string('telefonoMovil_usuarios');
-            $table->string('direccion_usuarios');
-            $table->string('telefonoLocal_usuarios');
-            $table->date('fechaNacimiento_usuarios');
-            $table->string('genero_usuarios');
+            $table->string('direccion')->nullable();
+            $table->string('password')->nullable();
+            $table->string('telefono_movil')->nullable(true);
+            $table->string('telefono_local')->nullable(true);
+            $table->date('fecha_nacimiento')->nullable();
+            $table->set('genero',['masculino','femenino'])->nullable(false);
             $table->rememberToken();
             $table->timestamps();
         });
