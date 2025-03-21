@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('telefono_movil')->nullable(true);
             $table->string('telefono_local')->nullable(true);
             $table->date('fecha_nacimiento')->nullable();
-            $table->set('genero',['masculino','femenino'])->nullable(false);
+            $table->enum('genero',['masculino','femenino'])->nullable(false);
             $table->rememberToken();
             $table->timestamps();
         });
