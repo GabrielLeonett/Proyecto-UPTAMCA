@@ -57,7 +57,8 @@ function ResponsiveAppBar({ pages, backgroundColor }: PropsAppBar) {
                             aria-controls="menu-appbar"
                             aria-haspopup="true"
                             onClick={handleOpenNavMenu}
-                            color="inherit"
+                            sx={{color:'white'}}
+
                         >
                             <MenuIcon />
                         </IconButton>
@@ -75,7 +76,7 @@ function ResponsiveAppBar({ pages, backgroundColor }: PropsAppBar) {
                             }}
                             open={Boolean(anchorElNav)}
                             onClose={handleCloseNavMenu}
-                            sx={{ display: { xs: 'block', md: 'none' } }}
+                            sx={{ display: { xs: 'block', md: 'none' } , backgroundColor: backgroundColor ? 'bg-primary' : 'transparent'  }}
                         >
                             {pages.map((page) => (
                                 <MenuItem
