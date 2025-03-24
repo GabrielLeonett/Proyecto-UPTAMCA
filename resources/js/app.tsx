@@ -21,7 +21,6 @@ createInertiaApp({
                 <CssBaseline />
                 <App {...props} />
             </ThemeProvider>
-
         );
     },
     progress: {
