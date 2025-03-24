@@ -17,12 +17,23 @@ return new class extends Migration
             $table->string('descripcion_pnf', length:400)->nullable();
         });
 
-        Schema::create('materias', function ( Blueprint $table){
+        Schema::create('unidad_curricular', function ( Blueprint $table){
             $table->id();
-            $table->string('nombre_materia')->nullable();
-            $table->string('descripcion_materia', length:400)->nullable();
-            $table->foreignId('id_pnf')->references('id')->on('pnfs');
+            $table->string('nombre_unidad_curricular')->nullable();
+            $table->string('descripcion_unidad_curricular', length:400)->nullable();
             $table->integer('carga_horas');
+        });
+
+        Schema::create('trayectos', function ( Blueprint $table){
+            $table->id();
+            $table->integer('valor_trayecto')->nullable();
+            $table->foreignId('id_pnf')->references('id')->on('pnfs');
+        });
+
+        Schema::create('secciones', function ( Blueprint $table){
+            $table->id();
+            $table->integer('valor_seccion')->nullable();
+            $table->foreignId('id_trayecto')->references('id')->on('trayectos');
         });
     }
 
@@ -32,6 +43,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('pnfs');
-        Schema::dropIfExists('materias');
+        Schema::dropIfExists('unidad_curricular');
+        Schema::dropIfExists('trayectos');
+        Schema::dropIfExists('secciones');
     }
 };

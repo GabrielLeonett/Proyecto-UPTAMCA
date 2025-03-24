@@ -25,6 +25,11 @@ return new class extends Migration
             $table->id();
             $table->string('nombre_ubicacion');
         });
+
+        Schema::create('roles',  function (Blueprint $table){
+            $table->id();
+            $table->integer('tipo_rol');
+        });
     }
 
     /**
@@ -35,5 +40,6 @@ return new class extends Migration
         Schema::dropIfExists('categoria');
         Schema::dropIfExists('dedicacion');
         Schema::dropIfExists('ubicacion');
+        Schema::dropIfExists('roles');
     }
 };

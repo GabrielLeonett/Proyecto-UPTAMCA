@@ -26,6 +26,7 @@ return new class extends Migration
         Schema::create('administradores', function (Blueprint $table) {
             $table->id()->index();
             $table->foreignId('id_cedula')->references('id')->on('users');
+            $table->foreignId('id_rol')->references('id')->on('roles');
         });
 
         Schema::create('coordinadores', function (Blueprint $table) {
