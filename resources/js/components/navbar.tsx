@@ -5,9 +5,7 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
 import Container from '@mui/material/Container';
-import FacebookIcon from '@mui/icons-material/Facebook';
 import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import LogoTexto from './ui/logoTexto';
@@ -50,7 +48,6 @@ function ResponsiveAppBar() {
               onClick={handleOpenNavMenu}
               color="inherit"
             >
-              <MenuIcon />
             </IconButton>
             <Menu
               id="menu-appbar"
@@ -92,7 +89,6 @@ function ResponsiveAppBar() {
           {/* Icono de Facebook */}
           <Box sx={{ flexGrow: 0 }}>
             <IconButton onClick={() => { window.location.href = 'https://www.facebook.com'; }}>
-              <FacebookIcon />
             </IconButton>
           </Box>
         </Toolbar>

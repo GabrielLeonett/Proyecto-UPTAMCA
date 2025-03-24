@@ -9,9 +9,8 @@ export default function Index() {
         <div>
             <Head title="Inicio" />
             <ResponsiveAppBar/>
-            <br />
-            <br />
-            <button onClick={()=>{setDarkMode(!darkmode)}}>DarkMode</button>
+            
+            
         </div>
     );
 }
