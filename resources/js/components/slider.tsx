@@ -19,21 +19,21 @@ export default function Slider() {
             description: "Lorem ipsum dolor sit amet...",
             image: "estudiantes1.jpg",
             opacity: "opacity-30",
-            positionX:100,
+            positionX:0,
             zIndex: "z-0"
         },{
             title: "Administración",
             description: "Lorem ipsum dolor sit amet...",
             image: "estudiantes1.jpg",
             opacity: "opacity-100",
-            positionX:300,
+            positionX:400,
             zIndex: "z-10"
         },{
             title: "fisioterapia",
             description: "Lorem ipsum dolor sit amet...",
             image: "estudiantes1.jpg",
             opacity: "opacity-30",
-            positionX:500,
+            positionX:1000,
             zIndex: "z-0"
         }
     ]);

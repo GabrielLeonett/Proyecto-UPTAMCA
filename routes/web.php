@@ -20,3 +20,16 @@ Route::get('/test-db', function () {
         return "Error de conexión: " . $e->getMessage();
     }
 });
+
+Route::get('/login', function (){
+    return Inertia::render('login');
+});
+Route::get('/profesores', function (){
+    return Inertia::render('profesores');
+});
+Route::post('/login', function () {
+    return back()->with([
+        'success' => 'Login exitoso',
+        'user' => Auth::user()
+    ]);
+});
