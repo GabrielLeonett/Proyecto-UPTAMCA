@@ -16,4 +16,24 @@ Route::get('/login', function () {
     return Inertia::render('login');
 });
 
-Route::post('/register', UserController::class.'@create');
+Route::get('/test-db', function () {
+    try {
+        DB::connection()->getPdo();
+        return "Conexión exitosa a la base de datos!";
+    } catch (\Exception $e) {
+        return "Error de conexión: " . $e->getMessage();
+    }
+});
+
+Route::get('/login', function (){
+    return Inertia::render('login');
+});
+Route::get('/profesores', function (){
+    return Inertia::render('profesores');
+});
+Route::post('/login', function () {
+    return back()->with([
+        'success' => 'Login exitoso',
+        'user' => Auth::user()
+    ]);
+});

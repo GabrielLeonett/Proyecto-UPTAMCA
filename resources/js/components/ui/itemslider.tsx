@@ -1,35 +1,80 @@
 import { Typography } from "@mui/material";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
 interface ItemSliderProps {
-  ancho: "w-[300px]" | "w-[400px]" | "w-[500px]";
-  alto: "h-[200px]" | "h-[220px]" | "h-[250px]";
   title: string;
   description: string;
   image: string;
   opacity?: `opacity-${number}`;
+  positionX?: number;
+  zIndex?: `z-${number}`;
+  duration?: number;
 }
 
-export default function ItemSlider({ 
-  ancho,
-  alto,
-  title, 
-  description, 
-  image, 
-  opacity = "opacity-100" 
+export default function ItemSlider({
+  title,
+  description,
+  image,
+  opacity = "opacity-100",
+  positionX = 100,
+  zIndex = "z-0",
+  duration = 5000
 }: ItemSliderProps) {
+  const [x, setX] = useState(positionX);
+  const [isVisible, setIsVisible] = useState('opacity-100');
+  const [size, setSize] = useState({ width: "400", height: "300" }); // Tamaños iniciales más grandes
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setX(prevX => {
+        const newX = prevX >= 1200 ? -500 : prevX + 200;
+        
+        // Rangos ajustados con tamaños más grandes
+        if (newX > 0 && newX < 300) {
+          setIsVisible('opacity-25');
+          setSize({ width: "200", height: "150" }); // Tamaño pequeño pero visible
+        } else if (newX >= 300 && newX < 600) {
+          setIsVisible('opacity-50');
+          setSize({ width: "300", height: "225" }); // Tamaño mediano
+        } else if (newX >= 600 && newX < 900) {
+          setIsVisible('opacity-80');
+          setSize({ width: "350", height: "262" }); // Casi tamaño completo
+        } else {
+          setIsVisible('opacity-100');
+          setSize({ width: "400", height: "300" }); // Tamaño máximo
+        }
+        
+        return newX;
+      });
+    }, duration);
+
+    return () => clearTimeout(timer);
+  }, [x, duration]);
+
   return (
-    <div 
-      className={`item-slider ${alto} ${ancho} bg-cover bg-center flex justify-end items-start flex-col ${opacity}`}
+    <motion.div
+      className={`absolute top-0 ${zIndex}`}
       style={{ 
-        backgroundImage: `linear-gradient(to bottom, hsla(0, 0%, 19.2%, 0.6), rgba(253, 250, 250, 0.81)), url('/storage/${image}')`
+        width: `${size.width}px`,
+        height: `${size.height}px`
       }}
+      animate={{ x }}
+      transition={{ type: "spring", stiffness: 50 }}
     >
-      <Typography component="h2" variant="h3">
-        {title}
-      </Typography>
-      <Typography component="p">
-        {description}
-      </Typography>
-    </div>
+      <div
+        className={`item-slider bg-cover bg-center flex justify-end items-start flex-col ${isVisible} p-8 rounded-lg shadow-lg h-full`}
+        style={{
+          backgroundImage: `linear-gradient(to bottom, hsla(0, 0%, 19.2%, 0.6), rgba(253, 250, 250, 0.81)), url('/storage/${image}')`
+        }}
+      >
+        <Typography component="h2" variant="h3" className="text-white mb-4 text-4xl">
+          {title}
+        </Typography>
+        <Typography component="p" className="text-white text-xl">
+          {description}
+        </Typography>
+      </div>
+    </motion.div>
   );
 }
