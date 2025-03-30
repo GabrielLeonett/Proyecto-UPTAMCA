@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('profesores', function (Blueprint $table) {
             $table->id();
             $table->foreignId('id_categoria')->references('id')->on('categoria');
-            $table->foreignId('id_cedula')->references('id')->on('users');
+            $table->foreignId('id_cedula')->references('id_cedula')->on('users');
             $table->foreignId('id_dedicacion')->references('id')->on('dedicacion');
             $table->foreignId('id_ubicacion')->references('id')->on('ubicacion');
             $table->string('pre_grado', length:300)->nullable();
@@ -25,13 +25,13 @@ return new class extends Migration
 
         Schema::create('administradores', function (Blueprint $table) {
             $table->id()->index();
-            $table->foreignId('id_cedula')->references('id')->on('users');
+            $table->foreignId('id_cedula')->references('id_cedula')->on('users');
             $table->foreignId('id_rol')->references('id')->on('roles');
         });
 
         Schema::create('coordinadores', function (Blueprint $table) {
             $table->id()->index();
-            $table->foreignId('id_cedula')->references('id')->on('users');
+            $table->foreignId('id_cedula')->references('id_cedula')->on('users');
             $table->foreignId('id_ubicacion')->references('id')->on('ubicacion');
             $table->foreignId('id_pnf')->references('id')->on('pnfs');
         });

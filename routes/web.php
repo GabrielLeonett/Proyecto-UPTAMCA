@@ -1,39 +1,27 @@
 <?php
 
+
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Http\Controllers\UserController;
-use App\Models\User;
+use App\Http\Controllers\LoginController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return Inertia::render('index');
-});
+})->name('inicio');
 Route::get('/inicio', function () {
     return Inertia::render('index');
-});
+})->name('inicio');
 
-Route::get('/login', function () {
-    return Inertia::render('login');
-});
-
-Route::get('/test-db', function () {
-    try {
-        DB::connection()->getPdo();
-        return "Conexión exitosa a la base de datos!";
-    } catch (\Exception $e) {
-        return "Error de conexión: " . $e->getMessage();
+Route::get('/profesores', function() {
+    if(Auth::check()){
+        return 'estas logueado';
     }
+    return 'no estas logueado';
 });
 
 Route::get('/login', function (){
     return Inertia::render('login');
 });
-Route::get('/profesores', function (){
-    return Inertia::render('profesores');
-});
-Route::post('/login', function () {
-    return back()->with([
-        'success' => 'Login exitoso',
-        'user' => Auth::user()
-    ]);
-});
+
+Route::post('/login', [LoginController::class, 'authenticate'])->name('login');
