@@ -13,26 +13,26 @@ return new class extends Migration
     {
         Schema::create('pnfs', function ( Blueprint $table){
             $table->id();
-            $table->string('nombre_pnf')->nullable();
-            $table->string('descripcion_pnf', length:400)->nullable();
+            $table->string('nombre_pnf');
+            $table->string('descripcion_pnf', length:400);
         });
 
         Schema::create('unidad_curricular', function ( Blueprint $table){
             $table->id();
-            $table->string('nombre_unidad_curricular')->nullable();
-            $table->string('descripcion_unidad_curricular', length:400)->nullable();
+            $table->string('nombre_unidad_curricular');
+            $table->string('descripcion_unidad_curricular', length:400);
             $table->integer('carga_horas');
         });
 
         Schema::create('trayectos', function ( Blueprint $table){
             $table->id();
-            $table->integer('valor_trayecto')->nullable();
+            $table->integer('valor_trayecto');
             $table->foreignId('id_pnf')->references('id')->on('pnfs');
         });
 
         Schema::create('secciones', function ( Blueprint $table){
             $table->id();
-            $table->integer('valor_seccion')->nullable();
+            $table->integer('valor_seccion');
             $table->foreignId('id_trayecto')->references('id')->on('trayectos');
         });
     }

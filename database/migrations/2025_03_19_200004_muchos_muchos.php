@@ -34,8 +34,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('r_horarios_materias');
-        Schema::dropIfExists('r_profesores_materias');
+        Schema::dropIfExists('r_horarios_unidad_curricular');
+        Schema::dropIfExists('r_profesores_unidad_curricular');
+        Schema::dropIfExists('r_unidad_curricular_seccion');
 
     }
 };

@@ -17,10 +17,10 @@ return new class extends Migration
             $table->foreignId('id_cedula')->references('id_cedula')->on('users');
             $table->foreignId('id_dedicacion')->references('id')->on('dedicacion');
             $table->foreignId('id_ubicacion')->references('id')->on('ubicacion');
-            $table->string('pre_grado', length:300)->nullable();
-            $table->string('pos_grado', length:300)->nullable();
-            $table->date('fecha_ingreso')->nullable();
-            $table->integer('disponibilidad')->nullable();
+            $table->string('pre_grado', length:300);
+            $table->string('pos_grado', length:300);
+            $table->date('fecha_ingreso');
+            $table->integer('disponibilidad');
         });
 
         Schema::create('administradores', function (Blueprint $table) {
