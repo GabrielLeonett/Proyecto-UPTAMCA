@@ -34,12 +34,6 @@ export default function Login() {
             const response = await axios.post('/login', {
                 email: data.email,
                 password: data.password,
-            }, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-Inertia': 'false' // Asegura que Laravel devuelva JSON
-                }
             });
 
             console.log(response.data.icon)
@@ -47,13 +41,16 @@ export default function Login() {
                 title: response.data.title || 'Éxito',
                 text: response.data.text || 'Inicio de sesión exitoso',
                 icon: response.data.icon || 'success',
-                showConfirmButton: false
+                showConfirmButton: false,
             });
+            
+            
+
 
 
         } catch (error) {
             const axiosError = error as AxiosError;
-            
+
             if (axiosError.response) {
                 // Error con respuesta del servidor (422, 401, etc.)
                 const errorData = axiosError.response.data as {
@@ -62,7 +59,7 @@ export default function Login() {
                     icon?: string;
                     text?: string;
                 };
-
+                
                 setErrors(
                     Object.entries(errorData.errors || {})
                         .reduce((acc, [key, value]) => ({
@@ -74,7 +71,7 @@ export default function Login() {
                 await Swal.fire({
                     title: 'Error',
                     text: errorData.message || errorData.text || 'Error al iniciar sesión',
-                    icon:'error',
+                    icon: 'error',
                 });
             } else {
                 // Error de red o sin respuesta

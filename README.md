@@ -1,28 +1,54 @@
-<h1>Sistema Web para la Universidad Politécnica Territorial de los Altos Mirandinos "Cecilio Acosta"</h1>
+# React + TypeScript + Vite
 
-# Generador Automático de Horarios - Vicerrectorado Académico UPTAMCA
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Este repositorio contiene el código fuente del sistema automatizado para la generación de horarios de los diferentes Programas Nacionales de Formación (PNF) y profesores de la Universidad Politécnica Territorial de los Altos Mirandinos "Cecilio Acosta" (UPTAMCA). El sistema está desarrollado con **Laravel** (backend), **React** (frontend) y **MySQL** (base de datos). Además, permite consultar información de los profesores y notificar si alguna sección de un PNF carece de profesores asignados.
+Currently, two official plugins are available:
 
-## Características principales
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- **Generación automática de horarios**: Crea horarios equilibrados para los PNF y profesores, considerando las restricciones y disponibilidades.
-- **Consulta de información de profesores**: Permite acceder a datos relevantes de los profesores, como disponibilidad, materias que imparten, y más.
-- **Notificaciones**: Alertas automáticas cuando una sección de un PNF no tiene profesores asignados.
-- **Interfaz intuitiva**: Desarrollada con React, ofrece una experiencia de usuario fluida y moderna.
-- **Backend robusto**: Desarrollado con Laravel, garantiza un manejo eficiente de la lógica de negocio y la base de datos.
+## Expanding the ESLint configuration
 
-## Tecnologías utilizadas
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-- **Frontend**: React (JavaScript)
-- **Backend**: Laravel (PHP)
-- **Base de datos**: MySQL
-- **Otras herramientas**: Composer (gestión de dependencias de PHP), Node.js (para React), REST API (comunicación entre frontend y backend)
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-## Requisitos del sistema
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-- PHP 8.0 o superior
-- Composer (para gestionar dependencias de Laravel)
-- Node.js 16.x o superior (para React)
-- MySQL 5.7 o superior
-- Servidor web (Apache o Nginx)
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```

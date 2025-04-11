@@ -17,9 +17,10 @@ import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined
 type PropsAppBar = {
     pages: string[];
     backgroundColor?: boolean;
+    username?: string;
 };
 
-function ResponsiveAppBar({ pages, backgroundColor }: PropsAppBar) {
+function ResponsiveAppBar({ pages, backgroundColor,username }: PropsAppBar) {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -120,7 +121,7 @@ function ResponsiveAppBar({ pages, backgroundColor }: PropsAppBar) {
                         sx={{ color: 'white' }} 
                         onClick={() => handleRedirect('/login')}
                         >
-                            <AccountCircleOutlinedIcon/> {/* Hereda el color del IconButton */}
+                            {username ? username : <AccountCircleOutlinedIcon/>}
                         </IconButton>
                     </Box>
                 </Toolbar>
