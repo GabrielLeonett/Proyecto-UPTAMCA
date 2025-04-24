@@ -1,6 +1,3 @@
-import React from 'react';
-import { usePage } from '@inertiajs/react';
-
 
 export default function Saludo(nombre?: string) {
 

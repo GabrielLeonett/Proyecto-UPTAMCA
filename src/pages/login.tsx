@@ -1,5 +1,5 @@
-import CustomButton from '@/components/customButton';
-import ResponsiveAppBar from '@/components/navbar';
+import CustomButton from '../components/customButton';
+import ResponsiveAppBar from '../components/navbar';
 import { Head } from '@inertiajs/react';
 import { CircularProgress } from '@mui/material';
 import Box from '@mui/material/Box';

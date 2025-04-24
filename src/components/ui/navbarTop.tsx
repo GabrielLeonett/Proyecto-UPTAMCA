@@ -1,4 +1,4 @@
-import {NavbarItemProps} from '@/types/index';
+import {NavbarItemProps} from '../../types/index';
 
 export default function NavbarTop({ children, url }: NavbarItemProps) {
 

@@ -16,7 +16,6 @@ export default function ItemSlider({
   title,
   description,
   image,
-  opacity = "opacity-100",
   positionX = 100,
   zIndex = "z-0",
   duration = 5000

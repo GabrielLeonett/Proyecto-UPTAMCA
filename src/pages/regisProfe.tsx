@@ -1,14 +1,14 @@
 import { Head } from '@inertiajs/react';
-import CustomButton from '@/components/customButton';
+import CustomButton from '../components/customButton';
 import Box from '@mui/material/Box';
 import * as React from 'react';
 import DatePicker from 'react-datepicker';
 import Typography from '@mui/material/Typography';
 import { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale/es';
-import ResponsiveAppBar from '@/components/navbar';
-import CustomLabel from '@/components/customLabel';
-import { CustomSelect } from '@/components/customSelect';
+import ResponsiveAppBar from '../components/navbar';
+import CustomLabel from '../components/customLabel';
+import { CustomSelect } from '../components/customSelect';
 import { motion } from 'framer-motion'; // Corregido: importar desde 'framer-motion'
 
 registerLocale('es', es);
