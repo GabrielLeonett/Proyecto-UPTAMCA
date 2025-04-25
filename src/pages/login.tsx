@@ -1,6 +1,5 @@
 import CustomButton from '../components/customButton';
 import ResponsiveAppBar from '../components/navbar';
-import { Head } from '@inertiajs/react';
 import { CircularProgress } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -88,7 +87,6 @@ export default function Login() {
 
     return (
         <>
-            <Head title="Inicio de sesión" />
             <ResponsiveAppBar pages={['Universidad', 'Académico', 'Servicios', 'Trámites']} backgroundColor />
 
             <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">

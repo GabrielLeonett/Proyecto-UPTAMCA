@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node backend/index.js",
+    "dev": "nodemon index.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -21,11 +21,12 @@
     "express": "^5.1.0",
     "framer-motion": "^12.7.4",
     "knex": "^3.1.0",
+    "nodemon": "^3.1.10",
     "pg": "^8.14.1",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "react-datepicker": "^8.3.0",
-    "react-dom": "^19.0.0",
-    "sweetalert2": "^11.19.1"
+    "react-dom": "^19.1.0",
+    "sweetalert2": "^11.6.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
