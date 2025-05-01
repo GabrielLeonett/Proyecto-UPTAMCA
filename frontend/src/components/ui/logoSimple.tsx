@@ -1,4 +1,4 @@
-import { type LogoColores } from '@/types/index'
+import { type LogoColores } from '../../types/index'
 
 export default function LogoSimple({ Primary, Secundary, shadow }: LogoColores) {
     return (

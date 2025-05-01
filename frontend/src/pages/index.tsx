@@ -1,8 +1,15 @@
 import { useState } from 'react';
+<<<<<<< HEAD:frontend/src/pages/index.tsx
 import ResponsiveAppBar from './components/navbar';
 import Typography from 'mui/material/Typography';
 import Slider from './components/slider';
 import { useScrollDetection } from '@/hook/useScrollDetection';
+=======
+import ResponsiveAppBar from '../components/navbar';
+import Typography from '@mui/material/Typography';
+import Slider from '../components/slider';
+import { useScrollDetection } from '../hook/useScrollDetection';
+>>>>>>> d92b5f7a55018283d86be075c1f3b2ad2c8ef103:src/pages/index.tsx
 
 export default function Index() {
     const [scrolled, setScrolled] = useState(false);
@@ -13,7 +20,6 @@ export default function Index() {
 
     return (
         <>
-            <Head title="Inicio" />
             <ResponsiveAppBar 
                 pages={['Universidad', 'Academico', 'Servicios', 'Tramites']}  
                 backgroundColor={scrolled} 

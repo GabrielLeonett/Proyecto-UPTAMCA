@@ -1,14 +1,14 @@
-import { useState } from 'react'
-import Index from './pages/index'
-import './App.css'
+import Login from './pages/login';
+import './App.css';
+import 
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
-    <>
-      
-  )
+    <div>
+      <Login></Login>
+    </div>
+  );
 }
 
-export default App
+export default App;

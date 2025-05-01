@@ -1,19 +1,8 @@
-import { useState } from "react";
 import ItemSlider from "./ui/itemslider";
-
-// Define el tipo para los items del slider
-interface SliderItem {
-    title: string;
-    description: string;
-    image: string;
-    opacity?: `opacity-${number}`;
-    positionX?: number;
-    zIndex?: `z-${number}`;
-}
 
 export default function Slider() {
     // Estado con datos para cada slide
-    const [slides, setSlides] = useState<SliderItem[]>([
+    const slides  = [
         {
             title: "Informática",
             description: "Lorem ipsum dolor sit amet...",
@@ -36,7 +25,7 @@ export default function Slider() {
             positionX:1000,
             zIndex: "z-0"
         }
-    ]);
+    ];
 
     return (
         <div className="relative h-96 overflow-hidden"> {/* Añadido altura y overflow-hidden */}
@@ -46,9 +35,7 @@ export default function Slider() {
                     title={slide.title}
                     description={slide.description}
                     image={slide.image}
-                    opacity={slide.opacity}
                     positionX={slide.positionX}
-                    zIndex={slide.zIndex}
                 />
             ))}
         </div>
