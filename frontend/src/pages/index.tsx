@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import ResponsiveAppBar from '@/components/navbar';
-import { Head } from '@inertiajs/react';
-import Typography from '@mui/material/Typography';
-import Slider from '@/components/slider';
+import ResponsiveAppBar from './components/navbar';
+import Typography from 'mui/material/Typography';
+import Slider from './components/slider';
 import { useScrollDetection } from '@/hook/useScrollDetection';
 
 export default function Index() {
