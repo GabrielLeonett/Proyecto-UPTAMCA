@@ -4,17 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "database:migrations": "node database/migrations.js",
-    "database:seed": "node database/seed.js"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@inertiajs/react": "^2.0.8",
     "@mui/icons-material": "^7.0.2",
     "@mui/material": "^7.0.2",
     "date-fns": "^4.1.0",
