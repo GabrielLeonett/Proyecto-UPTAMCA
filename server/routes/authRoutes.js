@@ -1,8 +1,9 @@
 import { Router } from "express";
+import authController from "../controllers/authController.js";
+
+const { login, register, logout } = authController;
 
 export const authRouter = Router();
 
 //Rutas de autenticacion
-authRouter.post("/login", )
-authRouter.post("/register", )
-authRouter.post("/logout", )
+authRouter.post("/register", register)

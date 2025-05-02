@@ -1,0 +1,18 @@
+import z from 'zod'
+
+const UserSchema = z.object({
+    id: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),
+    nombres: z.string({invalid_type_error:'Nombre tiene que ser un string'}).min(3, {message:'Nombre tiene que tener al menos 3 caracteres'}).max(150, {message:'Nombre tiene que tener menos de 150 caracteres'}),
+    email: z.string({invalid_type_error:'Email tiene que ser un string'}).email({message:'Email no es valido'}).max(150, {message:'Email tiene que tener menos de 150 caracteres'}),
+    password: z.string({invalid_type_error:'Password tiene que ser un string'}).min(8, {message:'Password tiene que tener al menos 8 caracteres'}).max(40, {message:'Password tiene que tener menos de 40 caracteres'}),
+    direccion: z.string({invalid_type_error:'Direccion tiene que ser un string'}).min(3, {message:'Direccion tiene que tener al menos 3 caracteres'}).max(150, {message:'Direccion tiene que tener menos de 150 caracteres'}),
+    telefono_movil: z.string({invalid_type_error:'Telefono movil tiene que ser un string'}).regex(/^\d{11}$/, {message:'Telefono movil tiene que tener 11 digitos'}),
+    telefono_local: z.string({invalid_type_error:'Telefono local tiene que ser un string'}).regex(/^\d{11}$/, {message:'Telefono local tiene que tener 11 digitos'}),
+    fecha_nacimiento: z.string({invalid_type_error:'Fecha de nacimiento tiene que ser un string'}).regex(/^\d{4}-\d{2}-\d{2}$/, {message:'Fecha de nacimiento tiene que tener el formato YYYY-MM-DD'}),
+    genero: z.enum(['masculino', 'femenino'], {error_map: () => ({message:'Genero tiene que ser masculino o femenino'})}),
+})
+
+export const ValidationUser = ({input}) => {
+    const validationResult = UserSchema.safeParse(input)
+    return validationResult;
+}
