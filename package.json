@@ -1,0 +1,21 @@
+{
+  "name": "proyecto-uptamca",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "pg": "^8.15.6",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
