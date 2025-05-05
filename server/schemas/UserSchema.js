@@ -8,7 +8,7 @@ const UserSchema = z.object({
     direccion: z.string({invalid_type_error:'Direccion tiene que ser un string'}).min(3, {message:'Direccion tiene que tener al menos 3 caracteres'}).max(150, {message:'Direccion tiene que tener menos de 150 caracteres'}),
     telefono_movil: z.string({invalid_type_error:'Telefono movil tiene que ser un string'}).regex(/^\d{11}$/, {message:'Telefono movil tiene que tener 11 digitos'}),
     telefono_local: z.string({invalid_type_error:'Telefono local tiene que ser un string'}).regex(/^\d{11}$/, {message:'Telefono local tiene que tener 11 digitos'}),
-    fecha_nacimiento: z.string({invalid_type_error:'Fecha de nacimiento tiene que ser un string'}).regex(/^\d{4}-\d{2}-\d{2}$/, {message:'Fecha de nacimiento tiene que tener el formato YYYY-MM-DD'}),
+    fecha_nacimiento: z.string({invalid_type_error:'Fecha de nacimiento tiene que ser un string'}).regex(/^\d{2}-\d{2}-\d{4}$/, {message:'Fecha de nacimiento tiene que tener el formato DD-MM-YYYY'}),
     genero: z.enum(['masculino', 'femenino'], {error_map: () => ({message:'Genero tiene que ser masculino o femenino'})}),
 })
 

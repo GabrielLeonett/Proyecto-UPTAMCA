@@ -1,4 +1,3 @@
-import { Head } from '@inertiajs/react';
 import CustomButton from '../components/customButton';
 import Box from '@mui/material/Box';
 import * as React from 'react';
@@ -17,7 +16,6 @@ export default function RegisProfe() {
 
     return (
         <>
-            <Head title='Registro de Profesores' />
             <ResponsiveAppBar pages={['Universidad', 'Academico', 'Servicios', 'Tramites']} backgroundColor />
             <br />
             <br />

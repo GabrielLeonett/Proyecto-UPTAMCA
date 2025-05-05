@@ -1,24 +1,18 @@
-import { Head } from '@inertiajs/react';
 import CustomButton from '../components/customButton';
 import Box from '@mui/material/Box';
-import * as React from 'react';
-import DatePicker from 'react-datepicker';
 import Typography from '@mui/material/Typography';
 import { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale/es';
 import ResponsiveAppBar from '../components/navbar';
 import CustomLabel from '../components/customLabel';
-import { CustomSelect } from '../components/customSelect';
 import { motion } from 'framer-motion'; // Corregido: importar desde 'framer-motion'
 
 registerLocale('es', es);
 
 export default function RegisProfe() {
-    const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
 
     return (
         <>
-            <Head title='Registro de Profesores' />
             <ResponsiveAppBar pages={['Universidad', 'Academico', 'Servicios', 'Tramites']} backgroundColor />
             <br />
             <br />
@@ -40,94 +34,41 @@ export default function RegisProfe() {
                     className='bg-white flex flex-col items-center justify-center gap-5 lg:w-320 px-20 py-10 rounded-lg shadow-lg'
                 >
                     <Box className="flex justify-start items-start w-full">
-                        <Typography component={'h3'} variant='h3'>Datos Personales</Typography>
+                        <Typography component={'h3'} variant='h3'>Informacion Educativa</Typography>
                     </Box>
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
-                            id="Nombres"
-                            name="nombres"
-                            label="Nombres"
+                            id="Area de Conocimiento"
+                            name="Area de Conocimiento"
+                            label="Area de Conocimiento"
                             type="string"
                             variant="outlined"
                             className="w-full"
                         >
                             Nombre
                         </CustomLabel>
-                        <CustomLabel
-                            id="Apellidos"
-                            name="apellidos"
-                            label="Apellidos"
-                            type="string"
-                            variant="outlined"
-                            className="w-full"
-                        >
-                            Apellido
-                        </CustomLabel>
                     </Box>
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
-                            id="Email"
-                            name="email"
-                            label="Email"
-                            type="email"
-                            variant="outlined"
-                            className="w-full"
-                        >
-                            Email
-                        </CustomLabel>
-                        <CustomLabel
-                            id="Cedula"
-                            name="cedula"
-                            label="Cédula"
-                            type="number"
-                            variant="outlined"
-                            className="w-full"
-                        >
-                            Cédula
-                        </CustomLabel>
-                    </Box>
-                    <Box component={'div'} className='flex flex-row gap-10 w-full'>
-                        <CustomLabel
-                            id="Telefono_movil"
-                            name="telefono_movil"
-                            label="Teléfono Móvil"
-                            type="number"
-                            variant="outlined"
-                            className="w-full"
-                        >
-                            Teléfono
-                        </CustomLabel>
-                        <CustomLabel
-                            id="Telefono_local"
-                            name="telefono_local"
-                            label="Teléfono Local"
+                            id="Pre-Grado"
+                            name="Pre-Grado"
+                            label="Pre-Grado"
                             type="string"
                             variant="outlined"
                             className="w-full"
                         >
                             Teléfono
                         </CustomLabel>
-                    </Box>
-                    <Box component={'div'} className='flex flex-row gap-10 w-full'>
-                        <CustomSelect
-                            datos={[
-                                { value: 'masculino', label: 'Masculino' },
-                                { value: 'femenino', label: 'Femenino' } // Corregido: "famenino" a "femenino"
-                            ]}
-                            label='Seleccione Género'
-                            placeholder='Seleccione Género'
+                        <CustomLabel
+                            id="Pos-Grado"
+                            name="Pos-Grado"
+                            label="Pos-Grado"
+                            type="string"
+                            variant="outlined"
                             className="w-full"
-                        />
-                        <Box className="flex flex-col w-full">
-                            <Typography component={'label'}>Fecha de Nacimiento</Typography>
-                            <DatePicker
-                                selected={selectedDate}
-                                onChange={(date: Date | null) => setSelectedDate(date)}
-                                dateFormat="dd/MM/yyyy"
-                                locale="es"
-                                className='w-full h-full border border-gray-300 rounded-md p-2'
-                            />
-                        </Box>
+                        >
+                            Teléfono
+                        </CustomLabel>
                     </Box>
                     <Box component={'div'} className='flex flex-row justify-end items-end gap-10 w-full'>
                         <motion.div
@@ -167,3 +108,4 @@ export default function RegisProfe() {
         </>
     );
 }
+

@@ -7,3 +7,4 @@ export const userRouter = Router();
 
 //Rutas de autenticacion
 userRouter.post("/register", register)
+userRouter.post("/login", login)
