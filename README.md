@@ -2,7 +2,7 @@
 
 # Generador Automático de Horarios - Vicerrectorado Académico UPTAMCA
 
-Este repositorio contiene el código fuente del sistema automatizado para la generación de horarios de los diferentes Programas Nacionales de Formación (PNF) y profesores de la Universidad Politécnica Territorial de los Altos Mirandinos "Cecilio Acosta" (UPTAMCA). El sistema está desarrollado con **Laravel** (backend), **React** (frontend) y **MySQL** (base de datos). Además, permite consultar información de los profesores y notificar si alguna sección de un PNF carece de profesores asignados.
+Este repositorio contiene el código fuente del sistema automatizado para la generación de horarios de los diferentes Programas Nacionales de Formación (PNF) y profesores de la Universidad Politécnica Territorial de los Altos Mirandinos "Cecilio Acosta" (UPTAMCA). El sistema está desarrollado con **Node.js** (backend), **React** (frontend) y **MySQL** (base de datos). Además, permite consultar información de los profesores y notificar si alguna sección de un PNF carece de profesores asignados.
 
 ## Características principales
 
@@ -15,14 +15,14 @@ Este repositorio contiene el código fuente del sistema automatizado para la gen
 ## Tecnologías utilizadas
 
 - **Frontend**: React (JavaScript)
-- **Backend**: Laravel (PHP)
+- **Backend**: Node.js (PHP)
 - **Base de datos**: MySQL
 - **Otras herramientas**: Composer (gestión de dependencias de PHP), Node.js (para React), REST API (comunicación entre frontend y backend)
 
 ## Requisitos del sistema
 
 - PHP 8.0 o superior
-- Composer (para gestionar dependencias de Laravel)
+- Composer (para gestionar dependencias de Node.js)
 - Node.js 16.x o superior (para React)
 - MySQL 5.7 o superior
 - Servidor web (Apache o Nginx)
