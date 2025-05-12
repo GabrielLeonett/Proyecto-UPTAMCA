@@ -51,6 +51,7 @@ export default class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
+      console.log("logeando...")
 
       const resultModel = await loginUser({
         email: asegurarStringEnMinusculas(email),
