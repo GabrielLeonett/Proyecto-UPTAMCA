@@ -1,4 +1,3 @@
-import { json } from "express";
 import { db } from "../db.js";
 
 export default class UserModel {
@@ -50,9 +49,11 @@ export default class UserModel {
       const result = await db.query(query, values);
       const jsonResult = result.rows[0].mostrar_user;
 
+      if(jsonResult.status != 'success') throw new Error(jsonResult.message);
+      
       return jsonResult;
     } catch (error) {
-      console.error("Error al registrar usuario:", error);
+      console.error("Error al logear usuario:", error);
       throw error;
     }
   }

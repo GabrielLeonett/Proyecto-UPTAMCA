@@ -2,6 +2,7 @@ import { ValidationUser } from "../schemas/UserSchema.js";
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
+import {asegurarStringEnMinusculas} from "../utils/utilis.js"
 
 const { registerUser, loginUser } = userModel;
 
@@ -32,7 +33,7 @@ export default class UserController {
       const resultModel = await registerUser({
         id,
         nombres,
-        email,
+        email: asegurarStringEnMinusculas(email),
         password: passwordHasheada,
         direccion,
         telefono_movil,
@@ -50,14 +51,13 @@ export default class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-
-      const passwordHasheada = await hashPassword(password);
+      console.log("logeando...")
 
       const resultModel = await loginUser({
-        email,
-        password: passwordHasheada,
+        email: asegurarStringEnMinusculas(email),
+        password,
       });
-
+      
       const isMatch = await comparePassword(
         password,
         resultModel.user.password
@@ -77,7 +77,13 @@ export default class UserController {
       // Creando el token de sesion
       const token = createSession({object:user});
 
-      res.cookie("autorization", token);
+      res.cookie("autorization", token, {
+        maxAge: 60*60*60*24,
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        domain: 'localhost'
+      } );
       return res.status(200).json({menssage:"Login successful"});
     } catch (error) {
       return res.status(500).json({ error: "Internal server error:", error });
