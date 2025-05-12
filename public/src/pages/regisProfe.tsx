@@ -8,11 +8,15 @@ import { es } from 'date-fns/locale/es';
 import ResponsiveAppBar from '../components/navbar';
 import CustomLabel from '../components/customLabel';
 import { CustomSelect } from '../components/customSelect';
-import { motion } from 'framer-motion'; // Corregido: importar desde 'framer-motion'
+import { motion } from 'framer-motion';
 
 registerLocale('es', es);
 
-export default function RegisProfe() {
+interface Props {
+  onNext: () => void; // Solo necesita esta prop para avanzar
+}
+
+export default function RegisProfe({ onNext }: Props) {
     const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
 
     return (
@@ -37,9 +41,12 @@ export default function RegisProfe() {
                     transition={{ duration: 0.3 }}
                     className='bg-white flex flex-col items-center justify-center gap-5 lg:w-320 px-20 py-10 rounded-lg shadow-lg'
                 >
+                    {/* FORMULARIO COMPLETO (MISMO QUE ORIGINAL) */}
                     <Box className="flex justify-start items-start w-full">
                         <Typography component={'h3'} variant='h3'>Datos Personales</Typography>
                     </Box>
+                    
+                    {/* Campos de Nombres y Apellidos */}
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
                             id="Nombres"
@@ -62,6 +69,8 @@ export default function RegisProfe() {
                             Apellido
                         </CustomLabel>
                     </Box>
+
+                    {/* Campos de Email y Cédula */}
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
                             id="Email"
@@ -84,6 +93,8 @@ export default function RegisProfe() {
                             Cédula
                         </CustomLabel>
                     </Box>
+
+                    {/* Campos de Teléfonos */}
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
                             id="Telefono_movil"
@@ -106,11 +117,13 @@ export default function RegisProfe() {
                             Teléfono
                         </CustomLabel>
                     </Box>
+
+                    {/* Selector de Género y Fecha */}
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomSelect
                             datos={[
                                 { value: 'masculino', label: 'Masculino' },
-                                { value: 'femenino', label: 'Femenino' } // Corregido: "famenino" a "femenino"
+                                { value: 'femenino', label: 'Femenino' }
                             ]}
                             label='Seleccione Género'
                             placeholder='Seleccione Género'
@@ -127,6 +140,8 @@ export default function RegisProfe() {
                             />
                         </Box>
                     </Box>
+
+                    {/* Botones (Único cambio necesario) */}
                     <Box component={'div'} className='flex flex-row justify-end items-end gap-10 w-full'>
                         <motion.div
                             whileHover={{ scale: 1.05 }}
@@ -137,6 +152,10 @@ export default function RegisProfe() {
                                 variant="contained"
                                 className="h-15 w-50 rounded-xl py-3 font-medium"
                                 tipo="secondary"
+                                onClick={() => {
+                                    // Lógica opcional para resetear
+                                    console.log("Formulario cancelado");
+                                }}
                             >
                                 Cancelar
                             </CustomButton>
@@ -150,13 +169,9 @@ export default function RegisProfe() {
                                 variant="contained"
                                 className="h-15 w-50 rounded-xl py-3 font-medium"
                                 tipo="primary"
-                                onClick={()=>{
-                                        
-                                }}
-                                >
-                                    
-                                
-                                Aceptar
+                                onClick={onNext} // Único cambio real: Navega al siguiente paso
+                            >
+                                Siguiente
                             </CustomButton>
                         </motion.div>
                     </Box>

@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 //Importaciones de las paginas
 import Index from './pages/index.tsx';
 import Login from './pages/login.tsx';
-import RegisProfe from './pages/regisProfe.tsx';
+import MultiStepForm from './pages/MultiStepForm.tsx';
 
 
 function App() {
@@ -11,7 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Index/>} />
         <Route path="/login" element={<Login/>} />
-        <Route path="/regisProfe" element={<RegisProfe/>} />
+        <Route path="/MultiStepForm" element={<MultiStepForm/>} />
       </Routes>
     </Router>
   );

@@ -7,11 +7,16 @@ import { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale/es';
 import ResponsiveAppBar from '../components/navbar';
 import { CustomSelect } from '../components/customSelect';
-import { motion } from 'framer-motion'; // Corregido: importar desde 'framer-motion'
+import { motion } from 'framer-motion';
 
 registerLocale('es', es);
 
-export default function RegisProfe() {
+interface Props {
+  onPrev: () => void;
+  onNext: () => void;
+}
+
+export default function InfoPer({ onPrev, onNext }: Props) {
     const [selectedDate, setSelectedDate] = React.useState<Date | null>(null);
 
     return (
@@ -61,7 +66,6 @@ export default function RegisProfe() {
                             placeholder='Dedicacion'
                             className="w-full"
                         />
-                       
                     </Box>
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomSelect
@@ -76,7 +80,6 @@ export default function RegisProfe() {
                             placeholder='Categoria'
                             className="w-full"
                         />
-                       
                     </Box>
                     <Box component={'div'} className='flex flex-row justify-end items-end gap-10 w-full'>
                         <motion.div
@@ -88,8 +91,9 @@ export default function RegisProfe() {
                                 variant="contained"
                                 className="h-15 w-50 rounded-xl py-3 font-medium"
                                 tipo="secondary"
+                                onClick={onPrev} // Botón Cancelar ahora navega a vista anterior
                             >
-                                Cancelar
+                                Anterior
                             </CustomButton>
                         </motion.div>
                         <motion.div
@@ -101,13 +105,9 @@ export default function RegisProfe() {
                                 variant="contained"
                                 className="h-15 w-50 rounded-xl py-3 font-medium"
                                 tipo="primary"
-                                onClick={()=>{
-                                        
-                                }}
-                                >
-                                    
-                                
-                                Aceptar
+                                onClick={onNext} // Botón Aceptar ahora navega a siguiente vista
+                            >
+                                Siguiente
                             </CustomButton>
                         </motion.div>
                     </Box>
