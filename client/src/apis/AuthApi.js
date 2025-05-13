@@ -18,3 +18,11 @@ export async function registerUser(input) {
     throw error;
   }
 }
+
+
+axios.get('http://localhost:3000/Profesores', {
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})

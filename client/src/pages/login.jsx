@@ -8,8 +8,11 @@ import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 import { useEffect } from "react";
+import {useNavigate} from "react-router-dom"
 
 export default function Login() {
+  const navigate = useNavigate();
+
   const { login, isAutenticate } = useAuth();
   const [data, setData] = useState({
     email: "",
@@ -28,7 +31,7 @@ export default function Login() {
 
   useEffect(()=>{
     if (isAutenticate) {
-      window.location.href = "/profesores";
+      navigate('/Profesores')
     }
   }, [isAutenticate]);
 

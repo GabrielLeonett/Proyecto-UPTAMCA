@@ -9,6 +9,7 @@ import CustomSelect from '../components/customSelect';
 import CustomButton from '../components/customButton';
 import ResponsiveAppBar from "../components/navbar";
 
+
 export default function FormRegister() {
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
@@ -27,7 +28,10 @@ export default function FormRegister() {
         categoria: '',
         area_conocimiento: '',
         pre_grado: '',
-        pos_grado: ''
+        pos_grado: '',
+        ubicacion: '',
+        disponibilidad: '',
+        carga_academica: ''
     });
 
     const handleChange = (e) => {
@@ -86,7 +90,7 @@ export default function FormRegister() {
                 pages={["Universidad", "Académico", "Servicios", "Trámites"]}
                 backgroundColor
             />
-            
+
             <Box className="flex flex-col w-full min-h-screen bg-gray-100">
                 <Typography component={'h2'} variant='h2' className='text-start mx-20 pt-8'>
                     Registrar Profesor
@@ -194,9 +198,46 @@ export default function FormRegister() {
                                         </Box>
                                     </>
                                 )}
-
-                                {/* Paso 2: Información Profesional */}
+                                {/* Paso 2: Información Educativa */}
                                 {step === 2 && (
+                                    <>
+                                        <Typography component={'h3'} variant='h3' className='self-start'>
+                                            Información Educativa
+                                        </Typography>
+
+                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
+                                            <CustomLabel
+                                                id="area_conocimiento"
+                                                name="area_conocimiento"
+                                                label="Área de Conocimiento"
+                                                type="text"
+                                                variant="outlined"
+                                                value={formData.area_conocimiento}
+                                                onChange={handleChange}
+                                            />
+                                            <CustomLabel
+                                                id="pre_grado"
+                                                name="pre_grado"
+                                                label="Pre-Grado"
+                                                type="text"
+                                                variant="outlined"
+                                                value={formData.pre_grado}
+                                                onChange={handleChange}
+                                            />
+                                            <CustomLabel
+                                                id="pos_grado"
+                                                name="pos_grado"
+                                                label="Pos-Grado"
+                                                type="text"
+                                                variant="outlined"
+                                                value={formData.pos_grado}
+                                                onChange={handleChange}
+                                            />
+                                        </Box>
+                                    </>
+                                )}
+                                {/* Paso 3: Información Profesional */}
+                                {step === 3 && (
                                     <>
                                         <Typography component={'h3'} variant='h3' className='self-start'>
                                             Información Profesional
@@ -242,43 +283,33 @@ export default function FormRegister() {
                                                 value={formData.categoria}
                                                 onChange={handleChange}
                                             />
-                                        </Box>
-                                    </>
-                                )}
-
-                                {/* Paso 3: Información Educativa */}
-                                {step === 3 && (
-                                    <>
-                                        <Typography component={'h3'} variant='h3' className='self-start'>
-                                            Información Educativa
-                                        </Typography>
-
-                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
-                                            <CustomLabel
-                                                id="area_conocimiento"
-                                                name="area_conocimiento"
-                                                label="Área de Conocimiento"
-                                                type="text"
-                                                variant="outlined"
-                                                value={formData.area_conocimiento}
+                                            <CustomSelect
+                                                datos={[
+                                                    { value: 'Nucleo de Tecnologia y Ciencias Administrativas', label: 'Nucleo de Tecnologia y Ciencias Administrativas' },
+                                                    { value: 'Nucleo Salud y Deportes', label: 'Nucleo Salud y Deportes' },
+                                                    { value: 'Nucleo Humanidades y Ciencias Sociales', label: 'Nucleo Humanidades y Ciencias Sociales' }
+                                                ]}
+                                                label='Ubicacion'
+                                                name="ubicacion"
+                                                value={formData.ubicacion}
                                                 onChange={handleChange}
                                             />
                                             <CustomLabel
-                                                id="pre_grado"
-                                                name="pre_grado"
-                                                label="Pre-Grado"
+                                                id="disponibilidad"
+                                                name="disponibilidad"
+                                                label="Disponibilidad"
                                                 type="text"
                                                 variant="outlined"
-                                                value={formData.pre_grado}
+                                                value={formData.disponibilidad}
                                                 onChange={handleChange}
                                             />
                                             <CustomLabel
-                                                id="pos_grado"
-                                                name="pos_grado"
-                                                label="Pos-Grado"
+                                                id="carga_academica"
+                                                name="carga_academica"
+                                                label="Carga Academica"
                                                 type="text"
                                                 variant="outlined"
-                                                value={formData.pos_grado}
+                                                value={formData.carga_academica}
                                                 onChange={handleChange}
                                             />
                                         </Box>
@@ -312,7 +343,10 @@ export default function FormRegister() {
                                                         categoria: '',
                                                         area_conocimiento: '',
                                                         pre_grado: '',
-                                                        pos_grado: ''
+                                                        pos_grado: '',
+                                                        ubicacion: '',
+                                                        disponibilidad: '',
+                                                        carga_academica: ''
                                                     });
                                                 }}
                                             >
