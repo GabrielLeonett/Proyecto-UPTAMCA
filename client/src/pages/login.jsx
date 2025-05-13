@@ -3,6 +3,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
+import Swal from "sweetalert2";
 import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
@@ -24,12 +25,33 @@ export default function Login() {
     }));
   };
 
+
   async function handleSubmit(e) {
     e.preventDefault();
     setProcessing(true);
     setErrors({});
-    const datos = await login(data);
-    console.log(datos);
+    try {
+      const datos = await login(data);
+      setProcessing(false);
+      Swal.fire({
+        icon: "success",
+        title: "Inicio de sesión exitoso",
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      setProcessing(false);
+      Swal.fire({
+        icon: "error",
+        title: "Inicio de sesión fallido",
+        showConfirmButton: false,
+        text: error,
+      });
+      setErrors((prev) => ({
+        ...prev,
+        email: "Correo o contraseña incorrectos",
+      }));
+    }
+    
   }
 
   return (

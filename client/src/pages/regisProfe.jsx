@@ -1,20 +1,42 @@
 import CustomButton from '../components/customButton';
 import Box from '@mui/material/Box';
 import * as React from 'react';
-import DatePicker from 'react-datepicker';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Typography from '@mui/material/Typography';
-import { registerLocale } from 'react-datepicker';
-import { es } from 'date-fns/locale/es';
 import ResponsiveAppBar from '../components/navbar';
 import CustomLabel from '../components/customLabel';
-import { CustomSelect } from '../components/customSelect';
-
-registerLocale('es', es);
-
-
+import CustomSelect  from '../components/customSelect';
+import { motion } from 'framer-motion';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
 
 export default function RegisProfe({ onNext }) {
-    const [selectedDate, setSelectedDate] = React.useState(null);
+    const [formData, setFormData] = React.useState({
+        nombres: '',
+        apellidos: '',
+        email: '',
+        cedula: '',
+        telefono_movil: '',
+        telefono_local: '',
+        genero: '',
+        fecha_nacimiento: null
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleDateChange = (date) => {
+        setFormData(prev => ({
+            ...prev,
+            fecha_nacimiento: date
+        }));
+    };
 
     return (
         <>
@@ -38,33 +60,32 @@ export default function RegisProfe({ onNext }) {
                     transition={{ duration: 0.3 }}
                     className='bg-white flex flex-col items-center justify-center gap-5 lg:w-320 px-20 py-10 rounded-lg shadow-lg'
                 >
-                    {/* FORMULARIO COMPLETO (MISMO QUE ORIGINAL) */}
                     <Box className="flex justify-start items-start w-full">
                         <Typography component={'h3'} variant='h3'>Datos Personales</Typography>
                     </Box>
-                    
+
                     {/* Campos de Nombres y Apellidos */}
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomLabel
                             id="Nombres"
                             name="nombres"
                             label="Nombres"
-                            type="string"
+                            type="text"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Nombre
-                        </CustomLabel>
+                            value={formData.nombres}
+                            onChange={handleChange}
+                        />
                         <CustomLabel
                             id="Apellidos"
                             name="apellidos"
                             label="Apellidos"
-                            type="string"
+                            type="text"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Apellido
-                        </CustomLabel>
+                            value={formData.apellidos}
+                            onChange={handleChange}
+                        />
                     </Box>
 
                     {/* Campos de Email y Cédula */}
@@ -76,9 +97,9 @@ export default function RegisProfe({ onNext }) {
                             type="email"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Email
-                        </CustomLabel>
+                            value={formData.email}
+                            onChange={handleChange}
+                        />
                         <CustomLabel
                             id="Cedula"
                             name="cedula"
@@ -86,9 +107,9 @@ export default function RegisProfe({ onNext }) {
                             type="number"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Cédula
-                        </CustomLabel>
+                            value={formData.cedula}
+                            onChange={handleChange}
+                        />
                     </Box>
 
                     {/* Campos de Teléfonos */}
@@ -97,22 +118,22 @@ export default function RegisProfe({ onNext }) {
                             id="Telefono_movil"
                             name="telefono_movil"
                             label="Teléfono Móvil"
-                            type="number"
+                            type="tel"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Teléfono
-                        </CustomLabel>
+                            value={formData.telefono_movil}
+                            onChange={handleChange}
+                        />
                         <CustomLabel
                             id="Telefono_local"
                             name="telefono_local"
                             label="Teléfono Local"
-                            type="string"
+                            type="tel"
                             variant="outlined"
                             className="w-full"
-                        >
-                            Teléfono
-                        </CustomLabel>
+                            value={formData.telefono_local}
+                            onChange={handleChange}
+                        />
                     </Box>
 
                     {/* Selector de Género y Fecha */}
@@ -125,20 +146,30 @@ export default function RegisProfe({ onNext }) {
                             label='Seleccione Género'
                             placeholder='Seleccione Género'
                             className="w-full"
+                            name="genero"
+                            value={formData.genero}
+                            onChange={handleChange}
                         />
                         <Box className="flex flex-col w-full">
                             <Typography component={'label'}>Fecha de Nacimiento</Typography>
-                            <DatePicker
-                                selected={selectedDate}
-                                onChange={(date) => setSelectedDate(date)}
-                                dateFormat="dd/MM/yyyy"
-                                locale="es"
-                                className='w-full h-full border border-gray-300 rounded-md p-2'
-                            />
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <DatePicker 
+                                    label="Fecha de Nacimiento"
+                                    value={formData.fecha_nacimiento}
+                                    onChange={handleDateChange}
+                                    format="DD/MM/YYYY"
+                                    slotProps={{
+                                        textField: {
+                                            variant: 'outlined',
+                                            fullWidth: true
+                                        }
+                                    }}
+                                />
+                            </LocalizationProvider>
                         </Box>
                     </Box>
 
-                    {/* Botones (Único cambio necesario) */}
+                    {/* Botones */}
                     <Box component={'div'} className='flex flex-row justify-end items-end gap-10 w-full'>
                         <motion.div
                             whileHover={{ scale: 1.05 }}
@@ -152,6 +183,16 @@ export default function RegisProfe({ onNext }) {
                                 onClick={() => {
                                     // Lógica opcional para resetear
                                     console.log("Formulario cancelado");
+                                    setFormData({
+                                        nombres: '',
+                                        apellidos: '',
+                                        email: '',
+                                        cedula: '',
+                                        telefono_movil: '',
+                                        telefono_local: '',
+                                        genero: '',
+                                        fecha_nacimiento: null
+                                    });
                                 }}
                             >
                                 Cancelar
@@ -166,7 +207,10 @@ export default function RegisProfe({ onNext }) {
                                 variant="contained"
                                 className="h-15 w-50 rounded-xl py-3 font-medium"
                                 tipo="primary"
-                                onClick={onNext} // Único cambio real: Navega al siguiente paso
+                                onClick={() => {
+                                    console.log("Datos del formulario:", formData);
+                                    onNext();
+                                }}
                             >
                                 Siguiente
                             </CustomButton>

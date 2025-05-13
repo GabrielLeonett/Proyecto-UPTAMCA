@@ -9,12 +9,7 @@ import { motion } from 'framer-motion';
 
 registerLocale('es', es);
 
-interface Props {
-  onPrev: () => void;  // Para volver al paso anterior
-  onSubmit: () => void; // Para enviar el formulario completo
-}
-
-export default function InfoEduc({ onPrev, onSubmit }: Props) {
+export default function InfoEduc({ onPrev, onSubmit }) {
   return (
     <>
       <ResponsiveAppBar pages={['Universidad', 'Academico', 'Servicios', 'Tramites']} backgroundColor />

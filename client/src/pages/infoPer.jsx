@@ -6,12 +6,16 @@ import Typography from '@mui/material/Typography';
 import { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale/es';
 import ResponsiveAppBar from '../components/navbar';
-import { CustomSelect } from '../components/customSelect';
+import  CustomSelect  from '../components/customSelect';
+import { motion } from 'framer-motion';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+
 
 registerLocale('es', es);
 
 
-export default function InfoPer({ onPrev, onNext } ) {
+export default function InfoPer({ onPrev, onNext }) {
     const [selectedDate, setSelectedDate] = React.useState(null);
 
     return (
@@ -39,23 +43,30 @@ export default function InfoPer({ onPrev, onNext } ) {
                     <Box className="flex justify-start items-start w-full">
                         <Typography component={'h3'} variant='h3'>Informacion Profesional</Typography>
                     </Box>
-                     <Box className="flex flex-col w-full">
-                            <Typography component={'label'}>Fecha de Ingreso</Typography>
+                    <Box className="flex flex-col w-full">
+                        <Typography component={'label'}>Fecha de Ingreso</Typography>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
-                                selected={selectedDate}
-                                onChange={(date) => setSelectedDate(date)}
-                                dateFormat="dd/MM/yyyy"
-                                locale="es"
-                                className='w-full h-full border border-gray-300 rounded-md p-2'
+                                label="Fecha de Ingreso"
+                                value={formData.fecha_ingreso}
+                                onChange={handleDateChange}
+                                format="DD/MM/YYYY"
+                                slotProps={{
+                                    textField: {
+                                        variant: 'outlined',
+                                        fullWidth: true
+                                    }
+                                }}
                             />
-                        </Box>
+                        </LocalizationProvider>
+                    </Box>
                     <Box component={'div'} className='flex flex-row gap-10 w-full'>
                         <CustomSelect
                             datos={[
                                 { value: 'convencional', label: 'Convencional' },
                                 { value: 'medio tiempo', label: 'Medio Tiempo' },
                                 { value: 'tiempo completo', label: 'Tiempo Completo' },
-                                { value: 'exclusiva', label: 'Exclusiva' } 
+                                { value: 'exclusiva', label: 'Exclusiva' }
                             ]}
                             label='Dedicacion'
                             placeholder='Dedicacion'

@@ -1,10 +1,10 @@
 import InputLabel from "@mui/material/InputLabel";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
+import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import React from "react";
 import Box from "@mui/material/Box";
 
-export function CustomSelect({
+export default function CustomSelect({
   datos,
   label = "Seleccione",
   value: valueProp,

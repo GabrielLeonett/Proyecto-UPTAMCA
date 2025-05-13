@@ -11,8 +11,9 @@ export function AuthProvider({ children }) {
     try {
       const loginData = await registerUser(userData);
       setUser(loginData);
+      return loginData.menssage; // Retorna los datos del usuario logueado
     } catch (error) {
-      console.error("Login failed:", error);
+      return error.response.data; // Maneja el error según tus necesidades
       throw error; // Puedes manejar esto de otra forma según tus necesidades
     }
   };

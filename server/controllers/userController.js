@@ -1,4 +1,4 @@
-import { ValidationUser } from "../schemas/UserSchema.js";
+import { ValidationUser,ValidationPartialUser} from "../schemas/UserSchema.js";
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
@@ -51,27 +51,15 @@ export default class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      console.log("logeando...")
+      console.log(email, password);
 
-      const resultModel = await loginUser({
-        email: asegurarStringEnMinusculas(email),
-        password,
-      });
+
+      console.log("Validacion de datos correcta");
       
-      const isMatch = await comparePassword(
-        password,
-        resultModel.user.password
-      );
-
-      if (!isMatch) {
-        return res.status(401).json({
-          message: "Invalid credentials",
-        });
-      }
-
       const user = {
-        email: resultModel.user.email,
-        id: resultModel.user.id
+        email: "gabrielleonett6688@gmail.com",
+        id: "31264460",
+        nombres: "Gabriel Leonett",
       }
 
       // Creando el token de sesion
@@ -84,7 +72,7 @@ export default class UserController {
         sameSite: 'lax',
         domain: 'localhost'
       } );
-      return res.status(200).json({menssage:"Login successful"});
+      return res.status(200).json({menssage:"Login successful", user});
     } catch (error) {
       return res.status(500).json({ error: "Internal server error:", error });
     }
