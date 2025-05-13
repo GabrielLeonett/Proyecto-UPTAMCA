@@ -6,9 +6,10 @@ import CustomButton from "../components/customButton";
 import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
+import { useEffect } from "react";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, isAutenticate } = useAuth();
   const [data, setData] = useState({
     email: "",
     password: "",
@@ -24,12 +25,25 @@ export default function Login() {
     }));
   };
 
+  useEffect(()=>{
+    if (isAutenticate) {
+      window.location.href = "/profesores";
+    }
+  }, [isAutenticate]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setProcessing(true);
     setErrors({});
-    const datos = await login(data);
-    console.log(datos);
+    try {
+      const datos = await login(data);
+      if (!datos) {
+        setProcessing(false);
+        return;
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (

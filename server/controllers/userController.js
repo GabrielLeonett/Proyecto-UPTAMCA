@@ -1,4 +1,4 @@
-import { ValidationUser } from "../schemas/UserSchema.js";
+import { ValidationUser, ValidationPartialUser} from "../schemas/UserSchema.js";
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
@@ -51,7 +51,12 @@ export default class UserController {
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-      console.log("logeando...")
+
+      // Validate the input data
+      const validationResult = ValidationPartialUser({ input: req.body });  
+      if(!validationResult.success) {
+        return res.status(400).json({ errors: validationResult.error.errors });
+      }
 
       const resultModel = await loginUser({
         email: asegurarStringEnMinusculas(email),
@@ -84,7 +89,7 @@ export default class UserController {
         sameSite: 'lax',
         domain: 'localhost'
       } );
-      return res.status(200).json({menssage:"Login successful"});
+      return res.status(200).json({menssage:"Login successful", user});
     } catch (error) {
       return res.status(500).json({ error: "Internal server error:", error });
     }

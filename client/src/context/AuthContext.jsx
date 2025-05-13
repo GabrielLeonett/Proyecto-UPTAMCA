@@ -6,11 +6,14 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [isAutenticate, setIsAutenticate] = useState(false);
 
   const login = async (userData)=> {
     try {
       const loginData = await registerUser(userData);
-      setUser(loginData);
+      console.log("Login successful:", loginData);
+      setUser(loginData.user);
+      setIsAutenticate(true);
     } catch (error) {
       console.error("Login failed:", error);
       throw error; // Puedes manejar esto de otra forma según tus necesidades
@@ -18,7 +21,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login }}>
+    <AuthContext.Provider value={{ user, login, isAutenticate }}>
       {children}
     </AuthContext.Provider>
   );
