@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { ValidationUser,ValidationPartialUser} from "../schemas/UserSchema.js";
-=======
 import { ValidationUser, ValidationPartialUser} from "../schemas/UserSchema.js";
->>>>>>> ab9c6738369e8f1c3d2b5b858a7ae6fbe4dd4121
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
@@ -51,28 +47,25 @@ export default class UserController {
       return res.status(500).json({ error: "Internal server error:", error });
     }
   }
+
   //Metodo para el loggeo de usuarios
   static async login(req, res) {
     try {
       const { email, password } = req.body;
-<<<<<<< HEAD
-      console.log(email, password);
-=======
 
       // Validate the input data
       const validationResult = ValidationPartialUser({ input: req.body });  
       if(!validationResult.success) {
         return res.status(400).json({ errors: validationResult.error.errors });
       }
->>>>>>> ab9c6738369e8f1c3d2b5b858a7ae6fbe4dd4121
 
+      const user = await loginUser({
+        email: asegurarStringEnMinusculas(email),
+        password
+      });
 
-      console.log("Validacion de datos correcta");
-      
-      const user = {
-        email: "gabrielleonett6688@gmail.com",
-        id: "31264460",
-        nombres: "Gabriel Leonett",
+      if (!user) {
+        return res.status(401).json({ error: "Invalid email or password" });
       }
 
       // Creando el token de sesion
