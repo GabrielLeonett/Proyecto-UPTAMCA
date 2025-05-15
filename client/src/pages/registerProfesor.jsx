@@ -9,10 +9,10 @@ import CustomSelect from '../components/customSelect';
 import CustomButton from '../components/customButton';
 import ResponsiveAppBar from "../components/navbar";
 
-
 export default function FormRegister() {
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
+    const [errors, setErrors] = useState({});
 
     const [formData, setFormData] = useState({
         nombres: '',
@@ -34,16 +34,69 @@ export default function FormRegister() {
         carga_academica: ''
     });
 
+    const validateStep = (step) => {
+        const newErrors = {};
+
+        if (step === 1) {
+            if (!formData.nombres.trim()) newErrors.nombres = 'Nombres es requerido';
+            else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(formData.nombres)) newErrors.nombres = 'Solo se permiten letras y espacios';
+
+            if (!formData.apellidos.trim()) newErrors.apellidos = 'Apellidos es requerido';
+            else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(formData.apellidos)) newErrors.apellidos = 'Solo se permiten letras y espacios';
+
+            if (!formData.email.trim()) newErrors.email = 'Email es requerido';
+            else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Email no válido';
+
+            if (!formData.cedula.trim()) newErrors.cedula = 'Cédula es requerida';
+            else if (!/^\d+$/.test(formData.cedula)) newErrors.cedula = 'Solo se permiten números';
+            else if (formData.cedula.length < 6 || formData.cedula.length > 10) newErrors.cedula = 'Cédula debe tener entre 6 y 10 dígitos';
+
+            if (!formData.telefono_movil.trim()) newErrors.telefono_movil = 'Teléfono móvil es requerido';
+            else if (!/^\d{10,15}$/.test(formData.telefono_movil)) newErrors.telefono_movil = 'Teléfono no válido';
+
+            if (formData.telefono_local.trim() && !/^\d{7,15}$/.test(formData.telefono_local)) {
+                newErrors.telefono_local = 'Teléfono no válido';
+            }
+
+            if (!formData.genero) newErrors.genero = 'Género es requerido';
+            if (!formData.fecha_nacimiento) newErrors.fecha_nacimiento = 'Fecha de nacimiento es requerida';
+        }
+
+        if (step === 2) {
+            if (!formData.area_conocimiento.trim()) newErrors.area_conocimiento = 'Área de conocimiento es requerida';
+            if (!formData.pre_grado.trim()) newErrors.pre_grado = 'Pre-grado es requerido';
+        }
+
+        if (step === 3) {
+            if (!formData.fecha_ingreso) newErrors.fecha_ingreso = 'Fecha de ingreso es requerida';
+            if (!formData.dedicacion) newErrors.dedicacion = 'Dedicación es requerida';
+            if (!formData.categoria) newErrors.categoria = 'Categoría es requerida';
+            if (!formData.ubicacion) newErrors.ubicacion = 'Ubicación es requerida';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        // Limpiar error cuando el usuario escribe
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     const handleDateChange = (date, field) => {
         setFormData(prev => ({ ...prev, [field]: date }));
+        // Limpiar error cuando el usuario selecciona una fecha
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: '' }));
+        }
     };
 
     const nextStep = () => {
+        if (!validateStep(step)) return;
         console.log("Datos del formulario:", formData);
         setDirection(1);
         setStep(prev => prev + 1);
@@ -55,6 +108,7 @@ export default function FormRegister() {
     };
 
     const onSubmit = () => {
+        if (!validateStep(3)) return;
         console.log("Formulario enviado:", formData);
         // Aquí iría la lógica para enviar los datos al backend
     };
@@ -91,13 +145,13 @@ export default function FormRegister() {
                 backgroundColor
             />
 
-            <Box className="flex flex-col w-full min-h-screen bg-gray-100">
+            <Box className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
                 <Typography component={'h2'} variant='h2' className='text-start mx-20 pt-8'>
                     Registrar Profesor
                 </Typography>
 
-                <Box className="flex justify-center items-center flex-grow p-4">
-                    <Box className="relative w-full max-w-4xl h-[500px]">
+                <Box className="flex justify-center items-center flex-grow p-6">
+                    <Box className="relative w-full max-w-5xl h-[650px]">
                         <AnimatePresence custom={direction} initial={false}>
                             <motion.div
                                 key={step}
@@ -116,7 +170,7 @@ export default function FormRegister() {
                                             Datos Personales
                                         </Typography>
 
-                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
+                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6'>
                                             <CustomLabel
                                                 id="nombres"
                                                 name="nombres"
@@ -125,6 +179,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.nombres}
                                                 onChange={handleChange}
+                                                error={!!errors.nombres}
+                                                helperText={errors.nombres}
                                             />
                                             <CustomLabel
                                                 id="apellidos"
@@ -134,6 +190,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.apellidos}
                                                 onChange={handleChange}
+                                                error={!!errors.apellidos}
+                                                helperText={errors.apellidos}
                                             />
                                             <CustomLabel
                                                 id="email"
@@ -143,6 +201,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.email}
                                                 onChange={handleChange}
+                                                error={!!errors.email}
+                                                helperText={errors.email}
                                             />
                                             <CustomLabel
                                                 id="cedula"
@@ -152,6 +212,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.cedula}
                                                 onChange={handleChange}
+                                                error={!!errors.cedula}
+                                                helperText={errors.cedula}
                                             />
                                             <CustomLabel
                                                 id="telefono_movil"
@@ -161,6 +223,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.telefono_movil}
                                                 onChange={handleChange}
+                                                error={!!errors.telefono_movil}
+                                                helperText={errors.telefono_movil}
                                             />
                                             <CustomLabel
                                                 id="telefono_local"
@@ -170,16 +234,22 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.telefono_local}
                                                 onChange={handleChange}
+                                                error={!!errors.telefono_local}
+                                                helperText={errors.telefono_local}
                                             />
                                             <CustomSelect
                                                 datos={[
                                                     { value: 'masculino', label: 'Masculino' },
                                                     { value: 'femenino', label: 'Femenino' }
                                                 ]}
+                                                disablePortal
+                                                sx={{ width: 300 }}
                                                 label='Género'
                                                 name="genero"
                                                 value={formData.genero}
                                                 onChange={handleChange}
+                                                error={!!errors.genero}
+                                                helperText={errors.genero}
                                             />
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                 <DatePicker
@@ -190,7 +260,9 @@ export default function FormRegister() {
                                                     slotProps={{
                                                         textField: {
                                                             variant: 'outlined',
-                                                            fullWidth: true
+                                                            fullWidth: true,
+                                                            error: !!errors.fecha_nacimiento,
+                                                            helperText: errors.fecha_nacimiento
                                                         }
                                                     }}
                                                 />
@@ -205,7 +277,7 @@ export default function FormRegister() {
                                             Información Educativa
                                         </Typography>
 
-                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
+                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6'>
                                             <CustomLabel
                                                 id="area_conocimiento"
                                                 name="area_conocimiento"
@@ -214,6 +286,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.area_conocimiento}
                                                 onChange={handleChange}
+                                                error={!!errors.area_conocimiento}
+                                                helperText={errors.area_conocimiento}
                                             />
                                             <CustomLabel
                                                 id="pre_grado"
@@ -223,6 +297,8 @@ export default function FormRegister() {
                                                 variant="outlined"
                                                 value={formData.pre_grado}
                                                 onChange={handleChange}
+                                                error={!!errors.pre_grado}
+                                                helperText={errors.pre_grado}
                                             />
                                             <CustomLabel
                                                 id="pos_grado"
@@ -253,7 +329,9 @@ export default function FormRegister() {
                                                     slotProps={{
                                                         textField: {
                                                             variant: 'outlined',
-                                                            fullWidth: true
+                                                            fullWidth: true,
+                                                            error: !!errors.fecha_ingreso,
+                                                            helperText: errors.fecha_ingreso
                                                         }
                                                     }}
                                                 />
@@ -265,10 +343,14 @@ export default function FormRegister() {
                                                     { value: 'tiempo completo', label: 'Tiempo Completo' },
                                                     { value: 'exclusiva', label: 'Exclusiva' }
                                                 ]}
+                                                disablePortal
+                                                sx={{ width: 300 }}
                                                 label='Dedicación'
                                                 name="dedicacion"
                                                 value={formData.dedicacion}
                                                 onChange={handleChange}
+                                                error={!!errors.dedicacion}
+                                                helperText={errors.dedicacion}
                                             />
                                             <CustomSelect
                                                 datos={[
@@ -278,10 +360,14 @@ export default function FormRegister() {
                                                     { value: 'Asociado', label: 'Asociado' },
                                                     { value: 'Titular', label: 'Titular' }
                                                 ]}
+                                                disablePortal
+                                                sx={{ width: 300 }}
                                                 label='Categoría'
                                                 name="categoria"
                                                 value={formData.categoria}
                                                 onChange={handleChange}
+                                                error={!!errors.categoria}
+                                                helperText={errors.categoria}
                                             />
                                             <CustomSelect
                                                 datos={[
@@ -289,10 +375,14 @@ export default function FormRegister() {
                                                     { value: 'Nucleo Salud y Deportes', label: 'Nucleo Salud y Deportes' },
                                                     { value: 'Nucleo Humanidades y Ciencias Sociales', label: 'Nucleo Humanidades y Ciencias Sociales' }
                                                 ]}
+                                                disablePortal
+                                                sx={{ width: 300 }}
                                                 label='Ubicacion'
                                                 name="ubicacion"
                                                 value={formData.ubicacion}
                                                 onChange={handleChange}
+                                                error={!!errors.ubicacion}
+                                                helperText={errors.ubicacion}
                                             />
                                             <CustomLabel
                                                 id="disponibilidad"
@@ -348,6 +438,7 @@ export default function FormRegister() {
                                                         disponibilidad: '',
                                                         carga_academica: ''
                                                     });
+                                                    setErrors({});
                                                 }}
                                             >
                                                 Cancelar
