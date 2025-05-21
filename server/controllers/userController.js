@@ -1,36 +1,26 @@
 import { validationUser, validationPartialUser} from "../schemas/UserSchema.js";
-import userModel from "../models/userModel.js";
+import UserModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import {asegurarStringEnMinusculas} from "../utils/utilis.js"
 
-const { registerUser, loginUser } = userModel;
+const { registerUser, loginUser } = UserModel;
 
 export default class UserController {
   //Metodo para registrar un usuario.
-  static async register(req, res) {
+  static async registerUser(req) {
     try {
-      const {
-        id,
-        nombres,
-        email,
-        password,
-        direccion,
-        telefono_movil,
-        telefono_local,
-        fecha_nacimiento,
-        genero,
-      } = req.body;
+      const {id,nombres,email,password,direccion,telefono_movil,telefono_local,fecha_nacimiento,genero} = req.body;
 
       // Validate the input data
       const validationResult = validationUser({ input: req.body });
       if (!validationResult.success) {
-        return res.status(400).json({ errors: validationResult.error.errors });
+        return validationResult.error.errors
       }
 
       const passwordHasheada = await hashPassword(password);
 
-      const resultModel = await registerUser({
+      await registerUser({
         id,
         nombres,
         email: asegurarStringEnMinusculas(email),
@@ -42,9 +32,9 @@ export default class UserController {
         genero,
       });
 
-      return res.status(201).json(resultModel);
+      return true;
     } catch (error) {
-      return res.status(500).json({ error: "Internal server error:", error });
+      throw error
     }
   }
 
