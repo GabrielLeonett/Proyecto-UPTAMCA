@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { registerUser } from "../apis/AuthAPI";
+import { registerUser } from "../apis/AuthApi.js";
 
 
 export const AuthContext = createContext();
@@ -11,11 +11,9 @@ export function AuthProvider({ children }) {
   const login = async (userData)=> {
     try {
       const loginData = await registerUser(userData);
-      console.log("Login successful:", loginData);
       setUser(loginData.user);
       setIsAutenticate(true);
     } catch (error) {
-      return error.response.data; // Maneja el error según tus necesidades
       throw error; // Puedes manejar esto de otra forma según tus necesidades
     }
   };

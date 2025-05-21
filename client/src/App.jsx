@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import {AuthProvider} from "./context/AuthContext";
 
-import FormRegister from "./pages/form";
+import FormRegister from "./pages/registerProfe";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
 import Login from "./pages/login";

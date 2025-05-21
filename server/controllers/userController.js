@@ -1,4 +1,4 @@
-import { ValidationUser, ValidationPartialUser} from "../schemas/UserSchema.js";
+import { validationUser, validationPartialUser} from "../schemas/UserSchema.js";
 import userModel from "../models/userModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
@@ -23,7 +23,7 @@ export default class UserController {
       } = req.body;
 
       // Validate the input data
-      const validationResult = ValidationUser({ input: req.body });
+      const validationResult = validationUser({ input: req.body });
       if (!validationResult.success) {
         return res.status(400).json({ errors: validationResult.error.errors });
       }
@@ -54,7 +54,7 @@ export default class UserController {
       const { email, password } = req.body;
 
       // Validate the input data
-      const validationResult = ValidationPartialUser({ input: req.body });  
+      const validationResult = validationPartialUser({ input: req.body });  
       if(!validationResult.success) {
         return res.status(400).json({ errors: validationResult.error.errors });
       }
@@ -63,10 +63,6 @@ export default class UserController {
         email: asegurarStringEnMinusculas(email),
         password
       });
-
-      if (!user) {
-        return res.status(401).json({ error: "Invalid email or password" });
-      }
 
       // Creando el token de sesion
       const token = createSession({object:user});
@@ -78,9 +74,9 @@ export default class UserController {
         sameSite: 'lax',
         domain: 'localhost'
       } );
-      return res.status(200).json({menssage:"Login successful", user});
+      return res.status(200).json({status: 'success', menssage:"Inicio de session exitoso", user});
     } catch (error) {
-      return res.status(500).json({ error: "Internal server error:", error });
+      return res.status(500).json({status: 'error', error: "Internal server error:", error });
     }
   }
 }
