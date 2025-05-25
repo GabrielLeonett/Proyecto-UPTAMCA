@@ -1,5 +1,5 @@
 import { validationUser, validationPartialUser} from "../schemas/UserSchema.js";
-import UserModel from "../models/userModel.js";
+import UserModel from "../models/UserModel.js";
 import { hashPassword, comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import {asegurarStringEnMinusculas} from "../utils/utilis.js"
@@ -15,7 +15,7 @@ export default class UserController {
       // Validate the input data
       const validationResult = validationUser({ input: req.body });
       if (!validationResult.success) {
-        return validationResult.error.errors
+        throw validationResult.error.errors
       }
 
       const passwordHasheada = await hashPassword(password);

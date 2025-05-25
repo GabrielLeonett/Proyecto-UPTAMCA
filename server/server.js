@@ -6,7 +6,7 @@ dotenv.config();
 import cookieParser from "cookie-parser";
 import express from "express";
 import picocolors from "picocolors";
-import {UserRouter} from "./routes/UserRoutes.js";
+import {UserRouter} from "./routes/userRoutes.js";
 import { segurityMiddleware } from "./middlewares/security.js";
 import helmet from "helmet";
 import cors from 'cors'
