@@ -1,5 +1,5 @@
 export function up(knex) {
-  return knex.schema.createTable('unidad_curricular', function(table) {
+  return knex.schema.createTable('unidades_curriculares', function(table) {
     table.bigIncrements('id').primary();
     table.string('nombre_unidad_curricular', 255).notNullable();
     table.string('descripcion_unidad_curricular', 400).notNullable();
@@ -9,5 +9,5 @@ export function up(knex) {
 }
 
 export function down(knex) {
-  return knex.schema.dropTable('unidad_curricular');
+  return knex.schema.dropTable('unidades_curriculares');
 }

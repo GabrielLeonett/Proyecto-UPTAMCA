@@ -1,7 +1,6 @@
 export async function seed(knex) {
   // Borra todos los datos existentes en el orden correcto (considerando relaciones)
-  await knex('r_unidad_curricular_seccion').del();
-  await knex('unidad_curricular').del();
+  await knex('unidades_curriculares').del();
   await knex('secciones').del();
   await knex('trayectos').del();
   await knex('pnfs').del();
@@ -34,9 +33,9 @@ export async function seed(knex) {
   ]);
 
   await knex('dedicacion').insert([
-    { id: 1, nombre_dedicacion: 'Convencional' },
-    { id: 2, nombre_dedicacion: 'Medio Tiempo' },
-    { id: 3, nombre_dedicacion: 'Tiempo Completo' },
-    { id: 4, nombre_dedicacion: 'Exclusivo' }
+    { id: 1, nombre_dedicacion: 'Convencional' , horas_aula: 12},
+    { id: 2, nombre_dedicacion: 'Medio Tiempo', horas_aula: 14 },
+    { id: 3, nombre_dedicacion: 'Tiempo Completo', horas_aula: 16},
+    { id: 4, nombre_dedicacion: 'Exclusivo' , horas_aula: 18}
   ]);
 }

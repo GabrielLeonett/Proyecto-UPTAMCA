@@ -1,36 +1,65 @@
-import { db } from "../db.js";
+import db from "../db.js";
 
 export default class UserModel {
-  static async registerUser({id,nombres,email,password,direccion,telefono_movil,telefono_local,fecha_nacimiento,genero}) {
+  static async registerUser({id,nombres, apellidos, email, password, direccion, telefono_movil, telefono_local, fecha_nacimiento, genero,}) {
     try {
-      const query = `SELECT REGISTRA_USUARIOS($1, $2, $3, $4, $5, $6, $7, $8, $9) AS result`;
+      const query = `CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);`;
+      const params = [id, nombres, apellidos, email, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero];
+      
+      // Ejecutar con transacción
+      const result = await db.transaction(async (trx) => {
+        const { rows } = await trx.raw(query, params);
+        return rows[0];
+      });
 
-      const values = [id,nombres,email,direccion,password,telefono_movil,telefono_local,fecha_nacimiento,genero];
+      // Procesar resultado
+      let output;
+      try {
+        output =
+          typeof result?.p_resultado === "string"
+            ? JSON.parse(result.p_resultado)
+            : result.p_resultado || result;
+      } catch (e) {
+        output = result;
+      }
 
-      const result = await db.query(query, values);
-      const jsonResult = result.rows[0].result;
-
-      return jsonResult;
+      // Retornar objeto con status y mensaje
+      return {
+        status: output?.status || "success",
+        message: output?.message || "Usuario registrado correctamente",
+      };
     } catch (error) {
       console.error("Error al registrar usuario:", error);
-      throw error;
+      return {
+        status: "error",
+        message: error.message || "Error al registrar usuario",
+      };
     }
   }
 
-  static async loginUser({ email}) {
+  static async loginUser({ email }) {
     try {
-      const query = "SELECT MOSTRAR_USER($1)";
+      const query = "SELECT MOSTRAR_USER(?)";
       const values = [email];
 
       const result = await db.query(query, values);
-      const jsonResult = result.rows[0].mostrar_user;
+      const jsonResult = result.rows[0]?.mostrar_user;
 
-      if(jsonResult.status != 'success') throw jsonResult.message;
-      
-      return jsonResult;
+      if (!jsonResult || jsonResult.status !== "success") {
+        throw new Error(jsonResult?.message || "Error en autenticación");
+      }
+
+      return {
+        status: "success",
+        message: "Usuario autenticado correctamente",
+        data: jsonResult,
+      };
     } catch (error) {
       console.error("Error al logear usuario:", error);
-      throw error;
+      return {
+        status: "error",
+        message: error.message || "Error en autenticación",
+      };
     }
   }
 }

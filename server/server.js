@@ -6,10 +6,12 @@ dotenv.config();
 import cookieParser from "cookie-parser";
 import express from "express";
 import picocolors from "picocolors";
-import {UserRouter} from "./routes/userRoutes.js";
 import { segurityMiddleware } from "./middlewares/security.js";
 import helmet from "helmet";
 import cors from 'cors'
+
+// Importaciones de Rutas
+import { profesorRouter } from "./routes/ProfesorRoutes.js";
 
 // Creación del servidor
 const app = express();
@@ -27,13 +29,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 // Rutas
-app.use("", UserRouter);
+app.use("", profesorRouter);
 
 // Encendido del servidor
-app.listen(PORT, () => {
+app.listen(process.env.SERVER_PORT, () => {
   console.log(
     picocolors.bgGreen(
-      `${APP_NAME} está corriendo en: http://localhost:${PORT}`
+      `${process.env.APP_NAME} está corriendo en: http://localhost:${process.env.SERVER_PORT}`
     )
   );
 });
