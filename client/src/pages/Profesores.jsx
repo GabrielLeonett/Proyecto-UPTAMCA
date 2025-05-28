@@ -5,7 +5,7 @@ export default function Profesores() {
     return (
         <>
             <ResponsiveAppBar
-                pages={["Universidad", "Académico", "Servicios", "Trámites"]}
+                pages={["registerProfesor", "Académico", "Servicios", "Trámites"]}
                 backgroundColor
             />
             <div className="px-4 py-40">

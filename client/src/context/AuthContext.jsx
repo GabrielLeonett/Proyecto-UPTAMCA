@@ -15,8 +15,7 @@ export function AuthProvider({ children }) {
       setUser(loginData.user);
       setIsAutenticate(true);
     } catch (error) {
-      return error.response.data; // Maneja el error según tus necesidades
-      throw error; // Puedes manejar esto de otra forma según tus necesidades
+      throw error.response.dataor; // Puedes manejar esto de otra forma según tus necesidades
     }
   };
 

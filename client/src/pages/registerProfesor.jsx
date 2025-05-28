@@ -8,8 +8,50 @@ import CustomLabel from '../components/customLabel';
 import CustomSelect from '../components/customSelect';
 import CustomButton from '../components/customButton';
 import ResponsiveAppBar from "../components/navbar";
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 export default function FormRegister() {
+  const handleProfessorSubmit = async () => {
+  try {
+    // Llamada directa a la API
+    const { data } = await axios.post('/api/profesores', formData);
+    
+    // Mensaje de éxito y redirección
+    await Swal.fire({
+      title: '¡Registro exitoso!',
+      text: 'El profesor ha sido registrado correctamente en el sistema.',
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#1976d2',
+    });
+    
+    navigate('/profesores'); // Redirección automática después del mensaje
+
+  } catch (error) {
+    // Manejo específico para profesor duplicado
+    if (error.response?.status === 409) {
+      await Swal.fire({
+        title: 'Profesor ya registrado',
+        text: 'Lo siento, este profesor ya está registrado en el sistema.',
+        icon: 'error',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#d32f2f',
+      });
+    } else {
+      // Otros errores
+      await Swal.fire({
+        title: 'Error en el registro',
+        text: 'Ocurrió un problema al registrar el profesor. Por favor intente nuevamente.',
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+    }
+  }
+};
+
     const [step, setStep] = useState(1);
     const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
     const [errors, setErrors] = useState({});
@@ -87,6 +129,15 @@ export default function FormRegister() {
         }
     };
 
+    const handleSelectChange = (name, value) => {
+        setFormData(prev => ({ ...prev, [name]: value }));
+        console.log("Valor seleccionado:", name, value);
+        // Limpiar error
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
     const handleDateChange = (date, field) => {
         setFormData(prev => ({ ...prev, [field]: date }));
         // Limpiar error cuando el usuario selecciona una fecha
@@ -145,7 +196,8 @@ export default function FormRegister() {
                 backgroundColor
             />
 
-            <Box className="flex flex-col w-full min-h-screen bg-gray-100 p-4">
+            <Box className="flex flex-col w-full min-h-screen bg-gray-100 p-4" sx={{ mt: 10 }}>
+                {/* mt: 8 = 32px (ajusta según la altura de tu AppBar) */}
                 <Typography component={'h2'} variant='h2' className='text-start mx-20 pt-8'>
                     Registrar Profesor
                 </Typography>
@@ -237,20 +289,22 @@ export default function FormRegister() {
                                                 error={!!errors.telefono_local}
                                                 helperText={errors.telefono_local}
                                             />
-                                            <CustomSelect
-                                                datos={[
-                                                    { value: 'masculino', label: 'Masculino' },
-                                                    { value: 'femenino', label: 'Femenino' }
-                                                ]}
-                                                disablePortal
-                                                sx={{ width: 300 }}
-                                                label='Género'
-                                                name="genero"
+                                            {/* Campo Género corregido */}
+                                            <TextField
+                                                id="outlined-select-currency"
+                                                select
                                                 value={formData.genero}
                                                 onChange={handleChange}
-                                                error={!!errors.genero}
-                                                helperText={errors.genero}
-                                            />
+                                                label="Genero"
+                                                name='genero'
+                                            >
+                                                <MenuItem value={'masculino'}>
+                                                    {'Masculino'}
+                                                </MenuItem>
+                                                <MenuItem value={'Femenino'}>
+                                                    {'Femenino'}
+                                                </MenuItem>
+                                            </TextField>
                                             <LocalizationProvider dateAdapter={AdapterDayjs}>
                                                 <DatePicker
                                                     label="Fecha de Nacimiento"
@@ -315,93 +369,159 @@ export default function FormRegister() {
                                 {/* Paso 3: Información Profesional */}
                                 {step === 3 && (
                                     <>
-                                        <Typography component={'h3'} variant='h3' className='self-start'>
+                                        <Typography component={'h3'} variant='h3' className='self-start mb-6 text-xl font-bold'>
                                             Información Profesional
                                         </Typography>
 
-                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full'>
-                                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                                <DatePicker
-                                                    label="Fecha de Ingreso"
-                                                    value={formData.fecha_ingreso}
-                                                    onChange={(date) => handleDateChange(date, 'fecha_ingreso')}
-                                                    format="DD/MM/YYYY"
-                                                    slotProps={{
-                                                        textField: {
-                                                            variant: 'outlined',
-                                                            fullWidth: true,
-                                                            error: !!errors.fecha_ingreso,
-                                                            helperText: errors.fecha_ingreso
+                                        <Box className='grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-4 md:px-10 py-4'>
+                                            {/* Fila 1 */}
+                                            <Box className="flex flex-col gap-1">
+                                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                                    <DatePicker
+                                                        label="Fecha de Ingreso *"
+                                                        value={formData.fecha_ingreso}
+                                                        onChange={(date) => handleDateChange(date, 'fecha_ingreso')}
+                                                        format="DD/MM/YYYY"
+                                                        slotProps={{
+                                                            textField: {
+                                                                variant: 'outlined',
+                                                                fullWidth: true,
+                                                                error: !!errors.fecha_ingreso,
+                                                                helperText: errors.fecha_ingreso,
+                                                                size: 'small',
+                                                                sx: {
+                                                                    '& .MuiOutlinedInput-root': {
+                                                                        height: '56px',
+                                                                    }
+                                                                }
+                                                            }
+                                                        }}
+
+                                                    />
+                                                </LocalizationProvider>
+                                            </Box>
+
+                                            <Box className="flex flex-col gap-1">
+                                                <TextField
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            height: '56px', // Ajusta la altura aquí
+                                                        }
+                                                    }}
+                                                    select
+                                                    id="categoria"
+                                                    name="categoria"
+                                                    label="Categoría *"
+                                                    value={formData.categoria}
+                                                    onChange={handleChange}
+                                                    variant="outlined"
+                                                    error={!!errors.categoria}
+                                                    helperText={errors.categoria}
+                                                    fullWidth
+                                                    size="small"
+                                                >
+                                                    <MenuItem value="Instructor">Instructor</MenuItem>
+                                                    <MenuItem value="Asistente">Asistente</MenuItem>
+                                                    <MenuItem value="Agregado">Agregado</MenuItem>
+                                                    <MenuItem value="Asociado">Asociado</MenuItem>
+                                                    <MenuItem value="Titular">Titular</MenuItem>
+                                                </TextField>
+                                            </Box>
+
+                                            {/* Fila 2 */}
+                                            <Box className="flex flex-col gap-1">
+                                                <TextField
+                                                    select
+                                                    id="dedicacion"
+                                                    name="dedicacion"
+                                                    label="Dedicación *"
+                                                    value={formData.dedicacion}
+                                                    onChange={handleChange}
+                                                    variant="outlined"
+                                                    error={!!errors.dedicacion}
+                                                    helperText={errors.dedicacion}
+                                                    fullWidth
+                                                    size="small"
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            height: '56px', // Ajusta la altura aquí
+                                                        }
+                                                    }}
+                                                >
+                                                    <MenuItem value="convencional">Convencional</MenuItem>
+                                                    <MenuItem value="medio tiempo">Medio Tiempo</MenuItem>
+                                                    <MenuItem value="tiempo completo">Tiempo Completo</MenuItem>
+                                                    <MenuItem value="exclusiva">Exclusiva</MenuItem>
+                                                </TextField>
+                                            </Box>
+
+                                            <Box className="flex flex-col gap-1">
+                                                <TextField
+                                                    select
+                                                    id="ubicacion"
+                                                    name="ubicacion"
+                                                    label="Ubicación *"
+                                                    value={formData.ubicacion}
+                                                    onChange={handleChange}
+                                                    variant="outlined"
+                                                    error={!!errors.ubicacion}
+                                                    helperText={errors.ubicacion}
+                                                    fullWidth
+                                                    size="small"
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            height: '56px',
+                                                        }
+                                                    }}
+                                                >
+                                                    <MenuItem value="Nucleo de Tecnologia y Ciencias Administrativas">
+                                                        Núcleo de Tecnología y Ciencias Administrativas
+                                                    </MenuItem>
+                                                    <MenuItem value="Nucleo Salud y Deportes">
+                                                        Núcleo Salud y Deportes
+                                                    </MenuItem>
+                                                    <MenuItem value="Nucleo Humanidades y Ciencias Sociales">
+                                                        Núcleo Humanidades y Ciencias Sociales
+                                                    </MenuItem>
+                                                </TextField>
+                                            </Box>
+
+                                            {/* Fila 3 */}
+                                            <Box className="flex flex-col gap-1">
+                                                <TextField
+                                                    id="disponibilidad"
+                                                    name="disponibilidad"
+                                                    label="Disponibilidad"
+                                                    variant="outlined"
+                                                    value={formData.disponibilidad}
+                                                    onChange={handleChange}
+                                                    fullWidth
+                                                    size="small"
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            height: '56px', // Ajusta la altura aquí
                                                         }
                                                     }}
                                                 />
-                                            </LocalizationProvider>
-                                            <CustomSelect
-                                                datos={[
-                                                    { value: 'convencional', label: 'Convencional' },
-                                                    { value: 'medio tiempo', label: 'Medio Tiempo' },
-                                                    { value: 'tiempo completo', label: 'Tiempo Completo' },
-                                                    { value: 'exclusiva', label: 'Exclusiva' }
-                                                ]}
-                                                disablePortal
-                                                sx={{ width: 300 }}
-                                                label='Dedicación'
-                                                name="dedicacion"
-                                                value={formData.dedicacion}
-                                                onChange={handleChange}
-                                                error={!!errors.dedicacion}
-                                                helperText={errors.dedicacion}
-                                            />
-                                            <CustomSelect
-                                                datos={[
-                                                    { value: 'Instructor', label: 'Instructor' },
-                                                    { value: 'Asistente', label: 'Asistente' },
-                                                    { value: 'Agregado', label: 'Agregado' },
-                                                    { value: 'Asociado', label: 'Asociado' },
-                                                    { value: 'Titular', label: 'Titular' }
-                                                ]}
-                                                disablePortal
-                                                sx={{ width: 300 }}
-                                                label='Categoría'
-                                                name="categoria"
-                                                value={formData.categoria}
-                                                onChange={handleChange}
-                                                error={!!errors.categoria}
-                                                helperText={errors.categoria}
-                                            />
-                                            <CustomSelect
-                                                datos={[
-                                                    { value: 'Nucleo de Tecnologia y Ciencias Administrativas', label: 'Nucleo de Tecnologia y Ciencias Administrativas' },
-                                                    { value: 'Nucleo Salud y Deportes', label: 'Nucleo Salud y Deportes' },
-                                                    { value: 'Nucleo Humanidades y Ciencias Sociales', label: 'Nucleo Humanidades y Ciencias Sociales' }
-                                                ]}
-                                                disablePortal
-                                                sx={{ width: 300 }}
-                                                label='Ubicacion'
-                                                name="ubicacion"
-                                                value={formData.ubicacion}
-                                                onChange={handleChange}
-                                                error={!!errors.ubicacion}
-                                                helperText={errors.ubicacion}
-                                            />
-                                            <CustomLabel
-                                                id="disponibilidad"
-                                                name="disponibilidad"
-                                                label="Disponibilidad"
-                                                type="text"
-                                                variant="outlined"
-                                                value={formData.disponibilidad}
-                                                onChange={handleChange}
-                                            />
-                                            <CustomLabel
-                                                id="carga_academica"
-                                                name="carga_academica"
-                                                label="Carga Academica"
-                                                type="text"
-                                                variant="outlined"
-                                                value={formData.carga_academica}
-                                                onChange={handleChange}
-                                            />
+                                            </Box>
+
+                                            <Box className="flex flex-col gap-1">
+                                                <TextField
+                                                    id="carga_academica"
+                                                    name="carga_academica"
+                                                    label="Carga Académica"
+                                                    variant="outlined"
+                                                    value={formData.carga_academica}
+                                                    onChange={handleChange}
+                                                    fullWidth
+                                                    size="small"
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-root': {
+                                                            height: '56px', // Ajusta la altura aquí
+                                                        }
+                                                    }}
+                                                />
+                                            </Box>
                                         </Box>
                                     </>
                                 )}
@@ -476,7 +596,7 @@ export default function FormRegister() {
                                                 variant="contained"
                                                 className="h-12 w-32 rounded-xl font-medium"
                                                 tipo="primary"
-                                                onClick={onSubmit}
+                                                onClick={handleProfessorSubmit}
                                             >
                                                 Registrar
                                             </CustomButton>
