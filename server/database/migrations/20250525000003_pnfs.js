@@ -91,6 +91,7 @@ export async function up(knex) {
 export async function down(knex) {
   await knex.raw(`
     DROP FUNCTION IF EXISTS actualizar_poblacion_pnf;
+    DROP FUNCTION IF EXISTS actualizar_valor_estudiantil_pnf;
     DROP PROCEDURE IF EXISTS registrar_pnf;
   `);
   await knex.schema.dropTable('pnfs');
