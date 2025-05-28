@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { formatErrorAxios } from '../utils/formatErrorAxios.js';
 
 const API_URL = 'http://localhost:3000/login';
 
@@ -14,15 +15,7 @@ export async function registerUser(input) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error registering user:', error);
-    throw error;
+    const formatError = formatErrorAxios(error)
+    throw formatError;
   }
 }
-
-
-axios.get('http://localhost:3000/Profesores', {
-  withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})

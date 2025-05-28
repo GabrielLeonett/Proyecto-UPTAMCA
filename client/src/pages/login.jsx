@@ -3,12 +3,11 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
-import Swal from "sweetalert2";
 import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 import { useEffect } from "react";
-import {useNavigate} from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,9 +28,9 @@ export default function Login() {
     }));
   };
 
-  useEffect(()=>{
-    if (isAutenticate) {
-      navigate('/Profesores')
+  useEffect(() => {
+    if(isAutenticate){
+      navigate("/Profesores");
     }
   }, [isAutenticate]);
 
@@ -41,26 +40,11 @@ export default function Login() {
     setErrors({});
     try {
       const datos = await login(data);
+      
       setProcessing(false);
-      Swal.fire({
-        icon: "success",
-        title: "Inicio de sesión exitoso",
-        showConfirmButton: false,
-      });
     } catch (error) {
       setProcessing(false);
-      Swal.fire({
-        icon: "error",
-        title: "Inicio de sesión fallido",
-        showConfirmButton: false,
-        text: error,
-      });
-      setErrors((prev) => ({
-        ...prev,
-        email: "Correo o contraseña incorrectos",
-      }));
     }
-    
   }
 
   return (
