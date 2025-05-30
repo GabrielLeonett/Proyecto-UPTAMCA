@@ -14,8 +14,7 @@ export async function seed(knex) {
   // Inserta datos iniciales
   await knex('roles').insert([
     { id: 1, tipo_rol: 1, nombre_rol: 'Vicerrector' },
-    { id: 2, tipo_rol: 2, nombre_rol: 'Segundo Al Mando' },
-    { id: 3, tipo_rol: 3, nombre_rol: 'Tercer Al Mando' }
+    { id: 2, tipo_rol: 2, nombre_rol: 'Director General de Gestión Curricular' }
   ]);
 
   await knex('ubicacion').insert([

@@ -12,6 +12,8 @@ import cors from 'cors'
 
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/ProfesorRoutes.js";
+import { CurricularRouter } from "./routes/CurricularRoutes.js";
+import { UserRouter } from "./routes/UserRoutes.js";
 
 // Creación del servidor
 const app = express();
@@ -30,6 +32,8 @@ app.use(cookieParser());
 
 // Rutas
 app.use("", profesorRouter);
+app.use("", CurricularRouter);
+app.use("", UserRouter);
 
 // Encendido del servidor
 app.listen(process.env.SERVER_PORT, () => {

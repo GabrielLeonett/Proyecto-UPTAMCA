@@ -19,6 +19,8 @@ export const middlewareSession = (req, res, next) => {
       return res.status(403).json({ error: "Token inválido" });
     }
 
+    console.log(decoded);
+
     // 4. Adjuntar los datos del usuario al request
     req.user = decoded; // decoded = { id, email, etc. } (lo que guardaste en el token)
     next(); // Continuar

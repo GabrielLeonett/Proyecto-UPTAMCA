@@ -29,7 +29,6 @@ export default class ProfesorController {
 
       // Registrar profesor
       const result = await ProfesorModel.RegisterProfesor({ datos: req.body });
-      
       if (!result.success) {
         return res.status(400).json({
           success: false,

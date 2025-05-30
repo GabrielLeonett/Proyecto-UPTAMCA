@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { middlewareSession } from "../middlewares/auth.js";
 import ProfesorController from "../controllers/ProfesorController.js";
 
 const {registrarProfesor, mostrarProfesor, buscarProfesor} = ProfesorController;
@@ -13,7 +14,7 @@ export const profesorRouter = Router();
 //   --url-query 'categoria=Instructor' \
 //   --url-query 'ubicacion=2' \
 //   --url-query 'genero=masculino'
-profesorRouter.get("/Profesor", mostrarProfesor)
+profesorRouter.get("/Profesor", middlewareSession, mostrarProfesor)
 
 //POST's
 
@@ -37,7 +38,7 @@ profesorRouter.get("/Profesor", mostrarProfesor)
 //   "pos_grado": "Doctorado en Ciencias de la Computación",
 //   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
 // }
-profesorRouter.post('/Profesor', registrarProfesor)
+profesorRouter.post('/Profesor', middlewareSession, registrarProfesor)
 
 // Esto es lo que debe resivir el endpoint de buscarProfesor
 // {

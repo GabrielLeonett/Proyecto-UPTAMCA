@@ -6,13 +6,10 @@ import CustomButton from "../components/customButton";
 import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const navigate = useNavigate();
 
-  const { login, isAutenticate } = useAuth();
+  const { login,  } = useAuth();
   const [data, setData] = useState({
     email: "",
     password: "",
@@ -28,11 +25,7 @@ export default function Login() {
     }));
   };
 
-  useEffect(() => {
-    if(isAutenticate){
-      navigate("/Profesores");
-    }
-  }, [isAutenticate]);
+ 
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -40,7 +33,7 @@ export default function Login() {
     setErrors({});
     try {
       const datos = await login(data);
-      
+      console.log(datos)
       setProcessing(false);
     } catch (error) {
       setProcessing(false);

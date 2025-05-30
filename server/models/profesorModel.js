@@ -1,6 +1,5 @@
 import { hashPassword } from "../utils/encrypted.js";
 import db from "../db.js";
-import { date } from "zod";
 
 export default class ProfesorModel {
   static async RegisterProfesor({ datos }) {
