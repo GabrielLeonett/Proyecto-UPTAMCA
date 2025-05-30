@@ -5,21 +5,37 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import CustomLabel from '../components/customLabel';
-import CustomSelect from '../components/customSelect';
 import CustomButton from '../components/customButton';
 import ResponsiveAppBar from "../components/navbar";
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es'; // para español
+
+// Configura el locale y formato por defecto
+dayjs.locale('es');
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function FormRegister() {
-  const handleProfessorSubmit = async () => {
-  try {
-    // Llamada directa a la API
-    const { data } = await axios.post('/api/profesores', formData);
-    
-    // Mensaje de éxito y redirección
+    const handleProfessorSubmit = async () => {
+    try {
+    // Formatear fechas antes de enviar
+    const formattedData = {
+      ...formData,
+      cedula: parseInt(formData.cedula, 10),
+      fecha_nacimiento: formData.fecha_nacimiento 
+        ? dayjs(formData.fecha_nacimiento).format('DD-MM-YYYY') 
+        : null,
+      fecha_ingreso: formData.fecha_ingreso 
+        ? dayjs(formData.fecha_ingreso).format('DD-MM-YYYY') 
+        : null
+    };
+
+    // Llamada a la API con datos formateados
+    const { response } = await axios.post('http://localhost:3000/Profesor/register', formattedData);
+
+
     await Swal.fire({
       title: '¡Registro exitoso!',
       text: 'El profesor ha sido registrado correctamente en el sistema.',
@@ -27,28 +43,16 @@ export default function FormRegister() {
       confirmButtonText: 'Aceptar',
       confirmButtonColor: '#1976d2',
     });
-    
-    navigate('/profesores'); // Redirección automática después del mensaje
 
+    navigate('/profesores');
   } catch (error) {
-    // Manejo específico para profesor duplicado
-    if (error.response?.status === 409) {
-      await Swal.fire({
-        title: 'Profesor ya registrado',
-        text: 'Lo siento, este profesor ya está registrado en el sistema.',
-        icon: 'error',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#d32f2f',
-      });
-    } else {
-      // Otros errores
-      await Swal.fire({
-        title: 'Error en el registro',
-        text: 'Ocurrió un problema al registrar el profesor. Por favor intente nuevamente.',
-        icon: 'error',
-        confirmButtonText: 'Entendido'
-      });
-    }
+
+    Swal.fire({
+      title: 'Error',
+      text: error.response.data.message || 'No se pudo registrar el profesor. Por favor, inténtalo de nuevo más tarde.',
+      icon: 'error',
+      confirmButtonColor: '#1976d2',
+    });
   }
 };
 
@@ -56,11 +60,14 @@ export default function FormRegister() {
     const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
     const [errors, setErrors] = useState({});
 
+
     const [formData, setFormData] = useState({
         nombres: '',
         apellidos: '',
         email: '',
         cedula: '',
+        password: '12345678',
+        direccion: '',
         telefono_movil: '',
         telefono_local: '',
         genero: '',
@@ -68,12 +75,10 @@ export default function FormRegister() {
         fecha_ingreso: null,
         dedicacion: '',
         categoria: '',
-        area_conocimiento: '',
+        area_de_conocimiento: '',
         pre_grado: '',
         pos_grado: '',
         ubicacion: '',
-        disponibilidad: '',
-        carga_academica: ''
     });
 
     const validateStep = (step) => {
@@ -105,7 +110,7 @@ export default function FormRegister() {
         }
 
         if (step === 2) {
-            if (!formData.area_conocimiento.trim()) newErrors.area_conocimiento = 'Área de conocimiento es requerida';
+            if (!formData.area_de_conocimiento.trim()) newErrors.area_de_conocimiento = 'Área de conocimiento es requerida';
             if (!formData.pre_grado.trim()) newErrors.pre_grado = 'Pre-grado es requerido';
         }
 
@@ -124,15 +129,6 @@ export default function FormRegister() {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
         // Limpiar error cuando el usuario escribe
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
-
-    const handleSelectChange = (name, value) => {
-        setFormData(prev => ({ ...prev, [name]: value }));
-        console.log("Valor seleccionado:", name, value);
-        // Limpiar error
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -260,12 +256,16 @@ export default function FormRegister() {
                                                 id="cedula"
                                                 name="cedula"
                                                 label="Cédula"
-                                                type="number"
+                                                type="text"  // Cambiado de "number" a "text"
                                                 variant="outlined"
                                                 value={formData.cedula}
                                                 onChange={handleChange}
                                                 error={!!errors.cedula}
                                                 helperText={errors.cedula}
+                                                inputProps={{
+                                                    inputMode: 'numeric',
+                                                    pattern: '[0-9]*'
+                                                }}
                                             />
                                             <CustomLabel
                                                 id="telefono_movil"
@@ -289,6 +289,17 @@ export default function FormRegister() {
                                                 error={!!errors.telefono_local}
                                                 helperText={errors.telefono_local}
                                             />
+                                            <CustomLabel
+                                                id="direccion"
+                                                name="direccion"
+                                                label="Direccion"
+                                                type="text"
+                                                variant="outlined"
+                                                value={formData.direccion}
+                                                onChange={handleChange}
+                                                error={!!errors.direccion}
+                                                helperText={errors.direccion}
+                                            />
                                             {/* Campo Género corregido */}
                                             <TextField
                                                 id="outlined-select-currency"
@@ -301,7 +312,7 @@ export default function FormRegister() {
                                                 <MenuItem value={'masculino'}>
                                                     {'Masculino'}
                                                 </MenuItem>
-                                                <MenuItem value={'Femenino'}>
+                                                <MenuItem value={'femenino'}>
                                                     {'Femenino'}
                                                 </MenuItem>
                                             </TextField>
@@ -310,7 +321,7 @@ export default function FormRegister() {
                                                     label="Fecha de Nacimiento"
                                                     value={formData.fecha_nacimiento}
                                                     onChange={(date) => handleDateChange(date, 'fecha_nacimiento')}
-                                                    format="DD/MM/YYYY"
+                                                    format="DD/MM/YYYY"  // Asegúrate de que esté en mayúsculas
                                                     slotProps={{
                                                         textField: {
                                                             variant: 'outlined',
@@ -333,15 +344,15 @@ export default function FormRegister() {
 
                                         <Box className='grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6'>
                                             <CustomLabel
-                                                id="area_conocimiento"
-                                                name="area_conocimiento"
+                                                id="area_de_conocimiento"
+                                                name="area_de_conocimiento"
                                                 label="Área de Conocimiento"
                                                 type="text"
                                                 variant="outlined"
-                                                value={formData.area_conocimiento}
+                                                value={formData.area_de_conocimiento}
                                                 onChange={handleChange}
-                                                error={!!errors.area_conocimiento}
-                                                helperText={errors.area_conocimiento}
+                                                error={!!errors.area_de_conocimiento}
+                                                helperText={errors.area_de_conocimiento}
                                             />
                                             <CustomLabel
                                                 id="pre_grado"
@@ -381,7 +392,7 @@ export default function FormRegister() {
                                                         label="Fecha de Ingreso *"
                                                         value={formData.fecha_ingreso}
                                                         onChange={(date) => handleDateChange(date, 'fecha_ingreso')}
-                                                        format="DD/MM/YYYY"
+                                                        format="DD/MM/YYYY"  // Mismo formato aquí
                                                         slotProps={{
                                                             textField: {
                                                                 variant: 'outlined',
@@ -396,7 +407,6 @@ export default function FormRegister() {
                                                                 }
                                                             }
                                                         }}
-
                                                     />
                                                 </LocalizationProvider>
                                             </Box>
@@ -448,10 +458,10 @@ export default function FormRegister() {
                                                         }
                                                     }}
                                                 >
-                                                    <MenuItem value="convencional">Convencional</MenuItem>
-                                                    <MenuItem value="medio tiempo">Medio Tiempo</MenuItem>
-                                                    <MenuItem value="tiempo completo">Tiempo Completo</MenuItem>
-                                                    <MenuItem value="exclusiva">Exclusiva</MenuItem>
+                                                    <MenuItem value="Convencional">Convencional</MenuItem>
+                                                    <MenuItem value="Medio Tiempo">Medio Tiempo</MenuItem>
+                                                    <MenuItem value="Tiempo Completo">Tiempo Completo</MenuItem>
+                                                    <MenuItem value="Exclusivo">Exclusiva</MenuItem>
                                                 </TextField>
                                             </Box>
 
@@ -474,53 +484,16 @@ export default function FormRegister() {
                                                         }
                                                     }}
                                                 >
-                                                    <MenuItem value="Nucleo de Tecnologia y Ciencias Administrativas">
+                                                    <MenuItem value="Núcleo de Tegnología y Ciencias Administrativas">
                                                         Núcleo de Tecnología y Ciencias Administrativas
                                                     </MenuItem>
-                                                    <MenuItem value="Nucleo Salud y Deportes">
+                                                    <MenuItem value="Núcleo de Salud y Deporte">
                                                         Núcleo Salud y Deportes
                                                     </MenuItem>
-                                                    <MenuItem value="Nucleo Humanidades y Ciencias Sociales">
+                                                    <MenuItem value="Núcleo de Humanidades y Ciencias Sociales">
                                                         Núcleo Humanidades y Ciencias Sociales
                                                     </MenuItem>
                                                 </TextField>
-                                            </Box>
-
-                                            {/* Fila 3 */}
-                                            <Box className="flex flex-col gap-1">
-                                                <TextField
-                                                    id="disponibilidad"
-                                                    name="disponibilidad"
-                                                    label="Disponibilidad"
-                                                    variant="outlined"
-                                                    value={formData.disponibilidad}
-                                                    onChange={handleChange}
-                                                    fullWidth
-                                                    size="small"
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            height: '56px', // Ajusta la altura aquí
-                                                        }
-                                                    }}
-                                                />
-                                            </Box>
-
-                                            <Box className="flex flex-col gap-1">
-                                                <TextField
-                                                    id="carga_academica"
-                                                    name="carga_academica"
-                                                    label="Carga Académica"
-                                                    variant="outlined"
-                                                    value={formData.carga_academica}
-                                                    onChange={handleChange}
-                                                    fullWidth
-                                                    size="small"
-                                                    sx={{
-                                                        '& .MuiOutlinedInput-root': {
-                                                            height: '56px', // Ajusta la altura aquí
-                                                        }
-                                                    }}
-                                                />
                                             </Box>
                                         </Box>
                                     </>
@@ -551,7 +524,7 @@ export default function FormRegister() {
                                                         fecha_ingreso: null,
                                                         dedicacion: '',
                                                         categoria: '',
-                                                        area_conocimiento: '',
+                                                        area_de_conocimiento: '',
                                                         pre_grado: '',
                                                         pos_grado: '',
                                                         ubicacion: '',

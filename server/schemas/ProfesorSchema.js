@@ -1,7 +1,7 @@
 import z from 'zod'
 
 const ProfesorSchema = z.object({
-    id: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),
+    cedula: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),
     fecha_ingreso: z.string({invalid_type_error:'Fecha de ingreso tiene que ser un string'}).regex(/^\d{2}-\d{2}-\d{4}$/, {message:'Fecha de ingreso tiene que tener el formato DD-MM-YYYY'}).nonempty({message:'Fecha de ingreso no puede estar vacio'}),
     dedicacion: z.enum(['Convencional','Tiempo Completo', 'Medio Tiempo', 'Exclusivo'], {error_map: () => ({message:'La Dedicacion tiene que ser Convencional, Tiempo Completo, Medio Tiempo o Exclusivo'})}),
     ubicacion: z.enum(['Núcleo de Salud y Deporte','Núcleo de Tegnología y Ciencias Administrativas', 'Núcleo de Humanidades y Ciencias Sociales'], {error_map: () => ({message:'La ubicacion tiene que ser Núcleo de Salud y Deporte, Núcleo de Tegnología y Ciencias Administrativas o Núcleo de Humanidades y Ciencias Sociales'})}),

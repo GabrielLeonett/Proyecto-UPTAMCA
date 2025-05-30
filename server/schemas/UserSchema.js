@@ -1,7 +1,7 @@
 import z from 'zod'
 
 const UserSchema = z.object({
-    id: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),
+    cedula: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),
     nombres: z.string({invalid_type_error:'Nombres tiene que ser un string'}).min(3, {message:'Nombres tiene que tener al menos 3 caracteres'}).max(150, {message:'Nombres tiene que tener menos de 150 caracteres'}).nonempty({message:'Nombres no puede estar vacio'}),
     apellidos: z.string({invalid_type_error:'Apellidos tiene que ser un string'}).min(3, {message:'Apellidos tiene que tener al menos 3 caracteres'}).max(150, {message:'Apellidos tiene que tener menos de 150 caracteres'}).nonempty({message:'Apellidos no puede estar vacio'}),
     email: z.string({invalid_type_error:'Email tiene que ser un string'}).email({message:'Email no es valido'}).max(150, {message:'Email tiene que tener menos de 150 caracteres'}).nonempty({message:'Email no puede estar vacio'}),

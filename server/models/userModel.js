@@ -1,10 +1,10 @@
 import db from "../db.js";
 
 export default class UserModel {
-  static async registerUser({id,nombres, apellidos, email, password, direccion, telefono_movil, telefono_local, fecha_nacimiento, genero,}) {
+  static async registerUser({cedula,nombres, apellidos, email, password, direccion, telefono_movil, telefono_local, fecha_nacimiento, genero,}) {
     try {
       const query = `CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);`;
-      const params = [id, nombres, apellidos, email, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero];
+      const params = [cedula, nombres, apellidos, email, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero];
       
       // Ejecutar con transacción
       const result = await db.transaction(async (trx) => {
