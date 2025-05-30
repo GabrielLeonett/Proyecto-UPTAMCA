@@ -1,1 +1,652 @@
 @import "tailwindcss";
+
+body {
+  margin: 0;
+  font-family: "Montserrat", serif;
+}
+
+.Label, .C3, .C2, .C1, .B4, .B3, .B2, .B1, .S2, .S1, h5, h4, h3, h2, h1 {
+  font-family: "Montserrat", serif;
+  padding: 8px;
+}
+
+h1 {
+  font-weight: bold;
+  font-size: 48px;
+  line-height: 58px;
+}
+
+h2 {
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 48px;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+}
+
+h4 {
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 34px;
+}
+
+h5 {
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 28px;
+}
+
+.S1 {
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.S2 {
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B1 {
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B2 {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B3 {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.B4 {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.C1 {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C2 {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C3 {
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.Label {
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.Botones-Tiny-Tercery, .Botones-Tiny-Secundary, .Botones-Tiny-Primary, .Botones-Small-Tercery, .Botones-Small-Secundary, .Botones-Small-Primary, .Botones-Medium-Tercery, .Botones-Medium-Secundary, .Botones-Medium-Primary, .Botones-Large-Tercery, .Botones-Large-Secundary, .Botones-Large-Primary, .Botones-Giants-Tercery, .Botones-Giants-Secundary, .Botones-Giants-Primary {
+  font-family: "Montserrat", serif;
+  font-weight: 600;
+}
+
+.Botones-Giants-Tercery, .Botones-Giants-Secundary, .Botones-Giants-Primary {
+  font-size: 18px;
+  line-height: 24px;
+  height: 56px;
+  padding: 16px 24px;
+  border-radius: 12px;
+}
+
+.Botones-Large-Tercery, .Botones-Large-Secundary, .Botones-Large-Primary {
+  font-size: 16px;
+  line-height: 20px;
+  height: 48px;
+  padding: 14px 20px;
+  border-radius: 12px;
+}
+
+.Botones-Medium-Tercery, .Botones-Medium-Secundary, .Botones-Medium-Primary {
+  font-size: 14px;
+  line-height: 16px;
+  height: 40px;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.Botones-Small-Tercery, .Botones-Small-Secundary, .Botones-Small-Primary {
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  height: 32px;
+  padding: 8px 12px;
+}
+
+.Botones-Tiny-Tercery, .Botones-Tiny-Secundary, .Botones-Tiny-Primary {
+  font-size: 10px;
+  line-height: 12px;
+  border-radius: 8px;
+  height: 20px;
+  padding: 6px 8px;
+}
+
+.bg-Primary {
+  background-color: #f4b910;
+}
+
+.bg-Primary-800 {
+  background-color: #f5c028;
+}
+
+.bg-Primary-700 {
+  background-color: #f6c740;
+}
+
+.bg-Primary-600 {
+  background-color: #f7ce58;
+}
+
+.bg-Primary-500 {
+  background-color: #f8d570;
+}
+
+.bg-Primary-400 {
+  background-color: #fadc87;
+}
+
+.bg-Primary-300 {
+  background-color: #fbe39f;
+}
+
+.bg-Primary-200 {
+  background-color: #fceab7;
+}
+
+.bg-Primary-100 {
+  background-color: #fdf1cf;
+}
+
+.bg-Primary-50 {
+  background-color: #fef8e7;
+}
+
+.bg-Black {
+  background-color: #000000;
+}
+
+.bg-Black-800 {
+  background-color: #000000;
+  opacity: 90%;
+}
+
+.bg-Black-700 {
+  background-color: #000000;
+  opacity: 80%;
+}
+
+.bg-Black-600 {
+  background-color: #000000;
+  opacity: 70%;
+}
+
+.bg-Black-500 {
+  background-color: #000000;
+  opacity: 60%;
+}
+
+.bg-Black-400 {
+  background-color: #000000;
+  opacity: 50%;
+}
+
+.bg-Black-300 {
+  background-color: #000000;
+  opacity: 40%;
+}
+
+.bg-Black-200 {
+  background-color: #000000;
+  opacity: 30%;
+}
+
+.bg-Black-100 {
+  background-color: #000000;
+  opacity: 20%;
+}
+
+.bg-Black-50 {
+  background-color: #000000;
+  opacity: 10%;
+}
+
+.bg-White {
+  background-color: #ffffff;
+}
+
+.bg-White-800 {
+  background-color: #ffffff;
+  opacity: 90%;
+}
+
+.bg-White-700 {
+  background-color: #ffffff;
+  opacity: 80%;
+}
+
+.bg-White-600 {
+  background-color: #ffffff;
+  opacity: 70%;
+}
+
+.bg-White-500 {
+  background-color: #ffffff;
+  opacity: 60%;
+}
+
+.bg-White-400 {
+  background-color: #ffffff;
+  opacity: 50%;
+}
+
+.bg-White-300 {
+  background-color: #ffffff;
+  opacity: 40%;
+}
+
+.bg-White-200 {
+  background-color: #ffffff;
+  opacity: 30%;
+}
+
+.bg-White-100 {
+  background-color: #ffffff;
+  opacity: 20%;
+}
+
+.bg-White-50 {
+  background-color: #ffffff;
+  opacity: 10%;
+}
+
+.bg-Green {
+  background-color: #1c4d27;
+}
+
+.bg-Green-800 {
+  background-color: #256533;
+}
+
+.bg-Green-700 {
+  background-color: #308242;
+}
+
+.bg-Green-600 {
+  background-color: #3da755;
+}
+
+.bg-Green-500 {
+  background-color: #43b75d;
+}
+
+.bg-Green-400 {
+  background-color: #69c57d;
+}
+
+.bg-Green-300 {
+  background-color: #81cf92;
+}
+
+.bg-Green-200 {
+  background-color: #a9deb4;
+}
+
+.bg-Green-100 {
+  background-color: #c5e9cd;
+}
+
+.bg-Green-50 {
+  background-color: #ecf8ef;
+}
+
+.bg-Yellow {
+  background-color: #6b4700;
+}
+
+.bg-Yellow-800 {
+  background-color: #8c5e00;
+}
+
+.bg-Yellow-700 {
+  background-color: #b57900;
+}
+
+.bg-Yellow-600 {
+  background-color: #e89b00;
+}
+
+.bg-Yellow-500 {
+  background-color: #ffaa00;
+}
+
+.bg-Yellow-400 {
+  background-color: #ffbb33;
+}
+
+.bg-Yellow-300 {
+  background-color: #ffc654;
+}
+
+.bg-Yellow-200 {
+  background-color: #ffd88a;
+}
+
+.bg-Yellow-100 {
+  background-color: #ffe5b0;
+}
+
+.bg-Yellow-50 {
+  background-color: #fff7e6;
+}
+
+.bg-Red {
+  background-color: #641d1a;
+}
+
+.bg-Red-800 {
+  background-color: #832523;
+}
+
+.bg-Red-700 {
+  background-color: #a9302d;
+}
+
+.bg-Red-600 {
+  background-color: #d93e39;
+}
+
+.bg-Red-500 {
+  background-color: #ee443f;
+}
+
+.bg-Red-400 {
+  background-color: #f16965;
+}
+
+.bg-Red-300 {
+  background-color: #f4827e;
+}
+
+.bg-Red-200 {
+  background-color: #f7a9a7;
+}
+
+.bg-Red-100 {
+  background-color: #fac5c3;
+}
+
+.bg-Red-50 {
+  background-color: #fdecec;
+}
+
+.bg-Blue {
+  background-color: #003f6b;
+}
+
+.bg-Blue-800 {
+  background-color: #00528c;
+}
+
+.bg-Blue-700 {
+  background-color: #006ab5;
+}
+
+.bg-Blue-600 {
+  background-color: #0088e8;
+}
+
+.bg-Blue-500 {
+  background-color: #0095ff;
+}
+
+.bg-Blue-400 {
+  background-color: #33aaff;
+}
+
+.bg-Blue-300 {
+  background-color: #54b8ff;
+}
+
+.bg-Blue-200 {
+  background-color: #8aceff;
+}
+
+.bg-Blue-100 {
+  background-color: #b0deff;
+}
+
+.bg-Blue-50 {
+  background-color: #b0deff;
+}
+
+.bg-DarkMode {
+  background-color: #26231a;
+}
+
+.bg-DarkMode-800 {
+  background-color: #252219;
+}
+
+.bg-DarkMode-700 {
+  background-color: #242119;
+}
+
+.bg-DarkMode-600 {
+  background-color: #232018;
+}
+
+.bg-DarkMode-500 {
+  background-color: #222017;
+}
+
+.bg-DarkMode-400 {
+  background-color: #211f17;
+}
+
+.bg-DarkMode-300 {
+  background-color: #201e16;
+}
+
+.bg-DarkMode-200 {
+  background-color: #1f1d15;
+}
+
+.bg-DarkMode-100 {
+  background-color: #1e1c15;
+}
+
+.bg-DarkMode-50 {
+  background-color: #1d1b14;
+}
+
+.primary-900 {
+  color: #f4b910;
+}
+
+.primary-800 {
+  color: #f5c028;
+}
+
+.primary-700 {
+  color: #f6c740;
+}
+
+.primary-600 {
+  color: #f7ce58;
+}
+
+.primary-500 {
+  color: #f8d570;
+}
+
+.primary-400 {
+  color: #fadc87;
+}
+
+.primary-300 {
+  color: #fbe39f;
+}
+
+.primary-200 {
+  color: #fceab7;
+}
+
+.primary-100 {
+  color: #fdf1cf;
+}
+
+.primary-50 {
+  color: #fef8e7;
+}
+
+.black {
+  color: #131927;
+}
+
+.white {
+  color: #ffffff;
+}
+
+.grey-secondary {
+  color: #6d717f;
+}
+
+.grey {
+  color: #9ea2ae;
+}
+
+.grey-light {
+  color: #d2d5db;
+}
+
+.color-disabled {
+  color: #9ea2ae;
+}
+
+.color-accent {
+  color: #f8d570;
+}
+
+.color-links {
+  color: #f8d570;
+}
+
+.color-info {
+  color: #0095ff;
+}
+
+.color-warning {
+  color: #ffaa00;
+}
+
+.color-error {
+  color: #ee443f;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.Botones-Tiny-Tercery, .Botones-Small-Tercery, .Botones-Medium-Tercery, .Botones-Large-Tercery, .Botones-Giants-Tercery, .Botones-Tiny-Secundary, .Botones-Small-Secundary, .Botones-Medium-Secundary, .Botones-Large-Secundary, .Botones-Giants-Secundary, .Botones-Tiny-Primary, .Botones-Small-Primary, .Botones-Medium-Primary, .Botones-Large-Primary, .Botones-Giants-Primary {
+  cursor: pointer;
+  width: auto;
+}
+
+.Botones-Tiny-Primary, .Botones-Small-Primary, .Botones-Medium-Primary, .Botones-Large-Primary, .Botones-Giants-Primary {
+  background-color: #f8d570;
+  color: white;
+  border: none;
+  transition: all 0.5s ease;
+}
+.Botones-Tiny-Primary:hover, .Botones-Small-Primary:hover, .Botones-Medium-Primary:hover, .Botones-Large-Primary:hover, .Botones-Giants-Primary:hover {
+  background-color: #f4b910;
+}
+.Botones-Tiny-Primary:active, .Botones-Small-Primary:active, .Botones-Medium-Primary:active, .Botones-Large-Primary:active, .Botones-Giants-Primary:active {
+  background-color: #f6c740;
+}
+
+.Botones-Tiny-Secundary, .Botones-Small-Secundary, .Botones-Medium-Secundary, .Botones-Large-Secundary, .Botones-Giants-Secundary {
+  background-color: #fdf1cf;
+  color: #f6c740;
+  border: 1.5px solid #f8d570;
+  transition: all 0.5s ease;
+}
+.Botones-Tiny-Secundary:hover, .Botones-Small-Secundary:hover, .Botones-Medium-Secundary:hover, .Botones-Large-Secundary:hover, .Botones-Giants-Secundary:hover {
+  background-color: #fadc87;
+}
+.Botones-Tiny-Secundary:active, .Botones-Small-Secundary:active, .Botones-Medium-Secundary:active, .Botones-Large-Secundary:active, .Botones-Giants-Secundary:active {
+  background-color: #f5c028;
+}
+
+.Botones-Tiny-Tercery, .Botones-Small-Tercery, .Botones-Medium-Tercery, .Botones-Large-Tercery, .Botones-Giants-Tercery {
+  background-color: #fef8e7;
+  color: #fadc87;
+  border: none;
+  transition: all 0.5s ease;
+}
+.Botones-Tiny-Tercery:hover, .Botones-Small-Tercery:hover, .Botones-Medium-Tercery:hover, .Botones-Large-Tercery:hover, .Botones-Giants-Tercery:hover {
+  background-color: #f6c740;
+}
+.Botones-Tiny-Tercery:active, .Botones-Small-Tercery:active, .Botones-Medium-Tercery:active, .Botones-Large-Tercery:active, .Botones-Giants-Tercery:active {
+  background-color: #f5c028;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+.App-header {
+  background-color: #26231a;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: #ffffff;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/*# sourceMappingURL=App.css.map */

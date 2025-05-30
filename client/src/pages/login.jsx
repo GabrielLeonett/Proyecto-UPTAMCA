@@ -33,7 +33,6 @@ export default function Login() {
     setErrors({});
     try {
       const datos = await login(data);
-      console.log(datos)
       setProcessing(false);
     } catch (error) {
       setProcessing(false);
