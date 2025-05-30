@@ -17,7 +17,6 @@ export const profesorRouter = Router();
 profesorRouter.get("/Profesor", middlewareSession, mostrarProfesor)
 
 //POST's
-
 // Este JSON es para el endpoint de registrar es una prueba o como se debe utilizar
 // {
 //   "nombres": "Gabriel Dayer",

@@ -5,7 +5,7 @@ export default class ProfesorModel {
   static async RegisterProfesor({ datos }) {
     try {
       const {
-        id,
+        cedula,
         nombres,
         apellidos,
         email,
@@ -28,7 +28,7 @@ export default class ProfesorModel {
 
       const queryUsuario = `CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL);`;
       const paramsUsuario = [
-        id,
+        cedula,
         nombres,
         apellidos,
         email,
@@ -42,7 +42,7 @@ export default class ProfesorModel {
 
       const queryProfesor = `CALL registrar_profesor(?, ?, ?, ?, ?, ?, ?, ?, NULL);`;
       const paramsProfesor = [
-        id,
+        cedula,
         categoria,
         dedicacion,
         ubicacion,

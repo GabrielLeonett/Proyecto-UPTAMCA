@@ -32,9 +32,9 @@ export async function seed(knex) {
   ]);
 
   await knex('dedicacion').insert([
-    { id: 1, nombre_dedicacion: 'Convencional' , horas_aula: 12},
-    { id: 2, nombre_dedicacion: 'Medio Tiempo', horas_aula: 14 },
-    { id: 3, nombre_dedicacion: 'Tiempo Completo', horas_aula: 16},
-    { id: 4, nombre_dedicacion: 'Exclusivo' , horas_aula: 18}
+    { id: 1, nombre_dedicacion: 'Convencional' , horas_aula: 7},
+    { id: 2, nombre_dedicacion: 'Medio Tiempo', horas_aula: 18 },
+    { id: 3, nombre_dedicacion: 'Tiempo Completo', horas_aula: 30},
+    { id: 4, nombre_dedicacion: 'Exclusivo' , horas_aula: 36}
   ]);
 }
