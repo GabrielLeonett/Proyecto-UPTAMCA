@@ -5,6 +5,7 @@ import FormRegister from "./pages/registerProfesor";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
 import Login from "./pages/login";
+import HorarioForm from "./pages/registerHorario";
 
 import "./App.css";
 
@@ -17,6 +18,8 @@ export default function App() {
           <Route path="/profesores" element={<Profesores />} />
          <Route path="/registerProfesor" element={<FormRegister />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/registerHorario" element={<HorarioForm />} />
+          {/* Puedes agregar más rutas aquí */}
         </Routes>
       </Router>
     </AuthProvider>

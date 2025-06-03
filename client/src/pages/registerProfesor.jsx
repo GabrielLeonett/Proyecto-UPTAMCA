@@ -49,7 +49,7 @@ export default function FormRegister() {
 
     Swal.fire({
       title: 'Error',
-      text: error.response.data.message || 'No se pudo registrar el profesor. Por favor, inténtalo de nuevo más tarde.',
+      text: error.response.data.message || 'No se pudo registrar el profesor. Por favor, inténtalo de nuevo o más tarde.',
       icon: 'error',
       confirmButtonColor: '#1976d2',
     });
