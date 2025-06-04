@@ -5,9 +5,6 @@ import ProfesorModel from "../models/ProfesorModel.js";
 export default class ProfesorController {
   static async registrarProfesor(req, res) {
     try {
-
-      console.log("Datos recibidos para registrar profesor:", req.body);
-      
       // Validación de datos del profesor
       const validationResultProfesor = validationProfesor({ input: req.body });
       if (!validationResultProfesor.success) {

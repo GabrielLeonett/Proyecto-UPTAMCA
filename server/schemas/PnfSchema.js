@@ -29,8 +29,8 @@ const PNFSchema = z.object({
     required_error: 'El código del PNF es obligatorio'
     })
     .min(3, 'El código debe tener mínimo 3 caracteres')  // Corregido: mínimo 5
-    .max(5, 'El código debe tener máximo 5 caracteres')  // Corregido: máximo 5
-    .regex(/^[A-Z0-9]{5}$/, 'Formato inválido. Use AAAAA o AAA91')
+    .max(6, 'El código debe tener máximo 5 caracteres')  // Corregido: máximo 5
+    .regex(/^[A-Z0-9-]{3,6}$/, 'Formato inválido. Use AAA-AAA o AAA-913')
     .trim()
     .toUpperCase()
 });

@@ -14,7 +14,7 @@ export const profesorRouter = Router();
 //   --url-query 'categoria=Instructor' \
 //   --url-query 'ubicacion=2' \
 //   --url-query 'genero=masculino'
-profesorRouter.get("/Profesor", middlewareSession, mostrarProfesor)
+profesorRouter.get("/Profesor", mostrarProfesor)
 
 //POST's
 // Este JSON es para el endpoint de registrar es una prueba o como se debe utilizar
@@ -37,7 +37,7 @@ profesorRouter.get("/Profesor", middlewareSession, mostrarProfesor)
 //   "pos_grado": "Doctorado en Ciencias de la Computación",
 //   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
 // }
-profesorRouter.post('/Profesor', middlewareSession, registrarProfesor)
+profesorRouter.post('/Profesor', registrarProfesor)
 
 // Esto es lo que debe resivir el endpoint de buscarProfesor
 // {

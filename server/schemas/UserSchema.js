@@ -1,7 +1,7 @@
 import z from "zod";
 
 const UserSchema = z.object({
-  id: z
+  cedula: z
     .number({
       required_error: "La cédula es requerida",
       invalid_type_error: "La cédula debe ser un número"

@@ -13,28 +13,28 @@ export async function seed(knex) {
 
   // Inserta datos iniciales
   await knex('roles').insert([
-    { id: 1, tipo_rol: 1, nombre_rol: 'Vicerrector' },
-    { id: 2, tipo_rol: 2, nombre_rol: 'Director General de Gestión Curricular' }
+    { id_rol: 1,nombre_rol: 'Vicerrector' },
+    { id_rol: 2,nombre_rol: 'Director General de Gestión Curricular' }
   ]);
 
   await knex('ubicacion').insert([
-    { id: 1, nombre_ubicacion: 'Núcleo de Humanidades y Ciencias Sociales' },
-    { id: 2, nombre_ubicacion: 'Núcleo de Tegnología y Ciencias Administrativas' },
-    { id: 3, nombre_ubicacion: 'Núcleo de Salud y Deporte' }
+    { id_ubicacion: 1, nombre_ubicacion: 'Núcleo de Humanidades y Ciencias Sociales' },
+    { id_ubicacion: 2, nombre_ubicacion: 'Núcleo de Tegnología y Ciencias Administrativas' },
+    { id_ubicacion: 3, nombre_ubicacion: 'Núcleo de Salud y Deporte' }
   ]);
 
   await knex('categoria').insert([
-    { id: 1, nombre_categoria: 'Instructor' },
-    { id: 2, nombre_categoria: 'Asistente' },
-    { id: 3, nombre_categoria: 'Agregado' },
-    { id: 4, nombre_categoria: 'Asociado' },
-    { id: 5, nombre_categoria: 'Titular' },
+    { id_categoria: 1, nombre_categoria: 'Instructor' },
+    { id_categoria: 2, nombre_categoria: 'Asistente' },
+    { id_categoria: 3, nombre_categoria: 'Agregado' },
+    { id_categoria: 4, nombre_categoria: 'Asociado' },
+    { id_categoria: 5, nombre_categoria: 'Titular' },
   ]);
 
   await knex('dedicacion').insert([
-    { id: 1, nombre_dedicacion: 'Convencional' , horas_aula: 7},
-    { id: 2, nombre_dedicacion: 'Medio Tiempo', horas_aula: 18 },
-    { id: 3, nombre_dedicacion: 'Tiempo Completo', horas_aula: 30},
-    { id: 4, nombre_dedicacion: 'Exclusivo' , horas_aula: 36}
+    { id_dedicacion: 1, nombre_dedicacion: 'Convencional' , horas_docencia_semanales: '07:00:00', horas_administrativas_semanales: '00:00:00'},
+    { id_dedicacion: 2, nombre_dedicacion: 'Medio Tiempo', horas_docencia_semanales: '12:00:00',horas_administrativas_semanales: '06:00:00' },
+    { id_dedicacion: 3, nombre_dedicacion: 'Tiempo Completo', horas_docencia_semanales: '14:00:00', horas_administrativas_semanales: '16:00:00'},
+    { id_dedicacion: 4, nombre_dedicacion: 'Exclusivo' , horas_docencia_semanales: '18:00:00',horas_administrativas_semanales: '18:00:00'}
   ]);
 }

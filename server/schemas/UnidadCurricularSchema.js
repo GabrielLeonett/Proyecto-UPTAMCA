@@ -1,0 +1,65 @@
+import z from "zod";
+
+const UnidadCurricularSchema = z.object({
+  id_trayecto: z
+    .number({
+      invalid_type_error: "El id de trayecto tiene que se un nombre",
+      required_error: "El id de trayecto es obligatorio",
+    })
+    .positive("El id tiene que se positivo"),
+
+  nombre_unidad: z
+    .string({
+      invalid_type_error: "El nombre del Unidad Curricular debe ser un texto",
+      required_error: "El nombre del Unidad Curricular es obligatorio",
+    })
+    .min(5, "El nombre debe tener al menos 5 caracteres")
+    .max(40, "El nombre no puede exceder los 40 caracteres")
+    .regex(
+      /^[A-Za-zÁ-ÿ0-9\s\-]+$/,
+      "Solo se permiten letras, números, espacios y guiones"
+    ),
+
+  descripcion_unidad: z
+    .string({
+      invalid_type_error: "La descripción debe ser un texto",
+      required_error: "La descripción es obligatoria",
+    })
+    .min(20, "La descripción debe tener al menos 20 caracteres")
+    .max(200, "La descripción no puede exceder los 200 caracteres"),
+
+  carga_horas_unidad: z
+    .number({
+      invalid_type_error:
+        "La carga de horas de la unidad curricular debe ser un numero",
+      required_error:
+        "La carga de horas de la unidad curricular es obligatoria",
+    })
+    .positive(
+      "La carga de horas de la unidad curricular debe ser un numero positivo"
+    ),
+
+  codigo_unidad: z
+    .string({
+      invalid_type_error: "El código debe ser un texto",
+      required_error: "El código del Unidad Curricular es obligatorio",
+    })
+    .min(3, "El código debe tener mínimo 3 caracteres") // Corregido: mínimo 5
+    .max(6, "El código debe tener máximo 5 caracteres") // Corregido: máximo 5
+    .regex(/^[A-Z0-9-]{3,6}$/, "Formato inválido. Use AAA-AAA o AAA-913")
+    .trim()
+    .toUpperCase(),
+});
+
+// Validación completa
+export const validationUnidadCurricular = ({ input }) => {
+  const validationResult = UnidadCurricularSchema.safeParse(input);
+  return validationResult;
+};
+
+// Validación parcial (para actualizaciones)
+export const validationPartialUnidadCurricular = ({ input }) => {
+  const PartialUnidadCurricularSchema =
+    UnidadCurricularSchema.partial().safeParse(input);
+  return PartialUnidadCurricularSchema;
+};
