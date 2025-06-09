@@ -7,12 +7,13 @@ export default class ProfesorController {
     try {
       // Validación de datos del profesor
       const validationResultProfesor = validationProfesor({ input: req.body });
+      console.log(req.body);
       if (!validationResultProfesor.success) {
-        const errores = validationResultProfesor.error.errors.map(error => error.path);
+        const errores = validationResultProfesor.error.errors.map(error => error.message);
         return res.status(400).json({
           success: false,
           errors: errores,
-          message: "Error de validación en los datos del profesor"
+          message:"Error de validación en los datos del profesor"
         });
       }
 
@@ -51,6 +52,25 @@ export default class ProfesorController {
         success: false,
         message: error.message || "Error interno del servidor",
         ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      });
+    }
+  }
+
+  static async mostrarProfesorAPI(req, res) {
+    try {
+      const result = await ProfesorModel.mostrarProfesorAPI({datos: req.query})
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+
+    } catch (error) {
+      console.error('Error al obtener profesores:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error al obtener la lista de profesores',
+        error: error.message
       });
     }
   }

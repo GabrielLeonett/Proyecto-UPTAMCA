@@ -1,28 +1,35 @@
 import jwt from "jsonwebtoken";
 
-export const middlewareSession = (req, res, next) => {
-  // 1. Extraer el token de la cookie "autorization" (¡así la nombraste al crearla!)
-  const token = req.cookies.autorization; // ← Nombre exacto de tu cookie
+export const middlewareAuth = (requiredRoles) => {
+  return (req, res, next) => {
+    const token = req.cookies.autorization;
 
-  // 2. Verificar si el token existe
-  if (!token) {
-    return res.status(401).json({ error: "Acceso denegado: No hay token" });
-  }
-
-  // 3. Verificar el token JWT
-  jwt.verify(token, process.env.AUTH_SECRET_KEY, (error, decoded) => {
-    if (error) {
-      // Manejar errores específicos
-      if (error.name === "TokenExpiredError") {
-        return res.status(403).json({ error: "Token expirado" });
-      }
-      return res.status(403).json({ error: "Token inválido" });
+    if (!token) {
+      return res.status(401).json({ error: "Acceso denegado: No hay token" });
     }
 
-    console.log(decoded);
+    jwt.verify(token, process.env.AUTH_SECRET_KEY, (error, decoded) => {
+      if (error) {
+        if (error.name === "TokenExpiredError") {
+          return res.status(403).json({ error: "Token expirado" });
+        }
+        return res.status(403).json({ error: "Token inválido" });
+      }
+      
+      req.user = decoded;
 
-    // 4. Adjuntar los datos del usuario al request
-    req.user = decoded; // decoded = { id, email, etc. } (lo que guardaste en el token)
-    next(); // Continuar
-  });
+      if (requiredRoles !== null) {
+        const isPermitid = req.user.roles.some((role) =>
+          requiredRoles.includes(role)
+        );
+        if (!isPermitid) {
+          return res
+            .status(403)
+            .json({ error: "Acceso denegado: Faltan permisos" });
+        }
+      }
+      
+      next();
+    });
+  };
 };

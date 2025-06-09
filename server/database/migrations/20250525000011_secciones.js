@@ -4,7 +4,7 @@ export async function up(knex) {
     table.bigIncrements("id_seccion")
       .primary()
       .comment('ID único de la sección (UUID)');
-    
+
     // Datos de la sección
     table.string("valor_seccion", 20)
       .notNullable()
@@ -22,6 +22,8 @@ export async function up(knex) {
       .notNullable()
       .defaultTo(20)
       .comment('Cantidad de cupos disponibles (8-40)');
+
+    table.enu('turno', ['matutino', 'vespertino', 'nocturno']).nullable().comment('Esta columna es para saber el turno que le corresponde a la seccion.');
     
     // Auditoría
     table.timestamp("created_at")

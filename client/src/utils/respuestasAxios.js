@@ -6,6 +6,7 @@ export default function respuestaAxios({ respuesta }) {
   const data = respuesta?.data || {};
   const message = data?.message || getDefaultMessage(status);
   const errors = data?.errors;
+  console.log(respuesta);
 
   // Manejar diferentes rangos de códigos de estado
   switch (true) {
@@ -70,8 +71,6 @@ export default function respuestaAxios({ respuesta }) {
           timer: 3000, // Cierra automáticamente después de 3 segundos
           showConfirmButton: false,
           position: "bottom-end",
-          background: '#000000',
-          color: '#ffffff'
         });
       }, index * 3000); // Retraso de 1 segundo entre cada alerta
     });

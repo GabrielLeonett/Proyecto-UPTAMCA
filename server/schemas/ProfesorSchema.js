@@ -25,10 +25,10 @@ const ProfesorSchema = z.object({
     ),
     
     ubicacion: z.enum(
-        ['Núcleo de Salud y Deporte', 'Núcleo de Tegnología y Ciencias Administrativas', 'Núcleo de Humanidades y Ciencias Sociales'], 
+        ['Núcleo de Salud y Deporte', 'Núcleo de Tecnología y Ciencias Administrativas', 'Núcleo de Humanidades y Ciencias Sociales'], 
         {
             required_error: "La ubicación es requerida",
-            invalid_type_error: "La ubicación debe ser: Núcleo de Salud y Deporte, Núcleo de Tegnología y Ciencias Administrativas o Núcleo de Humanidades y Ciencias Sociales"
+            invalid_type_error: "La ubicación debe ser: Núcleo de Salud y Deporte, Núcleo de Tecnología y Ciencias Administrativas o Núcleo de Humanidades y Ciencias Sociales"
         }
     ),
     

@@ -1,19 +1,23 @@
 import { Router } from "express";
-import { middlewareSession } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.js";
 import ProfesorController from "../controllers/ProfesorController.js";
 
-const {registrarProfesor, mostrarProfesor, buscarProfesor} = ProfesorController;
+const {registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor} = ProfesorController;
 
 export const profesorRouter = Router();
 
 //GET's
 
-//  Esto es lo que espera el endpoint de mostrarProfesor
-// curl -X GET 'http://localhost:3000/Profesor' \
+//  Esto es lo que espera el endpoint de mostrarProfesorAPI
+// curl -X GET 'http://localhost:3000/api/Profesor' \
 //   --url-query 'dedicacion=1' \
 //   --url-query 'categoria=Instructor' \
 //   --url-query 'ubicacion=2' \
 //   --url-query 'genero=masculino'
+profesorRouter.get("/api/Profesor", mostrarProfesorAPI)
+
+//  Esto es lo que espera el endpoint de mostrarProfesor
+// curl -X GET 'http://localhost:3000/api/Profesor' \
 profesorRouter.get("/Profesor", mostrarProfesor)
 
 //POST's
@@ -37,7 +41,7 @@ profesorRouter.get("/Profesor", mostrarProfesor)
 //   "pos_grado": "Doctorado en Ciencias de la Computación",
 //   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
 // }
-profesorRouter.post('/Profesor', registrarProfesor)
+profesorRouter.post('/Profesor/register', registrarProfesor)
 
 // Esto es lo que debe resivir el endpoint de buscarProfesor
 // {

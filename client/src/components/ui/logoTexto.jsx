@@ -1,5 +1,5 @@
 
-export default function LogoTexto({Secundary}) {
+export default function LogoTexto() {
     return (
         <a href="/">
             <svg id="Capa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1080 1080" width={190}>
@@ -122,7 +122,7 @@ export default function LogoTexto({Secundary}) {
                     <path id="path296" className={`shadow-lg fill-white`} d="M284.17,362.01l-.04,146.98c-.01,20.35-7.64,39.98-21.4,54.99l-75.83,82.82v-72.5c14.99-4.19,26-17.95,26-34.3s-11-30.1-26-34.28v-34.27l97.27-109.44" />
                 </g>
                 <g id="g298">
-                    <path id="path300" className={`shadow-lg ${Secundary}`} d="M319.53,717.99H35.24v-35.6h284.29v35.6" />
+                    <path id="path300" className={`shadow-lg bg-secundary`} d="M319.53,717.99H35.24v-35.6h284.29v35.6" />
                 </g>
             </svg>
         </a>)
