@@ -5,7 +5,7 @@
 -- Dumped from database version 17.4
 -- Dumped by pg_dump version 17.4
 
--- Started on 2025-06-03 20:21:23
+-- Started on 2025-06-10 07:43:41
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -52,7 +52,7 @@ $$;
 ALTER FUNCTION public.actualizar_poblacion_pnf() OWNER TO postgres;
 
 --
--- TOC entry 267 (class 1255 OID 40216)
+-- TOC entry 266 (class 1255 OID 40216)
 -- Name: actualizar_secciones_por_poblacion(); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -80,7 +80,70 @@ $$;
 ALTER FUNCTION public.actualizar_secciones_por_poblacion() OWNER TO postgres;
 
 --
--- TOC entry 263 (class 1255 OID 39045)
+-- TOC entry 268 (class 1255 OID 41036)
+-- Name: actualizar_turno_seccion(character varying, integer, json); Type: FUNCTION; Schema: public; Owner: postgres
+--
+
+CREATE FUNCTION public.actualizar_turno_seccion(p_turno character varying, p_id_seccion integer, INOUT p_resultado json) RETURNS json
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    V_EXISTE_SECCION BOOLEAN;
+    V_TURNO_VALIDO BOOLEAN;
+BEGIN 
+    -- Verificar si la sección existe
+    SELECT EXISTS(SELECT 1 FROM SECCIONES WHERE ID_SECCION = P_ID_SECCION) INTO V_EXISTE_SECCION;
+    
+    -- Verificar si el turno es válido
+    V_TURNO_VALIDO := (P_TURNO IN ('matutino', 'vespertino', 'nocturno'));
+    
+    IF NOT V_EXISTE_SECCION THEN
+        P_RESULTADO := json_build_object(
+            'estado', 'error',
+            'mensaje', 'La sección especificada no existe',
+            'codigo', 404
+        );
+    ELSIF NOT V_TURNO_VALIDO THEN
+        P_RESULTADO := json_build_object(
+            'estado', 'error',
+            'mensaje', 'Turno no válido. Debe ser: matutino, vespertino o nocturno',
+            'codigo', 400
+        );
+    ELSE
+        -- Actualizar el turno de la sección
+        UPDATE SECCIONES 
+        SET TURNO = P_TURNO 
+        WHERE ID_SECCION = P_ID_SECCION;
+        
+        -- Verificar si se actualizó correctamente
+        IF FOUND THEN
+            P_RESULTADO := json_build_object(
+                'estado', 'éxito',
+                'mensaje', 'Turno actualizado correctamente',
+                'codigo', 200,
+                'datos', json_build_object(
+                    'id_seccion', P_ID_SECCION,
+                    'nuevo_turno', P_TURNO
+                )
+            );
+        ELSE
+            P_RESULTADO := json_build_object(
+                'estado', 'error',
+                'mensaje', 'No se pudo actualizar el turno',
+                'codigo', 500
+            );
+        END IF;
+    END IF;
+    
+    RETURN;
+END;
+$$;
+
+
+ALTER FUNCTION public.actualizar_turno_seccion(p_turno character varying, p_id_seccion integer, INOUT p_resultado json) OWNER TO postgres;
+
+--
+-- TOC entry 262 (class 1255 OID 39045)
 -- Name: buscar_profesor(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -127,7 +190,7 @@ CREATE FUNCTION public.buscar_profesor(p_busqueda character varying DEFAULT NULL
 ALTER FUNCTION public.buscar_profesor(p_busqueda character varying) OWNER TO postgres;
 
 --
--- TOC entry 265 (class 1255 OID 40212)
+-- TOC entry 264 (class 1255 OID 40212)
 -- Name: distribuir_estudiantes_secciones(bigint, integer, jsonb); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -310,7 +373,7 @@ $$;
 ALTER FUNCTION public.filtrar_horarios(p_profesor_id integer, p_trayecto text, p_pnf text, p_unidad_curricular text, p_dia_semana text, p_refrescar boolean) OWNER TO postgres;
 
 --
--- TOC entry 262 (class 1255 OID 38779)
+-- TOC entry 270 (class 1255 OID 44410)
 -- Name: mostrar_profesor(character varying, character varying, character varying, character varying, date, character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -356,7 +419,7 @@ CREATE FUNCTION public.mostrar_profesor(p_nombre_dedicacion character varying DE
 ALTER FUNCTION public.mostrar_profesor(p_nombre_dedicacion character varying, p_nombre_categoria character varying, p_nombre_ubicacion character varying, p_area_de_conocimiento character varying, p_fecha_ingreso date, p_genero character varying) OWNER TO postgres;
 
 --
--- TOC entry 259 (class 1255 OID 38780)
+-- TOC entry 258 (class 1255 OID 38780)
 -- Name: mostrar_usuarios(character varying); Type: FUNCTION; Schema: public; Owner: postgres
 --
 
@@ -425,7 +488,7 @@ $$;
 ALTER FUNCTION public.mostrar_usuarios(p_email character varying) OWNER TO postgres;
 
 --
--- TOC entry 258 (class 1255 OID 38781)
+-- TOC entry 259 (class 1255 OID 38781)
 -- Name: registrar_administrador(bigint, bigint); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -442,7 +505,7 @@ BEGIN
     -- Iniciar bloque con manejo de excepciones
     BEGIN
         -- Verificar si el usuario existe
-        SELECT EXISTS(SELECT 1 FROM users WHERE id = p_id_cedula) INTO v_usuario_existe;
+        SELECT EXISTS(SELECT 1 FROM users WHERE cedula = p_id_cedula) INTO v_usuario_existe;
         
         IF NOT v_usuario_existe THEN
             RAISE EXCEPTION 'El usuario con ID % no existe', p_id_cedula;
@@ -456,7 +519,7 @@ BEGIN
         END IF;
         
         -- Verificar que el rol exista
-        IF NOT EXISTS(SELECT 1 FROM roles WHERE id = p_id_rol) THEN
+        IF NOT EXISTS(SELECT 1 FROM roles WHERE id_rol = p_id_rol) THEN
             RAISE EXCEPTION 'El rol con ID % no existe', p_id_rol;
         END IF;
         
@@ -473,15 +536,10 @@ BEGIN
         WHEN OTHERS THEN
             -- Obtener detalles del error
             GET STACKED DIAGNOSTICS 
-                v_error_message = MESSAGE_TEXT,
-                v_error_context = PG_EXCEPTION_CONTEXT,
-                v_error_detail = PG_EXCEPTION_DETAIL;
-            
+                v_error_message = MESSAGE_TEXT;
             p_resultado := json_build_object(
                 'status', 'error',
-                'message', v_error_message,
-                'context', v_error_context,
-                'detail', v_error_detail
+                'message', v_error_message
             );
     END;
 END;
@@ -491,7 +549,7 @@ $$;
 ALTER PROCEDURE public.registrar_administrador(IN p_id_cedula bigint, IN p_id_rol bigint, OUT p_resultado json) OWNER TO postgres;
 
 --
--- TOC entry 266 (class 1255 OID 40252)
+-- TOC entry 265 (class 1255 OID 40252)
 -- Name: registrar_coordinador(bigint, smallint, smallint, json); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -579,7 +637,7 @@ $$;
 ALTER PROCEDURE public.registrar_coordinador(IN p_id_cedula bigint, IN p_id_ubicacion smallint, IN p_id_pnf smallint, INOUT p_resultado json) OWNER TO postgres;
 
 --
--- TOC entry 264 (class 1255 OID 40231)
+-- TOC entry 263 (class 1255 OID 40231)
 -- Name: registrar_horario(bigint, bigint, bigint, character varying, time without time zone, time without time zone, character varying, boolean, jsonb); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -795,7 +853,7 @@ $$;
 ALTER PROCEDURE public.registrar_horario(IN p_id_seccion bigint, IN p_id_profesor bigint, IN p_unidad_curricular_id bigint, IN p_dia_semana character varying, IN p_hora_inicio time without time zone, IN p_hora_fin time without time zone, IN p_aula character varying, IN p_activo boolean, INOUT p_resultado jsonb) OWNER TO postgres;
 
 --
--- TOC entry 268 (class 1255 OID 39905)
+-- TOC entry 267 (class 1255 OID 39905)
 -- Name: registrar_pnf(character varying, character varying, integer, character varying, json); Type: PROCEDURE; Schema: public; Owner: postgres
 --
 
@@ -1101,7 +1159,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 237 (class 1259 OID 40106)
+-- TOC entry 237 (class 1259 OID 44300)
 -- Name: administradores; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1117,7 +1175,7 @@ CREATE TABLE public.administradores (
 ALTER TABLE public.administradores OWNER TO postgres;
 
 --
--- TOC entry 5051 (class 0 OID 0)
+-- TOC entry 5050 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: TABLE administradores; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1126,7 +1184,7 @@ COMMENT ON TABLE public.administradores IS 'Tabla de asociación entre usuarios 
 
 
 --
--- TOC entry 5052 (class 0 OID 0)
+-- TOC entry 5051 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: COLUMN administradores.id_administrador; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1135,7 +1193,7 @@ COMMENT ON COLUMN public.administradores.id_administrador IS 'ID único del admi
 
 
 --
--- TOC entry 5053 (class 0 OID 0)
+-- TOC entry 5052 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: COLUMN administradores.id_cedula; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1144,7 +1202,7 @@ COMMENT ON COLUMN public.administradores.id_cedula IS 'Referencia al usuario en 
 
 
 --
--- TOC entry 5054 (class 0 OID 0)
+-- TOC entry 5053 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: COLUMN administradores.id_rol; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1153,7 +1211,7 @@ COMMENT ON COLUMN public.administradores.id_rol IS 'Rol asignado al administrado
 
 
 --
--- TOC entry 5055 (class 0 OID 0)
+-- TOC entry 5054 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: COLUMN administradores.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1162,7 +1220,7 @@ COMMENT ON COLUMN public.administradores.created_at IS 'Fecha de creación del r
 
 
 --
--- TOC entry 5056 (class 0 OID 0)
+-- TOC entry 5055 (class 0 OID 0)
 -- Dependencies: 237
 -- Name: COLUMN administradores.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1171,7 +1229,7 @@ COMMENT ON COLUMN public.administradores.updated_at IS 'Fecha de última actuali
 
 
 --
--- TOC entry 236 (class 1259 OID 40105)
+-- TOC entry 236 (class 1259 OID 44299)
 -- Name: administradores_id_administrador_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1186,7 +1244,7 @@ CREATE SEQUENCE public.administradores_id_administrador_seq
 ALTER SEQUENCE public.administradores_id_administrador_seq OWNER TO postgres;
 
 --
--- TOC entry 5057 (class 0 OID 0)
+-- TOC entry 5056 (class 0 OID 0)
 -- Dependencies: 236
 -- Name: administradores_id_administrador_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1195,7 +1253,7 @@ ALTER SEQUENCE public.administradores_id_administrador_seq OWNED BY public.admin
 
 
 --
--- TOC entry 224 (class 1259 OID 39960)
+-- TOC entry 224 (class 1259 OID 44154)
 -- Name: categoria; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1211,7 +1269,7 @@ CREATE TABLE public.categoria (
 ALTER TABLE public.categoria OWNER TO postgres;
 
 --
--- TOC entry 5058 (class 0 OID 0)
+-- TOC entry 5057 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN categoria.id_categoria; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1220,7 +1278,7 @@ COMMENT ON COLUMN public.categoria.id_categoria IS 'ID numérico pequeño de la 
 
 
 --
--- TOC entry 5059 (class 0 OID 0)
+-- TOC entry 5058 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN categoria.nombre_categoria; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1229,7 +1287,7 @@ COMMENT ON COLUMN public.categoria.nombre_categoria IS 'Nombre descriptivo de la
 
 
 --
--- TOC entry 5060 (class 0 OID 0)
+-- TOC entry 5059 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN categoria.descripcion_categoria; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1238,7 +1296,7 @@ COMMENT ON COLUMN public.categoria.descripcion_categoria IS 'Descripción detall
 
 
 --
--- TOC entry 5061 (class 0 OID 0)
+-- TOC entry 5060 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN categoria.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1247,7 +1305,7 @@ COMMENT ON COLUMN public.categoria.created_at IS 'Fecha de creación del registr
 
 
 --
--- TOC entry 5062 (class 0 OID 0)
+-- TOC entry 5061 (class 0 OID 0)
 -- Dependencies: 224
 -- Name: COLUMN categoria.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1256,7 +1314,7 @@ COMMENT ON COLUMN public.categoria.updated_at IS 'Fecha de última actualizació
 
 
 --
--- TOC entry 235 (class 1259 OID 40082)
+-- TOC entry 235 (class 1259 OID 44276)
 -- Name: coordinadores; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1273,7 +1331,7 @@ CREATE TABLE public.coordinadores (
 ALTER TABLE public.coordinadores OWNER TO postgres;
 
 --
--- TOC entry 234 (class 1259 OID 40081)
+-- TOC entry 234 (class 1259 OID 44275)
 -- Name: coordinadores_id_coordinador_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1288,7 +1346,7 @@ CREATE SEQUENCE public.coordinadores_id_coordinador_seq
 ALTER SEQUENCE public.coordinadores_id_coordinador_seq OWNER TO postgres;
 
 --
--- TOC entry 5063 (class 0 OID 0)
+-- TOC entry 5062 (class 0 OID 0)
 -- Dependencies: 234
 -- Name: coordinadores_id_coordinador_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1297,7 +1355,7 @@ ALTER SEQUENCE public.coordinadores_id_coordinador_seq OWNED BY public.coordinad
 
 
 --
--- TOC entry 223 (class 1259 OID 39949)
+-- TOC entry 223 (class 1259 OID 44143)
 -- Name: dedicacion; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1315,7 +1373,7 @@ CREATE TABLE public.dedicacion (
 ALTER TABLE public.dedicacion OWNER TO postgres;
 
 --
--- TOC entry 5064 (class 0 OID 0)
+-- TOC entry 5063 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.id_dedicacion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1324,7 +1382,7 @@ COMMENT ON COLUMN public.dedicacion.id_dedicacion IS 'ID numérico pequeño para
 
 
 --
--- TOC entry 5065 (class 0 OID 0)
+-- TOC entry 5064 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.nombre_dedicacion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1333,7 +1391,7 @@ COMMENT ON COLUMN public.dedicacion.nombre_dedicacion IS 'Nombre del tipo de ded
 
 
 --
--- TOC entry 5066 (class 0 OID 0)
+-- TOC entry 5065 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.horas_docencia_semanales; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1342,7 +1400,7 @@ COMMENT ON COLUMN public.dedicacion.horas_docencia_semanales IS 'Horas semanales
 
 
 --
--- TOC entry 5067 (class 0 OID 0)
+-- TOC entry 5066 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.horas_administrativas_semanales; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1351,7 +1409,7 @@ COMMENT ON COLUMN public.dedicacion.horas_administrativas_semanales IS 'Horas se
 
 
 --
--- TOC entry 5068 (class 0 OID 0)
+-- TOC entry 5067 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1360,7 +1418,7 @@ COMMENT ON COLUMN public.dedicacion.created_at IS 'Fecha de creación del regist
 
 
 --
--- TOC entry 5069 (class 0 OID 0)
+-- TOC entry 5068 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: COLUMN dedicacion.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1369,7 +1427,7 @@ COMMENT ON COLUMN public.dedicacion.updated_at IS 'Fecha de última actualizaci�
 
 
 --
--- TOC entry 243 (class 1259 OID 40170)
+-- TOC entry 243 (class 1259 OID 44367)
 -- Name: horarios; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1393,7 +1451,7 @@ CREATE TABLE public.horarios (
 ALTER TABLE public.horarios OWNER TO postgres;
 
 --
--- TOC entry 5070 (class 0 OID 0)
+-- TOC entry 5069 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.id_horario; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1402,7 +1460,7 @@ COMMENT ON COLUMN public.horarios.id_horario IS 'ID único del horario';
 
 
 --
--- TOC entry 5071 (class 0 OID 0)
+-- TOC entry 5070 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.seccion_id; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1411,7 +1469,7 @@ COMMENT ON COLUMN public.horarios.seccion_id IS 'Sección asociada al horario';
 
 
 --
--- TOC entry 5072 (class 0 OID 0)
+-- TOC entry 5071 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.profesor_id; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1420,7 +1478,7 @@ COMMENT ON COLUMN public.horarios.profesor_id IS 'Profesor asignado';
 
 
 --
--- TOC entry 5073 (class 0 OID 0)
+-- TOC entry 5072 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.unidad_curricular_id; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1429,7 +1487,7 @@ COMMENT ON COLUMN public.horarios.unidad_curricular_id IS 'Unidad curricular pro
 
 
 --
--- TOC entry 5074 (class 0 OID 0)
+-- TOC entry 5073 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.dia_semana; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1438,7 +1496,7 @@ COMMENT ON COLUMN public.horarios.dia_semana IS 'Día de la semana (domingo excl
 
 
 --
--- TOC entry 5075 (class 0 OID 0)
+-- TOC entry 5074 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.hora_inicio; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1447,7 +1505,7 @@ COMMENT ON COLUMN public.horarios.hora_inicio IS 'Hora de inicio de la clase';
 
 
 --
--- TOC entry 5076 (class 0 OID 0)
+-- TOC entry 5075 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.hora_fin; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1456,7 +1514,7 @@ COMMENT ON COLUMN public.horarios.hora_fin IS 'Hora de finalización de la clase
 
 
 --
--- TOC entry 5077 (class 0 OID 0)
+-- TOC entry 5076 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.aula; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1465,7 +1523,7 @@ COMMENT ON COLUMN public.horarios.aula IS 'Aula o espacio físico asignado';
 
 
 --
--- TOC entry 5078 (class 0 OID 0)
+-- TOC entry 5077 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.activo; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1474,7 +1532,7 @@ COMMENT ON COLUMN public.horarios.activo IS 'Indica si el horario está actualme
 
 
 --
--- TOC entry 5079 (class 0 OID 0)
+-- TOC entry 5078 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1483,7 +1541,7 @@ COMMENT ON COLUMN public.horarios.created_at IS 'Fecha de creación del registro
 
 
 --
--- TOC entry 5080 (class 0 OID 0)
+-- TOC entry 5079 (class 0 OID 0)
 -- Dependencies: 243
 -- Name: COLUMN horarios.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1492,7 +1550,7 @@ COMMENT ON COLUMN public.horarios.updated_at IS 'Fecha de última actualización
 
 
 --
--- TOC entry 242 (class 1259 OID 40169)
+-- TOC entry 242 (class 1259 OID 44366)
 -- Name: horarios_id_horario_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1507,7 +1565,7 @@ CREATE SEQUENCE public.horarios_id_horario_seq
 ALTER SEQUENCE public.horarios_id_horario_seq OWNER TO postgres;
 
 --
--- TOC entry 5081 (class 0 OID 0)
+-- TOC entry 5080 (class 0 OID 0)
 -- Dependencies: 242
 -- Name: horarios_id_horario_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1547,7 +1605,7 @@ CREATE SEQUENCE public.knex_migrations_id_seq
 ALTER SEQUENCE public.knex_migrations_id_seq OWNER TO postgres;
 
 --
--- TOC entry 5082 (class 0 OID 0)
+-- TOC entry 5081 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: knex_migrations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1585,7 +1643,7 @@ CREATE SEQUENCE public.knex_migrations_lock_index_seq
 ALTER SEQUENCE public.knex_migrations_lock_index_seq OWNER TO postgres;
 
 --
--- TOC entry 5083 (class 0 OID 0)
+-- TOC entry 5082 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: knex_migrations_lock_index_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1594,7 +1652,7 @@ ALTER SEQUENCE public.knex_migrations_lock_index_seq OWNED BY public.knex_migrat
 
 
 --
--- TOC entry 226 (class 1259 OID 39973)
+-- TOC entry 226 (class 1259 OID 44167)
 -- Name: pnfs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1613,7 +1671,7 @@ CREATE TABLE public.pnfs (
 ALTER TABLE public.pnfs OWNER TO postgres;
 
 --
--- TOC entry 5084 (class 0 OID 0)
+-- TOC entry 5083 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.codigo_pnf; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1622,7 +1680,7 @@ COMMENT ON COLUMN public.pnfs.codigo_pnf IS 'Código institucional del PNF (ej: 
 
 
 --
--- TOC entry 5085 (class 0 OID 0)
+-- TOC entry 5084 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.nombre_pnf; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1631,7 +1689,7 @@ COMMENT ON COLUMN public.pnfs.nombre_pnf IS 'Nombre completo del Programa Nacion
 
 
 --
--- TOC entry 5086 (class 0 OID 0)
+-- TOC entry 5085 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.descripcion_pnf; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1640,7 +1698,7 @@ COMMENT ON COLUMN public.pnfs.descripcion_pnf IS 'Objetivos y alcance del progra
 
 
 --
--- TOC entry 5087 (class 0 OID 0)
+-- TOC entry 5086 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.poblacion_estudiantil_pnf; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1649,7 +1707,7 @@ COMMENT ON COLUMN public.pnfs.poblacion_estudiantil_pnf IS 'Estudiantes activos 
 
 
 --
--- TOC entry 5088 (class 0 OID 0)
+-- TOC entry 5087 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.activo; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1658,7 +1716,7 @@ COMMENT ON COLUMN public.pnfs.activo IS 'Indica si el PNF está actualmente acti
 
 
 --
--- TOC entry 5089 (class 0 OID 0)
+-- TOC entry 5088 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1667,7 +1725,7 @@ COMMENT ON COLUMN public.pnfs.created_at IS 'Fecha de creación del registro';
 
 
 --
--- TOC entry 5090 (class 0 OID 0)
+-- TOC entry 5089 (class 0 OID 0)
 -- Dependencies: 226
 -- Name: COLUMN pnfs.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1676,7 +1734,7 @@ COMMENT ON COLUMN public.pnfs.updated_at IS 'Fecha de última actualización';
 
 
 --
--- TOC entry 225 (class 1259 OID 39972)
+-- TOC entry 225 (class 1259 OID 44166)
 -- Name: pnfs_id_pnf_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1692,7 +1750,7 @@ CREATE SEQUENCE public.pnfs_id_pnf_seq
 ALTER SEQUENCE public.pnfs_id_pnf_seq OWNER TO postgres;
 
 --
--- TOC entry 5091 (class 0 OID 0)
+-- TOC entry 5090 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: pnfs_id_pnf_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1701,7 +1759,7 @@ ALTER SEQUENCE public.pnfs_id_pnf_seq OWNED BY public.pnfs.id_pnf;
 
 
 --
--- TOC entry 233 (class 1259 OID 40044)
+-- TOC entry 233 (class 1259 OID 44238)
 -- Name: profesores; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1723,7 +1781,7 @@ CREATE TABLE public.profesores (
 ALTER TABLE public.profesores OWNER TO postgres;
 
 --
--- TOC entry 5092 (class 0 OID 0)
+-- TOC entry 5091 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.id_profesor; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1732,7 +1790,7 @@ COMMENT ON COLUMN public.profesores.id_profesor IS 'ID único del profesor';
 
 
 --
--- TOC entry 5093 (class 0 OID 0)
+-- TOC entry 5092 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.id_categoria; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1741,7 +1799,7 @@ COMMENT ON COLUMN public.profesores.id_categoria IS 'Categoría del profesor';
 
 
 --
--- TOC entry 5094 (class 0 OID 0)
+-- TOC entry 5093 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.id_cedula; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1750,7 +1808,7 @@ COMMENT ON COLUMN public.profesores.id_cedula IS 'Relación con la tabla de usua
 
 
 --
--- TOC entry 5095 (class 0 OID 0)
+-- TOC entry 5094 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.id_dedicacion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1759,7 +1817,7 @@ COMMENT ON COLUMN public.profesores.id_dedicacion IS 'Tipo de dedicación del pr
 
 
 --
--- TOC entry 5096 (class 0 OID 0)
+-- TOC entry 5095 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.id_ubicacion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1768,7 +1826,7 @@ COMMENT ON COLUMN public.profesores.id_ubicacion IS 'Ubicación física del prof
 
 
 --
--- TOC entry 5097 (class 0 OID 0)
+-- TOC entry 5096 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.pre_grado; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1777,7 +1835,7 @@ COMMENT ON COLUMN public.profesores.pre_grado IS 'Formación de pregrado del pro
 
 
 --
--- TOC entry 5098 (class 0 OID 0)
+-- TOC entry 5097 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.post_grado; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1786,7 +1844,7 @@ COMMENT ON COLUMN public.profesores.post_grado IS 'Formación de posgrado del pr
 
 
 --
--- TOC entry 5099 (class 0 OID 0)
+-- TOC entry 5098 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.area_de_conocimiento; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1795,7 +1853,7 @@ COMMENT ON COLUMN public.profesores.area_de_conocimiento IS 'Área principal de 
 
 
 --
--- TOC entry 5100 (class 0 OID 0)
+-- TOC entry 5099 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.fecha_ingreso; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1804,7 +1862,7 @@ COMMENT ON COLUMN public.profesores.fecha_ingreso IS 'Fecha de ingreso a la inst
 
 
 --
--- TOC entry 5101 (class 0 OID 0)
+-- TOC entry 5100 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1813,7 +1871,7 @@ COMMENT ON COLUMN public.profesores.created_at IS 'Fecha de creación del regist
 
 
 --
--- TOC entry 5102 (class 0 OID 0)
+-- TOC entry 5101 (class 0 OID 0)
 -- Dependencies: 233
 -- Name: COLUMN profesores.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1822,7 +1880,7 @@ COMMENT ON COLUMN public.profesores.updated_at IS 'Fecha de última actualizaci�
 
 
 --
--- TOC entry 232 (class 1259 OID 40043)
+-- TOC entry 232 (class 1259 OID 44237)
 -- Name: profesores_id_profesor_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -1837,7 +1895,7 @@ CREATE SEQUENCE public.profesores_id_profesor_seq
 ALTER SEQUENCE public.profesores_id_profesor_seq OWNER TO postgres;
 
 --
--- TOC entry 5103 (class 0 OID 0)
+-- TOC entry 5102 (class 0 OID 0)
 -- Dependencies: 232
 -- Name: profesores_id_profesor_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -1846,7 +1904,7 @@ ALTER SEQUENCE public.profesores_id_profesor_seq OWNED BY public.profesores.id_p
 
 
 --
--- TOC entry 227 (class 1259 OID 39990)
+-- TOC entry 227 (class 1259 OID 44184)
 -- Name: roles; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1861,7 +1919,7 @@ CREATE TABLE public.roles (
 ALTER TABLE public.roles OWNER TO postgres;
 
 --
--- TOC entry 5104 (class 0 OID 0)
+-- TOC entry 5103 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: COLUMN roles.id_rol; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1870,7 +1928,7 @@ COMMENT ON COLUMN public.roles.id_rol IS 'ID numérico pequeño del rol (1-255)'
 
 
 --
--- TOC entry 5105 (class 0 OID 0)
+-- TOC entry 5104 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: COLUMN roles.nombre_rol; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1879,7 +1937,7 @@ COMMENT ON COLUMN public.roles.nombre_rol IS 'Nombre descriptivo del rol (debe s
 
 
 --
--- TOC entry 5106 (class 0 OID 0)
+-- TOC entry 5105 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: COLUMN roles.created_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1888,7 +1946,7 @@ COMMENT ON COLUMN public.roles.created_at IS 'Fecha de creación del registro';
 
 
 --
--- TOC entry 5107 (class 0 OID 0)
+-- TOC entry 5106 (class 0 OID 0)
 -- Dependencies: 227
 -- Name: COLUMN roles.updated_at; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1897,7 +1955,7 @@ COMMENT ON COLUMN public.roles.updated_at IS 'Fecha de última actualización de
 
 
 --
--- TOC entry 239 (class 1259 OID 40129)
+-- TOC entry 239 (class 1259 OID 44323)
 -- Name: secciones; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -1906,16 +1964,18 @@ CREATE TABLE public.secciones (
     valor_seccion character varying(20) NOT NULL,
     id_trayecto bigint NOT NULL,
     cupos_disponibles integer DEFAULT 20 NOT NULL,
+    turno text,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT chk_secciones_cupos_validos CHECK (((cupos_disponibles >= 8) AND (cupos_disponibles <= 40)))
+    CONSTRAINT chk_secciones_cupos_validos CHECK (((cupos_disponibles >= 8) AND (cupos_disponibles <= 40))),
+    CONSTRAINT secciones_turno_check CHECK ((turno = ANY (ARRAY['matutino'::text, 'vespertino'::text, 'nocturno'::text])))
 );
 
 
 ALTER TABLE public.secciones OWNER TO postgres;
 
 --
--- TOC entry 5108 (class 0 OID 0)
+-- TOC entry 5107 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: TABLE secciones; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1924,7 +1984,7 @@ COMMENT ON TABLE public.secciones IS 'Tabla de secciones académicas agrupadas p
 
 
 --
--- TOC entry 5109 (class 0 OID 0)
+-- TOC entry 5108 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: COLUMN secciones.id_seccion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1933,7 +1993,7 @@ COMMENT ON COLUMN public.secciones.id_seccion IS 'ID único de la sección (UUID
 
 
 --
--- TOC entry 5110 (class 0 OID 0)
+-- TOC entry 5109 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: COLUMN secciones.valor_seccion; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1942,7 +2002,7 @@ COMMENT ON COLUMN public.secciones.valor_seccion IS 'Valor identificador de la s
 
 
 --
--- TOC entry 5111 (class 0 OID 0)
+-- TOC entry 5110 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: COLUMN secciones.id_trayecto; Type: COMMENT; Schema: public; Owner: postgres
 --
@@ -1951,12 +2011,21 @@ COMMENT ON COLUMN public.secciones.id_trayecto IS 'Trayecto al que pertenece la 
 
 
 --
--- TOC entry 5112 (class 0 OID 0)
+-- TOC entry 5111 (class 0 OID 0)
 -- Dependencies: 239
 -- Name: COLUMN secciones.cupos_disponibles; Type: COMMENT; Schema: public; Owner: postgres
 --
 
 COMMENT ON COLUMN public.secciones.cupos_disponibles IS 'Cantidad de cupos disponibles (8-40)';
+
+
+--
+-- TOC entry 5112 (class 0 OID 0)
+-- Dependencies: 239
+-- Name: COLUMN secciones.turno; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.secciones.turno IS 'Esta columna es para saber el turno que le corresponde a la seccion.';
 
 
 --
@@ -1978,7 +2047,7 @@ COMMENT ON COLUMN public.secciones.updated_at IS 'Fecha de última actualizació
 
 
 --
--- TOC entry 238 (class 1259 OID 40128)
+-- TOC entry 238 (class 1259 OID 44322)
 -- Name: secciones_id_seccion_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -2002,7 +2071,7 @@ ALTER SEQUENCE public.secciones_id_seccion_seq OWNED BY public.secciones.id_secc
 
 
 --
--- TOC entry 229 (class 1259 OID 40001)
+-- TOC entry 229 (class 1259 OID 44195)
 -- Name: trayectos; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2064,7 +2133,7 @@ COMMENT ON COLUMN public.trayectos.updated_at IS 'Fecha de última actualizació
 
 
 --
--- TOC entry 228 (class 1259 OID 40000)
+-- TOC entry 228 (class 1259 OID 44194)
 -- Name: trayectos_id_trayecto_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -2089,7 +2158,7 @@ ALTER SEQUENCE public.trayectos_id_trayecto_seq OWNED BY public.trayectos.id_tra
 
 
 --
--- TOC entry 230 (class 1259 OID 40017)
+-- TOC entry 230 (class 1259 OID 44211)
 -- Name: ubicacion; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2140,7 +2209,7 @@ COMMENT ON COLUMN public.ubicacion.updated_at IS 'Fecha de última actualizació
 
 
 --
--- TOC entry 241 (class 1259 OID 40149)
+-- TOC entry 241 (class 1259 OID 44346)
 -- Name: unidades_curriculares; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2231,7 +2300,7 @@ COMMENT ON COLUMN public.unidades_curriculares.updated_at IS 'Fecha de última a
 
 
 --
--- TOC entry 240 (class 1259 OID 40148)
+-- TOC entry 240 (class 1259 OID 44345)
 -- Name: unidades_curriculares_id_unidad_curricular_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -2255,7 +2324,7 @@ ALTER SEQUENCE public.unidades_curriculares_id_unidad_curricular_seq OWNED BY pu
 
 
 --
--- TOC entry 231 (class 1259 OID 40027)
+-- TOC entry 231 (class 1259 OID 44221)
 -- Name: users; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -2407,36 +2476,36 @@ COMMENT ON COLUMN public.users.updated_at IS 'Fecha de última actualización';
 
 
 --
--- TOC entry 244 (class 1259 OID 40239)
--- Name: vista_horarios_completos; Type: MATERIALIZED VIEW; Schema: public; Owner: postgres
+-- TOC entry 244 (class 1259 OID 44411)
+-- Name: vista_profesor_completo; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE MATERIALIZED VIEW public.vista_horarios_completos AS
- SELECT (u.nombres)::text AS profesor_nombres,
-    (u.apellidos)::text AS profesor_apellidos,
-    p.id_profesor AS profesor_id,
-    (pnfs.nombre_pnf)::text AS nombre_pnf,
-    (t.valor_trayecto)::text AS trayecto,
-    (s.valor_seccion)::text AS seccion,
-    h.hora_inicio,
-    h.dia_semana,
-    h.hora_fin,
-    (h.aula)::text AS aula,
-    (uc.nombre_unidad_curricular)::text AS nombre_unidad_curricular
-   FROM ((((((public.users u
-     JOIN public.profesores p ON ((u.cedula = p.id_cedula)))
-     JOIN public.horarios h ON ((p.id_profesor = h.profesor_id)))
-     LEFT JOIN public.secciones s ON ((h.seccion_id = s.id_seccion)))
-     LEFT JOIN public.trayectos t ON ((s.id_trayecto = t.id_trayecto)))
-     LEFT JOIN public.pnfs ON ((t.id_pnf = pnfs.id_pnf)))
-     LEFT JOIN public.unidades_curriculares uc ON ((h.unidad_curricular_id = uc.id_unidad_curricular)))
-  WITH NO DATA;
+CREATE VIEW public.vista_profesor_completo AS
+ SELECT u.cedula,
+    u.nombres,
+    u.apellidos,
+    u.genero,
+    u.fecha_nacimiento,
+    p.fecha_ingreso,
+    ubi.nombre_ubicacion AS ubicacion,
+    c.nombre_categoria AS categoria,
+    d.nombre_dedicacion AS dedicacion,
+    u.email,
+    u.telefono_movil,
+    p.pre_grado,
+    p.post_grado,
+    p.area_de_conocimiento
+   FROM ((((public.profesores p
+     LEFT JOIN public.categoria c ON ((p.id_categoria = c.id_categoria)))
+     LEFT JOIN public.ubicacion ubi ON ((p.id_ubicacion = ubi.id_ubicacion)))
+     LEFT JOIN public.dedicacion d ON ((p.id_dedicacion = d.id_dedicacion)))
+     LEFT JOIN public.users u ON ((p.id_cedula = u.cedula)));
 
 
-ALTER MATERIALIZED VIEW public.vista_horarios_completos OWNER TO postgres;
+ALTER VIEW public.vista_profesor_completo OWNER TO postgres;
 
 --
--- TOC entry 4755 (class 2604 OID 40109)
+-- TOC entry 4756 (class 2604 OID 44303)
 -- Name: administradores id_administrador; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2444,7 +2513,7 @@ ALTER TABLE ONLY public.administradores ALTER COLUMN id_administrador SET DEFAUL
 
 
 --
--- TOC entry 4752 (class 2604 OID 40085)
+-- TOC entry 4753 (class 2604 OID 44279)
 -- Name: coordinadores id_coordinador; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2452,7 +2521,7 @@ ALTER TABLE ONLY public.coordinadores ALTER COLUMN id_coordinador SET DEFAULT ne
 
 
 --
--- TOC entry 4765 (class 2604 OID 40173)
+-- TOC entry 4766 (class 2604 OID 44370)
 -- Name: horarios id_horario; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2460,7 +2529,7 @@ ALTER TABLE ONLY public.horarios ALTER COLUMN id_horario SET DEFAULT nextval('pu
 
 
 --
--- TOC entry 4726 (class 2604 OID 38523)
+-- TOC entry 4727 (class 2604 OID 38523)
 -- Name: knex_migrations id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2468,7 +2537,7 @@ ALTER TABLE ONLY public.knex_migrations ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
--- TOC entry 4727 (class 2604 OID 38530)
+-- TOC entry 4728 (class 2604 OID 38530)
 -- Name: knex_migrations_lock index; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2476,7 +2545,7 @@ ALTER TABLE ONLY public.knex_migrations_lock ALTER COLUMN index SET DEFAULT next
 
 
 --
--- TOC entry 4733 (class 2604 OID 39976)
+-- TOC entry 4734 (class 2604 OID 44170)
 -- Name: pnfs id_pnf; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2484,7 +2553,7 @@ ALTER TABLE ONLY public.pnfs ALTER COLUMN id_pnf SET DEFAULT nextval('public.pnf
 
 
 --
--- TOC entry 4749 (class 2604 OID 40047)
+-- TOC entry 4750 (class 2604 OID 44241)
 -- Name: profesores id_profesor; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2492,7 +2561,7 @@ ALTER TABLE ONLY public.profesores ALTER COLUMN id_profesor SET DEFAULT nextval(
 
 
 --
--- TOC entry 4758 (class 2604 OID 40132)
+-- TOC entry 4759 (class 2604 OID 44326)
 -- Name: secciones id_seccion; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2500,7 +2569,7 @@ ALTER TABLE ONLY public.secciones ALTER COLUMN id_seccion SET DEFAULT nextval('p
 
 
 --
--- TOC entry 4740 (class 2604 OID 40004)
+-- TOC entry 4741 (class 2604 OID 44198)
 -- Name: trayectos id_trayecto; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2508,7 +2577,7 @@ ALTER TABLE ONLY public.trayectos ALTER COLUMN id_trayecto SET DEFAULT nextval('
 
 
 --
--- TOC entry 4762 (class 2604 OID 40152)
+-- TOC entry 4763 (class 2604 OID 44349)
 -- Name: unidades_curriculares id_unidad_curricular; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -2516,7 +2585,7 @@ ALTER TABLE ONLY public.unidades_curriculares ALTER COLUMN id_unidad_curricular 
 
 
 --
--- TOC entry 5038 (class 0 OID 40106)
+-- TOC entry 5038 (class 0 OID 44300)
 -- Dependencies: 237
 -- Data for Name: administradores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -2526,54 +2595,51 @@ COPY public.administradores (id_administrador, id_cedula, id_rol, created_at, up
 
 
 --
--- TOC entry 5025 (class 0 OID 39960)
+-- TOC entry 5025 (class 0 OID 44154)
 -- Dependencies: 224
 -- Data for Name: categoria; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.categoria (id_categoria, nombre_categoria, descripcion_categoria, created_at, updated_at) FROM stdin;
-1	Instructor	\N	2025-06-03 17:07:06.729774-04	2025-06-03 17:07:06.729774-04
-2	Asistente	\N	2025-06-03 17:07:06.729774-04	2025-06-03 17:07:06.729774-04
-3	Agregado	\N	2025-06-03 17:07:06.729774-04	2025-06-03 17:07:06.729774-04
-4	Asociado	\N	2025-06-03 17:07:06.729774-04	2025-06-03 17:07:06.729774-04
-5	Titular	\N	2025-06-03 17:07:06.729774-04	2025-06-03 17:07:06.729774-04
+1	Instructor	\N	2025-06-09 12:51:07.035834-04	2025-06-09 12:51:07.035834-04
+2	Asistente	\N	2025-06-09 12:51:07.035834-04	2025-06-09 12:51:07.035834-04
+3	Agregado	\N	2025-06-09 12:51:07.035834-04	2025-06-09 12:51:07.035834-04
+4	Asociado	\N	2025-06-09 12:51:07.035834-04	2025-06-09 12:51:07.035834-04
+5	Titular	\N	2025-06-09 12:51:07.035834-04	2025-06-09 12:51:07.035834-04
 \.
 
 
 --
--- TOC entry 5036 (class 0 OID 40082)
+-- TOC entry 5036 (class 0 OID 44276)
 -- Dependencies: 235
 -- Data for Name: coordinadores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.coordinadores (id_coordinador, id_cedula, id_ubicacion, id_pnf, created_at, updated_at) FROM stdin;
-2	31264460	1	1	2025-06-03 00:00:00-04	2025-06-03 00:00:00-04
 \.
 
 
 --
--- TOC entry 5024 (class 0 OID 39949)
+-- TOC entry 5024 (class 0 OID 44143)
 -- Dependencies: 223
 -- Data for Name: dedicacion; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.dedicacion (id_dedicacion, nombre_dedicacion, horas_docencia_semanales, horas_administrativas_semanales, created_at, updated_at) FROM stdin;
-1	Convencional	07:00:00	00:00:00	2025-06-03 17:07:06.732399-04	2025-06-03 17:07:06.732399-04
-2	Medio Tiempo	12:00:00	06:00:00	2025-06-03 17:07:06.732399-04	2025-06-03 17:07:06.732399-04
-3	Tiempo Completo	14:00:00	16:00:00	2025-06-03 17:07:06.732399-04	2025-06-03 17:07:06.732399-04
-4	Exclusivo	18:00:00	18:00:00	2025-06-03 17:07:06.732399-04	2025-06-03 17:07:06.732399-04
+1	Convencional	07:00:00	00:00:00	2025-06-09 12:51:07.038487-04	2025-06-09 12:51:07.038487-04
+2	Medio Tiempo	12:00:00	06:00:00	2025-06-09 12:51:07.038487-04	2025-06-09 12:51:07.038487-04
+3	Tiempo Completo	14:00:00	16:00:00	2025-06-09 12:51:07.038487-04	2025-06-09 12:51:07.038487-04
+4	Exclusivo	18:00:00	18:00:00	2025-06-09 12:51:07.038487-04	2025-06-09 12:51:07.038487-04
 \.
 
 
 --
--- TOC entry 5044 (class 0 OID 40170)
+-- TOC entry 5044 (class 0 OID 44367)
 -- Dependencies: 243
 -- Data for Name: horarios; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.horarios (id_horario, seccion_id, profesor_id, unidad_curricular_id, dia_semana, hora_inicio, hora_fin, aula, activo, created_at, updated_at) FROM stdin;
-4	1	1	1	Lunes	08:00:00	10:15:00	Aula 101	t	2025-06-03 18:41:06.462427-04	2025-06-03 18:41:06.462427-04
-6	1	1	2	Lunes	10:20:00	12:35:00	Aula 203	t	2025-06-03 20:18:40.898867-04	2025-06-03 20:18:40.898867-04
 \.
 
 
@@ -2584,19 +2650,19 @@ COPY public.horarios (id_horario, seccion_id, profesor_id, unidad_curricular_id,
 --
 
 COPY public.knex_migrations (id, name, batch, migration_time) FROM stdin;
-66	20250525000001_dedicacion.js	1	2025-06-03 17:06:56.734-04
-67	20250525000002_categoria.js	1	2025-06-03 17:06:56.763-04
-68	20250525000003_pnfs.js	1	2025-06-03 17:06:56.793-04
-69	20250525000004_roles.js	1	2025-06-03 17:06:56.807-04
-70	20250525000005_trayecto.js	1	2025-06-03 17:06:56.837-04
-71	20250525000006_ubicacion.js	1	2025-06-03 17:06:56.85-04
-72	20250525000007_users.js	1	2025-06-03 17:06:56.876-04
-73	20250525000008_profesores.js	1	2025-06-03 17:06:56.939-04
-74	20250525000009_coordinadores.js	1	2025-06-03 17:06:56.96-04
-75	20250525000010_administradores.js	1	2025-06-03 17:06:56.989-04
-76	20250525000011_secciones.js	1	2025-06-03 17:06:57.013-04
-77	20250525000012_unidad_curricular.js	1	2025-06-03 17:06:57.043-04
-78	20250525000013_horarios.js	1	2025-06-03 17:06:57.102-04
+118	20250525000001_dedicacion.js	1	2025-06-09 12:50:54.692-04
+119	20250525000002_categoria.js	1	2025-06-09 12:50:54.724-04
+120	20250525000003_pnfs.js	1	2025-06-09 12:50:54.751-04
+121	20250525000004_roles.js	1	2025-06-09 12:50:54.764-04
+122	20250525000005_trayecto.js	1	2025-06-09 12:50:54.795-04
+123	20250525000006_ubicacion.js	1	2025-06-09 12:50:54.808-04
+124	20250525000007_users.js	1	2025-06-09 12:50:54.833-04
+125	20250525000008_profesores.js	1	2025-06-09 12:50:54.892-04
+126	20250525000009_coordinadores.js	1	2025-06-09 12:50:54.911-04
+127	20250525000010_administradores.js	1	2025-06-09 12:50:54.939-04
+128	20250525000011_secciones.js	1	2025-06-09 12:50:54.968-04
+129	20250525000012_unidad_curricular.js	1	2025-06-09 12:50:55.001-04
+130	20250525000013_horarios.js	1	2025-06-09 12:50:55.057-04
 \.
 
 
@@ -2612,103 +2678,91 @@ COPY public.knex_migrations_lock (index, is_locked) FROM stdin;
 
 
 --
--- TOC entry 5027 (class 0 OID 39973)
+-- TOC entry 5027 (class 0 OID 44167)
 -- Dependencies: 226
 -- Data for Name: pnfs; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.pnfs (id_pnf, codigo_pnf, nombre_pnf, descripcion_pnf, poblacion_estudiantil_pnf, activo, created_at, updated_at) FROM stdin;
-1	ISW01	Ingeniería de Software	Programa académico enfocado en el desarrollo de sistemas de software de calidad, abarcando desde el análisis de requerimientos hasta el despliegue y mantenimiento de aplicaciones.	200	t	2025-06-03 17:07:28.974556-04	2025-06-03 18:06:02.80504-04
 \.
 
 
 --
--- TOC entry 5034 (class 0 OID 40044)
+-- TOC entry 5034 (class 0 OID 44238)
 -- Dependencies: 233
 -- Data for Name: profesores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.profesores (id_profesor, id_categoria, id_cedula, id_dedicacion, id_ubicacion, pre_grado, post_grado, area_de_conocimiento, fecha_ingreso, created_at, updated_at) FROM stdin;
-1	1	31264460	1	2	Ingeniería en Sistemas	Doctorado en Ciencias de la Computación	Inteligencia Artificial	2021-03-22	2025-06-03 17:07:25.638156-04	2025-06-03 17:07:25.638156-04
+1	1	31264460	1	2	Ingeniería en Sistemas	Doctorado en Ciencias de la Computación	Inteligencia Artificial	2021-03-22	2025-06-09 12:52:21.972321-04	2025-06-09 12:52:21.972321-04
+2	4	17744380	3	2	Ingeniería	Maestria	Informatica	2025-06-09	2025-06-09 13:06:57.921517-04	2025-06-09 13:06:57.921517-04
 \.
 
 
 --
--- TOC entry 5028 (class 0 OID 39990)
+-- TOC entry 5028 (class 0 OID 44184)
 -- Dependencies: 227
 -- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.roles (id_rol, nombre_rol, created_at, updated_at) FROM stdin;
-1	Vicerrector	2025-06-03 17:07:06.722896-04	2025-06-03 17:07:06.722896-04
-2	Director General de Gestión Curricular	2025-06-03 17:07:06.722896-04	2025-06-03 17:07:06.722896-04
+1	Vicerrector	2025-06-09 12:51:07.027636-04	2025-06-09 12:51:07.027636-04
+2	Director General de Gestión Curricular	2025-06-09 12:51:07.027636-04	2025-06-09 12:51:07.027636-04
 \.
 
 
 --
--- TOC entry 5040 (class 0 OID 40129)
+-- TOC entry 5040 (class 0 OID 44323)
 -- Dependencies: 239
 -- Data for Name: secciones; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.secciones (id_seccion, valor_seccion, id_trayecto, cupos_disponibles, created_at, updated_at) FROM stdin;
-1	Sección 1	1	38	2025-06-03 17:33:33.478112-04	2025-06-03 17:42:11.373394-04
-2	Sección 2	1	37	2025-06-03 17:33:33.478112-04	2025-06-03 17:42:11.373394-04
-4	Sección 1	2	40	2025-06-03 17:44:46.222171-04	2025-06-03 18:06:02.80504-04
-5	Sección 2	2	40	2025-06-03 17:44:46.222171-04	2025-06-03 18:06:02.80504-04
-6	Sección 3	2	40	2025-06-03 17:44:46.222171-04	2025-06-03 18:06:02.80504-04
+COPY public.secciones (id_seccion, valor_seccion, id_trayecto, cupos_disponibles, turno, created_at, updated_at) FROM stdin;
 \.
 
 
 --
--- TOC entry 5030 (class 0 OID 40001)
+-- TOC entry 5030 (class 0 OID 44195)
 -- Dependencies: 229
 -- Data for Name: trayectos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.trayectos (id_trayecto, poblacion_estudiantil, valor_trayecto, id_pnf, created_at, updated_at) FROM stdin;
-3	0	3	1	2025-06-03 17:07:28.974556-04	2025-06-03 17:07:28.974556-04
-4	0	4	1	2025-06-03 17:07:28.974556-04	2025-06-03 17:07:28.974556-04
-1	80	1	1	2025-06-03 17:07:28.974556-04	2025-06-03 17:07:28.974556-04
-2	120	2	1	2025-06-03 17:07:28.974556-04	2025-06-03 17:07:28.974556-04
 \.
 
 
 --
--- TOC entry 5031 (class 0 OID 40017)
+-- TOC entry 5031 (class 0 OID 44211)
 -- Dependencies: 230
 -- Data for Name: ubicacion; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.ubicacion (id_ubicacion, nombre_ubicacion, created_at, updated_at) FROM stdin;
-1	Núcleo de Humanidades y Ciencias Sociales	2025-06-03 17:07:06.727203-04	2025-06-03 17:07:06.727203-04
-2	Núcleo de Tegnología y Ciencias Administrativas	2025-06-03 17:07:06.727203-04	2025-06-03 17:07:06.727203-04
-3	Núcleo de Salud y Deporte	2025-06-03 17:07:06.727203-04	2025-06-03 17:07:06.727203-04
+1	Núcleo de Humanidades y Ciencias Sociales	2025-06-09 12:51:07.032585-04	2025-06-09 12:51:07.032585-04
+2	Núcleo de Tecnología y Ciencias Administrativas	2025-06-09 12:51:07.032585-04	2025-06-09 12:51:07.032585-04
+3	Núcleo de Salud y Deporte	2025-06-09 12:51:07.032585-04	2025-06-09 12:51:07.032585-04
 \.
 
 
 --
--- TOC entry 5042 (class 0 OID 40149)
+-- TOC entry 5042 (class 0 OID 44346)
 -- Dependencies: 241
 -- Data for Name: unidades_curriculares; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.unidades_curriculares (id_unidad_curricular, id_trayecto, codigo_unidad, nombre_unidad_curricular, descripcion_unidad_curricular, horas_clase, created_at, updated_at) FROM stdin;
-1	1	MAT-101	Matemáticas	Álgebra básica	3	2025-06-03 17:08:04.644611-04	2025-06-03 17:08:04.644611-04
-2	1	MAT01	Matemáticas Básicas	Curso introductorio de álgebra y cálculo diferencial	3	2025-06-03 19:37:16.319825-04	2025-06-03 19:37:16.319825-04
-3	2	FIS-02	Física Moderna	Fundamentos de física cuántica y relatividad	3	2025-06-03 19:42:45.719348-04	2025-06-03 19:42:45.719348-04
-4	3	POO-J1	Programación Orientada a Objetos	Principios de POO con implementación en Java	3	2025-06-03 19:43:01.028087-04	2025-06-03 19:43:01.028087-04
 \.
 
 
 --
--- TOC entry 5032 (class 0 OID 40027)
+-- TOC entry 5032 (class 0 OID 44221)
 -- Dependencies: 231
 -- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.users (cedula, nombres, apellidos, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero, email, activo, last_login, created_at, updated_at) FROM stdin;
-31264460	Gabriel Dayer	Leonett Armas	Av. Bermudez, Los teques	$2b$10$ku50V2rQoSDFd.ILdKdQoeoD/MgM9hYRUi5x/C5qILwybEum70Lwi	04142245310	\N	2004-11-27	masculino	gabrielleonett@uptamca.edu.ve	t	\N	2025-06-03 17:07:25.638156-04	2025-06-03 17:07:25.638156-04
+31264460	Gabriel Dayer	Leonett Armas	Av. Bermudez, Los teques	$2b$10$9gErmYZEP1zHMIWxQ/y.gOXAADti6idxfZDL3b3NkTBBbXFaKbfwi	04142245310	\N	2004-11-27	masculino	delegadogabrielleonett@gmail.com	t	\N	2025-06-09 12:52:21.972321-04	2025-06-09 12:52:21.972321-04
+17744380	Liseth Adreidy	Leonett Armas	Av.Bermudez, Edif.Torre Conteca, Piso 12, Apartamento B	$2b$10$LztyJJODzyHbNAI8DpNf7.jfSdzNPfxTP1E3tUsc6shIYNMHzdeda	04242238744	\N	1985-08-13	femenino	gabriel_leonett@hotmail.com	t	\N	2025-06-09 13:06:57.921517-04	2025-06-09 13:06:57.921517-04
 \.
 
 
@@ -2727,7 +2781,7 @@ SELECT pg_catalog.setval('public.administradores_id_administrador_seq', 1, false
 -- Name: coordinadores_id_coordinador_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.coordinadores_id_coordinador_seq', 2, true);
+SELECT pg_catalog.setval('public.coordinadores_id_coordinador_seq', 1, false);
 
 
 --
@@ -2736,7 +2790,7 @@ SELECT pg_catalog.setval('public.coordinadores_id_coordinador_seq', 2, true);
 -- Name: horarios_id_horario_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.horarios_id_horario_seq', 6, true);
+SELECT pg_catalog.setval('public.horarios_id_horario_seq', 1, false);
 
 
 --
@@ -2745,7 +2799,7 @@ SELECT pg_catalog.setval('public.horarios_id_horario_seq', 6, true);
 -- Name: knex_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.knex_migrations_id_seq', 78, true);
+SELECT pg_catalog.setval('public.knex_migrations_id_seq', 130, true);
 
 
 --
@@ -2763,7 +2817,7 @@ SELECT pg_catalog.setval('public.knex_migrations_lock_index_seq', 1, true);
 -- Name: pnfs_id_pnf_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.pnfs_id_pnf_seq', 1, true);
+SELECT pg_catalog.setval('public.pnfs_id_pnf_seq', 1, false);
 
 
 --
@@ -2772,7 +2826,7 @@ SELECT pg_catalog.setval('public.pnfs_id_pnf_seq', 1, true);
 -- Name: profesores_id_profesor_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.profesores_id_profesor_seq', 1, true);
+SELECT pg_catalog.setval('public.profesores_id_profesor_seq', 2, true);
 
 
 --
@@ -2781,7 +2835,7 @@ SELECT pg_catalog.setval('public.profesores_id_profesor_seq', 1, true);
 -- Name: secciones_id_seccion_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.secciones_id_seccion_seq', 8, true);
+SELECT pg_catalog.setval('public.secciones_id_seccion_seq', 1, false);
 
 
 --
@@ -2790,7 +2844,7 @@ SELECT pg_catalog.setval('public.secciones_id_seccion_seq', 8, true);
 -- Name: trayectos_id_trayecto_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.trayectos_id_trayecto_seq', 4, true);
+SELECT pg_catalog.setval('public.trayectos_id_trayecto_seq', 1, false);
 
 
 --
@@ -2799,11 +2853,11 @@ SELECT pg_catalog.setval('public.trayectos_id_trayecto_seq', 4, true);
 -- Name: unidades_curriculares_id_unidad_curricular_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.unidades_curriculares_id_unidad_curricular_seq', 4, true);
+SELECT pg_catalog.setval('public.unidades_curriculares_id_unidad_curricular_seq', 1, false);
 
 
 --
--- TOC entry 4829 (class 2606 OID 40113)
+-- TOC entry 4831 (class 2606 OID 44307)
 -- Name: administradores administradores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2812,7 +2866,7 @@ ALTER TABLE ONLY public.administradores
 
 
 --
--- TOC entry 4783 (class 2606 OID 39970)
+-- TOC entry 4785 (class 2606 OID 44164)
 -- Name: categoria categoria_nombre_categoria_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2821,7 +2875,7 @@ ALTER TABLE ONLY public.categoria
 
 
 --
--- TOC entry 4785 (class 2606 OID 39968)
+-- TOC entry 4787 (class 2606 OID 44162)
 -- Name: categoria categoria_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2830,7 +2884,7 @@ ALTER TABLE ONLY public.categoria
 
 
 --
--- TOC entry 4827 (class 2606 OID 40089)
+-- TOC entry 4829 (class 2606 OID 44283)
 -- Name: coordinadores coordinadores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2839,7 +2893,7 @@ ALTER TABLE ONLY public.coordinadores
 
 
 --
--- TOC entry 4779 (class 2606 OID 39958)
+-- TOC entry 4781 (class 2606 OID 44152)
 -- Name: dedicacion dedicacion_nombre_dedicacion_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2848,7 +2902,7 @@ ALTER TABLE ONLY public.dedicacion
 
 
 --
--- TOC entry 4781 (class 2606 OID 39956)
+-- TOC entry 4783 (class 2606 OID 44150)
 -- Name: dedicacion dedicacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2857,7 +2911,7 @@ ALTER TABLE ONLY public.dedicacion
 
 
 --
--- TOC entry 4848 (class 2606 OID 40183)
+-- TOC entry 4850 (class 2606 OID 44379)
 -- Name: horarios horarios_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2866,7 +2920,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4777 (class 2606 OID 38532)
+-- TOC entry 4779 (class 2606 OID 38532)
 -- Name: knex_migrations_lock knex_migrations_lock_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2875,7 +2929,7 @@ ALTER TABLE ONLY public.knex_migrations_lock
 
 
 --
--- TOC entry 4775 (class 2606 OID 38525)
+-- TOC entry 4777 (class 2606 OID 38525)
 -- Name: knex_migrations knex_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2884,7 +2938,7 @@ ALTER TABLE ONLY public.knex_migrations
 
 
 --
--- TOC entry 4791 (class 2606 OID 39984)
+-- TOC entry 4793 (class 2606 OID 44178)
 -- Name: pnfs pnfs_codigo_pnf_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2893,7 +2947,7 @@ ALTER TABLE ONLY public.pnfs
 
 
 --
--- TOC entry 4793 (class 2606 OID 39986)
+-- TOC entry 4795 (class 2606 OID 44180)
 -- Name: pnfs pnfs_nombre_pnf_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2902,7 +2956,7 @@ ALTER TABLE ONLY public.pnfs
 
 
 --
--- TOC entry 4795 (class 2606 OID 39982)
+-- TOC entry 4797 (class 2606 OID 44176)
 -- Name: pnfs pnfs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2911,7 +2965,7 @@ ALTER TABLE ONLY public.pnfs
 
 
 --
--- TOC entry 4823 (class 2606 OID 40065)
+-- TOC entry 4825 (class 2606 OID 44259)
 -- Name: profesores profesores_id_cedula_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2920,7 +2974,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4825 (class 2606 OID 40053)
+-- TOC entry 4827 (class 2606 OID 44247)
 -- Name: profesores profesores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2929,7 +2983,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4798 (class 2606 OID 39998)
+-- TOC entry 4800 (class 2606 OID 44192)
 -- Name: roles roles_nombre_rol_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2938,7 +2992,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 4800 (class 2606 OID 39996)
+-- TOC entry 4802 (class 2606 OID 44190)
 -- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2947,7 +3001,7 @@ ALTER TABLE ONLY public.roles
 
 
 --
--- TOC entry 4837 (class 2606 OID 40138)
+-- TOC entry 4839 (class 2606 OID 44335)
 -- Name: secciones secciones_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2956,7 +3010,7 @@ ALTER TABLE ONLY public.secciones
 
 
 --
--- TOC entry 4804 (class 2606 OID 40009)
+-- TOC entry 4806 (class 2606 OID 44203)
 -- Name: trayectos trayectos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2965,7 +3019,7 @@ ALTER TABLE ONLY public.trayectos
 
 
 --
--- TOC entry 4807 (class 2606 OID 40025)
+-- TOC entry 4809 (class 2606 OID 44219)
 -- Name: ubicacion ubicacion_nombre_ubicacion_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2974,7 +3028,7 @@ ALTER TABLE ONLY public.ubicacion
 
 
 --
--- TOC entry 4809 (class 2606 OID 40023)
+-- TOC entry 4811 (class 2606 OID 44217)
 -- Name: ubicacion ubicacion_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2983,7 +3037,7 @@ ALTER TABLE ONLY public.ubicacion
 
 
 --
--- TOC entry 4844 (class 2606 OID 40165)
+-- TOC entry 4846 (class 2606 OID 44362)
 -- Name: unidades_curriculares unidades_curriculares_codigo_unidad_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -2992,7 +3046,7 @@ ALTER TABLE ONLY public.unidades_curriculares
 
 
 --
--- TOC entry 4846 (class 2606 OID 40158)
+-- TOC entry 4848 (class 2606 OID 44355)
 -- Name: unidades_curriculares unidades_curriculares_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3001,7 +3055,7 @@ ALTER TABLE ONLY public.unidades_curriculares
 
 
 --
--- TOC entry 4833 (class 2606 OID 40125)
+-- TOC entry 4835 (class 2606 OID 44319)
 -- Name: administradores uq_administrador_rol; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3010,7 +3064,7 @@ ALTER TABLE ONLY public.administradores
 
 
 --
--- TOC entry 4854 (class 2606 OID 40202)
+-- TOC entry 4856 (class 2606 OID 44398)
 -- Name: horarios uq_aula_horario; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3019,7 +3073,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4856 (class 2606 OID 40200)
+-- TOC entry 4858 (class 2606 OID 44396)
 -- Name: horarios uq_profesor_horario; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3028,7 +3082,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4839 (class 2606 OID 40147)
+-- TOC entry 4841 (class 2606 OID 44344)
 -- Name: secciones uq_seccion_trayecto; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3037,7 +3091,7 @@ ALTER TABLE ONLY public.secciones
 
 
 --
--- TOC entry 4814 (class 2606 OID 40039)
+-- TOC entry 4816 (class 2606 OID 44233)
 -- Name: users users_email_unique; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3046,7 +3100,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4816 (class 2606 OID 40037)
+-- TOC entry 4818 (class 2606 OID 44231)
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3055,7 +3109,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- TOC entry 4830 (class 1259 OID 40127)
+-- TOC entry 4832 (class 1259 OID 44321)
 -- Name: idx_administradores_rol; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3063,7 +3117,7 @@ CREATE INDEX idx_administradores_rol ON public.administradores USING btree (id_r
 
 
 --
--- TOC entry 4831 (class 1259 OID 40126)
+-- TOC entry 4833 (class 1259 OID 44320)
 -- Name: idx_administradores_usuario; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3071,7 +3125,7 @@ CREATE INDEX idx_administradores_usuario ON public.administradores USING btree (
 
 
 --
--- TOC entry 4786 (class 1259 OID 39971)
+-- TOC entry 4788 (class 1259 OID 44165)
 -- Name: idx_categoria_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3079,7 +3133,7 @@ CREATE INDEX idx_categoria_nombre ON public.categoria USING btree (nombre_catego
 
 
 --
--- TOC entry 4849 (class 1259 OID 40206)
+-- TOC entry 4851 (class 1259 OID 44402)
 -- Name: idx_horarios_dia_hora; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3087,7 +3141,7 @@ CREATE INDEX idx_horarios_dia_hora ON public.horarios USING btree (dia_semana, h
 
 
 --
--- TOC entry 4850 (class 1259 OID 40204)
+-- TOC entry 4852 (class 1259 OID 44400)
 -- Name: idx_horarios_profesor; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3095,7 +3149,7 @@ CREATE INDEX idx_horarios_profesor ON public.horarios USING btree (profesor_id);
 
 
 --
--- TOC entry 4851 (class 1259 OID 40203)
+-- TOC entry 4853 (class 1259 OID 44399)
 -- Name: idx_horarios_seccion; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3103,7 +3157,7 @@ CREATE INDEX idx_horarios_seccion ON public.horarios USING btree (seccion_id);
 
 
 --
--- TOC entry 4852 (class 1259 OID 40205)
+-- TOC entry 4854 (class 1259 OID 44401)
 -- Name: idx_horarios_uc; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3111,7 +3165,7 @@ CREATE INDEX idx_horarios_uc ON public.horarios USING btree (unidad_curricular_i
 
 
 --
--- TOC entry 4787 (class 1259 OID 39987)
+-- TOC entry 4789 (class 1259 OID 44181)
 -- Name: idx_pnfs_codigo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3119,7 +3173,7 @@ CREATE INDEX idx_pnfs_codigo ON public.pnfs USING btree (codigo_pnf);
 
 
 --
--- TOC entry 4788 (class 1259 OID 39989)
+-- TOC entry 4790 (class 1259 OID 44183)
 -- Name: idx_pnfs_estado; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3127,7 +3181,7 @@ CREATE INDEX idx_pnfs_estado ON public.pnfs USING btree (activo);
 
 
 --
--- TOC entry 4789 (class 1259 OID 39988)
+-- TOC entry 4791 (class 1259 OID 44182)
 -- Name: idx_pnfs_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3135,7 +3189,7 @@ CREATE INDEX idx_pnfs_nombre ON public.pnfs USING btree (nombre_pnf);
 
 
 --
--- TOC entry 4817 (class 1259 OID 40080)
+-- TOC entry 4819 (class 1259 OID 44274)
 -- Name: idx_profesores_antiguedad; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3143,7 +3197,7 @@ CREATE INDEX idx_profesores_antiguedad ON public.profesores USING btree (fecha_i
 
 
 --
--- TOC entry 4818 (class 1259 OID 40078)
+-- TOC entry 4820 (class 1259 OID 44272)
 -- Name: idx_profesores_categoria; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3151,7 +3205,7 @@ CREATE INDEX idx_profesores_categoria ON public.profesores USING btree (id_categ
 
 
 --
--- TOC entry 4819 (class 1259 OID 40079)
+-- TOC entry 4821 (class 1259 OID 44273)
 -- Name: idx_profesores_dedicacion; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3159,7 +3213,7 @@ CREATE INDEX idx_profesores_dedicacion ON public.profesores USING btree (id_dedi
 
 
 --
--- TOC entry 4820 (class 1259 OID 40077)
+-- TOC entry 4822 (class 1259 OID 44271)
 -- Name: idx_profesores_ubicacion; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3167,7 +3221,7 @@ CREATE INDEX idx_profesores_ubicacion ON public.profesores USING btree (id_ubica
 
 
 --
--- TOC entry 4821 (class 1259 OID 40076)
+-- TOC entry 4823 (class 1259 OID 44270)
 -- Name: idx_profesores_usuario; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3175,7 +3229,7 @@ CREATE INDEX idx_profesores_usuario ON public.profesores USING btree (id_cedula)
 
 
 --
--- TOC entry 4796 (class 1259 OID 39999)
+-- TOC entry 4798 (class 1259 OID 44193)
 -- Name: idx_roles_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3183,7 +3237,7 @@ CREATE INDEX idx_roles_nombre ON public.roles USING btree (nombre_rol);
 
 
 --
--- TOC entry 4834 (class 1259 OID 40144)
+-- TOC entry 4836 (class 1259 OID 44341)
 -- Name: idx_secciones_trayecto; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3191,7 +3245,7 @@ CREATE INDEX idx_secciones_trayecto ON public.secciones USING btree (id_trayecto
 
 
 --
--- TOC entry 4835 (class 1259 OID 40145)
+-- TOC entry 4837 (class 1259 OID 44342)
 -- Name: idx_secciones_valor; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3199,7 +3253,7 @@ CREATE INDEX idx_secciones_valor ON public.secciones USING btree (valor_seccion)
 
 
 --
--- TOC entry 4801 (class 1259 OID 40015)
+-- TOC entry 4803 (class 1259 OID 44209)
 -- Name: idx_trayectos_pnf; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3207,7 +3261,7 @@ CREATE INDEX idx_trayectos_pnf ON public.trayectos USING btree (id_pnf);
 
 
 --
--- TOC entry 4802 (class 1259 OID 40016)
+-- TOC entry 4804 (class 1259 OID 44210)
 -- Name: idx_trayectos_valor_pnf; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3215,7 +3269,7 @@ CREATE INDEX idx_trayectos_valor_pnf ON public.trayectos USING btree (valor_tray
 
 
 --
--- TOC entry 4805 (class 1259 OID 40026)
+-- TOC entry 4807 (class 1259 OID 44220)
 -- Name: idx_ubicacion_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3223,7 +3277,7 @@ CREATE INDEX idx_ubicacion_nombre ON public.ubicacion USING btree (nombre_ubicac
 
 
 --
--- TOC entry 4840 (class 1259 OID 40167)
+-- TOC entry 4842 (class 1259 OID 44364)
 -- Name: idx_uc_codigo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3231,7 +3285,7 @@ CREATE INDEX idx_uc_codigo ON public.unidades_curriculares USING btree (codigo_u
 
 
 --
--- TOC entry 4841 (class 1259 OID 40168)
+-- TOC entry 4843 (class 1259 OID 44365)
 -- Name: idx_uc_nombre; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3239,7 +3293,7 @@ CREATE INDEX idx_uc_nombre ON public.unidades_curriculares USING btree (nombre_u
 
 
 --
--- TOC entry 4842 (class 1259 OID 40166)
+-- TOC entry 4844 (class 1259 OID 44363)
 -- Name: idx_uc_trayecto; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3247,7 +3301,7 @@ CREATE INDEX idx_uc_trayecto ON public.unidades_curriculares USING btree (id_tra
 
 
 --
--- TOC entry 4810 (class 1259 OID 40042)
+-- TOC entry 4812 (class 1259 OID 44236)
 -- Name: idx_users_activo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3255,7 +3309,7 @@ CREATE INDEX idx_users_activo ON public.users USING btree (activo);
 
 
 --
--- TOC entry 4811 (class 1259 OID 40040)
+-- TOC entry 4813 (class 1259 OID 44234)
 -- Name: idx_users_email; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3263,7 +3317,7 @@ CREATE INDEX idx_users_email ON public.users USING btree (email);
 
 
 --
--- TOC entry 4812 (class 1259 OID 40041)
+-- TOC entry 4814 (class 1259 OID 44235)
 -- Name: idx_users_nombre_completo; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -3271,23 +3325,7 @@ CREATE INDEX idx_users_nombre_completo ON public.users USING btree (nombres, ape
 
 
 --
--- TOC entry 4872 (class 2620 OID 40224)
--- Name: trayectos trigger_actualizar_poblacion_pnf; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_actualizar_poblacion_pnf AFTER UPDATE OF poblacion_estudiantil ON public.trayectos FOR EACH ROW EXECUTE FUNCTION public.actualizar_poblacion_pnf();
-
-
---
--- TOC entry 4873 (class 2620 OID 40219)
--- Name: trayectos trigger_actualizar_secciones; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER trigger_actualizar_secciones AFTER UPDATE OF poblacion_estudiantil ON public.trayectos FOR EACH ROW EXECUTE FUNCTION public.actualizar_secciones_por_poblacion();
-
-
---
--- TOC entry 4865 (class 2606 OID 40114)
+-- TOC entry 4867 (class 2606 OID 44308)
 -- Name: administradores administradores_id_cedula_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3296,7 +3334,7 @@ ALTER TABLE ONLY public.administradores
 
 
 --
--- TOC entry 4866 (class 2606 OID 40119)
+-- TOC entry 4868 (class 2606 OID 44313)
 -- Name: administradores administradores_id_rol_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3305,7 +3343,7 @@ ALTER TABLE ONLY public.administradores
 
 
 --
--- TOC entry 4862 (class 2606 OID 40090)
+-- TOC entry 4864 (class 2606 OID 44284)
 -- Name: coordinadores coordinadores_id_cedula_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3314,7 +3352,7 @@ ALTER TABLE ONLY public.coordinadores
 
 
 --
--- TOC entry 4863 (class 2606 OID 40100)
+-- TOC entry 4865 (class 2606 OID 44294)
 -- Name: coordinadores coordinadores_id_pnf_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3323,7 +3361,7 @@ ALTER TABLE ONLY public.coordinadores
 
 
 --
--- TOC entry 4864 (class 2606 OID 40095)
+-- TOC entry 4866 (class 2606 OID 44289)
 -- Name: coordinadores coordinadores_id_ubicacion_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3332,7 +3370,7 @@ ALTER TABLE ONLY public.coordinadores
 
 
 --
--- TOC entry 4869 (class 2606 OID 40189)
+-- TOC entry 4871 (class 2606 OID 44385)
 -- Name: horarios horarios_profesor_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3341,7 +3379,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4870 (class 2606 OID 40184)
+-- TOC entry 4872 (class 2606 OID 44380)
 -- Name: horarios horarios_seccion_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3350,7 +3388,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4871 (class 2606 OID 40194)
+-- TOC entry 4873 (class 2606 OID 44390)
 -- Name: horarios horarios_unidad_curricular_id_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3359,7 +3397,7 @@ ALTER TABLE ONLY public.horarios
 
 
 --
--- TOC entry 4858 (class 2606 OID 40054)
+-- TOC entry 4860 (class 2606 OID 44248)
 -- Name: profesores profesores_id_categoria_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3368,7 +3406,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4859 (class 2606 OID 40059)
+-- TOC entry 4861 (class 2606 OID 44253)
 -- Name: profesores profesores_id_cedula_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3377,7 +3415,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4860 (class 2606 OID 40066)
+-- TOC entry 4862 (class 2606 OID 44260)
 -- Name: profesores profesores_id_dedicacion_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3386,7 +3424,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4861 (class 2606 OID 40071)
+-- TOC entry 4863 (class 2606 OID 44265)
 -- Name: profesores profesores_id_ubicacion_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3395,7 +3433,7 @@ ALTER TABLE ONLY public.profesores
 
 
 --
--- TOC entry 4867 (class 2606 OID 40139)
+-- TOC entry 4869 (class 2606 OID 44336)
 -- Name: secciones secciones_id_trayecto_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3404,7 +3442,7 @@ ALTER TABLE ONLY public.secciones
 
 
 --
--- TOC entry 4857 (class 2606 OID 40010)
+-- TOC entry 4859 (class 2606 OID 44204)
 -- Name: trayectos trayectos_id_pnf_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3413,7 +3451,7 @@ ALTER TABLE ONLY public.trayectos
 
 
 --
--- TOC entry 4868 (class 2606 OID 40159)
+-- TOC entry 4870 (class 2606 OID 44356)
 -- Name: unidades_curriculares unidades_curriculares_id_trayecto_foreign; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -3421,16 +3459,7 @@ ALTER TABLE ONLY public.unidades_curriculares
     ADD CONSTRAINT unidades_curriculares_id_trayecto_foreign FOREIGN KEY (id_trayecto) REFERENCES public.trayectos(id_trayecto) ON DELETE CASCADE;
 
 
---
--- TOC entry 5045 (class 0 OID 40239)
--- Dependencies: 244 5047
--- Name: vista_horarios_completos; Type: MATERIALIZED VIEW DATA; Schema: public; Owner: postgres
---
-
-REFRESH MATERIALIZED VIEW public.vista_horarios_completos;
-
-
--- Completed on 2025-06-03 20:21:24
+-- Completed on 2025-06-10 07:43:42
 
 --
 -- PostgreSQL database dump complete
