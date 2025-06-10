@@ -32,17 +32,17 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
     };
 
     return (
-        <AppBar position="fixed" sx={{ backgroundColor: backgroundColor ? 'bg-primary' : 'transparent' }}>
+        <AppBar position="fixed" color={backgroundColor ? 'primary' : 'transparent'} enableColorOnDark>
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     {/* LogoTexto: Visible en pantallas grandes (md y arriba) */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', height: '100px' }}>
-                        <LogoTexto Primary="bg-white" Secundary="bg-secundary" />
+                        <LogoTexto/>
                     </Box>
 
                     {/* LogoSimple: Visible en pantallas pequeñas y medianas (xs, sm) */}
                     <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', height: '100px' }}>
-                        <LogoSimple Primary="bg-white" Secundary="bg-secundary" />
+                        <LogoSimple/>
                     </Box>
 
                     {/* Menú para pantallas pequeñas */}

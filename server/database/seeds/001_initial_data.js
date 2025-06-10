@@ -19,7 +19,7 @@ export async function seed(knex) {
 
   await knex('ubicacion').insert([
     { id_ubicacion: 1, nombre_ubicacion: 'Núcleo de Humanidades y Ciencias Sociales' },
-    { id_ubicacion: 2, nombre_ubicacion: 'Núcleo de Tegnología y Ciencias Administrativas' },
+    { id_ubicacion: 2, nombre_ubicacion: 'Núcleo de Tecnología y Ciencias Administrativas' },
     { id_ubicacion: 3, nombre_ubicacion: 'Núcleo de Salud y Deporte' }
   ]);
 

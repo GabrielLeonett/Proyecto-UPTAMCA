@@ -1,4 +1,10 @@
 import bcrypt from "bcrypt";
+import crypto from 'crypto';
+
+export async function generarPassword() {
+    const randomString = crypto.randomBytes(10).toString('hex'); 
+    return randomString;
+}
 
 //Hasheo de la contraseñas o datos
 export async function hashPassword(password) {

@@ -1,57 +1,67 @@
-import TextField from "@mui/material/TextField";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema } from "../schemas/LoginSchema";
+import CustomLabel from "../components/customLabel";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import ResponsiveAppBar from "../components/navbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
-import ResponsiveAppBar from "../components/navbar";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 
 export default function Login() {
-
-  const { login,  } = useAuth();
-  const [data, setData] = useState({
-    email: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState({});
   const [processing, setProcessing] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    setError,
+    trigger,
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    shouldFocusError: true,
+  });
 
- 
+  const { login } = useAuth();
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  const onSubmit = async (formData) => {
+    // Forzar validación antes de enviar
+    const isValid = await trigger();
+    if (!isValid) {
+      console.log("El formulario no es válido, no se envía");
+      return;
+    }
+
     setProcessing(true);
-    setErrors({});
     try {
-      const datos = await login(data);
-      setProcessing(false);
+      login(formData);
     } catch (error) {
+      console.error("Error en el login:", error);
+      setError("root", {
+        type: "manual",
+        message: error.message || "Credenciales incorrectas",
+      });
+    } finally {
       setProcessing(false);
     }
-  }
+  };
 
   return (
     <>
       <ResponsiveAppBar
-        pages={["Universidad", "Académico", "Servicios", "Trámites"]}
+        pages={["Universidad", "Academico", "Servicios", "Tramites"]}
         backgroundColor
       />
 
       <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
         <Box
           component="form"
-          onSubmit={handleSubmit}
-          className="flex flex-col justify-around gap-4 rounded-2xl bg-white p-20 shadow-2xl sm:w-full md:w-140"
           noValidate
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col justify-around gap-4 rounded-2xl bg-white p-20 shadow-2xl sm:w-full md:w-140"
           autoComplete="off"
         >
           <Typography
@@ -64,70 +74,47 @@ export default function Login() {
           </Typography>
 
           <Box className="mb-5 w-full">
-            <Typography
-              variant="body2"
-              component={"label"}
-              sx={{ fontWeight: 500 }}
-              className="text-gray-700"
-            >
-              Correo electrónico
-            </Typography>
-            <TextField
+            <CustomLabel
               fullWidth
               id="email"
-              name="email"
               label="Email"
               type="email"
               variant="outlined"
-              value={data.email}
-              onChange={handleChange}
+              {...register("email")}
               error={!!errors.email}
-              helperText={errors.email}
+              helperText={errors.email?.message || "Ej: usuario@dominio.com"}
               className="mb-1"
-              size="medium"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "12px",
-                },
-              }}
             />
           </Box>
 
           <Box className="mb-6 w-full">
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 500 }}
-              className="mb-2 font-semibold text-gray-700"
-            >
-              Contraseña
-            </Typography>
-            <TextField
+            <CustomLabel
               fullWidth
               id="password"
-              name="password"
               label="Contraseña"
               type="password"
               variant="outlined"
-              value={data.password}
-              onChange={handleChange}
+              {...register("password")}
               error={!!errors.password}
-              helperText={errors.password}
+              helperText={errors.password?.message || "Mínimo 8 caracteres"}
               className="mb-1"
-              size="medium"
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "12px",
-                },
-              }}
             />
           </Box>
+
+          {errors.root && (
+            <Typography color="error" className="mb-4 text-center">
+              {errors.root.message}
+            </Typography>
+          )}
 
           <CustomButton
             type="submit"
             variant="contained"
             className="h-15 w-full rounded-xl py-3 font-medium"
-            disabled={processing}
-            tipo="primary"
+            disabled={processing || !isValid}
+            onClick={async () => {
+              await trigger(); // Forzar validación
+            }}
           >
             {processing ? (
               <CircularProgress size={24} color="inherit" />
@@ -139,7 +126,6 @@ export default function Login() {
           <Typography
             variant="body2"
             className="mt-6 text-center text-gray-600"
-            sx={{ "& a": { color: "#3b82f6", textDecoration: "none" } }}
           >
             <a href="/support" className="hover:underline">
               ¿Problemas para acceder? Contacta al soporte

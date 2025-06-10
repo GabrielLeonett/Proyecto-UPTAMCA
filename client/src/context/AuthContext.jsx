@@ -1,26 +1,72 @@
-import React, { createContext, useState } from "react";
-import { loginAPI } from "../apis/AuthApi.js";
-
+import { createContext, useState, useEffect, useCallback } from "react";
+import { loginAPI } from "../apis/AuthApi.js"; // Corregí el nombre del archivo
+import { verifyApi } from "../apis/vefiryApi.js"; // Corregí el nombre del archivo
+import { useNavigate} from "react-router-dom";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isAutenticate, setIsAutenticate] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Nuevo estado de carga
+  const navigate = useNavigate();
 
-  const login = async (userData)=> {
-    try{
+  const login = useCallback(async (userData) => {
+    try {
       const loginData = await loginAPI(userData);
-      setUser(loginData.user);
-      setIsAutenticate(true);
-      return loginData;
-    }catch(error){
-      throw error;
+      if (loginData?.user) {
+        setUser(loginData.user);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error; // Propaga el error para manejarlo en el componente
     }
-  };
+  }, []);
+
+  const logout = useCallback(() => {
+    setUser(null);
+    setIsAuthenticated(false);
+    navigate("/login");
+  }, [navigate]);
+
+  const verifyAuth = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const verifiedData = await verifyApi();
+      if (verifiedData) {
+        setUser(verifiedData);
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("Verification failed:", error);
+      setUser(null);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const checkUserAccess = useCallback((requiredRoles) => {
+    if (!isAuthenticated || !user?.roles) return false;
+    return user.roles.some(role => requiredRoles.includes(role));
+  }, [user, isAuthenticated]);
+
+  useEffect(() => {
+    verifyAuth();
+  }, [verifyAuth]);
 
   return (
-    <AuthContext.Provider value={{ user, login, isAutenticate }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isAuthenticated,
+        isLoading, // Exportamos el estado de carga
+        checkUserAccess
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

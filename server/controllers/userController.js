@@ -7,11 +7,9 @@ import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 const { loginUser } = UserModel;
 
 export default class UserController {
-  //Metodo para el loggeo de usuarios
+  //Metodo para el inicio de session de usuarios
   static async login(req, res) {
     try {
-
-      console.log("Iniciando el proceso de inicio de sesión...", req.body);
       // Valida los datos para el inicio de sesion
       const validationResult = validationPartialUser({ input: req.body });
       //Verifica que todos los datos ingresado sean correctos
@@ -72,5 +70,11 @@ export default class UserController {
       //Responde con la respuesta de un error y el mensaje
       res.status(500).json({ status: "error", message: error});
     }
+  }
+
+  //Metodo para verificar si un usuario tiene una cookie y devolver sus datos
+  static async verificarUsers(req, res){
+    const {user} = req;
+    return res.status(200).json(user);
   }
 }
