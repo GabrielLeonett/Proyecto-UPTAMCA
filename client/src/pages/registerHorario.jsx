@@ -1,34 +1,73 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Typography, TextField, Button, Stack, MenuItem } from '@mui/material';
+import { Box, Typography, TextField, Button, Stack, MenuItem, CircularProgress } from '@mui/material';
 import ResponsiveAppBar from "../components/navbar";
 import { z } from 'zod';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
-// VALIDACIÓN ZOD
+// VALIDACIÓN ZOD ACTUALIZADA
 const HorarioSchema = z.object({
   profesor: z.string().min(3, 'El nombre del profesor debe tener al menos 3 caracteres').nonempty('El campo Profesor no puede estar vacío'),
   trayecto: z.enum(['I', 'II', 'III', 'IV'], { errorMap: () => ({ message: 'Trayecto inválido' }) }),
   seccion: z.enum(['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'], { errorMap: () => ({ message: 'Sección inválida' }) }),
-  pnf: z.enum(['Informática', 'Administración', 'Prevención', 'Fisioterapia', 'Terapia Ocupacional', 'Deporte', 'Enfermería', 'Psicología'], { errorMap: () => ({ message: 'PNF inválido' }) }),
-  materia: z.string().min(3, 'La materia debe tener al menos 3 caracteres').nonempty('El campo Materia no puede estar vacío'),
+  pnf: z.string().nonempty('Debe seleccionar un PNF'),
+  materia: z.string().nonempty('Debe seleccionar una materia'),
   dia: z.enum(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'], { errorMap: () => ({ message: 'Día inválido' }) }),
   hora: z.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/, { message: 'Hora debe tener el formato HH:MM (24h)' }),
 });
-export default function HorarioForm (){
+
+export default function HorarioForm() {
+  const [pnfs, setPnfs] = useState([]);
+  const [materias, setMaterias] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors }
   } = useForm({
     resolver: zodResolver(HorarioSchema)
   });
 
+  // Obtener PNFs y Materias al cargar
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [pnfsRes, materiasRes] = await Promise.all([
+          axios.get('http://localhost:3001/api/pnfs'),
+          axios.get('http://localhost:3001/api/materias')
+        ]);
+        setPnfs(pnfsRes.data);
+        setMaterias(materiasRes.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error al obtener datos:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los PNFs y materias'
+        });
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // Observar cambios en PNF y trayecto para filtrar materias
+  const pnfSeleccionado = watch('pnf');
+  const trayectoSeleccionado = watch('trayecto');
+
+  const materiasFiltradas = materias.filter(materia => 
+    materia.pnfId === pnfSeleccionado && 
+    materia.trayecto === trayectoSeleccionado
+  );
+
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:3001/api/horarios', data); // <- Cambia la URL según tu backend
+      const response = await axios.post('http://localhost:3001/api/horarios', data);
       Swal.fire({
         icon: 'success',
         title: 'Horario registrado',
@@ -44,6 +83,14 @@ export default function HorarioForm (){
       });
     }
   };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -131,8 +178,8 @@ export default function HorarioForm (){
                   error={!!errors.pnf}
                   helperText={errors.pnf?.message}
                 >
-                  {["Informática", "Administración", "Prevención", "Fisioterapia", "Terapia Ocupacional", "Deporte", "Enfermería", "Psicología"].map((pnf) => (
-                    <MenuItem key={pnf} value={pnf}>{pnf}</MenuItem>
+                  {pnfs.map((pnf) => (
+                    <MenuItem key={pnf._id} value={pnf._id}>{pnf.nombre}</MenuItem>
                   ))}
                 </TextField>
               </Box>
@@ -141,11 +188,23 @@ export default function HorarioForm (){
                 <TextField
                   fullWidth
                   margin="dense"
-                  placeholder="Ej: Ingeniería del Software"
+                  select
+                  defaultValue=""
                   {...register('materia')}
                   error={!!errors.materia}
                   helperText={errors.materia?.message}
-                />
+                  disabled={!pnfSeleccionado || !trayectoSeleccionado || materiasFiltradas.length === 0}
+                >
+                  {!pnfSeleccionado || !trayectoSeleccionado ? (
+                    <MenuItem value="">Seleccione PNF y Trayecto primero</MenuItem>
+                  ) : materiasFiltradas.length === 0 ? (
+                    <MenuItem value="">No hay materias para este PNF y trayecto</MenuItem>
+                  ) : (
+                    materiasFiltradas.map((materia) => (
+                      <MenuItem key={materia._id} value={materia._id}>{materia.nombre}</MenuItem>
+                    ))
+                  )}
+                </TextField>
               </Box>
             </Box>
 
@@ -186,8 +245,14 @@ export default function HorarioForm (){
               <Button variant="outlined" color="secondary" sx={{ px: 4, py: 1.5, borderRadius: 2 }}>
                 Cancelar
               </Button>
-              <Button type="submit" variant="contained" color="primary" sx={{ px: 4, py: 1.5, borderRadius: 2 }}>
-                Guardar
+              <Button 
+                type="submit" 
+                variant="contained" 
+                color="primary" 
+                sx={{ px: 4, py: 1.5, borderRadius: 2 }}
+                disabled={loading}
+              >
+                {loading ? <CircularProgress size={24} /> : 'Guardar'}
               </Button>
             </Stack>
           </Box>

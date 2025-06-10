@@ -23,6 +23,7 @@ export default function FormRegister() {
     // Formatear fechas antes de enviar
     const formattedData = {
       ...formData,
+      telefono_local: null,
       cedula: parseInt(formData.cedula, 10),
       fecha_nacimiento: formData.fecha_nacimiento 
         ? dayjs(formData.fecha_nacimiento).format('DD-MM-YYYY') 
@@ -154,11 +155,6 @@ export default function FormRegister() {
         setStep(prev => prev - 1);
     };
 
-    const onSubmit = () => {
-        if (!validateStep(3)) return;
-        console.log("Formulario enviado:", formData);
-        // Aquí iría la lógica para enviar los datos al backend
-    };
 
     // Configuración de animaciones
     const stepVariants = {

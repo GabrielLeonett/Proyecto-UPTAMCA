@@ -1,98 +1,57 @@
 export async function up(knex) {
-  await knex.schema.createTable('pnfs', function(table) {
-    table.bigIncrements('id').primary();
-    table.string('nombre_pnf', 255).notNullable();
-    table.string('descripcion_pnf', 400).notNullable();
-    table.integer('poblacion_estudiantil').defaultTo(0);
-    table.string('codigo_pnf', 20).unique().notNullable();
-    table.timestamps(true, true);
+  await knex.schema.createTable("pnfs", (table) => {
+    // Identificador numérico pequeño (mejor que UUID para tablas de referencia)
+    table.specificType("id_pnf", "SMALLSERIAL")
+      .unsigned()
+      .notNullable()
+      .primary()
     
-    table.index(['codigo_pnf'], 'idx_pnfs_codigo');
-    table.index(['nombre_pnf'], 'idx_pnfs_nombre');
+    // Información básica
+    table.string("codigo_pnf", 10)
+      .notNullable()
+      .unique()
+      .comment('Código institucional del PNF (ej: ING-INF)');
+    
+    table.string("nombre_pnf", 60)
+      .notNullable()
+      .unique()
+      .comment('Nombre completo del Programa Nacional de Formación');
+    
+    // Detalles académicos
+    table.string("descripcion_pnf", 400)
+      .notNullable()
+      .comment('Objetivos y alcance del programa');
+    
+    // Estadísticas
+    table.integer("poblacion_estudiantil_pnf")
+      .unsigned()
+      .defaultTo(0)
+      .notNullable()
+      .comment('Estudiantes activos registrados');
+    
+    // Estado y auditoría
+    table.boolean("activo")
+      .defaultTo(true)
+      .notNullable()
+      .comment('Indica si el PNF está actualmente activo');
+    
+    table.timestamp("created_at")
+      .notNullable()
+      .defaultTo(knex.fn.now())
+      .comment('Fecha de creación del registro');
+    
+    table.timestamp("updated_at")
+      .notNullable()
+      .defaultTo(knex.fn.now())
+      .comment('Fecha de última actualización');
+
+    // Índices optimizados
+    table.index(["codigo_pnf"], "idx_pnfs_codigo");
+    table.index(["nombre_pnf"], "idx_pnfs_nombre");
+    table.index(["activo"], "idx_pnfs_estado");
   });
-
-  await knex.raw(`
-    CREATE FUNCTION public.actualizar_valor_estudiantil_pnf() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-    BEGIN
-        -- Tu nueva implementación aquí
-        UPDATE pnfs
-        SET poblacion_estudiantil = (
-            SELECT COALESCE(SUM(poblacion_estudiantil), 0)
-            FROM trayectos
-            WHERE id_pnf = NEW.id_pnf
-        ),
-        updated_at = CURRENT_TIMESTAMP
-        WHERE id = NEW.id_pnf;
-        
-        RETURN NEW;
-    END;
-    $$;
-
-    CREATE FUNCTION public.registrar_pnf(p_nombre_pnf character varying, p_descripcion_pnf character varying, p_poblacion integer, p_codigo_pnf character varying) RETURNS json
-    LANGUAGE plpgsql
-    AS $$
-    DECLARE
-        v_existe_codigo BOOLEAN;
-        v_existe_nombre BOOLEAN;
-        v_resultado JSON;
-    BEGIN
-        -- Verificar si el código ya existe
-        SELECT EXISTS(SELECT 1 FROM pnfs WHERE codigo_pnf = p_codigo_pnf) INTO v_existe_codigo;
-        
-        -- Verificar si el nombre ya existe
-        SELECT EXISTS(SELECT 1 FROM pnfs WHERE nombre_pnf = p_nombre_pnf) INTO v_existe_nombre;
-        
-        -- Validaciones
-        IF v_existe_codigo THEN
-            RETURN json_build_object(
-                'status', 'error',
-                'message', 'El código PNF ya está registrado'        );
-        ELSIF v_existe_nombre THEN
-            RETURN json_build_object(
-                'status', 'error',
-                'message', 'El nombre PNF ya está registrado'        );
-        END IF;
-        
-        -- Insertar el nuevo PNF (el ID se genera automáticamente por la secuencia pnfs_id_seq)
-        BEGIN
-            INSERT INTO pnfs (
-                nombre_pnf,
-                descripcion_pnf,
-                poblacion_estudiantil,
-                codigo_pnf
-            ) VALUES (
-                p_nombre_pnf,
-                p_descripcion_pnf,
-                p_poblacion,
-                p_codigo_pnf
-            );
-            
-            -- Respuesta exitosa
-            v_resultado := json_build_object(
-                'status', 'success',
-                'message', 'PNF y trayectos registrados exitosamente'
-            );
-            
-        EXCEPTION WHEN OTHERS THEN
-            -- Error en la operación
-            v_resultado := json_build_object(
-                'status', 'error',
-                'message', 'Error al registrar el PNF: ' || SQLERRM        );
-        END;
-        
-        RETURN v_resultado;
-    END;
-    $$;
-  `);
 }
 
 export async function down(knex) {
-  await knex.raw(`
-    DROP FUNCTION IF EXISTS actualizar_poblacion_pnf;
-    DROP FUNCTION IF EXISTS actualizar_valor_estudiantil_pnf;
-    DROP PROCEDURE IF EXISTS registrar_pnf;
-  `);
-  await knex.schema.dropTable('pnfs');
+  await knex.schema.dropTableIfExists("pnfs");
 }

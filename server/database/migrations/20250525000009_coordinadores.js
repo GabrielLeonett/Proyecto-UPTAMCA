@@ -1,13 +1,13 @@
 // migrations/YYYYMMDDHHMMSS_create_coordinadores_table.js
 export function up(knex) {
   return knex.schema.createTable('coordinadores', (table) => {
-    table.bigIncrements('id').primary();
+    table.bigIncrements('id_coordinador').primary()
     table.bigInteger('id_cedula').unsigned().notNullable()
-      .references('id').inTable('users');
-    table.bigInteger('id_ubicacion').unsigned().notNullable()
-      .references('id').inTable('ubicacion');
-    table.bigInteger('id_pnf').unsigned().notNullable()
-      .references('id').inTable('pnfs');
+      .references('cedula').inTable('users');
+    table.tinyint('id_ubicacion').unsigned().notNullable()
+      .references('id_ubicacion').inTable('ubicacion');
+    table.tinyint('id_pnf').unsigned().notNullable()
+      .references('id_pnf').inTable('pnfs');
     table.timestamps(true, true);
   });
 }

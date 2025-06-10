@@ -35,10 +35,11 @@ export default class ProfesorModel {
         direccion,
         passwordHash,
         telefono_movil,
-        telefono_local,
+        telefono_local || null,
         fecha_nacimiento,
         genero,
       ];
+      console.log(paramsUsuario)
 
       const queryProfesor = `CALL registrar_profesor(?, ?, ?, ?, ?, ?, ?, ?, NULL);`;
       const paramsProfesor = [

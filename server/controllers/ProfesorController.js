@@ -5,13 +5,11 @@ import ProfesorModel from "../models/ProfesorModel.js";
 export default class ProfesorController {
   static async registrarProfesor(req, res) {
     try {
-
-      console.log("Datos recibidos para registrar profesor:", req.body);
-      
+      console.log("Iniciando el proceso de inicio de sesión...", req.body);
       // Validación de datos del profesor
       const validationResultProfesor = validationProfesor({ input: req.body });
       if (!validationResultProfesor.success) {
-        const errores = validationResultProfesor.error.errors.map(error => error.path);
+        console.log("Errores de validación del profesor:", validationResultProfesor.error.errors);
         return res.status(400).json({
           success: false,
           errors: errores,
@@ -32,7 +30,6 @@ export default class ProfesorController {
 
       // Registrar profesor
       const result = await ProfesorModel.RegisterProfesor({ datos: req.body });
-      
       if (!result.success) {
         return res.status(400).json({
           success: false,
