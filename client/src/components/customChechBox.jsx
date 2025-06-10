@@ -8,7 +8,7 @@ export default function CustomToggleButtons({ options, value, onChange }) {
 
   const handleSelection = (event, newValue) => {
     if (newValue !== null) {
-      setSelectedValue(newValue);
+      newValue === selectedValue ? setSelectedValue('') : setSelectedValue(newValue);
       if (onChange) {
         onChange(newValue);
       }
@@ -28,13 +28,19 @@ export default function CustomToggleButtons({ options, value, onChange }) {
           sx={{
             minWidth: 10,
             fontSize: theme.typography.button,
-            "&.Mui-selected": {
-              fontSize: theme.typography.button,
-              backgroundColor: "primary.main",
-              color: "white",
+            transition: 'all 0.5s ease',
               "&:hover": {
                 fontSize: theme.typography.button,
-                backgroundColor: "primary.dark",
+                backgroundColor: theme.palette.primary.light,
+              },
+            "&.Mui-selected": {
+              fontSize: theme.typography.button,
+              backgroundColor: theme.palette.primary.main,
+              color: "white",
+              transition: 'all 0.5s ease',
+              "&:hover": {
+                fontSize: theme.typography.button,
+                backgroundColor: theme.palette.primary.dark,
               },
             },
           }}

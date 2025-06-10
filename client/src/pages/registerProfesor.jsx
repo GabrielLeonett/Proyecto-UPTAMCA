@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTheme } from "@mui/material/styles";
 import { Box, Typography } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomCalendar from "../components/customCalendar";
@@ -13,6 +14,7 @@ import dayjs from "dayjs";
 import { registrarProfesorApi } from "../apis/registrarProfesorApi";
 
 export default function FormRegister() {
+  const theme = useTheme();
   const {
     register,
     formState: { errors, isValid },
@@ -110,19 +112,33 @@ export default function FormRegister() {
 
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
-        sx={{ mt: 10 }}
+        sx={{
+            mt: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            minHeight: 'screen', 
+            backgroundColor: theme.palette.background.default
+          }}
       >
-        {/* mt: 8 = 32px (ajusta según la altura de tu AppBar) */}
-        <Typography component={"h2"} variant="h2">
+        <Typography variant="h2" component="h1" gutterBottom sx={{ mt: 6, ml:6 }}>
           Registrar Profesor
         </Typography>
 
-        <Box className="flex justify-center items-center flex-grow p-6">
+        <Box className="flex justify-center items-center flex-grow p-3" >
+          
           <Box
-            className="relative w-full max-w-5xl h-[650px]"
             component="form"
             noValidate
             onSubmit={handleSubmit(onSubmit)}
+            sx={
+              {
+              backgroundColor: theme.palette.background.paper, 
+              width: '80%',
+              padding: '50px',
+              borderRadius: '25px',
+              boxShadow: theme.shadows[10]
+            }}
           >
             <AnimatePresence custom={direction} initial={false}>
               <motion.div
@@ -133,7 +149,6 @@ export default function FormRegister() {
                 animate="center"
                 exit="exit"
                 transition={transition}
-                className="bg-white w-full h-full flex flex-col items-center justify-center gap-5 px-8 py-6 rounded-lg shadow-lg"
               >
                 {/* Paso 1: Datos Personales */}
                 {step === 1 && (
