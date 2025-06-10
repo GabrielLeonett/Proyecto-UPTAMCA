@@ -96,7 +96,7 @@ export default class ProfesorController {
 
   static async buscarProfesor(req, res){
     try {
-      const result = await ProfesorModel.buscarProfesor({datos: req.body})
+      const result = await ProfesorModel.buscarProfesor({datos: req.query})
 
       res.status(200).json({
         success: true,

@@ -47,7 +47,7 @@ profesorRouter.post('/Profesor/register', registrarProfesor)
 // {
 //   "busqueda": "3124460"
 // }
-profesorRouter.post('/Profesor/search', buscarProfesor)
+profesorRouter.get('/Profesor/search', buscarProfesor)
 
 // //PUT's
 // profesorRouter.put('/Profesor?id', actualizarProfesor)
