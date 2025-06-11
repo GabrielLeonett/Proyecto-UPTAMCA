@@ -1,20 +1,16 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Typography, Stack, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, Stack} from '@mui/material';
 import CustomButton from '../components/customButton';
 import CustomLabel from '../components/customLabel';
 import ResponsiveAppBar from "../components/navbar";
 import PNFSchema from '../schemas/PnfSchema';
-import { registrarPnfApi } from '../apis/registrarPNFApi';
+import { registrarPnfApi } from '../apis/PNFApi';
 
 export default function PnfForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [snackbar, setSnackbar] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+
 
   const { 
     register, 
@@ -30,25 +26,10 @@ export default function PnfForm() {
     setIsSubmitting(true);
     try {
       await registrarPnfApi({ data });
-      reset();
-      setSnackbar({
-        open: true,
-        message: 'PNF registrado exitosamente!',
-        severity: 'success'
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: 'Error al registrar el PNF',
-        severity: 'error'
-      });
+
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -145,20 +126,6 @@ export default function PnfForm() {
           </Box>
         </Box>
       </Box>
-
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </>
   );
 }

@@ -64,7 +64,7 @@ export default class CurricularModel {
   static async mostrarPNF() {
     try {
       const resultado = await db.raw(`SELECT * FROM pnfs`);
-      const respuesta = resultado.rows[0];
+      const respuesta = resultado.rows;
       return {
         data: respuesta,
         success: true,

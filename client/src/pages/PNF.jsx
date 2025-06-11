@@ -1,26 +1,55 @@
+import { useEffect, useState } from "react";
 import ResponsiveAppBar from "../components/navbar";
-import { Typography, Box} from "@mui/material";
-import {useTheme} from "@mui/material/styles";
+import { Typography, Box, CircularProgress } from "@mui/material";
 import CardPNF from "../components/cardPNF";
+import { pedirPNFApi } from "../apis/PNFApi";
 
 export default function PNF() {
-  const theme = useTheme();
-  
+  const [PNFS, setPNFS] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPNFS = async () => {
+        const data = await pedirPNFApi();
+        console.log(data)
+        setPNFS(data);
+        setLoading(false);
+    };
+
+    fetchPNFS();
+  }, []);
+
   return (
     <>
       <ResponsiveAppBar
         pages={["registerProfesor", "Académico", "Servicios", "Trámites"]}
         backgroundColor
       />
-      
+
       <Box sx={{ pt: 12, px: 5 }}>
-        <Typography component="h1" variant="h4" sx={{ mt: 4, mr: 4}}>
-          Pogramas Nacionales de Formación (PNF)
+        <Typography component="h1" variant="h4" sx={{ mt: 4, mr: 4 }}>
+          Programas Nacionales de Formación (PNF)
         </Typography>
 
-        <Box>
-          <CardPNF pnf={{ name: "Ingeniería de Sistemas", codigo: "PNF", poblacion:300 }} />
-        </Box>
+        {loading ? (
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Box>
+            {PNFS.map((PNF) => (
+              <CardPNF
+                key={PNF.codigo_pnf} // Asegúrate de tener una key única
+                pnf={{
+                  name: PNF.nombre_pnf,
+                  codigo: PNF.codigo_pnf,
+                  poblacion: PNF.poblacion_estudiantil_pnf,
+                  descripcion: PNF.descripcion_pnf,
+                }}
+              />
+            ))}
+          </Box>
+        )}
       </Box>
     </>
   );

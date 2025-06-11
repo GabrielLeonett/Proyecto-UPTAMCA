@@ -1,6 +1,9 @@
 import Button from '@mui/material/Button';
+import { useTheme } from '@mui/material/styles';
 
 export default function CustomButton({ tipo = 'primary', ...props }) {
+  const theme = useTheme();
+
   return (
     <Button
       sx={{
@@ -13,27 +16,32 @@ export default function CustomButton({ tipo = 'primary', ...props }) {
 
         // Estilos dinámicos según el tipo
         ...(tipo === 'primary' && {
-          backgroundColor: '#53A6E5', // $Primary-500
-          color: 'white',
-          border: 'none',
+          backgroundColor: theme.palette.primary[500], // $Primary-500
+          color: theme.palette.primary.contrastText,
           borderRadius: '12px',
           '&:hover': {
-            backgroundColor: '#0d47a1', // $Primary-900
+            backgroundColor: theme.palette.primary[700], // $Primary-900
           },
           '&:active': {
-            backgroundColor: '#1565c0', // $Primary-700
+            backgroundColor: theme.palette.primary[800], // $Primary-700
           },
+          // Estilos cuando está disabled
+          '&.Mui-disabled': {
+            backgroundColor: theme.palette.action.disabledBackground, // o un color personalizado
+            color: theme.palette.action.disabled,
+            // otras propiedades CSS que quieras cambiar
+          }
         }),
         ...(tipo === 'secondary' && {
-          backgroundColor: '#FFDCBE', // $Secondary-100
-          color: '#FE973D', // $Secondary-700
-          border: '1.5px solid #FEAE68', // $Secondary-500
+          backgroundColor: theme.palette.secondary[200], // $Secondary-100
+          color: theme.palette.secondary[500], // $Secondary-700
+          border: `1.5px solid ${theme.palette.secondary[500]}`, // $Secondary-500
           borderRadius: '12px',
           '&:hover': {
-            backgroundColor: '#FFC593', // $Secondary-400
+            backgroundColor: theme.palette.secondary[300], // $Secondary-400
           },
           '&:active': {
-            backgroundColor: '#FFC593', // $Secondary-800
+            backgroundColor: theme.palette.secondary[500], // $Secondary-800
           },
         }),
         ...(tipo === 'extra' && {

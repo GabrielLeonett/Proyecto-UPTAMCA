@@ -69,7 +69,7 @@ export default class CurricularController {
       const respuestaModel = await CurricularModel.mostrarPNF();
       return res.status(201).json({
         success: true,
-        message: respuestaModel.data,
+        data: respuestaModel.data,
       });
     } catch (error) {
       console.log(error);
