@@ -17,13 +17,14 @@ const PNFSchema = z.object({
     .max(500, 'La descripción no puede exceder los 500 caracteres'),
     
     poblacionPNF: z.number({
-        invalid_type_error: 'La población debe ser un número',
-        required_error: 'La población estudiantil es obligatoria'
-    })
-    .int('Debe ser un número entero')
-    .positive('La población debe ser un número positivo')
-    .max(10000, 'La población no puede exceder 10,000 estudiantes'),
-        
+            invalid_type_error: 'La población debe ser un número',
+            required_error: 'La población estudiantil es obligatoria'
+        })
+        .int('Debe ser un número entero')
+        .positive('La población debe ser un número positivo')
+        .max(10000, 'La población no puede exceder 10,000 estudiantes'),
+            
+    
     codigoPNF: z.string({
     invalid_type_error: 'El código debe ser un texto',
     required_error: 'El código del PNF es obligatorio'
@@ -35,14 +36,4 @@ const PNFSchema = z.object({
     .toUpperCase()
 });
 
-// Validación completa
-export const validationPNF = ({input}) => {
-    const validationResult = PNFSchema.safeParse(input);
-    return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialPNF = ({input}) => {
-    const PartialPNFSchema = PNFSchema.partial().safeParse(input);
-    return PartialPNFSchema;
-};
+export default PNFSchema;

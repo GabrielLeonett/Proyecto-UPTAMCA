@@ -61,4 +61,16 @@ export default class CurricularModel {
       throw error || "Error al registrar el PNF";
     }
   }
+  static async mostrarPNF() {
+    try {
+      const resultado = await db.raw(`SELECT * FROM pnfs`);
+      const respuesta = resultado.rows[0];
+      return {
+        data: respuesta,
+        success: true,
+      };
+    } catch (error) {
+      throw error || "Error al registrar el PNF";
+    }
+  }
 }

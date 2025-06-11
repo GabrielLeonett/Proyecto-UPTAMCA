@@ -14,14 +14,16 @@ import FormRegister from "./pages/registerProfesor";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
 import Login from "./pages/login";
+import HorarioForm from "./pages/registerHorario";
+import PnfForm from "./pages/PnfFrom";
+import MateriaForm from "./pages/Materia";
+import PNF from "./pages/PNF";
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
 
 //Importacion de useState
 import { useState } from "react";
-import HorarioForm from "./pages/registerHorario";
-import PnfForm from "./pages/PnfFrom";
-import MateriaForm from "./pages/Materia";
+
 
 //Importacion de los estilos CSS
 import "./App.css";
@@ -64,15 +66,40 @@ export default function App() {
               <Route
                 path="/registerProfesor"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                    ]}
-                  >
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <FormRegister />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/registerPNF"
+                element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                    <PnfForm/>
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/RegistrarHorario"
+                element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                    <HorarioForm/>
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/registerUnidadCurricular"
+                element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                    <MateriaForm/>
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/PNF"
+                element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                    <PNF/>
                   </ProtectedViews>
                 }
               />

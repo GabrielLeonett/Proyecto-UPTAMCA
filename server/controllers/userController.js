@@ -21,7 +21,7 @@ export default class UserController {
       //Manda los datos al modelo y espera una respuesta
       const respuestaModel = await loginUser({email: asegurarStringEnMinusculas(req.body.email)});
       //Verifica que la respuesta del modelo sea la correcta
-      if(respuestaModel.data.status != 'success'){
+      if(respuestaModel.status != 'success'){
         res.status(401).json({status: false, message: respuestaModel.message})
       }
 

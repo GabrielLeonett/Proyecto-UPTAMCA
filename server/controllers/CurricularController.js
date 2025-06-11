@@ -64,4 +64,20 @@ export default class CurricularController {
       });
     }
   }
+  static async mostrarPNF(req, res) {
+    try {
+      const respuestaModel = await CurricularModel.mostrarPNF();
+      return res.status(201).json({
+        success: true,
+        message: respuestaModel.data,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        menssage:
+          error || "Error al registrar el PNF, por favor vuelva a intentarlo",
+      });
+    }
+  }
 }

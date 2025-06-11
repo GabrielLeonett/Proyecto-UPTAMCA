@@ -20,7 +20,6 @@ export default class UserModel {
         data: jsonResult,
       };
     } catch (error) {
-      console.error("Error al logear usuario:", error);
       return {
         status: "error",
         message: error.message || "Error en autenticación",

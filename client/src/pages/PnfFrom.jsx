@@ -1,42 +1,54 @@
-import React from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Typography, TextField, Button, Stack, Alert } from '@mui/material';
-import { z } from 'zod';
-import Swal from 'sweetalert2';
-import axios from 'axios';
+import { Box, Typography, Stack, Snackbar, Alert } from '@mui/material';
+import CustomButton from '../components/customButton';
+import CustomLabel from '../components/customLabel';
 import ResponsiveAppBar from "../components/navbar";
+import PNFSchema from '../schemas/PnfSchema';
+import { registrarPnfApi } from '../apis/registrarPNFApi';
 
-// Esquema de validación
-const PnfSchema = z.object({
-  nombre: z.string().min(3, 'El nombre debe tener al menos 3 caracteres').nonempty('Campo obligatorio'),
-  codigo: z.string().min(2, 'El código debe tener al menos 2 caracteres').nonempty('Campo obligatorio'),
-  descripcion: z.string().optional()
-});
+export default function PnfForm() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
-export default function PnfForm({ onPnfAdded }) {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
-    resolver: zodResolver(PnfSchema)
+  const { 
+    register, 
+    handleSubmit, 
+    reset, 
+    formState: { errors, isValid } 
+  } = useForm({
+    resolver: zodResolver(PNFSchema), 
+    mode: 'onChange'
   });
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
-      const response = await axios.post('http://localhost:3001/api/pnfs', data);
-      Swal.fire({
-        icon: 'success',
-        title: 'PNF registrado',
-        text: 'El PNF se ha guardado correctamente'
-      });
+      await registrarPnfApi({ data });
       reset();
-      if (onPnfAdded) onPnfAdded(response.data);
-    } catch (error) {
-      console.error('Error al registrar PNF:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: error.response?.data?.message || 'Hubo un problema al guardar el PNF'
+      setSnackbar({
+        open: true,
+        message: 'PNF registrado exitosamente!',
+        severity: 'success'
       });
+    } catch (error) {
+      setSnackbar({
+        open: true,
+        message: 'Error al registrar el PNF',
+        severity: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   return (
@@ -67,50 +79,86 @@ export default function PnfForm({ onPnfAdded }) {
             Registrar Nuevo PNF
           </Typography>
           
-          <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+          <Box 
+            component="form" 
+            onSubmit={handleSubmit(onSubmit)}
+            aria-labelledby="pnf-form-title"
+          >
             <Stack spacing={3}>
-              <TextField
+              <CustomLabel
                 fullWidth
                 label="Nombre del PNF"
                 variant="outlined"
-                {...register('nombre')}
-                error={!!errors.nombre}
-                helperText={errors.nombre?.message}
-                InputLabelProps={{ shrink: true }}
+                {...register('nombre_pnf')}
+                error={!!errors.nombre_pnf}
+                helperText={errors.nombre_pnf?.message || 'Colocar el nombre del PNF'}
+                inputProps={{ 'aria-required': 'true' }}
               />
               
-              <TextField
+              <CustomLabel
                 fullWidth
                 label="Código"
                 variant="outlined"
-                {...register('codigo')}
-                error={!!errors.codigo}
-                helperText={errors.codigo?.message}
-                InputLabelProps={{ shrink: true }}
+                {...register('codigoPNF')}
+                error={!!errors.codigoPNF}
+                helperText={errors.codigoPNF?.message}
+                inputProps={{ 'aria-required': 'true' }}
+              />
+
+              <CustomLabel
+                fullWidth
+                label="Población del PNF"
+                type="number"
+                variant="outlined"
+                {...register('poblacionPNF', { valueAsNumber: true })}
+                error={!!errors.poblacionPNF}
+                helperText={errors.poblacionPNF?.message}
+                inputProps={{ 'aria-required': 'true' }}
               />
               
-              <TextField
+              <CustomLabel
                 fullWidth
                 label="Descripción (Opcional)"
                 variant="outlined"
                 multiline
                 rows={3}
                 {...register('descripcion')}
-                InputLabelProps={{ shrink: true }}
               />
               
               <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button variant="outlined" color="secondary" onClick={() => reset()}>
+                <CustomButton 
+                  tipo='secondary' 
+                  onClick={() => reset()}
+                  disabled={isSubmitting}
+                >
                   Limpiar
-                </Button>
-                <Button type="submit" variant="contained" color="primary">
-                  Guardar PNF
-                </Button>
+                </CustomButton>
+                <CustomButton 
+                  tipo="primary"
+                  type="submit"
+                  disabled={!isValid || isSubmitting}
+                >
+                  {isSubmitting ? 'Guardando...' : 'Guardar PNF'}
+                </CustomButton>
               </Stack>
             </Stack>
           </Box>
         </Box>
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
