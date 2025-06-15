@@ -9,8 +9,10 @@ import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
+import { useTheme } from "@mui/material/styles";
 
 export default function Login() {
+  const theme = useTheme();
   const [processing, setProcessing] = useState(false);
 
   const {
@@ -26,6 +28,25 @@ export default function Login() {
   });
 
   const { login } = useAuth();
+
+  const pages = [
+    { name: 'Inicio', url: '/' },
+    { 
+      name: 'Profesor', 
+      submenu: [
+        { name: 'Ver', url: '/Profesores' },
+        { name: 'Registrar', url: '/registerProfesor' },
+      ]
+    },
+    { 
+      name: 'PNF', 
+      submenu: [
+        { name: 'Ver', url: '/PNF' },
+        { name: 'Registrar', url: '/registerPNF' },
+      ]
+    },
+    { name: 'Contacto', url: '/contact' }
+  ];
 
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
@@ -52,22 +73,27 @@ export default function Login() {
   return (
     <>
       <ResponsiveAppBar
-        pages={["Universidad", "Academico", "Servicios", "Tramites"]}
+        pages={pages}
         backgroundColor
       />
 
-      <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center ">
         <Box
           component="form"
           noValidate
           onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col justify-around gap-4 rounded-2xl bg-white p-20 shadow-2xl sm:w-full md:w-140"
+          className="flex flex-col justify-around gap-4 rounded-2xl p-20 shadow-2xl sm:w-full md:w-140"
+          sx={{
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: 3,
+            borderRadius: 2,
+          }}
           autoComplete="off"
         >
           <Typography
             variant="h5"
             component="h1"
-            className="my-10 text-center font-bold text-gray-800"
+            className="my-10 text-center font-bold"
             sx={{ fontWeight: 600 }}
           >
             Inicio de sesión

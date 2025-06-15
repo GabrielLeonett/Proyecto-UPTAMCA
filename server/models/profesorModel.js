@@ -26,6 +26,37 @@ export default class ProfesorModel {
 
       const password = await generarPassword();
       
+       const Correo = {
+        asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
+        html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+              <h2 style="color: #2c3e50;">¡Bienvenido/a, Profesor/a!</h2>
+              
+              <p>Es un placer darle la bienvenida a nuestra plataforma académica.</p>
+              
+              <p>Como parte del proceso de incorporación, hemos generado sus credenciales de acceso:</p>
+              
+              <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
+                <p><strong>Correo de acceso:</strong> ${email}</p>
+                <p><strong>Contraseña temporal:</strong> ${password}</p>
+              </div>
+              
+              <p>Esta información ha sido enviada exclusivamente a su dirección de correo electrónico registrada. 
+              Por seguridad, le recomendamos:</p>
+              
+              <ul>
+                <li>Cambiar su contraseña después del primer inicio de sesión</li>
+                <li>No compartir estas credenciales con terceros</li>
+                <li>Guardar esta información de manera segura</li>
+              </ul>
+              
+              <p>Si no reconoce esta actividad o necesita asistencia, por favor contacte a nuestro 
+              <strong>departamento de soporte técnico</strong>.</p>
+            </div>
+          `,
+      };
+
+      await enviarEmail({ Destinatario: email, Correo: Correo });
 
       const passwordHash = await hashPassword(password);
 
@@ -82,38 +113,7 @@ export default class ProfesorModel {
         return { success: true, message: "Profesor registrado correctamente" };
       }); 
 
-      const Correo = {
-        asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
-        html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-              <h2 style="color: #2c3e50;">¡Bienvenido/a, Profesor/a!</h2>
-              
-              <p>Es un placer darle la bienvenida a nuestra plataforma académica.</p>
-              
-              <p>Como parte del proceso de incorporación, hemos generado sus credenciales de acceso:</p>
-              
-              <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-                <p><strong>Correo de acceso:</strong> ${email}</p>
-                <p><strong>Contraseña temporal:</strong> ${password}</p>
-              </div>
-              
-              <p>Esta información ha sido enviada exclusivamente a su dirección de correo electrónico registrada. 
-              Por seguridad, le recomendamos:</p>
-              
-              <ul>
-                <li>Cambiar su contraseña después del primer inicio de sesión</li>
-                <li>No compartir estas credenciales con terceros</li>
-                <li>Guardar esta información de manera segura</li>
-              </ul>
-              
-              <p>Si no reconoce esta actividad o necesita asistencia, por favor contacte a nuestro 
-              <strong>departamento de soporte técnico</strong>.</p>
-            </div>
-          `,
-      };
-
-      await enviarEmail({ Destinatario: email, Correo: Correo });
-
+     
       return respuestaTransaccion;
     } catch (error) {
       return {

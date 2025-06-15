@@ -4,6 +4,20 @@
  */
 import nodemailer from "nodemailer";
 
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
+
+// Configuración de rutas absolutas
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logoPath = path.join(__dirname, 'logo.png'); // Ajusta esta ruta
+
+// Verificación de existencia
+if (!fs.existsSync(logoPath)) {
+  throw new Error(`Archivo logo.png no encontrado en: ${logoPath}`);
+}
+
 /**
  * Configuración básica para el envío de correos electrónicos.
  * Este objeto contiene las credenciales y direcciones necesarias.
@@ -44,29 +58,33 @@ export async function enviarEmail({ Destinatario, Correo }) {
     subject: Correo.asunto, // Asunto del correo
     html: `
       <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto;">
-    <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
-        <img src="./logo.png" alt="Logo UPTAMCA" style="width: 100px;">
-    </header>
+          <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
+              <img src="cid:logo" alt="Logo UPTAMCA" style="width: 100px;">
+          </header>
 
-    <div style="padding: 20px;">
-      ${Correo.html}
-      <p style="color: #7f8c8d; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 15px;">
-                Este mensaje está dirigido exclusivamente al destinatario. Si usted no es la persona
-                a quien va dirigido, le solicitamos eliminarlo y notificarlo al remitente.
-      </p>
-    </div>
-    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-        <a href="http://localhost:5173/login" style="display: inline-block; background-color: #1C75BA; color: white; 
-                  padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-            Acceder a la plataforma
-        </a>
-    </div>
-    <footer style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px;">
-        © ${año.getUTCFullYear()} UPTAMCA. Todos los derechos reservados.
-    </footer>
-</div>
-    
+          <div style="padding: 20px;">
+            ${Correo.html}
+            <p style="color: #7f8c8d; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 15px;">
+                      Este mensaje está dirigido exclusivamente al destinatario. Si usted no es la persona
+                      a quien va dirigido, le solicitamos eliminarlo y notificarlo al remitente.
+            </p>
+          </div>
+          <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
+              <a href="http://localhost:5173/login" style="display: inline-block; background-color: #1C75BA; color: white; 
+                        padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
+                  Acceder a la plataforma
+              </a>
+          </div>
+          <footer style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px;">
+              © ${año.getUTCFullYear()} UPTAMCA. Todos los derechos reservados.
+          </footer>
+      </div>
         `, // Cuerpo del correo en formato HTML
+    attachments: [{
+      filename: 'logo.png',
+      path: logoPath, // Ruta a tu archivo local
+      cid: 'logo' // mismo ID que usas en el HTML
+    }]
   };
 
   /**
