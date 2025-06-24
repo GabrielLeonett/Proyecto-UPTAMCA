@@ -80,4 +80,36 @@ export default class CurricularController {
       });
     }
   }
+  static async mostrarTrayectos(req, res) {
+    try {
+      const respuestaModel = await CurricularModel.mostrarPNF();
+      return res.status(201).json({
+        success: true,
+        data: respuestaModel.data,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        menssage:
+          error || "Error al registrar el PNF, por favor vuelva a intentarlo",
+      });
+    }
+  }
+  static async mostrarUnTrayecto(req, res) {
+    try {
+      const respuestaModel = await CurricularModel.mostrarPNF();
+      return res.status(201).json({
+        success: true,
+        data: respuestaModel.data,
+      });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({
+        success: false,
+        menssage:
+          error || "Error al registrar el PNF, por favor vuelva a intentarlo",
+      });
+    }
+  }
 }

@@ -1,5 +1,5 @@
 export async function up(knex) {
-  await knex.schema.createTable("categoria", (table) => {
+  await knex.schema.createTable("categorias", (table) => {
     // Identificador numérico pequeño (óptimo para tablas de referencia)
     table.tinyint("id_categoria")
       .unsigned()
@@ -36,5 +36,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists("categoria");
+  await knex.schema.dropTableIfExists("categorias");
 }

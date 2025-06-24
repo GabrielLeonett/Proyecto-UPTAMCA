@@ -13,8 +13,7 @@ const EMAIL_CONFIG = {
   pass: "eufe wcxu ltpu vzgh", // Contraseña de aplicación generada en Gmail (no usar la contraseña personal directamente)
 };
 
-
-const año = new Date
+const año = new Date();
 
 /**
  * Función asíncrona para enviar correos electrónicos.
@@ -45,7 +44,7 @@ export async function enviarEmail({ Destinatario, Correo }) {
     html: `
       <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto;">
     <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
-        <img src="./logo.png" alt="Logo UPTAMCA" style="width: 100px;">
+        <img src="cid:logo@uptamca" alt="Logo UPTAMCA" style="width: 100px;">
     </header>
 
     <div style="padding: 20px;">
@@ -67,6 +66,13 @@ export async function enviarEmail({ Destinatario, Correo }) {
 </div>
     
         `, // Cuerpo del correo en formato HTML
+    attachments: [
+      {
+        filename: "logo.png",
+        path: "./utils/logo.png", // Ruta local o URL
+        cid: "logo@uptamca", // Identificador único
+      },
+    ],
   };
 
   /**
@@ -76,7 +82,6 @@ export async function enviarEmail({ Destinatario, Correo }) {
   try {
     // Intenta enviar el correo con las opciones configuradas
     await transporter.sendMail(mailOptions);
-    console.log("✅ Correo enviado!"); // Mensaje de éxito
   } catch (error) {
     // Captura y muestra cualquier error que ocurra durante el envío
     console.error("❌ Error al enviar:", error);

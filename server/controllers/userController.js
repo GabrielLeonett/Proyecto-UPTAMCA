@@ -19,21 +19,30 @@ export default class UserController {
       }
 
       //Manda los datos al modelo y espera una respuesta
-      const respuestaModel = await loginUser({email: asegurarStringEnMinusculas(req.body.email)});
+      const respuestaModel = await loginUser({
+        email: asegurarStringEnMinusculas(req.body.email),
+      });
       //Verifica que la respuesta del modelo sea la correcta
-      if(respuestaModel.status != 'success'){
-        res.status(401).json({status: false, message: respuestaModel.message})
+      if (respuestaModel.state != "success") {
+        res
+          .status(401)
+          .json({ status: false, message: respuestaModel.message });
       }
 
       //Se instancia los datos del usuario que devolvio el modelo
-      const user = respuestaModel.data.usuario;    
-      
+      const user = respuestaModel.data.usuario;
+
       //Valida la contraseña para saber si es la que esta en la base de datos
-      const validatePassword = await comparePassword(req.body.password, user.password);
+      const validatePassword = await comparePassword(
+        req.body.password,
+        user.password
+      );
       //Verifica que la contraseña si esten bien
-      if(!validatePassword){
+      if (!validatePassword) {
         //En su defecto regresa una respuesta de Email o Contraseña invalida"
-        res.status(401).json({status: false, message: "Email o Contraseña invalida"});
+        res
+          .status(401)
+          .json({ status: false, message: "Email o Contraseña invalida" });
       }
 
       // Creando el token de sesion
@@ -46,19 +55,16 @@ export default class UserController {
         },
       });
 
-      //Respondiendo con una cookie 
+      //Respondiendo con una cookie y algunos datos que pueden ser de interes
       res.cookie("autorization", token, {
-        maxAge: 60 * 60 * 60 * 24,
-        httpOnly: true,
-        secure: false,
-        sameSite: "lax",
-        domain: "localhost",
-      });
-
-      //Responde con la respuesta de Inicio de session exitoso
-      return res.status(200).json({
+      maxAge: 60 * 60 * 24 * 1000, // Corregido: debe ser en milisegundos
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      domain: "localhost",
+      }).status(200).json({
         status: "success",
-        message: "Inicio de session exitoso",
+        message: "Inicio de sesión exitoso",
         user: {
           id: user.id,
           apellidos: user.apellidos,
@@ -68,13 +74,13 @@ export default class UserController {
       });
     } catch (error) {
       //Responde con la respuesta de un error y el mensaje
-      res.status(500).json({ status: "error", message: error});
+      res.status(500).json({ status: "error", message: error });
     }
   }
 
   //Metodo para verificar si un usuario tiene una cookie y devolver sus datos
-  static async verificarUsers(req, res){
-    const {user} = req;
+  static async verificarUsers(req, res) {
+    const { user } = req;
     return res.status(200).json(user);
   }
 }

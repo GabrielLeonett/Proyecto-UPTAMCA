@@ -1,5 +1,5 @@
 export async function up(knex) {
-  return knex.schema.createTable("ubicacion", (table) => {
+  return knex.schema.createTable("ubicaciones", (table) => {
     // Identificador autoincremental
     table.tinyint("id_ubicacion")
       .primary()
@@ -28,5 +28,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  return knex.schema.dropTable("ubicacion");
+  return knex.schema.dropTable("ubicaciones");
 }

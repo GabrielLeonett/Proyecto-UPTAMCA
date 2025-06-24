@@ -1,5 +1,5 @@
 export async function up(knex) {
-  await knex.schema.createTable('dedicacion', (table) => {
+  await knex.schema.createTable('dedicaciones', (table) => {
     // Identificador numérico pequeño
     table.tinyint('id_dedicacion')
       .unsigned()
@@ -36,7 +36,7 @@ export async function up(knex) {
     
   });
   await knex.raw(`
-      ALTER TABLE dedicacion
+      ALTER TABLE dedicaciones
       ADD CONSTRAINT chk_dedicacion_total
       CHECK (
         EXTRACT(EPOCH FROM horas_docencia_semanales)/3600 +
@@ -46,5 +46,5 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
-  await knex.schema.dropTableIfExists('dedicacion');
+  await knex.schema.dropTableIfExists('dedicaciones');
 }

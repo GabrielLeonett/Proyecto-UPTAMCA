@@ -2,7 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from 'crypto';
 
 export async function generarPassword() {
-    const randomString = crypto.randomBytes(10).toString('hex'); 
+    const randomString = crypto.randomBytes(4).toString('hex'); 
     return randomString;
 }
 

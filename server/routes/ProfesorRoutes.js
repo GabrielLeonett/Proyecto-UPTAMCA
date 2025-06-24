@@ -41,13 +41,13 @@ profesorRouter.get("/Profesor", mostrarProfesor)
 //   "pos_grado": "Doctorado en Ciencias de la Computación",
 //   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
 // }
-profesorRouter.post('/Profesor/register', registrarProfesor)
+profesorRouter.post('/Profesor/register', middlewareAuth(null), registrarProfesor)
 
 // Esto es lo que debe resivir el endpoint de buscarProfesor
 // {
 //   "busqueda": "3124460"
 // }
-profesorRouter.get('/Profesor/search', buscarProfesor)
+profesorRouter.post('/Profesor/search', buscarProfesor)
 
 // //PUT's
 // profesorRouter.put('/Profesor?id', actualizarProfesor)

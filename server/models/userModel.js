@@ -1,29 +1,22 @@
+/*
+Importacion de la clase para el formateo de los datos que se reviven de la BD y 
+procesamiento para devorlver al controlador el resultado.
+*/ 
+import FormatResponseModel from '../utils/FormatResponseModel.js'
+//Importacion de la conexion con la base de datos
 import db from "../db.js";
 
 export default class UserModel {
   static async loginUser({ email }) {
     try {
-      const query = "SELECT * FROM mostrar_usuarios(?);";
+      const query = "SELECT MOSTRAR_USUARIO(?)";
       const values = [email];
 
-      const result = await db.raw(query, values);
-      const jsonResult = result.rows[0]?.mostrar_usuarios;
-
-
-      if (!jsonResult || jsonResult.status !== "success") {
-        throw new Error(jsonResult?.message || "Error en autenticación");
-      }
-
-      return {
-        status: "success",
-        message: "Usuario autenticado correctamente",
-        data: jsonResult,
-      };
+      const { rows } = await db.raw(query, values);
+      const resultado = FormatResponseModel.respuestaDatos(rows[0].mostrar_usuario, 'Usuario Obtenido')
+      return resultado
     } catch (error) {
-      return {
-        status: "error",
-        message: error.message || "Error en autenticación",
-      };
+      throw FormatResponseModel.respuestaError(error, 'Error al obtener el usuario')
     }
   }
 }
