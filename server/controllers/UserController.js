@@ -1,10 +1,3 @@
-// Carga las variables de entorno
-import dotenv from "dotenv";
-
-const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
-
-dotenv.config({path:envFile})
-
 import { validationPartialUser } from "../schemas/UserSchema.js";
 import UserModel from "../models/UserModel.js";
 import { comparePassword } from "../utils/encrypted.js";
@@ -93,7 +86,7 @@ export default class UserController {
         httpOnly: true, // La cookie solo es accesible por el servidor
         secure: true, // En desarrollo puede ser false, en producción debería ser true para HTTPS
         sameSite: 'none', // Política de sameSite para protección CSRF
-        domain: 'https://proyecto-uptamca-frontend.onrender.com', // Dominio donde es válida la cookie
+        domain: 'proyecto-uptamca-frontend.onrender.com', // Dominio donde es válida la cookie
       }).status(200).json({
         status: "success",
         message: "Inicio de sesión exitoso",
