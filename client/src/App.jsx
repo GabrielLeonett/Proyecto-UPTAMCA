@@ -24,7 +24,6 @@ import NotFound from "./pages/NotFound";
 //Importacion de useState
 import { useState } from "react";
 
-
 //Importacion de los estilos CSS
 import "./App.css";
 
@@ -47,65 +46,18 @@ export default function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               {/* Vistas Protegidas */}
-              <Route
-                path="/profesores"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin"
-                    ]}
-                  >
-                    <Profesores />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/registerProfesor"
-                element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <FormRegister />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/registerPNF"
-                element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <PnfForm/>
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/RegistrarHorario"
-                element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <HorarioForm/>
-                  </ProtectedViews>
-                }
-              />
+              <Route path="/profesores" element={<Profesores />} />
+              <Route path="/registerProfesor" element={<FormRegister />} />
+              <Route path="/registerPNF" element={<PnfForm />} />
+              <Route path="/RegistrarHorario" element={<HorarioForm />} />
               <Route
                 path="/registerUnidadCurricular"
-                element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <MateriaForm/>
-                  </ProtectedViews>
-                }
+                element={<MateriaForm />}
               />
-              <Route
-                path="/PNF"
-                element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <PNF/>
-                  </ProtectedViews>
-                }
-              />
+              <Route path="/PNF" element={<PNF />} />
 
-                {/* Ruta para 404 */}
-                <Route path="*" element={<NotFound />} />
+              {/* Ruta para 404 */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
