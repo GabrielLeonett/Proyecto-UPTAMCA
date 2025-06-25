@@ -81,12 +81,13 @@ export default class UserController {
       });
 
       //Respondiendo con una cookie y algunos datos que pueden ser de interes
+      res.header('Access-Control-Allow-Origin', 'https://proyecto-uptamca-frontend.onrender.com');
+      res.header('Access-Control-Allow-Credentials', 'true');
       res.cookie("autorization", token, {
-        maxAge: 60 * 60 * 24 * 1000, // Corregido: debe ser en milisegundos (1 día)
-        httpOnly: true, // La cookie solo es accesible por el servidor
-        secure: true, // En desarrollo puede ser false, en producción debería ser true para HTTPS
-        sameSite: 'none', // Política de sameSite para protección CSRF
-        domain: 'proyecto-uptamca-frontend.onrender.com', // Dominio donde es válida la cookie
+        maxAge: 1000 * 60 * 60 * 24,  // 1 día
+        httpOnly: true,
+        secure: true,                // obligatorio en producción (HTTPS)
+        sameSite: 'none',            // necesario para cross-site cookies
       }).status(200).json({
         status: "success",
         message: "Inicio de sesión exitoso",
