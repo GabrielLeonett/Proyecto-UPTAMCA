@@ -8,7 +8,6 @@ import ResponsiveAppBar from "../components/navbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
 import { useState } from "react";
-import { useAuth } from "../hook/useAuth";
 
 export default function Login() {
   const [processing, setProcessing] = useState(false);
