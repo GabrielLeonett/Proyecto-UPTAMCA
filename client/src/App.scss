@@ -1,0 +1,747 @@
+body {
+  margin: 0;
+  font-family: "Poppins", serif;
+}
+
+// Variables de Texto de programa
+%text-style {
+  font-family: "Poppins", serif;
+  padding: 8px;
+}
+
+//Variables de Color de texto
+$text-primary-white: #ffffff;
+$text-primary-black: #131927;
+$text-secondary-dark-grey: #6d717f;
+$text-grey: #9ea2ae;
+$text-light-grey: #d2d5db;
+$text-disanbled: #9ea2ae;
+$text-accent: #f8d570;
+$text-links: #f8d570;
+$text-info: #0095ff;
+$text-warning: #ffaa00;
+$text-error: #ee443f;
+
+//Variables de Color Primario
+$Primary-900: #f4b910;
+$Primary-800: #f5c028;
+$Primary-700: #f6c740;
+$Primary-600: #f7ce58;
+$Primary-500: #f8d570;
+$Primary-400: #fadc87;
+$Primary-300: #fbe39f;
+$Primary-200: #fceab7;
+$Primary-100: #fdf1cf;
+$Primary-50: #fef8e7;
+
+//Variables de Color Negros
+$Black: #000000;
+
+//Variables de Color Blancos
+$White: #ffffff;
+
+//Variables de Color Verdes
+$Green-900: #1c4d27;
+$Green-800: #256533;
+$Green-700: #308242;
+$Green-600: #3da755;
+$Green-500: #43b75d;
+$Green-400: #69c57d;
+$Green-300: #81cf92;
+$Green-200: #a9deb4;
+$Green-100: #c5e9cd;
+$Green-50: #ecf8ef;
+
+//Variables de Color Amarillos
+$Yellow-900: #6b4700;
+$Yellow-800: #8c5e00;
+$Yellow-700: #b57900;
+$Yellow-600: #e89b00;
+$Yellow-500: #ffaa00;
+$Yellow-400: #ffbb33;
+$Yellow-300: #ffc654;
+$Yellow-200: #ffd88a;
+$Yellow-100: #ffe5b0;
+$Yellow-50: #fff7e6;
+
+//Variables de Color Rojos
+$Red-900: #641d1a;
+$Red-800: #832523;
+$Red-700: #a9302d;
+$Red-600: #d93e39;
+$Red-500: #ee443f;
+$Red-400: #f16965;
+$Red-300: #f4827e;
+$Red-200: #f7a9a7;
+$Red-100: #fac5c3;
+$Red-50: #fdecec;
+
+//Variables de Color Azules
+$Blue-900: #003f6b;
+$Blue-800: #00528c;
+$Blue-700: #006ab5;
+$Blue-600: #0088e8;
+$Blue-500: #0095ff;
+$Blue-400: #33aaff;
+$Blue-300: #54b8ff;
+$Blue-200: #8aceff;
+$Blue-100: #b0deff;
+$Blue-50: #b0deff;
+
+//Variables de Color Del DarkMode
+$DarkMode-900: #26231a;
+$DarkMode-800: #252219;
+$DarkMode-700: #242119;
+$DarkMode-600: #232018;
+$DarkMode-500: #222017;
+$DarkMode-400: #211f17;
+$DarkMode-300: #201e16;
+$DarkMode-200: #1f1d15;
+$DarkMode-100: #1e1c15;
+$DarkMode-50: #1d1b14;
+
+h1 {
+  @extend %text-style;
+  font-weight: bold;
+  font-size: 48px;
+  line-height: 58px;
+}
+
+h2 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 40px;
+  line-height: 48px;
+}
+
+h3 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 32px;
+  line-height: 38px;
+}
+
+h4 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 34px;
+}
+
+h5 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 25px;
+  line-height: 28px;
+}
+
+.S1 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.S2 {
+  @extend %text-style;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B1 {
+  @extend %text-style;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B2 {
+  @extend %text-style;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.B3 {
+  @extend %text-style;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.B4 {
+  @extend %text-style;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.C1 {
+  @extend %text-style;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C2 {
+  @extend %text-style;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.C3 {
+  @extend %text-style;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 14px;
+}
+
+.Label {
+  @extend %text-style;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+
+.text-button-giagt {
+  @extend %text-style;
+  font-size: 18px;
+  line-height: 24px;
+  height: 56px;
+  padding: 16px 24px;
+  border-radius: 12px;
+}
+
+.text-button-large {
+  @extend %text-style;
+  font-size: 16px;
+  line-height: 20px;
+  height: 48px;
+  padding: 14px 20px;
+  border-radius: 12px;
+}
+
+.text-button-medium {
+  @extend %text-style;
+  font-size: 14px;
+  line-height: 16px;
+  height: 40px;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.text-button-small {
+  @extend %text-style;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  height: 32px;
+  padding: 8px 12px;
+}
+
+.text-button-tiny {
+  @extend %text-style;
+  font-size: 10px;
+  line-height: 12px;
+  border-radius: 8px;
+  height: 20px;
+  padding: 6px 8px;
+}
+
+// Variables de Color Primario de Fondo
+.bg-Primary {
+  background-color: $Primary-900;
+}
+.bg-Primary-800 {
+  background-color: $Primary-800;
+}
+.bg-Primary-700 {
+  background-color: $Primary-700;
+}
+.bg-Primary-600 {
+  background-color: $Primary-600;
+}
+.bg-Primary-500 {
+  background-color: $Primary-500;
+}
+.bg-Primary-400 {
+  background-color: $Primary-400;
+}
+.bg-Primary-300 {
+  background-color: $Primary-300;
+}
+.bg-Primary-200 {
+  background-color: $Primary-200;
+}
+.bg-Primary-100 {
+  background-color: $Primary-100;
+}
+.bg-Primary-50 {
+  background-color: $Primary-50;
+}
+
+// Variables de Color Negros de Fondo
+.bg-Black {
+  background-color: $Black;
+}
+.bg-Black-800 {
+  background-color: $Black;
+  opacity: 90%;
+}
+.bg-Black-700 {
+  background-color: $Black;
+  opacity: 80%;
+}
+.bg-Black-600 {
+  background-color: $Black;
+  opacity: 70%;
+}
+.bg-Black-500 {
+  background-color: $Black;
+  opacity: 60%;
+}
+.bg-Black-400 {
+  background-color: $Black;
+  opacity: 50%;
+}
+.bg-Black-300 {
+  background-color: $Black;
+  opacity: 40%;
+}
+.bg-Black-200 {
+  background-color: $Black;
+  opacity: 30%;
+}
+.bg-Black-100 {
+  background-color: $Black;
+  opacity: 20%;
+}
+.bg-Black-50 {
+  background-color: $Black;
+  opacity: 10%;
+}
+
+// Variables de Color Blancos de Fondo
+.bg-White {
+  background-color: $White;
+}
+.bg-White-800 {
+  background-color: $White;
+  opacity: 90%;
+}
+.bg-White-700 {
+  background-color: $White;
+  opacity: 80%;
+}
+.bg-White-600 {
+  background-color: $White;
+  opacity: 70%;
+}
+.bg-White-500 {
+  background-color: $White;
+  opacity: 60%;
+}
+.bg-White-400 {
+  background-color: $White;
+  opacity: 50%;
+}
+.bg-White-300 {
+  background-color: $White;
+  opacity: 40%;
+}
+.bg-White-200 {
+  background-color: $White;
+  opacity: 30%;
+}
+.bg-White-100 {
+  background-color: $White;
+  opacity: 20%;
+}
+.bg-White-50 {
+  background-color: $White;
+  opacity: 10%;
+}
+
+// Variables de Color Verdes de Fondo
+.bg-Green{
+  background-color: $Green-900;
+}
+.bg-Green-800 {
+  background-color: $Green-800;
+}
+.bg-Green-700 {
+  background-color: $Green-700;
+}
+.bg-Green-600 {
+  background-color: $Green-600;
+}
+.bg-Green-500 {
+  background-color: $Green-500;
+}
+.bg-Green-400 {
+  background-color: $Green-400;
+}
+.bg-Green-300 {
+  background-color: $Green-300;
+}
+.bg-Green-200 {
+  background-color: $Green-200;
+}
+.bg-Green-100 {
+  background-color: $Green-100;
+}
+.bg-Green-50 {
+  background-color: $Green-50;
+}
+
+// Variables de Color Amarillos de Fondo
+.bg-Yellow{
+  background-color: $Yellow-900;
+}
+.bg-Yellow-800 {
+  background-color: $Yellow-800;
+}
+.bg-Yellow-700 {
+  background-color: $Yellow-700;
+}
+.bg-Yellow-600 {
+  background-color: $Yellow-600;
+}
+.bg-Yellow-500 {
+  background-color: $Yellow-500;
+}
+.bg-Yellow-400 {
+  background-color: $Yellow-400;
+}
+.bg-Yellow-300 {
+  background-color: $Yellow-300;
+}
+.bg-Yellow-200 {
+  background-color: $Yellow-200;
+}
+.bg-Yellow-100 {
+  background-color: $Yellow-100;
+}
+.bg-Yellow-50 {
+  background-color: $Yellow-50;
+}
+
+// Variables de Color Rojos de Fondo
+.bg-Red {
+  background-color: $Red-900;
+}
+.bg-Red-800 {
+  background-color: $Red-800;
+}
+.bg-Red-700 {
+  background-color: $Red-700;
+}
+.bg-Red-600 {
+  background-color: $Red-600;
+}
+.bg-Red-500 {
+  background-color: $Red-500;
+}
+.bg-Red-400 {
+  background-color: $Red-400;
+}
+.bg-Red-300 {
+  background-color: $Red-300;
+}
+.bg-Red-200 {
+  background-color: $Red-200;
+}
+.bg-Red-100 {
+  background-color: $Red-100;
+}
+.bg-Red-50 {
+  background-color: $Red-50;
+}
+
+// Variables de Color Azules de Fondo
+.bg-Blue{
+  background-color: $Blue-900;
+}
+.bg-Blue-800 {
+  background-color: $Blue-800;
+}
+.bg-Blue-700 {
+  background-color: $Blue-700;
+}
+.bg-Blue-600 {
+  background-color: $Blue-600;
+}
+.bg-Blue-500 {
+  background-color: $Blue-500;
+}
+.bg-Blue-400 {
+  background-color: $Blue-400;
+}
+.bg-Blue-300 {
+  background-color: $Blue-300;
+}
+.bg-Blue-200 {
+  background-color: $Blue-200;
+}
+.bg-Blue-100 {
+  background-color: $Blue-100;
+}
+.bg-Blue-50 {
+  background-color: $Blue-50;
+}
+
+// Variables de Color Del DarkMode de Fondo
+.bg-DarkMode{
+  background-color: $DarkMode-900;
+}
+.bg-DarkMode-800 {
+  background-color: $DarkMode-800;
+}
+.bg-DarkMode-700 {
+  background-color: $DarkMode-700;
+}
+.bg-DarkMode-600 {
+  background-color: $DarkMode-600;
+}
+.bg-DarkMode-500 {
+  background-color: $DarkMode-500;
+}
+.bg-DarkMode-400 {
+  background-color: $DarkMode-400;
+}
+.bg-DarkMode-300 {
+  background-color: $DarkMode-300;
+}
+.bg-DarkMode-200 {
+  background-color: $DarkMode-200;
+}
+.bg-DarkMode-100 {
+  background-color: $DarkMode-100;
+}
+.bg-DarkMode-50 {
+  background-color: $DarkMode-50;
+}
+
+//Estilos de color de las letras
+.primary-900 {
+  color: $Primary-900;
+}
+.primary-800 {
+  color: $Primary-800;
+}
+.primary-700 {
+  color: $Primary-700;
+}
+.primary-600 {
+  color: $Primary-600;
+}
+.primary-500 {
+  color: $Primary-500;
+}
+.primary-400 {
+  color: $Primary-400;
+}
+.primary-300 {
+  color: $Primary-300;
+}
+.primary-200 {
+  color: $Primary-200;
+}
+.primary-100 {
+  color: $Primary-100;
+}
+.primary-50 {
+  color: $Primary-50;
+}
+.black {
+  color: $text-primary-black;
+}
+.white {
+  color: $text-primary-white;
+}
+.grey-secondary {
+  color: $text-secondary-dark-grey;
+}
+.grey {
+  color: $text-grey;
+}
+.grey-light {
+  color: $text-light-grey;
+}
+.color-disabled {
+  color: $text-disanbled;
+}
+.color-accent {
+  color: $text-accent;
+}
+.color-links {
+  color: $text-links;
+}
+.color-info {
+  color: $text-info;
+}
+.color-warning {
+  color: $text-warning;
+}
+.color-error {
+  color: $text-error;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+%Botones{
+  cursor: pointer;
+  width: auto;
+}
+
+%Btn-Primary{
+  @extend %Botones;
+  background-color: $Primary-500;
+  color: white;
+  border: none;
+  transition: all 0.5s ease;
+  &:hover{
+    background-color: $Primary-900;
+  }
+  &:active{
+    background-color: $Primary-700;
+  }
+}
+
+%Btn-Secundary{
+  @extend %Botones;
+  background-color: $Primary-100;
+  color: $Primary-700;
+  border: 1.5px solid $Primary-500 ;
+  transition: all 0.5s ease;
+  &:hover{
+    background-color: $Primary-400;
+  }
+  &:active{
+    background-color: $Primary-800;
+  }
+}
+
+%Btn-Tercery{
+  @extend %Botones;
+  background-color: $Primary-50;
+  color: $Primary-400;
+  border: none;
+  transition: all 0.5s ease;
+  &:hover{
+    background-color: $Primary-700;
+  }
+  &:active{
+    background-color: $Primary-800;
+  }
+}
+//Botones de los Giants
+.Botones-Giants-Primary{
+  @extend %Giagt;
+  @extend %Btn-Primary;
+}
+.Botones-Giants-Secundary{
+  @extend %Giagt;
+  @extend %Btn-Secundary;
+}
+.Botones-Giants-Tercery{
+  @extend %Giagt;
+  @extend %Btn-Tercery;
+}
+
+//Botones de los Large
+.Botones-Large-Primary{
+  @extend %Large;
+  @extend %Btn-Primary;
+}
+.Botones-Large-Secundary{
+  @extend %Large;
+  @extend %Btn-Secundary;
+}
+.Botones-Large-Tercery{
+  @extend %Large;
+  @extend %Btn-Tercery;
+}
+
+//Botones de los Medium
+.Botones-Medium-Primary{
+  @extend %Medium;
+  @extend %Btn-Primary;
+}
+.Botones-Medium-Secundary{
+  @extend %Medium;
+  @extend %Btn-Secundary;
+}
+.Botones-Medium-Tercery{
+  @extend %Medium;
+  @extend %Btn-Tercery;
+}
+
+//Botones de los Small
+.Botones-Small-Primary{
+  @extend %Small;
+  @extend %Btn-Primary;
+}
+.Botones-Small-Secundary{
+  @extend %Small;
+  @extend %Btn-Secundary;
+}
+.Botones-Small-Tercery{
+  @extend %Small;
+  @extend %Btn-Tercery;
+}
+
+//Botones de los Tiny
+.Botones-Tiny-Primary{
+  @extend %Tiny;
+  @extend %Btn-Primary;
+}
+.Botones-Tiny-Secundary{
+  @extend %Tiny;
+  @extend %Btn-Secundary;
+}
+.Botones-Tiny-Tercery{
+  @extend %Tiny;
+  @extend %Btn-Tercery;
+}
+
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: $DarkMode-900;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: $White;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
