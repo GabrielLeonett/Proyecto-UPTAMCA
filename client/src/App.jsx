@@ -57,6 +57,7 @@ export default function App() {
                       "Profesor",
                       "Coordinador",
                       "Director General de Gestión Curricular",
+                      "SuperAdmin"
                     ]}
                   >
                     <Profesores />
