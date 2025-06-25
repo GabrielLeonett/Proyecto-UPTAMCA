@@ -1,19 +1,47 @@
-//Importacion la libreria para la encriptacion de los datos
+/**
+ * Módulo para el manejo de operaciones con profesores en la base de datos
+ * @module ProfesorModel
+ * @description Contiene métodos para registrar, mostrar y buscar profesores
+ */
+
+// Importación de librería para encriptación de contraseñas
 import { hashPassword, generarPassword } from "../utils/encrypted.js";
-//Importacion de la liberia para la funcin de EnviarCorreos
+
+// Importación de librería para envío de correos electrónicos
 import { enviarEmail } from "../utils/EnviarCorreos.js";
-//Importacion de la conexion con la base de datos
+
+// Importación de la conexión a la base de datos
 import db from "../db.js";
-/*
-Importacion de la clase para el formateo de los datos que se reviven de la BD y 
-procesamiento para devorlver al controlador el resultado.
-*/ 
+
+// Importación de clase para formateo de respuestas
 import FormatResponseModel from '../utils/FormatResponseModel.js'
 
 export default class ProfesorModel {
+
+  /**
+   * Registra un nuevo profesor en el sistema
+   * @method RegisterProfesor
+   * @static
+   * @async
+   * @param {Object} params - Parámetros de entrada
+   * @param {Object} params.datos - Datos del profesor a registrar
+   * @param {Object} params.usuario_accion - Información del usuario que realiza el registro
+   * @returns {Promise<Object>} Objeto con el resultado de la operación
+   * @throws {Error} Si ocurre un error durante el registro
+   * 
+   * @example
+   * const resultado = await ProfesorModel.RegisterProfesor({
+   *   datos: {
+   *     cedula: "12345678",
+   *     nombres: "Juan",
+   *     // ...otros campos
+   *   },
+   *   usuario_accion: { id: 1 }
+   * });
+   */
   static async RegisterProfesor({ datos, usuario_accion }) {
     try {
-      // Extracción de los datos para el registro del profesor
+      // Extracción de datos del profesor
       const { 
         cedula, nombres, apellidos, email, direccion,
         telefono_movil, telefono_local, fecha_nacimiento, genero,
@@ -21,13 +49,14 @@ export default class ProfesorModel {
         area_de_conocimiento, pre_grado, pos_grado
       } = datos;
 
-      // Generar contraseña temporal y su hash
+      // Generación de contraseña temporal y su hash
       const password = await generarPassword();
       const passwordHash = await hashPassword(password);
 
-      // Llamada a la función unificada de PostgreSQL
+      // Consulta SQL para registrar profesor usando procedimiento almacenado
       const query = `CALL public.registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
       
+      // Parámetros para la consulta
       const params = [
         usuario_accion.id, cedula, nombres, apellidos, email,
         direccion, passwordHash, telefono_movil, telefono_local || null, fecha_nacimiento,
@@ -35,11 +64,13 @@ export default class ProfesorModel {
         area_de_conocimiento, fecha_ingreso
       ];
 
-      // Ejecutar la consulta y procesar la respuesta
+      // Ejecución de la consulta
       const { rows } = await db.raw(query, params);
+      
+      // Formateo de la respuesta
       const resultado = FormatResponseModel.respuestaPostgres(rows, 'Profesor registrado con exito');
 
-      // Preparar correo
+      // Configuración del correo de bienvenida
       const Correo = {
         asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
         html: `
@@ -62,19 +93,36 @@ export default class ProfesorModel {
         `,
       };
 
-      // Intentar enviar el correo
+      // Envío de correo electrónico con las credenciales
       await enviarEmail({ Destinatario: email, Correo: Correo });
       
-      return resultado
+      return resultado;
     } catch (error) {
+      // Manejo y formateo de errores
       throw FormatResponseModel.respuestaError(error, "Error al registrar profesor");
     }
   }
 
+  /**
+   * Obtiene listado de profesores con filtros para consumo API
+   * @method mostrarProfesorAPI
+   * @static
+   * @async
+   * @param {Object} params - Parámetros de filtrado
+   * @param {string} [params.dedicacion] - Filtro por dedicación
+   * @param {string} [params.categoria] - Filtro por categoría
+   * @param {string} [params.ubicacion] - Filtro por ubicación
+   * @param {string} [params.area] - Filtro por área de conocimiento
+   * @param {string} [params.fecha] - Filtro por fecha
+   * @param {string} [params.genero] - Filtro por género
+   * @returns {Promise<Array>} Listado de profesores filtrados
+   * @throws {Error} Si ocurre un error en la consulta
+   */
   static async mostrarProfesorAPI({ datos }) {
     try {
       const { dedicacion, categoria, ubicacion, area, fecha, genero } = datos;
 
+      // Consulta a función PostgreSQL con filtros opcionales
       const result = await db.raw(
         `SELECT * FROM mostrar_profesor(?, ?, ?, ?, ?, ?) `,
         [
@@ -93,39 +141,56 @@ export default class ProfesorModel {
     }
   }
 
+  /**
+   * Obtiene listado completo de profesores para visualización
+   * @method mostrarProfesor
+   * @static
+   * @async
+   * @returns {Promise<Object>} Objeto con listado de profesores y metadatos
+   * @throws {Error} Si ocurre un error en la consulta
+   */
   static async mostrarProfesor() {
     try {
-      //Ejecucion de la consulta a la vista de los profesores
+      // Consulta a vista de profesores
       const { rows } = await db.raw(`SELECT * FROM profesores_informacion_completa;`);
-      //Procesamientos de la vista y retorna el resultado
+      
+      // Formateo de la respuesta
       return FormatResponseModel.respuestaPostgres(rows, 'Profesor registrado con exito');
     } catch (error) {
-      //Procesamientos de posibles errores
+      // Manejo de errores
       throw FormatResponseModel.respuestaError(rows, 'Error al obtener los datos del Profesores');
     }
   }
 
+  /**
+   * Busca profesores por nombre, apellido o cédula
+   * @method buscarProfesor
+   * @static
+   * @async
+   * @param {Object} params - Parámetros de búsqueda
+   * @param {string} params.busqueda - Término de búsqueda
+   * @returns {Promise<Object>} Resultados de la búsqueda formateados
+   * @throws {Error} Si el término de búsqueda está vacío o ocurre un error
+   */
   static async buscarProfesor({ datos }) {
     try {
-      //Obtener la variable de busqueda
       const { busqueda } = datos;
 
-      //Verificacion de la variable de busqueda no sea nula
+      // Validación de término de búsqueda
       if (busqueda === undefined || busqueda === null || busqueda === "") {
         throw new Error("La busqueda no puede esta vacia");
       }
 
-      //Ejecucion de la busqueda dentro de la vista de profesores
+      // Consulta con búsqueda insensible a mayúsculas/minúsculas
       const { rows } = await db.raw(
         `SELECT * FROM PROFESORES_INFORMACION_COMPLETA 
         WHERE nombres ILIKE ? OR apellidos ILIKE ? OR id ILIKE ?`, 
         [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]
       );
       
-      //Procesamiento de los datos
+      // Formateo de la respuesta
       const resultado = FormatResponseModel.respuestaPostgres(rows, 'Profesor encontrado con exito');
 
-      //Devuelve el resultado del procesamiento de los datos
       return resultado;
     } catch (error) {
       throw error;

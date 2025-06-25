@@ -4,14 +4,34 @@ import { comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 
+/**
+ * @class UserController
+ * @description Esta clase se encarga de gestionar las operaciones relacionadas con los usuarios,
+ * incluyendo el inicio de sesión y la verificación de la sesión actual.
+ */
+
 const { loginUser } = UserModel;
 
 export default class UserController {
-  //Metodo para el inicio de session de usuarios
+ 
+  /**
+   * @static
+   * @async
+   * @method login
+   * @description Maneja el proceso de inicio de sesión de un usuario.
+   * Valida las credenciales, verifica la contraseña y crea una sesión.
+   * @param {Object} req - Objeto de solicitud de Express que contiene los datos del usuario (email y password)
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Respuesta con una cookie de autenticación y datos del usuario en caso de éxito
+   * @throws {400} - Si la validación de datos falla (datos incorrectos o incompletos)
+   * @throws {401} - Si las credenciales son inválidas (email o contraseña incorrecta)
+   * @throws {500} - Si ocurre un error interno en el servidor durante el proceso
+   */
   static async login(req, res) {
     try {
       // Valida los datos para el inicio de sesion
       const validationResult = validationPartialUser({ input: req.body });
+      
       //Verifica que todos los datos ingresado sean correctos
       if (!validationResult.success) {
         //En su defecto regresa una respuesta de los errores en los inputs
@@ -22,6 +42,7 @@ export default class UserController {
       const respuestaModel = await loginUser({
         email: asegurarStringEnMinusculas(req.body.email),
       });
+      
       //Verifica que la respuesta del modelo sea la correcta
       if (respuestaModel.state != "success") {
         res
@@ -37,6 +58,7 @@ export default class UserController {
         req.body.password,
         user.password
       );
+      
       //Verifica que la contraseña si esten bien
       if (!validatePassword) {
         //En su defecto regresa una respuesta de Email o Contraseña invalida"
@@ -57,11 +79,11 @@ export default class UserController {
 
       //Respondiendo con una cookie y algunos datos que pueden ser de interes
       res.cookie("autorization", token, {
-      maxAge: 60 * 60 * 24 * 1000, // Corregido: debe ser en milisegundos
-      httpOnly: true,
-      secure: false,
-      sameSite: "lax",
-      domain: "localhost",
+        maxAge: 60 * 60 * 24 * 1000, // Corregido: debe ser en milisegundos (1 día)
+        httpOnly: true, // La cookie solo es accesible por el servidor
+        secure: false, // En desarrollo puede ser false, en producción debería ser true para HTTPS
+        sameSite: "lax", // Política de sameSite para protección CSRF
+        domain: "localhost", // Dominio donde es válida la cookie
       }).status(200).json({
         status: "success",
         message: "Inicio de sesión exitoso",
@@ -78,7 +100,15 @@ export default class UserController {
     }
   }
 
-  //Metodo para verificar si un usuario tiene una cookie y devolver sus datos
+  /**
+   * @static
+   * @async
+   * @method verificarUsers
+   * @description Verifica si el usuario tiene una sesión activa válida y devuelve sus datos
+   * @param {Object} req - Objeto de solicitud de Express que contiene los datos del usuario en req.user
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Object} Respuesta con los datos del usuario si la sesión es válida
+   */
   static async verificarUsers(req, res) {
     const { user } = req;
     return res.status(200).json(user);
