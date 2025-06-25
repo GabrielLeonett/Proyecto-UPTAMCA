@@ -1,8 +1,17 @@
+// Carga las variables de entorno
+import dotenv from "dotenv";
+
+const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
+
+dotenv.config({path:envFile})
+
 import { validationPartialUser } from "../schemas/UserSchema.js";
 import UserModel from "../models/UserModel.js";
 import { comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
+
+
 
 /**
  * @class UserController
@@ -31,8 +40,6 @@ export default class UserController {
     try {
       // Valida los datos para el inicio de sesion
       const validationResult = validationPartialUser({ input: req.body });
-
-      console.log('no falla en las validacines del usuario ')
       
       //Verifica que todos los datos ingresado sean correctos
       if (!validationResult.success) {
@@ -45,8 +52,6 @@ export default class UserController {
         email: asegurarStringEnMinusculas(req.body.email),
       });
 
-      console.log('no falla en la respuesta del modelo', respuestaModel)
-      
       //Verifica que la respuesta del modelo sea la correcta
       if (respuestaModel.state != "success") {
         res
@@ -63,8 +68,6 @@ export default class UserController {
         user.password
       );
 
-      console.log('no falla en la validacion de la contraseña', validatePassword)
-      
       //Verifica que la contraseña si esten bien
       if (!validatePassword) {
         //En su defecto regresa una respuesta de Email o Contraseña invalida"
@@ -72,6 +75,8 @@ export default class UserController {
           .status(401)
           .json({ status: false, message: "Email o Contraseña invalida" });
       }
+
+      console.log(process.env.ORIGIN_FRONTEND);
 
       // Creando el token de sesion
       const token = createSession({
