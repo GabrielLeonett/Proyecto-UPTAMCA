@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const instacia = axios.create({
-    baseURL: 'http://localhost:3000/',
+    baseURL: 'https://proyecto-uptamca-1.onrender.com/',
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",

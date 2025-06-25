@@ -44,9 +44,8 @@ export default function App() {
           <AuthProvider>
             <Routes>
               {/* Vistas Públicas */}
-              <Route path="" element={<Index />} />
+              <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
-
               {/* Vistas Protegidas */}
               <Route
                 path="/profesores"
@@ -105,8 +104,8 @@ export default function App() {
                 }
               />
 
-              {/* Ruta para 404 */}
-              <Route path="*" element={<NotFound />} />
+                {/* Ruta para 404 */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
