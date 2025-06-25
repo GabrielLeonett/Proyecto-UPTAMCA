@@ -19,7 +19,6 @@ import { profesorRouter } from "./routes/ProfesorRoutes.js";
 import { CurricularRouter } from "./routes/CurricularRoutes.js";
 import { UserRouter } from "./routes/UserRoutes.js";
 import { HorarioRouter } from "./routes/HorarioRoutes.js";
-import { NotificationRoutes } from "./routes/NotificationRoutes.js";
 
 
 
@@ -40,7 +39,6 @@ app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);
 app.use("", HorarioRouter);
-app.use("", NotificationRoutes);
 
 // Middleware para procesar los datos JSON
 app.use(express.json());
