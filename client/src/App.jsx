@@ -24,11 +24,15 @@ import NotFound from "./pages/NotFound";
 //Importacion de useState
 import { useState } from "react";
 
+
 //Importacion de los estilos CSS
 import "./App.css";
 
 //Importacion para el Boton que cambia entre los temas claros y oscuros
 import ButtonChageTheme from "./components/buttonChageTheme";
+
+//Imporatacion de Componente que Protege las vistas
+import ProtectedViews from "./security/ProtectedViews";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -40,43 +44,69 @@ export default function App() {
           <AuthProvider>
             <Routes>
               {/* Vistas Públicas */}
-              <Route path="/" element={<Index />} />
-              <Route path="/inicio_session" element={<Login />} />
+              <Route path="" element={<Index />} />
+              <Route path="/Inicio_session" element={<Login />} />
+
               {/* Vistas Protegidas */}
-              <Route path="/profesores" element={<Profesores />}/>
+              <Route
+                path="/profesores"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin"
+                    ]}
+                  >
+                    <Profesores />
+                  </ProtectedViews>
+                }
+              />
               <Route
                 path="/registerProfesor"
                 element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <FormRegister />
+                  </ProtectedViews>
                 }
               />
               <Route
                 path="/registerPNF"
                 element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <PnfForm/>
+                  </ProtectedViews>
                 }
               />
               <Route
                 path="/RegistrarHorario"
                 element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <HorarioForm/>
+                  </ProtectedViews>
                 }
               />
               <Route
                 path="/registerUnidadCurricular"
                 element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <MateriaForm/>
+                  </ProtectedViews>
                 }
               />
               <Route
                 path="/PNF"
                 element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <PNF/>
+                  </ProtectedViews>
                 }
               />
 
-                {/* Ruta para 404 */}
-                <Route path="*" element={<NotFound />} />
+              {/* Ruta para 404 */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
