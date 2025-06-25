@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 //Importacion de useState
 import { useState } from "react";
 
+
 //Importacion de los estilos CSS
 import "./App.css";
 
@@ -46,18 +47,43 @@ export default function App() {
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               {/* Vistas Protegidas */}
-              <Route path="/profesores" element={<Profesores />} />
-              <Route path="/registerProfesor" element={<FormRegister />} />
-              <Route path="/registerPNF" element={<PnfForm />} />
-              <Route path="/RegistrarHorario" element={<HorarioForm />} />
+              <Route
+                path="/profesores"
+                element={<Profesores />}
+              />
+              <Route
+                path="/registerProfesor"
+                element={
+                    <FormRegister />
+                }
+              />
+              <Route
+                path="/registerPNF"
+                element={
+                    <PnfForm/>
+                }
+              />
+              <Route
+                path="/RegistrarHorario"
+                element={
+                    <HorarioForm/>
+                }
+              />
               <Route
                 path="/registerUnidadCurricular"
-                element={<MateriaForm />}
+                element={
+                    <MateriaForm/>
+                }
               />
-              <Route path="/PNF" element={<PNF />} />
+              <Route
+                path="/PNF"
+                element={
+                    <PNF/>
+                }
+              />
 
-              {/* Ruta para 404 */}
-              <Route path="*" element={<NotFound />} />
+                {/* Ruta para 404 */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
