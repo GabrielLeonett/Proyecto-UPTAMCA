@@ -45,12 +45,9 @@ export default function App() {
             <Routes>
               {/* Vistas Públicas */}
               <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
+              <Route path="/Login" element={<Login />} />
               {/* Vistas Protegidas */}
-              <Route
-                path="/profesores"
-                element={<Profesores />}
-              />
+              <Route path="/profesores" element={<Profesores />}/>
               <Route
                 path="/registerProfesor"
                 element={

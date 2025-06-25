@@ -25,7 +25,6 @@ export default function Login() {
     shouldFocusError: true,
   });
 
-  const { login } = useAuth();
 
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
@@ -37,7 +36,7 @@ export default function Login() {
 
     setProcessing(true);
     try {
-      login(formData);
+      console.log(formData)
     } catch (error) {
       console.error("Error en el login:", error);
       setError("root", {
