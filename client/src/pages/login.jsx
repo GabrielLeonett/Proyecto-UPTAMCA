@@ -8,6 +8,7 @@ import ResponsiveAppBar from "../components/navbar";
 import CircularProgress from "@mui/material/CircularProgress";
 import CustomButton from "../components/customButton";
 import { useState } from "react";
+import { useAuth } from "../hook/useAuth";
 
 export default function Login() {
   const [processing, setProcessing] = useState(false);
@@ -20,22 +21,25 @@ export default function Login() {
     trigger,
   } = useForm({
     resolver: zodResolver(loginSchema),
-    mode: "onBlur",
+    mode: "onChange",
     shouldFocusError: true,
   });
 
+  const { login } = useAuth();
 
   const onSubmit = async (formData) => {
+    console.log('se esta ejecutando esta mierda no se porque')
+    
     // Forzar validación antes de enviar
     const isValid = await trigger();
     if (!isValid) {
       console.log("El formulario no es válido, no se envía");
       return;
     }
-
+    
     setProcessing(true);
     try {
-      console.log(formData)
+      login(formData);
     } catch (error) {
       console.error("Error en el login:", error);
       setError("root", {
@@ -46,7 +50,7 @@ export default function Login() {
       setProcessing(false);
     }
   };
-
+  
   return (
     <>
       <ResponsiveAppBar

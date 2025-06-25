@@ -24,15 +24,11 @@ import NotFound from "./pages/NotFound";
 //Importacion de useState
 import { useState } from "react";
 
-
 //Importacion de los estilos CSS
 import "./App.css";
 
 //Importacion para el Boton que cambia entre los temas claros y oscuros
 import ButtonChageTheme from "./components/buttonChageTheme";
-
-//Imporatacion de Componente que Protege las vistas
-import ProtectedViews from "./security/ProtectedViews";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -45,7 +41,7 @@ export default function App() {
             <Routes>
               {/* Vistas Públicas */}
               <Route path="/" element={<Index />} />
-              <Route path="/Login" element={<Login />} />
+              <Route path="/inicio_session" element={<Login />} />
               {/* Vistas Protegidas */}
               <Route path="/profesores" element={<Profesores />}/>
               <Route
