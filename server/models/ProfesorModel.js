@@ -153,12 +153,15 @@ export default class ProfesorModel {
     try {
       // Consulta a vista de profesores
       const { rows } = await db.raw(`SELECT * FROM profesores_informacion_completa;`);
-      
+
       // Formateo de la respuesta
       return FormatResponseModel.respuestaPostgres(rows, 'Profesor registrado con exito');
     } catch (error) {
+
+      console.log(error);
+
       // Manejo de errores
-      throw FormatResponseModel.respuestaError(rows, 'Error al obtener los datos del Profesores');
+      throw FormatResponseModel.respuestaError(error, 'Error al obtener los datos del Profesores');
     }
   }
 
