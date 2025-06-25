@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
-import UserController from '../controllers/useriafjfak.js'
+import UserController from '../controllers/UserController.js'
 
 const { login, verificarUsers } = UserController;
 

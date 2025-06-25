@@ -1,6 +1,6 @@
 import { validationUser } from "../schemas/UserSchema.js";
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
-import ProfesorModel from '../models/Profesorkjasfjasñklj.js';
+import ProfesorModel from '../models/ProfesorModel.js';
 
 /**
  * Controlador para gestionar todas las operaciones relacionadas con profesores
