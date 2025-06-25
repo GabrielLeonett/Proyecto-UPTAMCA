@@ -1,6 +1,10 @@
 // Carga las variables de entorno
 import dotenv from "dotenv";
-dotenv.config();
+
+const envFile = `.env.${process.env.NODE_ENV || 'development'}`;
+
+dotenv.config({path:envFile})
+
 
 // Importación de dependencias
 import cookieParser from "cookie-parser";
@@ -9,11 +13,6 @@ import picocolors from "picocolors";
 import { segurityMiddleware } from "./middlewares/security.js";
 import helmet from "helmet";
 import cors from 'cors'
-
-// Importaciones de Rutas
-import { profesorRouter } from "./routes/ProfesorRoutes.js";
-import { CurricularRouter } from "./routes/CurricularRoutes.js";
-import { HorarioRouter } from "./routes/HorarioRoutes.js";
 
 // Creación del servidor
 const app = express();
@@ -30,16 +29,16 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 
-// Rutas
-app.use("", profesorRouter);
-app.use("", CurricularRouter);
-app.use("", HorarioRouter);
+app.get('/', (req, res)=>{
+  res.send('<h1>Hola la aplicacion esta en despliegue</h1>')
+})
+
 
 // Encendido del servidor
-app.listen( process.env.SERVER_PORT, () => {
+app.listen(process.env.SERVER_PORT, () => {
   console.log(
     picocolors.bgGreen(
-      `${process.env.APP_NAME} está corriendo en el puerto:${process.env.SERVER_PORT}`
+      `${process.env.APP_NAME} está corriendo en el puerto: ${process.env.SERVER_PORT}`
     )
   );
 });

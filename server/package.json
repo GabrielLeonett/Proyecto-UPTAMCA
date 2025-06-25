@@ -4,10 +4,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
-    "migrate:develoment": " npx knex migrate:latest",
-    "migrate:deploy": "SET NODE_ENV=deploy;  npx knex migrate:latest",
+    "start": "cross-env NODE_ENV=production node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon server.js",
+    "migrate:development": "cross-env NODE_ENV=development npx knex migrate:latest",
+    "migrate:production": "cross-env NODE_ENV=production npx knex migrate:latest",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -34,6 +34,7 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.10",
     "picocolors": "^1.1.1"
   }
