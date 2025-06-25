@@ -14,6 +14,15 @@ import { segurityMiddleware } from "./middlewares/security.js";
 import helmet from "helmet";
 import cors from 'cors'
 
+// Importaciones de Rutas
+import { profesorRouter } from "./routes/ProfesorRoutes.js";
+import { CurricularRouter } from "./routes/CurricularRoutes.js";
+import { UserRouter } from "./routes/UserRoutes.js";
+import { HorarioRouter } from "./routes/HorarioRoutes.js";
+import { NotificationRoutes } from "./routes/NotificationRoutes.js";
+
+
+
 // Creación del servidor
 const app = express();
 
@@ -23,15 +32,19 @@ app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
 }))
+
 app.use(helmet());
+
+// Rutas
+app.use("", profesorRouter);
+app.use("", CurricularRouter);
+app.use("", UserRouter);
+app.use("", HorarioRouter);
+app.use("", NotificationRoutes);
 
 // Middleware para procesar los datos JSON
 app.use(express.json());
 app.use(cookieParser());
-
-app.get('/', (req, res)=>{
-  res.send('<h1>Hola la aplicacion esta en despliegue</h1>')
-})
 
 
 // Encendido del servidor
