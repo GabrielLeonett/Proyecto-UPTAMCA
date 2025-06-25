@@ -104,6 +104,8 @@ export default function App() {
                 }
               />
 
+                {/* Ruta para 404 */}
+                <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
         </Router>
