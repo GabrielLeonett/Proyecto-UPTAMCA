@@ -17,7 +17,7 @@ import cors from 'cors'
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/ProfesorRoutes.js";
 import { CurricularRouter } from "./routes/CurricularRoutes.js";
-import { UserRouter } from "./routes/UserRoutes.js";
+import { UserRouter } from "./routes/fjasdjfasdf.js";
 import { HorarioRouter } from "./routes/HorarioRoutes.js";
 import { NotificationRoutes } from "./routes/NotificationRoutes.js";
 
