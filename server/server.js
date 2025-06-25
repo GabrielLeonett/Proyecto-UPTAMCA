@@ -35,6 +35,9 @@ app.use(cors({
 app.use(helmet());
 
 // Rutas
+app.get("", (req, res)=>{
+  res.send('<h1>Esto esta bien, prueba con las otras rutas</h1>')
+});
 app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);
