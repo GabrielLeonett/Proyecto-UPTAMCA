@@ -81,9 +81,9 @@ export default class UserController {
       res.cookie("autorization", token, {
         maxAge: 60 * 60 * 24 * 1000, // Corregido: debe ser en milisegundos (1 día)
         httpOnly: true, // La cookie solo es accesible por el servidor
-        secure: false, // En desarrollo puede ser false, en producción debería ser true para HTTPS
-        sameSite: "lax", // Política de sameSite para protección CSRF
-        domain: "localhost", // Dominio donde es válida la cookie
+        secure: true, // En desarrollo puede ser false, en producción debería ser true para HTTPS
+        sameSite: 'none', // Política de sameSite para protección CSRF
+        domain: process.env.ORIGIN_FRONTEND, // Dominio donde es válida la cookie
       }).status(200).json({
         status: "success",
         message: "Inicio de sesión exitoso",
