@@ -15,7 +15,6 @@ import { profesorRouter } from "./routes/ProfesorRoutes.js";
 import { CurricularRouter } from "./routes/CurricularRoutes.js";
 import { HorarioRouter } from "./routes/HorarioRoutes.js";
 import { NotificationRoutes } from "./routes/NotificationRoutes.js";
-import { UserRouter } from "./routes/UserRoutes.js";
 
 // Creación del servidor
 const app = express();
@@ -35,7 +34,6 @@ app.use(cookieParser());
 // Rutas
 app.use("", profesorRouter);
 app.use("", CurricularRouter);
-app.use("", UserRouter);
 app.use("", HorarioRouter);
 app.use("", NotificationRoutes);
 
