@@ -19,13 +19,12 @@ import jwt from "jsonwebtoken";
  */
 export const middlewareAuth = (requiredRoles, options = {}) => {
   return (req, res, next) => {
-    // 1. Verificación de token presente
-    const token = req.cookies.autorization;
     
+    // 1. Verificación de token presente
+    const token = req.cookies?.autorization;
+
     if (!token) {
-      return res.status(401).json({ 
-        error: "Acceso denegado: Se requiere autenticación" 
-      });
+      return res.status(401).json({ error: "Acceso denegado: Se requiere autenticación" });
     }
 
     // 2. Verificación de validez del token
