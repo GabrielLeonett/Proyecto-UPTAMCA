@@ -20,8 +20,6 @@ import { CurricularRouter } from "./routes/CurricularRoutes.js";
 import { UserRouter } from "./routes/UserRoutes.js";
 import { HorarioRouter } from "./routes/HorarioRoutes.js";
 
-
-
 // Creación del servidor
 const app = express();
 
@@ -30,22 +28,17 @@ app.use(segurityMiddleware);
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
-}))
-
+}));
 app.use(helmet());
+app.use(express.json());
+app.use(cookieParser());
 
 // Rutas
-app.get("", (req, res)=>{
-  res.send('<h1>Esto esta bien, prueba con las otras rutas</h1>')
-});
 app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);
 app.use("", HorarioRouter);
 
-// Middleware para procesar los datos JSON
-app.use(express.json());
-app.use(cookieParser());
 
 
 // Encendido del servidor
