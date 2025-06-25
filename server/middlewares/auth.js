@@ -21,7 +21,6 @@ export const middlewareAuth = (requiredRoles, options = {}) => {
   return (req, res, next) => {
     // 1. Verificación de token presente
     const token = req.cookies?.autorization;
-    console.log(token)
 
     if (!token) {
       return res.status(401).json({ error: "Acceso denegado: Se requiere autenticación" });

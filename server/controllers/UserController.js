@@ -31,6 +31,8 @@ export default class UserController {
     try {
       // Valida los datos para el inicio de sesion
       const validationResult = validationPartialUser({ input: req.body });
+
+      console.log('no falla en las validacines del usuario ')
       
       //Verifica que todos los datos ingresado sean correctos
       if (!validationResult.success) {
@@ -42,22 +44,26 @@ export default class UserController {
       const respuestaModel = await loginUser({
         email: asegurarStringEnMinusculas(req.body.email),
       });
+
+      console.log('no falla en la respuesta del modelo', respuestaModel)
       
       //Verifica que la respuesta del modelo sea la correcta
       if (respuestaModel.state != "success") {
         res
-          .status(401)
-          .json({ status: false, message: respuestaModel.message });
+        .status(401)
+        .json({ status: false, message: respuestaModel.message });
       }
-
+      
       //Se instancia los datos del usuario que devolvio el modelo
       const user = respuestaModel.data.usuario;
-
+      
       //Valida la contraseña para saber si es la que esta en la base de datos
       const validatePassword = await comparePassword(
         req.body.password,
         user.password
       );
+
+      console.log('no falla en la validacion de la contraseña', validatePassword)
       
       //Verifica que la contraseña si esten bien
       if (!validatePassword) {
@@ -94,7 +100,9 @@ export default class UserController {
           roles: user.roles,
         }
       });
+
     } catch (error) {
+      console.log('este es el error: ',error)
       //Responde con la respuesta de un error y el mensaje
       res.status(500).json({ status: "error", message: error });
     }
