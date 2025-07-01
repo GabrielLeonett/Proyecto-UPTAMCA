@@ -95,8 +95,7 @@ export async function enviarEmail({ Destinatario, Correo }) {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("❌ Error al enviar:", error);
-    throw new Error("Error al enviar el correo electrónico");
+    throw "Error al enviar el correo electrónico";
   }
 }
 

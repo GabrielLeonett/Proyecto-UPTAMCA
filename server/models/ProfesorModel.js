@@ -98,6 +98,9 @@ export default class ProfesorModel {
       
       return resultado;
     } catch (error) {
+      error.details = {
+        path: 'ProfesorModel.RegisterProfesor'
+      }
       // Manejo y formateo de errores
       throw FormatResponseModel.respuestaError(error, "Error al registrar profesor");
     }
@@ -157,9 +160,9 @@ export default class ProfesorModel {
       // Formateo de la respuesta
       return FormatResponseModel.respuestaPostgres(rows, 'Profesor registrado con exito');
     } catch (error) {
-
-      console.log(error);
-
+      error.details = {
+        path: 'ProfesorModel.mostrarProfesor'
+      }
       // Manejo de errores
       throw FormatResponseModel.respuestaError(error, 'Error al obtener los datos del Profesores');
     }
@@ -196,7 +199,7 @@ export default class ProfesorModel {
 
       return resultado;
     } catch (error) {
-      throw error;
+      throw FormatResponseModel.respuestaError(error, 'Error al obtener los datos del Profesores');
     }
   }
 }

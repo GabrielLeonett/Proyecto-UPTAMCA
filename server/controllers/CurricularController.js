@@ -3,6 +3,8 @@ import CurricularModel from "../models/CurricularModel.js";
 // Importaciones de los esquemas para las validaciones
 import { validationPNF } from "../schemas/PnfSchema.js";
 import { validationUnidadCurricular } from "../schemas/UnidadCurricularSchema.js";
+import validationErrors from "../utils/validationsErrors.js";
+import FormatResponseController from "../utils/FormatResponseController.js";
 
 /**
  * @class CurricularController
@@ -10,11 +12,9 @@ import { validationUnidadCurricular } from "../schemas/UnidadCurricularSchema.js
  * - Programas Nacionales de Formación (PNF)
  * - Unidades Curriculares
  * - Trayectos académicos
- * 
  * Maneja la validación de datos, interacción con el modelo y respuestas HTTP.
  */
 export default class CurricularController {
-  
   /**
    * @static
    * @async
@@ -31,31 +31,25 @@ export default class CurricularController {
   static async regitrarPNF(req, res) {
     try {
       // Validacion de los datos para el PNF
-      const resultadoValidation = validationPNF({ input: req.body });
-      if (!resultadoValidation.success) {
-        const errores = resultadoValidation.error.errors;
-        return res.status(400).json({
-          success: false,
-          errors: errores,
-          message: "Error de validación en los datos del profesor",
+      const validaciones = validationErrors(validationPNF({ input: req.body }));
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
         });
       }
 
       const respuestaModel = await CurricularModel.registrarPNF({
         datos: req.body,
-        usuario_accion: req.user
+        usuario_accion: req.user,
       });
 
-      return res.status(201).json({
-        success: true,
-        message: respuestaModel.message,
-      });
+      FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({
-        success: false,
-        menssage: error || "Error al registrar el PNF, por favor vuelva a intentarlo",
-      });
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -75,24 +69,27 @@ export default class CurricularController {
   static async regitrarUnidadCurricular(req, res) {
     try {
       // Validacion de los datos para el UnidadCurricular
-      const resultadoValidation = validationUnidadCurricular({ input: req.body });
-      if (!resultadoValidation.success) {
-        const errores = resultadoValidation.error.errors;
-        return res.status(400).json({
-          success: false,
-          errors: errores,
-          message: "Error de validación en los datos del profesor",
+      const validaciones = validationErrors(
+        validationUnidadCurricular({ input: req.body })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
         });
       }
 
       const respuestaModel = await CurricularModel.registrarUnidadCurricular({
-        datos: req.body, 
-        usuario_accion: req.user
+        datos: req.body,
+        usuario_accion: req.user,
       });
 
-      return res.status(201).json(respuestaModel);
+      FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
-      res.status(500).json(error);
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -106,12 +103,12 @@ export default class CurricularController {
    * @returns {Object} Respuesta JSON con lista de PNFs
    * @throws {500} Si ocurre un error en el servidor
    */
-  static async mostrarPNF(res) {
+  static async mostrarPNF(req, res) {
     try {
       const respuestaModel = await CurricularModel.mostrarPNF();
-      return res.status(201).json(respuestaModel);
+      FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
-      res.status(500).json(error);
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -127,9 +124,9 @@ export default class CurricularController {
   static async mostrarTrayectos(res) {
     try {
       const respuestaModel = await CurricularModel.mostrarPNF();
-      return res.status(201).json(respuestaModel);
+      FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
-      res.status(500).json(error);
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -145,9 +142,9 @@ export default class CurricularController {
   static async mostrarUnTrayecto(res) {
     try {
       const respuestaModel = await CurricularModel.mostrarPNF();
-      return res.status(201).json(respuestaModel);
+      FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
-      res.status(500).json(error);
+      FormatResponseController.respuestaError(res, error);
     }
   }
 }

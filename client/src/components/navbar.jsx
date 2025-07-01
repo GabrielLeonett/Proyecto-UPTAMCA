@@ -114,7 +114,7 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
                         </IconButton>
                         <IconButton 
                         sx={{ color: 'white' }} 
-                        onClick={() => handleRedirect('/login')}
+                        onClick={() => handleRedirect('/Inicio-session')}
                         >
                             <AccountCircleOutlinedIcon/>
                         </IconButton>

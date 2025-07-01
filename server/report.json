@@ -1,0 +1,205 @@
+[
+  {
+    "timestamp": "2025-06-30T23:42:45.561Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos"
+  },
+  {
+    "timestamp": "2025-06-30T23:46:43.671Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "FormatResponseModel.respuestaDatos is not a function",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:47:02.483Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "FormatResponseModel.respuestaDatos is not a function",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:48:46.854Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "resultado is not defined",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:49:13.816Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "resultado is not defined",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:50:27.977Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "resultado is not defined",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:50:47.899Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "resultado is not defined",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-06-30T23:55:12.610Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "SELECT MOSTRAR_USUARIO($1) - falta una entrada para la tabla «u» en la cláusula FROM",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:13:51.422Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'password')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'password')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:60:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-01T13:15:24.018Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'password')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'password')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:60:14)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-01T13:31:14.128Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "SELECT MOSTRAR_USUARIO($1) AS p_resultado - no existe la función respuestas.respuesta_con_datos(unknown, jsonb, json)",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:35:51.251Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "SELECT MOSTRAR_USUARIO($1) AS p_resultado - no existe la función respuestas.respuesta_con_datos(text, json, json)",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:37:46.881Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "SELECT MOSTRAR_USUARIO($1) AS p_resultado - no existe la función respuestas.respuesta_con_datos(unknown, json, json)",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:38:09.867Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "SELECT MOSTRAR_USUARIO($1) AS p_resultado - no existe la función respuestas.respuesta_con_datos(unknown, json, json)",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:51:02.075Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:51:02.098Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:52:26.397Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:52:52.909Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:53:54.216Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:53:54.262Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-01T13:55:00.198Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error de BD",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NULL) - no existe el procedimiento «public.registrar_profesor_completo(unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown)»",
+    "details": {
+      "path": "ProfesorModel.RegisterProfesor"
+    }
+  }
+]

@@ -4,16 +4,16 @@ export default function respuestaAxios({ respuesta }) {
   // Extraer datos relevantes de la respuesta
   const status = respuesta?.status || 0;
   const data = respuesta?.data || {};
+  const title = data?.title || getDefaultTitle(status);
   const message = data?.message || getDefaultMessage(status);
   const errors = data?.errors;
-  console.log(respuesta);
-
+  
   // Manejar diferentes rangos de códigos de estado
   switch (true) {
     // Respuestas exitosas (200-299)
     case status >= 200 && status < 300:
       Swal.fire({
-        title: "¡Éxito!",
+        title: title,
         text: message,
         icon: "success",
         confirmButtonText: "Aceptar",
@@ -23,7 +23,7 @@ export default function respuestaAxios({ respuesta }) {
     // Redirecciones (300-399)
     case status >= 300 && status < 400:
       Swal.fire({
-        title: "Redirección",
+        title: title,
         text: message || "La solicitud ha sido redirigida",
         icon: "info",
         confirmButtonText: "Entendido",
@@ -33,7 +33,7 @@ export default function respuestaAxios({ respuesta }) {
     // Errores del cliente (400-499)
     case status >= 400 && status < 500:
       Swal.fire({
-        title: "Error en la solicitud",
+        title: title,
         text: message || "Por favor verifica los datos enviados",
         icon: "error",
         confirmButtonText: "Corregir",
@@ -43,7 +43,7 @@ export default function respuestaAxios({ respuesta }) {
     // Errores del servidor (500-599)
     case status >= 500:
       Swal.fire({
-        title: "Error del servidor",
+        title: title,
         text: message || "Ocurrió un problema en el servidor",
         icon: "error",
         confirmButtonText: "Reintentar",
@@ -65,7 +65,7 @@ export default function respuestaAxios({ respuesta }) {
       setTimeout(() => {
         Swal.fire({
           toast: true,
-          title: "Error",
+          title: title,
           text: error.message,
           icon: "error",
           timer: 3000, // Cierra automáticamente después de 3 segundos
@@ -81,6 +81,21 @@ export default function respuestaAxios({ respuesta }) {
 }
 
 // Función auxiliar para mensajes por defecto según código de estado
+function getDefaultTitle(status) {
+  const titles = {
+    200: "Operación completada con éxito", // OK
+    201: "Recurso creado exitosamente", // Created
+    204: "Operación exitosa sin contenido", // No Content
+    301: "El recurso ha sido movido permanentemente", // Moved Permanently
+    400: "Solicitud incorrecta",
+    401: "No autorizado",
+    403: "Prohibido",
+    404: "Recurso no encontrado",
+    500: "Error interno del servidor",
+  };
+  return titles[status] || "El servidor respondió con un estado inesperado";
+}
+
 function getDefaultMessage(status) {
   const messages = {
     200: "Operación completada con éxito",

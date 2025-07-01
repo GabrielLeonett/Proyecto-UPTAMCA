@@ -64,19 +64,15 @@ export default class HorarioModel {
       const { rows } = await db.raw(query, param);
 
       // Formateo de la respuesta
-      const resultado = FormatResponseModel.respuestaPostgres(
-        rows, 
-        'Horario Registrado exitosamente', 
-        'Error al registrar el horario'
-      );
+      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');
 
       return resultado;
     } catch (error) {
       // Manejo y formateo de errores
-      throw FormatResponseModel.respuestaError(
-        error, 
-        'Error al registrar el horario'
-      );
+      error.details = {
+        path: 'HorarioModel.registrarHorario'
+      }
+      throw FormatResponseModel.respuestaError(error, 'Error al registrar el horario');
     }
   }
 }

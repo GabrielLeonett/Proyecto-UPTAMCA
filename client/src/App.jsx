@@ -45,11 +45,11 @@ export default function App() {
             <Routes>
               {/* Vistas Públicas */}
               <Route path="" element={<Index />} />
-              <Route path="/Inicio_session" element={<Login />} />
+              <Route path="/Inicio-session" element={<Login />} />
 
               {/* Vistas Protegidas */}
               <Route
-                path="/profesores"
+                path="/Profesores"
                 element={
                   <ProtectedViews
                     allowedRoles={[
@@ -65,7 +65,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/registerProfesor"
+                path="/registerProfe"
                 element={
                   <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <FormRegister />

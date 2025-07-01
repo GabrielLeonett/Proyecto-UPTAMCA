@@ -55,10 +55,9 @@ export default function Profesores() {
     try {
       const endpoint = searchTerm ? "/Profesor/search" : "/Profesor";
       const payload = searchTerm ? { busqueda: searchTerm } : {};
-      const response = await axios.get(endpoint, { params: payload });
-
-      setProfesores(response.data.data.data || []);
-      setFiltroProfesores(response.data.data.data || []);
+      const { data } = await axios.get(endpoint, { params: payload });
+      setProfesores(data.data || []);
+      setFiltroProfesores(data.data || []);
     } catch (error) {
       console.error("Error cargando los profesores:", error);
       setError("Error al cargar los profesores. Por favor intenta nuevamente.");

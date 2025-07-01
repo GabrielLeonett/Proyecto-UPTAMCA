@@ -37,16 +37,16 @@ export default class CurricularModel {
 
       const param = [usuario_accion.id, nombre_pnf, descripcion, codigoPNF, ubicacionPNF]
       
-      console.log(param)
-
       const { rows } = await db.raw(query, param);
 
       const resultado = FormatResponseModel.respuestaPostgres(rows, 'PNF registrado exitoxamente', 'Error en el registro PNF');
 
       return resultado;
     } catch (error) {
-      console.log(error)
-      throw error || "Error al registrar el PNF";
+      error.details = {
+        path: 'CurricularModel.registrarPNF'
+      }
+      throw FormatResponseModel.respuestaError(error,'Error al registrar el PNF');
     }
   }
 
@@ -81,6 +81,9 @@ export default class CurricularModel {
       return FormatResponseModel.respuestaPostgres(rows, 'Unidad Curricular registrada', 'Error al registrar la Unidad Curricular')
 
     } catch (error) {
+      error.details = {
+        path: 'CurricularModel.registrarUnidadCurricular'
+      }
       throw FormatResponseModel.respuestaError(error, 'Error al registrar la Unidad Curricular')
     }
   }
@@ -98,10 +101,12 @@ export default class CurricularModel {
   static async mostrarPNF() {
     try {
       const { rows } = await db.raw(`SELECT * FROM pnfs`);
-      const resultado = FormatResponseModel.respuestaPostgres(rows, 'PNFs obtenidos', 'Error al obtener los PNFs')
-      return resultado
+      return rows
     } catch (error) {
-      throw FormatResponseModel.respuestaError(rows, 'Error al obtener los PNFs')
+      error.details = {
+        path: 'CurricularModel.MostrarPNF'
+      }
+      throw FormatResponseModel.respuestaError(error,'Error al obtener los PNFs');
     }
   }
 }

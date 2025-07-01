@@ -120,7 +120,7 @@ profesorRouter.post(
  *   "busqueda": "3124460"
  * }
  */
-profesorRouter.get(
+profesorRouter.post(
   "/Profesor/search",
   middlewareAuth([
     'SuperAdmin',

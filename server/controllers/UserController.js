@@ -3,8 +3,8 @@ import UserModel from "../models/UserModel.js";
 import { comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
-
-
+import validationErrors from "../utils/validationsErrors.js";
+import FormatResponseController from "../utils/FormatResponseController.js";
 
 /**
  * @class UserController
@@ -15,7 +15,6 @@ import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 const { loginUser } = UserModel;
 
 export default class UserController {
- 
   /**
    * @static
    * @async
@@ -32,12 +31,17 @@ export default class UserController {
   static async login(req, res) {
     try {
       // Valida los datos para el inicio de sesion
-      const validationResult = validationPartialUser({ input: req.body });
-      
-      //Verifica que todos los datos ingresado sean correctos
-      if (!validationResult.success) {
-        //En su defecto regresa una respuesta de los errores en los inputs
-        return res.status(400).json({ errors: validationResult.error.errors });
+      const validaciones = validationErrors(
+        validationPartialUser({ input: req.body })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
+        });
       }
 
       //Manda los datos al modelo y espera una respuesta
@@ -45,16 +49,9 @@ export default class UserController {
         email: asegurarStringEnMinusculas(req.body.email),
       });
 
-      //Verifica que la respuesta del modelo sea la correcta
-      if (respuestaModel.state != "success") {
-        res
-        .status(401)
-        .json({ status: false, message: respuestaModel.message });
-      }
-      
       //Se instancia los datos del usuario que devolvio el modelo
-      const user = respuestaModel.data.usuario;
-      
+      const user = respuestaModel.data;
+
       //Valida la contraseña para saber si es la que esta en la base de datos
       const validatePassword = await comparePassword(
         req.body.password,
@@ -64,11 +61,13 @@ export default class UserController {
       //Verifica que la contraseña si esten bien
       if (!validatePassword) {
         //En su defecto regresa una respuesta de Email o Contraseña invalida"
-        res
-          .status(401)
-          .json({ status: false, message: "Email o Contraseña invalida" });
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Credenciales Invalidas",
+          message: "Correo o contraseña invalida.",
+          error: null,
+        });
       }
-
 
       // Creando el token de sesion
       const token = createSession({
@@ -81,28 +80,25 @@ export default class UserController {
       });
 
       //Respondiendo con una cookie y algunos datos que pueden ser de interes
-      res.header('Access-Control-Allow-Origin', 'https://proyecto-uptamca-frontend.onrender.com');
-      res.header('Access-Control-Allow-Credentials', 'true');
+      //WARNING: NO utiizar FormatResponseController
       res.cookie("autorization", token, {
-        maxAge: 1000 * 60 * 60 * 24,  // 1 día
-        httpOnly: true,
-        secure: true,                // obligatorio en producción (HTTPS)
-        sameSite: 'none',            // necesario para cross-site cookies
-      }).status(200).json({
-        status: "success",
-        message: "Inicio de sesión exitoso",
-        user: {
-          id: user.id,
-          apellidos: user.apellidos,
-          nombres: user.nombres,
-          roles: user.roles,
-        }
-      });
-
+          maxAge: 1000 * 60 * 60 * 24, // 1 día
+          httpOnly: true,
+          secure: true, // obligatorio en producción (HTTPS)
+          sameSite: "none", // necesario para cross-site cookies
+        })
+        .status(200)
+        .json({
+          status: "success",
+          message: "Inicio de sesión exitoso",
+          data: {
+            id: user.id,
+            apellidos: user.apellidos,
+            nombres: user.nombres,
+          },
+        });
     } catch (error) {
-      console.log('este es el error: ',error)
-      //Responde con la respuesta de un error y el mensaje
-      res.status(500).json({ status: "error", message: error });
+      FormatResponseController.respuestaError(res, error);
     }
   }
 

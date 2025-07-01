@@ -31,21 +31,21 @@ export default class UserModel {
   static async loginUser({ email }) {
     try {
       // Consulta SQL que llama a la función almacenada MOSTRAR_USUARIO
-      const query = "SELECT MOSTRAR_USUARIO(?)";
+      const query = "SELECT MOSTRAR_USUARIO(?) AS p_resultado";
       // Valores para la consulta preparada (email del usuario)
       const values = [email];
 
       // Ejecución de la consulta en la base de datos
       const { rows } = await db.raw(query, values);
-      
+
       // Formateo de la respuesta utilizando el modelo estándar
-      const resultado = FormatResponseModel.respuestaDatos(
-        rows[0].mostrar_usuario, 
-        'Usuario Obtenido'
-      );
+      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Usuario Obtenido');
       
       return resultado;
     } catch (error) {
+      error.details = {
+        path: 'UserModel.loginUser'
+      }
       // Formateo del error utilizando el modelo estándar
       throw FormatResponseModel.respuestaError(
         error, 
