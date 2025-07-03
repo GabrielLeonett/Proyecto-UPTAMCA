@@ -59,8 +59,9 @@ export default class FormatResponseModel {
       generateReport({
         status: 500,
         state: "error",
-        title: "Error de BD",
-        message: error.message,
+        title: "Error en el modelo",
+        message: error,
+        ...(error?.code && {code: error.code}),
         ...(error?.details && {details: error.details})
       });
       return {
