@@ -6,6 +6,8 @@ import FormatResponseModel from '../utils/FormatResponseModel.js'
 
 // Importación de la conexión con la base de datos
 import db from "../db.js";
+import e from 'express';
+import { error } from 'console';
 
 /**
  * @class UserModel
@@ -30,11 +32,13 @@ export default class UserModel {
    */
   static async loginUser({ email }) {
     try {
+      console.log(email);
+      console.log('ejecucion del modelo');
       // Consulta SQL que llama a la función almacenada MOSTRAR_USUARIO
       const query = "SELECT MOSTRAR_USUARIO(?) AS p_resultado";
       // Valores para la consulta preparada (email del usuario)
       const values = [email];
-
+      
       // Ejecución de la consulta en la base de datos
       const { rows } = await db.raw(query, values);
 

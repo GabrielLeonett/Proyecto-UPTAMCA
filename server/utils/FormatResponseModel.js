@@ -60,7 +60,7 @@ export default class FormatResponseModel {
         status: 500,
         state: "error",
         title: "Error en el modelo",
-        message: error,
+        message: error.message,
         ...(error?.code && {code: error.code}),
         ...(error?.details && {details: error.details})
       });

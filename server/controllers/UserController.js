@@ -30,11 +30,13 @@ export default class UserController {
    */
   static async login(req, res) {
     try {
+
+      console.log('Se esta ejecutando el login:Validacion')
       // Valida los datos para el inicio de sesion
       const validaciones = validationErrors(
         validationPartialUser({ input: req.body })
       );
-
+      
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
           status: 401,
@@ -43,21 +45,23 @@ export default class UserController {
           error: validaciones,
         });
       }
-
+      
+      console.log('Se esta ejecutando el login:Modelo')
       //Manda los datos al modelo y espera una respuesta
       const respuestaModel = await loginUser({
         email: asegurarStringEnMinusculas(req.body.email),
       });
-
+      
       //Se instancia los datos del usuario que devolvio el modelo
       const user = respuestaModel.data;
-
+      
+      console.log('Se esta ejecutando el login:Password')
       //Valida la contraseña para saber si es la que esta en la base de datos
       const validatePassword = await comparePassword(
         req.body.password,
         user.password
       );
-
+      
       //Verifica que la contraseña si esten bien
       if (!validatePassword) {
         //En su defecto regresa una respuesta de Email o Contraseña invalida"

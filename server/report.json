@@ -1,3 +1,94 @@
 [
-  
+  {
+    "timestamp": "2025-07-03T16:25:30.037Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:26:57.685Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:27:49.153Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:30:45.509Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:32:18.792Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SASL: SCRAM-SERVER-FIRST-MESSAGE: client password must be a string",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:37:07.822Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:38:00.642Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:41:41.413Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Connection terminated unexpectedly",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T16:42:52.559Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Connection terminated unexpectedly",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  }
 ]
