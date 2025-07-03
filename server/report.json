@@ -90,5 +90,70 @@
     "details": {
       "path": "UserModel.loginUser"
     }
+  },
+  {
+    "timestamp": "2025-07-03T16:45:36.567Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T22:36:04.619Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T22:37:57.627Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T22:39:11.494Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Connection terminated unexpectedly",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T22:44:40.189Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T22:46:53.725Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
   }
 ]

@@ -32,8 +32,6 @@ export default class UserModel {
    */
   static async loginUser({ email }) {
     try {
-      console.log(email);
-      console.log('ejecucion del modelo');
       // Consulta SQL que llama a la función almacenada MOSTRAR_USUARIO
       const query = "SELECT MOSTRAR_USUARIO(?) AS p_resultado";
       // Valores para la consulta preparada (email del usuario)

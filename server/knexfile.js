@@ -25,12 +25,8 @@ export default {
   production: {
     client: "pg", // o 'pg', 'sqlite3', etc.
     connection: {
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE, // Asegúrate de que coincide con el nombre en Render
-      port: process.env.DB_PORT,
-      ssl: { rejectUnauthorized: false }, // Obligatorio en Render
+      connectionString: process.env.URL_CONECTION_DATABASE,
+      ssl: { rejectUnauthorized: false }, // Así lo exige Render
       connectionTimeoutMillis: 5000, // 5 segundos para establecer conexión
       idleTimeoutMillis: 30000, // Cierra conexiones inactivas después de 30s
       max: 10, // Máximo de conexiones en el pool
