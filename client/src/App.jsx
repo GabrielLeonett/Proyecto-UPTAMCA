@@ -33,6 +33,7 @@ import ButtonChageTheme from "./components/buttonChageTheme";
 
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
+import Secciones from "./pages/Secciones";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -100,6 +101,14 @@ export default function App() {
                 element={
                   <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <PNF/>
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/Secciones"
+                element={
+                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                    <Secciones/>
                   </ProtectedViews>
                 }
               />

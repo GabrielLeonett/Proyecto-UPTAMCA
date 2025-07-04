@@ -11,16 +11,17 @@ export default class CurricularModel {
       );
 
       // Verificar la respuesta (ajustado para el formato JSON que mencionaste antes)
-      console.log(resultado.rows[0])
       if (!resultado.rows[0] || resultado.rows.length === 0) {
         throw "No se recibió respuesta del procedimiento almacenado";
       }
 
       const respuesta = resultado.rows[0].p_resultado;
+      
 
       if (respuesta.status !== "success") {
         throw respuesta.message || "Error al registrar el PNF";
       }
+
 
       return {
         message: respuesta.message,

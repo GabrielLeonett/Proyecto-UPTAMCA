@@ -27,11 +27,9 @@ export default class CurricularController {
         message: respuestaModel.message,
       });
     } catch (error) {
-      console.log(error);
       res.status(500).json({
         success: false,
-        menssage:
-          error || "Error al registrar el PNF, por favor vuelva a intentarlo",
+        message: error,
       });
     }
   }
@@ -49,7 +47,7 @@ export default class CurricularController {
         });
       }
 
-      const respuestaModel = await CurricularModel.registrarUnidadCurricular({datos: req.body});
+      const respuestaModel = await CurricularModel.registrarUnidadCurricular({ datos: req.body });
 
       return res.status(201).json({
         success: true,

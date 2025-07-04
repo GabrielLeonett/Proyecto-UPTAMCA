@@ -5,6 +5,7 @@ import respuestaAxios from "../utils/respuestasAxios.js";
 export async function loginAPI(input) {
   try {
     const response = await axios.post('login', input);
+    console.log("Respuesta del servidor:", response);
     respuestaAxios({respuesta: response})
     return response.data;
   } catch (error) {

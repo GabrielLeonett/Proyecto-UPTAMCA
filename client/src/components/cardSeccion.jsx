@@ -1,7 +1,7 @@
 import { Typography, Box } from "@mui/material";
 import { useTheme } from '@mui/material/styles';
 
-export default function CardPNF({ pnf }) {
+export default function CardSeccion({ seccion }) {
   const theme = useTheme();
   
   return (
@@ -21,7 +21,6 @@ export default function CardPNF({ pnf }) {
         },
       }}
       component="div"
-      id={pnf.codigo} // Usar código en lugar de id si no existe id
     >
       <Typography 
         component="h2" 
@@ -30,14 +29,14 @@ export default function CardPNF({ pnf }) {
         gutterBottom
         sx={{ fontWeight: 'bold' }}
       >
-        {pnf.name} - {pnf.codigo}
+        {seccion.name}
       </Typography>
       <Typography variant="body1" color="text.secondary" paragraph>
-        Población estudiantil: {pnf.poblacion}
+        Estudiantes de la Seccion: {seccion.estudiantes}
       </Typography>
       <Typography variant="body2" color="text.secondary">
-        {pnf.descripcion || "Descripción no disponible"}
+        Turno: {seccion.turno}
       </Typography>
     </Box>
   );
-} 
+}

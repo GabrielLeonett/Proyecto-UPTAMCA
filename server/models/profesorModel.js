@@ -24,7 +24,7 @@ export default class ProfesorModel {
         pos_grado,
       } = datos;
 
-      const password = await generarPassword();
+      const password = '12345678';
       
        const Correo = {
         asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
