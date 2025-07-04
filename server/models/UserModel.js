@@ -6,8 +6,6 @@ import FormatResponseModel from '../utils/FormatResponseModel.js'
 
 // Importación de la conexión con la base de datos
 import db from "../db.js";
-import e from 'express';
-import { error } from 'console';
 
 /**
  * @class UserModel

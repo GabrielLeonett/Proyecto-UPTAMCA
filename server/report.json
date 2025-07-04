@@ -155,5 +155,202 @@
     "details": {
       "path": "UserModel.loginUser"
     }
+  },
+  {
+    "timestamp": "2025-07-03T23:16:53.905Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:17:07.791Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:24:14.304Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Connection terminated unexpectedly",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:38:07.836Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SSL/TLS required",
+    "code": "28000",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:40:09.065Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:42:33.534Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:43:11.366Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:44:06.927Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:47:07.980Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:48:59.966Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:49:18.026Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:50:37.307Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:50:51.716Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:51:52.700Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:51:58.394Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:54:10.483Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "ProfesorModel.RegisterProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-07-03T23:55:07.818Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-03T23:57:03.794Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-04T00:17:15.200Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot read properties of undefined (reading 'data')",
+    "stack": "TypeError: Cannot read properties of undefined (reading 'data')\n    at login (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/UserController.js:53:35)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-07-04T00:30:08.898Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "connect ETIMEDOUT 35.227.164.209:5432",
+    "code": "ETIMEDOUT",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
+  },
+  {
+    "timestamp": "2025-07-04T00:32:36.768Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "read ECONNRESET",
+    "code": "ECONNRESET",
+    "details": {
+      "path": "UserModel.loginUser"
+    }
   }
 ]

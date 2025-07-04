@@ -25,12 +25,17 @@ export default {
   production: {
     client: "pg", // o 'pg', 'sqlite3', etc.
     connection: {
-      connectionString: process.env.URL_CONECTION_DATABASE,
-      ssl: { rejectUnauthorized: false }, // Así lo exige Render
-      connectionTimeoutMillis: 5000, // 5 segundos para establecer conexión
-      idleTimeoutMillis: 30000, // Cierra conexiones inactivas después de 30s
-      max: 10, // Máximo de conexiones en el pool
-      allowExitOnIdle: true, // Libera recursos cuando el pool está inactivo
+      connectionString: process.env.DATABASE_URL_EXTERNAL,
+      ssl: { rejectUnauthorized: false },
+    },
+    pool: {
+      min: 2,
+      max: 5, // Número conservador para Render (especialmente en plan gratis)
+      acquireTimeoutMillis: 60000, // 60 segundos para adquirir conexión
+      idleTimeoutMillis: 30000, // Liberar conexiones inactivas después de 30s
+      reapIntervalMillis: 1000, // Revisar conexiones inactivas cada 1s
+      createRetryIntervalMillis: 200, // Intervalo para reintentar conexión
+      createTimeoutMillis: 30000, // Tiempo máximo para crear nueva conexión
     },
     migrations: {
       directory: "./database/migrations",

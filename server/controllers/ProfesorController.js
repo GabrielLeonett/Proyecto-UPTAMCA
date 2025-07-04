@@ -116,7 +116,6 @@ export default class ProfesorController {
   static async mostrarProfesor(req, res) {
     try {
       const result = await ProfesorModel.mostrarProfesor({ datos: req.query });
-      console.log(result)
 
       FormatResponseController.respuestaDatos(res, result, {
         timestamp: Date.now,
