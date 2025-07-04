@@ -1,9 +1,6 @@
 import { useTheme } from "@mui/material";
-export default function LogoSimple( animacion ) {
-
-  const {libro, letras, pluma} = animacion;
+export default function LogoSimple({ animacion }) {
     const theme = useTheme();
-    
   return (
     <svg
       id="Capa_1"
@@ -12,7 +9,7 @@ export default function LogoSimple( animacion ) {
       viewBox="0 0 1080 1080"
       width={80}
     >
-      <g id={pluma}>
+      <g id={animacion ? "logo-pluma-no-loop" : ""}>
         <path
           id="path958"
           style={{ fill: theme.palette.primary.contrastText }}
@@ -24,7 +21,7 @@ export default function LogoSimple( animacion ) {
           d="M797.27,10.67l-.1,352.36c-.01,48.8-18.31,95.83-51.28,131.84l-181.83,198.54v-173.82c35.97-10.03,62.35-43.04,62.35-82.2s-26.38-72.17-62.35-82.2v-82.15L797.27,10.67"
         />
       </g>
-      <g id={letras}>
+      <g id={animacion ? "logo-letras-no-loop" : ""}>
         <path
           id="path966"
           style={{ fill: theme.palette.primary.contrastText }}
@@ -61,7 +58,7 @@ export default function LogoSimple( animacion ) {
           d="M913.32,1020.84l-12.99-33.15-13.16,33.15h26.16ZM884.99,949.2h31.15l49.65,117.45h-34.65l-8.5-20.82h-44.98l-8.33,20.82h-33.99l49.65-117.45"
         />
       </g>
-      <g id={libro}>
+      <g id={animacion ? "logo-libro-no-loop" : ""}>
         <path
           id="path994"
           className={`shadow-lg bg-secundary`}

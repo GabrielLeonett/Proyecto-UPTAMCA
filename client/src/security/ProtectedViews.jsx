@@ -6,7 +6,6 @@ import { useAuth } from "../hook/useAuth";
 
 const ProtectedViews = ({ children, allowedRoles }) => {
   const { isAuthenticated, isLoading, checkUserAccess } = useAuth();
-  console.log(isLoading)
 
   if (isLoading) {
     return (
@@ -19,9 +18,9 @@ const ProtectedViews = ({ children, allowedRoles }) => {
           alignContent: "center",
         }}
       >
-        <LogoSimple animacion={{letras:'logo-letras-loop', pluma:'logo-pluma-loop', libro: 'logo-libro-loop'}}></LogoSimple>
+        <LogoSimple animacion={true} ></LogoSimple>
       </Box>
-    ); // Muestra un spinner o skeleton
+    );
   }
 
   if (!isAuthenticated) {

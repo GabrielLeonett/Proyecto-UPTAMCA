@@ -78,7 +78,6 @@ export async function enviarEmail({ Destinatario, Correo }) {
     subject: Correo.asunto,
     html: `
       <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto;">
-<<<<<<< HEAD
           <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
               <img src="cid:logo" alt="Logo UPTAMCA" style="width: 100px;">
           </header>
@@ -106,34 +105,6 @@ export async function enviarEmail({ Destinatario, Correo }) {
       path: logoPath, // Ruta a tu archivo local
       cid: 'logo' // mismo ID que usas en el HTML
     }]
-=======
-        <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
-          <img src="cid:logo@uptamca" alt="Logo UPTAMCA" style="width: 100px;">
-        </header>
-        <div style="padding: 20px;">
-          ${Correo.html}
-          <p style="color: #7f8c8d; font-size: 0.9em; border-top: 1px solid #eee; padding-top: 15px;">
-            Este mensaje está dirigido exclusivamente al destinatario...
-          </p>
-        </div>
-        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-          <a href="http://localhost:5173/login" style="display: inline-block; background-color: #1C75BA; color: white; 
-                    padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-            Acceder a la plataforma
-          </a>
-        </div>
-        <footer style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px;">
-          © ${año.getUTCFullYear()} UPTAMCA. Todos los derechos reservados.
-        </footer>
-      </div>`,
-    attachments: [
-      {
-        filename: "logo.png",
-        path: "./utils/logo.png",
-        cid: "logo@uptamca"
-      }
-    ]
->>>>>>> 57c336c6ff1575be4858aba77cd181a34b88234c
   };
 
   try {

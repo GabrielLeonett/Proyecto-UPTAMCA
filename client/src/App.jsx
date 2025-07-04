@@ -65,7 +65,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/registerProfe"
+                path="/registerProfesor"
                 element={
                   <ProtectedViews
                     allowedRoles={[

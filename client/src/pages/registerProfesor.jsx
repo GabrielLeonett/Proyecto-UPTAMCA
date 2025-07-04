@@ -56,6 +56,24 @@ export default function FormRegister() {
       position: "absolute",
     }),
   };
+  const pages = [
+    { name: "Inicio", url: "/" },
+    {
+      name: "Profesor",
+      submenu: [
+        { name: "Ver", url: "/Profesores" },
+        { name: "Registrar", url: "/registerProfesor" },
+      ],
+    },
+    {
+      name: "PNF",
+      submenu: [
+        { name: "Ver", url: "/PNF" },
+        { name: "Registrar", url: "/registerPNF" },
+      ],
+    },
+    { name: "Contacto", url: "/contact" },
+  ];
 
   const transition = {
     type: "tween",
@@ -105,39 +123,39 @@ export default function FormRegister() {
   </CustomButton>;
   return (
     <>
-      <ResponsiveAppBar
-        pages={["Universidad", "Académico", "Servicios", "Trámites"]}
-        backgroundColor
-      />
+      <ResponsiveAppBar pages={pages} backgroundColor />
 
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
         sx={{
-            mt: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            width: '100%',
-            minHeight: 'screen', 
-            backgroundColor: theme.palette.background.default
-          }}
+          mt: 10,
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          minHeight: "screen",
+          backgroundColor: theme.palette.background.default,
+        }}
       >
-        <Typography variant="h2" component="h1" gutterBottom sx={{ mt: 6, ml:6 }}>
+        <Typography
+          variant="h2"
+          component="h1"
+          gutterBottom
+          sx={{ mt: 6, ml: 6 }}
+        >
           Registrar Profesor
         </Typography>
 
-        <Box className="flex justify-center items-center flex-grow p-3" >
-          
+        <Box className="flex justify-center items-center flex-grow p-3">
           <Box
             component="form"
             noValidate
             onSubmit={handleSubmit(onSubmit)}
-            sx={
-              {
-              backgroundColor: theme.palette.background.paper, 
-              width: '80%',
-              padding: '50px',
-              borderRadius: '25px',
-              boxShadow: theme.shadows[10]
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              width: "80%",
+              padding: "50px",
+              borderRadius: "25px",
+              boxShadow: theme.shadows[10],
             }}
           >
             <AnimatePresence custom={direction} initial={false}>

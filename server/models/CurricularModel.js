@@ -35,7 +35,6 @@ export default class CurricularModel {
 
       const query = `CALL public.registrar_pnf_completo(?, ?, ?, ?, ?, NULL)`;
 
-<<<<<<< HEAD
       // Verificar la respuesta (ajustado para el formato JSON que mencionaste antes)
       if (!resultado.rows[0] || resultado.rows.length === 0) {
         throw "No se recibió respuesta del procedimiento almacenado";
@@ -53,15 +52,6 @@ export default class CurricularModel {
         message: respuesta.message,
         success: true,
       };
-=======
-      const param = [usuario_accion.id, nombre_pnf, descripcion, codigoPNF, ubicacionPNF]
-      
-      const { rows } = await db.raw(query, param);
-
-      const resultado = FormatResponseModel.respuestaPostgres(rows, 'PNF registrado exitoxamente', 'Error en el registro PNF');
-
-      return resultado;
->>>>>>> 57c336c6ff1575be4858aba77cd181a34b88234c
     } catch (error) {
       error.details = {
         path: 'CurricularModel.registrarPNF'
