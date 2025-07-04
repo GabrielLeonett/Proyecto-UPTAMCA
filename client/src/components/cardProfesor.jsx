@@ -63,7 +63,14 @@ export default function CardProfesor({ profesor }) {
                 <Typography variant="body2"><strong>Categoría:</strong> {profesor?.categoria || 'No especificado'}</Typography>
                 <Typography variant="body2"><strong>Dedicación:</strong> {profesor?.dedicacion || 'No especificado'}</Typography>
                 <Typography variant="body2"><strong>Ubicación:</strong> {profesor?.ubicacion || 'No especificado'}</Typography>
-                <Typography variant="body2"><strong>Disponibilidad:</strong> {profesor?.disponibilidad || 'No especificado'}</Typography>
+                <Typography variant="body2">
+                  <strong>Disponibilidad:</strong> 
+                  {profesor?.disponibilidad 
+                    ? `${profesor?.disponibilidad?.hours ? profesor?.disponibilidad?.hours + ' horas' : '0 horas'} 
+                      ${profesor?.disponibilidad?.minutes ? profesor?.disponibilidad?.minutes + ' minutos' : '0 minutos'}`
+                    : 'No especificado'
+                  }
+                </Typography>
                 <Typography variant="body2"><strong>Carga Académica:</strong> {profesor?.cargaAcademica || 'No especificado'}</Typography>
               </Box>
           </Grid>

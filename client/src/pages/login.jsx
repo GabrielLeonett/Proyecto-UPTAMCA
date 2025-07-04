@@ -23,7 +23,7 @@ export default function Login() {
     trigger,
   } = useForm({
     resolver: zodResolver(loginSchema),
-    mode: "onBlur",
+    mode: "onChange",
     shouldFocusError: true,
   });
 
@@ -50,12 +50,6 @@ export default function Login() {
 
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
-    const isValid = await trigger();
-    if (!isValid) {
-      console.log("El formulario no es válido, no se envía");
-      return;
-    }
-
     setProcessing(true);
     try {
       login(formData);

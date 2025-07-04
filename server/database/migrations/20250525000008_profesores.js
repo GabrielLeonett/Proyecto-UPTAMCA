@@ -9,7 +9,7 @@ export async function up(knex) {
     // Relaciones con otras tablas (corregido tipo de dato para UUID)
     table.tinyint("id_categoria")
       .notNullable()
-      .references("id_categoria").inTable("categoria")
+      .references("id_categoria").inTable("categorias")
       .onDelete("RESTRICT")
       .comment('Categoría del profesor');
     
@@ -22,13 +22,13 @@ export async function up(knex) {
     
     table.tinyint("id_dedicacion")
       .notNullable()
-      .references("id_dedicacion").inTable("dedicacion")
+      .references("id_dedicacion").inTable("dedicaciones")
       .onDelete("RESTRICT")
       .comment('Tipo de dedicación del profesor');
     
     table.smallint("id_ubicacion")
       .notNullable()
-      .references("id_ubicacion").inTable("ubicacion")
+      .references("id_ubicacion").inTable("ubicaciones")
       .onDelete("RESTRICT")
       .comment('Ubicación física del profesor');
     
@@ -38,10 +38,10 @@ export async function up(knex) {
       .comment('Formación de pregrado del profesor');
     
     table.text("post_grado")
-      .notNullable()
+      .nullable()
       .comment('Formación de posgrado del profesor');
     
-    table.string("area_de_conocimiento", 300)
+    table.string("area_de_conocimiento", 100)
       .notNullable()
       .comment('Área principal de conocimiento');
     

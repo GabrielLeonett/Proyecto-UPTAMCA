@@ -22,7 +22,7 @@ const PNFSchema = z.object({
     })
     .int('Debe ser un número entero')
     .positive('La población debe ser un número positivo')
-    .max(10000, 'La población no puede exceder 10,000 estudiantes'),
+    .max(10000, 'La población no puede exceder 10,000 estudiantes').optional(),
         
     codigoPNF: z.string({
     invalid_type_error: 'El código debe ser un texto',
@@ -32,7 +32,14 @@ const PNFSchema = z.object({
     .max(7, 'El código debe tener máximo 5 caracteres')  // Corregido: máximo 5
     .regex(/^[A-Z0-9-]{3,7}$/, 'Formato inválido. Use AAA-AAA o AAA-913')
     .trim()
-    .toUpperCase()
+    .toUpperCase(),
+
+    ubicacionPNF: z.number({
+        invalid_type_error: 'El código debe ser un texto',
+        required_error: 'El código del PNF es obligatorio'
+    })
+    .min(1, 'Tiene que ser entre 1 y 3')
+    .max(3, 'Tiene que ser entre 1 y 3')
 });
 
 // Validación completa

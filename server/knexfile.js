@@ -1,22 +1,47 @@
 import dotenv from "dotenv";
-dotenv.config(); // Cargar variables de entorno desde el archivo .env
+
+const envFile = `.env.${process.env.NODE_ENV || "development"}`;
+
+dotenv.config({ path: envFile }); // Cargar el archivo correspondiente
 
 // knexfile.js
 export default {
   development: {
-    client: 'pg',  // o 'pg', 'sqlite3', etc.
+    client: "pg", // o 'pg', 'sqlite3', etc.
     connection: {
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      port: process.env.DB_PORT 
+      port: process.env.DB_PORT,
     },
     migrations: {
-      directory: './database/migrations',
+      directory: "./database/migrations",
     },
     seeds: {
-      directory: './database/seeds',
+      directory: "./database/seeds",
+    },
+  },
+  production: {
+    client: "pg", // o 'pg', 'sqlite3', etc.
+    connection: {
+      connectionString: process.env.DATABASE_URL_EXTERNAL,
+      ssl: { rejectUnauthorized: false },
+    },
+    pool: {
+      min: 2,
+      max: 5, // Número conservador para Render (especialmente en plan gratis)
+      acquireTimeoutMillis: 60000, // 60 segundos para adquirir conexión
+      idleTimeoutMillis: 30000, // Liberar conexiones inactivas después de 30s
+      reapIntervalMillis: 1000, // Revisar conexiones inactivas cada 1s
+      createRetryIntervalMillis: 200, // Intervalo para reintentar conexión
+      createTimeoutMillis: 30000, // Tiempo máximo para crear nueva conexión
+    },
+    migrations: {
+      directory: "./database/migrations",
+    },
+    seeds: {
+      directory: "./database/seeds",
     },
   },
 };

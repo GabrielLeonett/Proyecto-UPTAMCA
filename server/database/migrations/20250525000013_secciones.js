@@ -6,24 +6,30 @@ export async function up(knex) {
       .comment('ID único de la sección (UUID)');
 
     // Datos de la sección
-    table.string("valor_seccion", 20)
+    table.string("valor_seccion", 1)
       .notNullable()
-      .comment('Valor identificador de la sección (ej: "Sección A")');
+      .comment('Valor identificador de la sección (ej: "1")');
     
-    // Relación con trayectos (corregida referencia a id_trayecto)
+    // Relación con trayectos 
     table.bigInteger("id_trayecto")
       .notNullable()
       .references("id_trayecto").inTable("trayectos")
       .onDelete("CASCADE")
       .comment('Trayecto al que pertenece la sección');
+
+    // Relación con turnos 
+    table.bigInteger("id_turno")
+      .nullable()
+      .references("id_turno").inTable("turnos")
+      .onDelete("CASCADE")
+      .comment('El turno que tiene la seccion');
     
     // Capacidad
     table.integer("cupos_disponibles")
       .notNullable()
       .defaultTo(20)
       .comment('Cantidad de cupos disponibles (8-40)');
-
-    table.enu('turno', ['matutino', 'vespertino', 'nocturno']).nullable().comment('Esta columna es para saber el turno que le corresponde a la seccion.');
+    
     
     // Auditoría
     table.timestamp("created_at")

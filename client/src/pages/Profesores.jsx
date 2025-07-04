@@ -74,10 +74,9 @@ export default function Profesores() {
     try {
       const endpoint = searchTerm ? "/Profesor/search" : "/Profesor";
       const payload = searchTerm ? { busqueda: searchTerm } : {};
-      const response = await axios.get(endpoint, { params: payload });
-      
-      setProfesores(response.data.data || []);
-      setFiltroProfesores(response.data.data || []);
+      const { data } = await axios.get(endpoint, { params: payload });
+      setProfesores(data.data || []);
+      setFiltroProfesores(data.data || []);
     } catch (error) {
       console.error("Error cargando los profesores:", error);
       setError("Error al cargar los profesores. Por favor intenta nuevamente.");
@@ -258,7 +257,7 @@ export default function Profesores() {
             ) : (
               <Grid container spacing={3}>
                 {filtroProfesores.map((profesor) => (
-                  <Grid item xs={12} sm={6} lg={4} key={profesor.cedula}>
+                  <Grid item xs={12} sm={6} lg={4} key={profesor.id}>
                     <CardProfesor profesor={profesor} />
                   </Grid>
                 ))}

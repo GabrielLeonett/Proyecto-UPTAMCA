@@ -73,5 +73,10 @@ export async function up(knex) {
 }
 
 export async function down(knex) {
+  await knex.schema.dropTableIfExists("usuario_rol");
+  await knex.schema.dropTableIfExists("notifications");
+  await knex.schema.dropTableIfExists("logs");
+  await knex.schema.dropTableIfExists("profesores");
+  await knex.schema.dropTableIfExists("coordinadores");
   await knex.schema.dropTableIfExists("users");
 }

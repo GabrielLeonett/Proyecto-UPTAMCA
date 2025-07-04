@@ -1,116 +1,156 @@
 import { validationUser } from "../schemas/UserSchema.js";
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
 import ProfesorModel from "../models/ProfesorModel.js";
+import validationErrors from "../utils/validationsErrors.js";
+import FormatResponseController from "../utils/FormatResponseController.js";
 
+/**
+ * Controlador para gestionar todas las operaciones relacionadas con profesores
+ *
+ * @class ProfesorController
+ * @description Contiene los métodos para registrar, mostrar y buscar profesores
+ */
 export default class ProfesorController {
+  /**
+   * Registra un nuevo profesor en el sistema
+   *
+   * @static
+   * @async
+   * @method registrarProfesor
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Respuesta JSON con el resultado de la operación
+   *
+   * @throws {400} Si la validación de datos falla
+   * @throws {500} Si ocurre un error en el servidor
+   *
+   * @example
+   * // Ejemplo de body requerido:
+   * {
+   *   "nombres": "Nombre",
+   *   "apellidos": "Apellido",
+   *   // ...otros campos del profesor
+   * }
+   */
   static async registrarProfesor(req, res) {
     try {
-      console.log("Iniciando el proceso de inicio de sesión...", req.body);
-      // Validación de datos del profesor
-      const validationResultProfesor = validationProfesor({ input: req.body });
-      console.log(req.body);
-      if (!validationResultProfesor.success) {
-        const errores = validationResultProfesor.error.errors.map(error => error.message);
-        return res.status(400).json({
-          success: false,
-          errors: errores,
-          message:"Error de validación en los datos del profesor"
+      // Validación de datos del profesor usando el esquema definido
+      let validaciones = validationErrors(
+        validationProfesor({ input: req.body })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
         });
       }
 
-      // Validación de datos de usuario
-      const validationResultUser = validationUser({ input: req.body });
-      if (!validationResultUser.success) {
-        const errores = validationResultUser.error.errors.map(error => error.message);
-        return res.status(400).json({
-          success: false,
-          errors: errores,
-          message: "Error de validación en los datos de usuario"
+      validaciones = validationErrors(validationUser({ input: req.body }));
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
         });
       }
 
-      // Registrar profesor
-      const result = await ProfesorModel.RegisterProfesor({ datos: req.body });
-      if (!result.success) {
-        return res.status(400).json({
-          success: false,
-          message: result.message || "Error al registrar el profesor"
-        });
-      }
-      
-      return res.status(201).json({
-        success: true,
-        message: "Profesor registrado exitosamente",
+      // Registrar profesor en la base de datos
+      const result = await ProfesorModel.RegisterProfesor({
+        datos: req.body,
+        usuario_accion: req.user, // Usuario que realiza la acción
       });
 
+      FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      console.error("Error en registrarProfesor:", error);
-      
-      // Distinguir entre errores de validación y errores del servidor
-      const statusCode = error.name === 'ValidationError' ? 400 : 500;
-      
-      return res.status(statusCode).json({
-        success: false,
-        message: error.message || "Error interno del servidor",
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-      });
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
+  /**
+   * Obtiene el listado de profesores en formato API (para consumo programático)
+   *
+   * @static
+   * @async
+   * @method mostrarProfesorAPI
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Listado de profesores con metadatos
+   *
+   * @throws {500} Si ocurre un error al consultar la base de datos
+   *
+   * @example
+   * // Ejemplo de query params:
+   * /api/Profesor?categoria=Instructor&genero=masculino
+   */
   static async mostrarProfesorAPI(req, res) {
     try {
-      const result = await ProfesorModel.mostrarProfesorAPI({datos: req.query})
-
-      res.status(200).json({
-        success: true,
-        data: result,
+      const result = await ProfesorModel.mostrarProfesorAPI({
+        datos: req.query,
       });
 
+      FormatResponseController.respuestaDatos(res, result, {
+        timestamp: Date.now,
+      });
     } catch (error) {
-      console.error('Error al obtener profesores:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al obtener la lista de profesores',
-        error: error.message
-      });
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
+  /**
+   * Obtiene el listado de profesores para visualización en interfaz web
+   *
+   * @static
+   * @async
+   * @method mostrarProfesor
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Datos formateados para vista web
+   *
+   * @throws {500} Si ocurre un error al consultar la base de datos
+   */
   static async mostrarProfesor(req, res) {
     try {
-      const result = await ProfesorModel.mostrarProfesor({datos: req.query})
+      const result = await ProfesorModel.mostrarProfesor({ datos: req.query });
 
-      res.status(200).json({
-        success: true,
-        data: result,
+      FormatResponseController.respuestaDatos(res, result, {
+        timestamp: Date.now,
       });
-
     } catch (error) {
-      console.error('Error al obtener profesores:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al obtener la lista de profesores',
-        error: error.message
-      });
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
-  static async buscarProfesor(req, res){
+  /**
+   * Busca profesores según criterios específicos
+   *
+   * @static
+   * @async
+   * @method buscarProfesor
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo de query params:
+   * /Profesor/search?busqueda=3124460
+   */
+  static async buscarProfesor(req, res) {
     try {
-      const result = await ProfesorModel.buscarProfesor({datos: req.query})
+      const result = await ProfesorModel.buscarProfesor({ datos: req.body });
+    
 
-      res.status(200).json({
-        success: true,
-        data: result,
+      FormatResponseController.respuestaDatos(res, result, {
+        timestamp: Date.now,
       });
-
     } catch (error) {
-      console.error('Error al obtener profesores:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error al obtener la lista de profesores',
-        error: error.message
-      });
+      FormatResponseController.respuestaError(res, error);
     }
   }
 }

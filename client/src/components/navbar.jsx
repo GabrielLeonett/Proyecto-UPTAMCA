@@ -220,9 +220,9 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
                         >
                             <FacebookIcon sx={{ color: 'inherit' }} />
                         </IconButton>
-                        <IconButton
-                            sx={{ color: theme.palette.primary.contrastText }}
-                            onClick={() => handleNavigation('/login')}
+                        <IconButton 
+                        sx={{ color: 'white' }} 
+                        onClick={() => handleRedirect('/Inicio-session')}
                         >
                             <AccountCircleOutlinedIcon />
                         </IconButton>

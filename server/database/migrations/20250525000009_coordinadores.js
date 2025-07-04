@@ -5,7 +5,7 @@ export function up(knex) {
     table.bigInteger('id_cedula').unsigned().notNullable()
       .references('cedula').inTable('users');
     table.tinyint('id_ubicacion').unsigned().notNullable()
-      .references('id_ubicacion').inTable('ubicacion');
+      .references('id_ubicacion').inTable('ubicaciones');
     table.tinyint('id_pnf').unsigned().notNullable()
       .references('id_pnf').inTable('pnfs');
     table.timestamps(true, true);
