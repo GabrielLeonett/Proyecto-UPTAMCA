@@ -15,10 +15,10 @@ import helmet from "helmet";
 import cors from 'cors'
 
 // Importaciones de Rutas
-import { profesorRouter } from "./routes/ProfesorRoutes.js";
-import { CurricularRouter } from "./routes/CurricularRoutes.js";
-import { UserRouter } from "./routes/UserRoutes.js";
-import { HorarioRouter } from "./routes/HorarioRoutes.js";
+import { profesorRouter } from "./routes/Profesor.routes.js";
+import { CurricularRouter } from "./routes/Curricular.routes.js";
+import { UserRouter } from "./routes/User.routes.js";
+import { HorarioRouter } from "./routes/Horario.routes.js";
 
 // Creación del servidor
 const app = express();

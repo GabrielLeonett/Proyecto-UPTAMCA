@@ -100,7 +100,7 @@ export const lightTheme = createTheme({
       200: '#94C7EF',
       100: '#A9D2F2',
       50: 'EAF4FC',
-      contrastText: '#ffffff', // Cambiado a blanco para mejor legibilidad
+      contrastText: '#000000', // Cambiado a blanco para mejor legibilidad
     },
     secondary: {
       main: '#FE8012',

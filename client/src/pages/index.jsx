@@ -14,17 +14,16 @@ export default function Index() {
 
   return (
     <>
+
       <ResponsiveAppBar
         pages={["Universidad", "Academico", "Servicios", "Tramites"]}
         backgroundColor={scrolled}
       />
-
       <section className="relative flex h-[48rem] items-center justify-end">
         <div
           className="absolute inset-0 bg-cover bg-center h-full"
           style={{
-            backgroundImage:
-              `linear-gradient(to bottom, hsla(0, 0%, 19.2%, 0.6), rgba(60, 59, 59, 0.81)), url(${imageEstudiantes})`,
+            backgroundImage: `linear-gradient(to bottom, hsla(0, 0%, 19.2%, 0.6), rgba(60, 59, 59, 0.81)), url(${imageEstudiantes})`,
           }}
           aria-hidden="true"
         />
@@ -39,7 +38,6 @@ export default function Index() {
           </Typography>
         </div>
       </section>
-
       <div className="container mx-auto px-4 py-8">
         <Typography variant="h2" component="h2" gutterBottom>
           Programas Nacionales de Formación

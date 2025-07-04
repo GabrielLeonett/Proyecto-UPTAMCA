@@ -24,7 +24,6 @@ import NotFound from "./pages/NotFound";
 //Importacion de useState
 import { useState } from "react";
 
-
 //Importacion de los estilos CSS
 import "./App.css";
 
@@ -57,7 +56,7 @@ export default function App() {
                       "Profesor",
                       "Coordinador",
                       "Director General de Gestión Curricular",
-                      "SuperAdmin"
+                      "SuperAdmin",
                     ]}
                   >
                     <Profesores />
@@ -67,7 +66,13 @@ export default function App() {
               <Route
                 path="/registerProfe"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
                     <FormRegister />
                   </ProtectedViews>
                 }
@@ -75,32 +80,59 @@ export default function App() {
               <Route
                 path="/registerPNF"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <PnfForm/>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <PnfForm />
                   </ProtectedViews>
                 }
               />
               <Route
                 path="/RegistrarHorario"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <HorarioForm/>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <HorarioForm />
                   </ProtectedViews>
                 }
               />
               <Route
                 path="/registerUnidadCurricular"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <MateriaForm/>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <MateriaForm />
                   </ProtectedViews>
                 }
               />
               <Route
                 path="/PNF"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <PNF/>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <PNF />
                   </ProtectedViews>
                 }
               />

@@ -354,4 +354,48 @@ h5 {
   color: #FFF3E9;
 }
 
-/*# sourceMappingURL=App.css.map */
+#logo-pluma-loop{
+  clip-path: inset(0 0 100% 0);
+  animation: reveal 1s ease forwards;
+  animation-iteration-count: infinite;
+}
+
+#logo-libro-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 1s ease forwards;
+  animation-delay: 1s;
+  animation-iteration-count: infinite;
+}
+
+#logo-letras-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 1s ease forwards;
+  animation-delay: 2s;
+  animation-iteration-count: infinite;
+}
+
+#logo-pluma-no-loop{
+  clip-path: inset(0 0 100% 0);
+  animation: reveal 2s ease forwards;
+}
+
+#logo-libro-no-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 2s ease forwards;
+  animation-delay: 1s;
+}
+
+#logo-letras-no-loop {
+  clip-path: inset(0 100% 0 0);
+  animation: reveal 2s ease forwards;
+  animation-delay: 2s;
+}
+
+@keyframes reveal {
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 0;
+  }
+
+
+}
