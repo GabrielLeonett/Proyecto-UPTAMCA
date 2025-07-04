@@ -48,6 +48,25 @@ export default function Profesores() {
     { value: "femenino", label: "Femenino" },
   ];
 
+  const pages = [
+    { name: 'Inicio', url: '/' },
+    { 
+      name: 'Profesor', 
+      submenu: [
+        { name: 'Ver', url: '/Profesores' },
+        { name: 'Registrar', url: '/registerProfesor' },
+      ]
+    },
+    { 
+      name: 'PNF', 
+      submenu: [
+        { name: 'Ver', url: '/PNF' },
+        { name: 'Registrar', url: '/registerPNF' },
+      ]
+    },
+    { name: 'Contacto', url: '/contact' }
+  ];
+
   // Función para buscar profesores
   const fetchProfesores = useCallback(async (searchTerm = "") => {
     setLoading(true);
@@ -118,7 +137,7 @@ export default function Profesores() {
   return (
     <>
       <ResponsiveAppBar
-        pages={["registerProfesor", "Académico", "Servicios", "Trámites"]}
+        pages={pages}
         backgroundColor
       />
       

@@ -128,8 +128,8 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#262D33',
-      900: '#262D33',
+      main: '#1C75BA',
+      900: '#1C75BA',
       800: '#242B30',
       700: '#232A2F',
       600: '#22282E',

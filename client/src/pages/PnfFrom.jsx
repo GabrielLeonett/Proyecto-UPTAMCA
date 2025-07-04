@@ -11,6 +11,24 @@ import { registrarPnfApi } from '../apis/PNFApi';
 export default function PnfForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const pages = [
+    { name: 'Inicio', url: '/' },
+    { 
+      name: 'Profesor', 
+      submenu: [
+        { name: 'Ver', url: '/Profesores' },
+        { name: 'Registrar', url: '/registerProfesor' },
+      ]
+    },
+    { 
+      name: 'PNF', 
+      submenu: [
+        { name: 'Ver', url: '/PNF' },
+        { name: 'Registrar', url: '/registerPNF' },
+      ]
+    },
+    { name: 'Contacto', url: '/contact' }
+  ];
 
   const { 
     register, 
@@ -35,7 +53,7 @@ export default function PnfForm() {
   return (
     <>
       <ResponsiveAppBar
-        pages={["Universidad", "Académico", "Servicios", "Trámites"]}
+        pages={pages}
         backgroundColor
       />
       <Box 
