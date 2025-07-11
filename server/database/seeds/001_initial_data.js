@@ -10,10 +10,12 @@ export async function seed(knex) {
   await knex("pnfs").del();
   await knex("profesores").del();
   await knex("roles").del();
-  await knex("ubicaciones").del();
+  await knex("sedes").del();
   await knex("categorias").del();
   await knex("dedicaciones").del();
   await knex("users").del();
+  await knex("tipos_pre_grado").del();
+  await knex("tipos_post_grado").del();
 
   await knex("users").insert({
     cedula: 999999999,
@@ -45,16 +47,16 @@ export async function seed(knex) {
     { usuario_id: 999999999, rol_id: 20 },
   ]);
 
-  await knex("ubicaciones").insert([
+  await knex("sedes").insert([
     {
-      id_ubicacion: 1,
-      nombre_ubicacion: "Núcleo de Humanidades y Ciencias Sociales",
+      id_sede: 1,
+      nombre_sede: "Núcleo de Humanidades y Ciencias Sociales",
     },
     {
-      id_ubicacion: 2,
-      nombre_ubicacion: "Núcleo de Tecnología y Ciencias Administrativas",
+      id_sede: 2,
+      nombre_sede: "Núcleo de Tecnología y Ciencias Administrativas",
     },
-    { id_ubicacion: 3, nombre_ubicacion: "Núcleo de Salud y Deporte" },
+    { id_sede: 3, nombre_sede: "Núcleo de Salud y Deporte" },
   ]);
 
   await knex("categorias").insert([
@@ -63,6 +65,27 @@ export async function seed(knex) {
     { id_categoria: 3, nombre_categoria: "Agregado" },
     { id_categoria: 4, nombre_categoria: "Asociado" },
     { id_categoria: 5, nombre_categoria: "Titular" },
+  ]);
+
+  await knex("tipos_pre_grado").insert([
+    { id_tipo_pre_grado: 1,nombre_tipo_pre_grado: "TSU" },
+    { id_tipo_pre_grado: 2,nombre_tipo_pre_grado: "Licenciatura" },
+    { id_tipo_pre_grado: 3,nombre_tipo_pre_grado: "Ingeniería" },
+    { id_tipo_pre_grado: 4,nombre_tipo_pre_grado: "Arquitectura" },
+    { id_tipo_pre_grado: 5,nombre_tipo_pre_grado: "Medicina" },
+    { id_tipo_pre_grado: 6,nombre_tipo_pre_grado: "Odontología" },
+    { id_tipo_pre_grado: 7,nombre_tipo_pre_grado: "Veterinaria" },
+    { id_tipo_pre_grado: 8,nombre_tipo_pre_grado: "Educación" },
+    { id_tipo_pre_grado: 9,nombre_tipo_pre_grado: "Abogacía" },
+    { id_tipo_pre_grado: 10,nombre_tipo_pre_grado: "Contaduría Pública" }
+  ]);
+
+  await knex("tipos_post_grado").insert([
+    { id_tipo_post_grado: 1,nombre_tipo_post_grado: "Especialización" },
+    { id_tipo_post_grado: 2,nombre_tipo_post_grado: "Maestría" },
+    { id_tipo_post_grado: 3,nombre_tipo_post_grado: "Doctorado" },
+    { id_tipo_post_grado: 4,nombre_tipo_post_grado: "Diplomado" },       // No es título académico oficial, pero se ofrece comúnmente
+    { id_tipo_post_grado: 5,nombre_tipo_post_grado: "Postdoctorado" }
   ]);
 
   await knex("turnos").insert([

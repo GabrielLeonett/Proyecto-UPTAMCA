@@ -1,6 +1,5 @@
 export async function up(knex) {
   await knex.schema.createTable("pnfs", (table) => {
-    // Identificador numérico pequeño (mejor que UUID para tablas de referencia)
     table.specificType("id_pnf", "SMALLSERIAL")
       .unsigned()
       .notNullable()
@@ -16,6 +15,9 @@ export async function up(knex) {
       .notNullable()
       .unique()
       .comment('Nombre completo del Programa Nacional de Formación');
+
+    table.tinyint('id_sede').unsigned().notNullable().references('id_sede').inTable('sedes');
+
     
     // Detalles académicos
     table.string("descripcion_pnf", 400)

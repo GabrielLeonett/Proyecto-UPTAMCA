@@ -6,13 +6,6 @@ export async function up(knex) {
       .primary()
       .comment('ID único del profesor');
     
-    // Relaciones con otras tablas (corregido tipo de dato para UUID)
-    table.tinyint("id_categoria")
-      .notNullable()
-      .references("id_categoria").inTable("categorias")
-      .onDelete("RESTRICT")
-      .comment('Categoría del profesor');
-    
     table.bigInteger("id_cedula")
       .notNullable()
       .references("cedula").inTable("users")
@@ -20,30 +13,6 @@ export async function up(knex) {
       .unique()
       .comment('Relación con la tabla de usuarios (1 a 1)');
     
-    table.tinyint("id_dedicacion")
-      .notNullable()
-      .references("id_dedicacion").inTable("dedicaciones")
-      .onDelete("RESTRICT")
-      .comment('Tipo de dedicación del profesor');
-    
-    table.smallint("id_ubicacion")
-      .notNullable()
-      .references("id_ubicacion").inTable("ubicaciones")
-      .onDelete("RESTRICT")
-      .comment('Ubicación física del profesor');
-    
-    // Información académica
-    table.text("pre_grado")
-      .notNullable()
-      .comment('Formación de pregrado del profesor');
-    
-    table.text("post_grado")
-      .nullable()
-      .comment('Formación de posgrado del profesor');
-    
-    table.string("area_de_conocimiento", 100)
-      .notNullable()
-      .comment('Área principal de conocimiento');
     
     table.date("fecha_ingreso")
       .notNullable()
@@ -62,9 +31,6 @@ export async function up(knex) {
     
     // Índices optimizados
     table.index(["id_cedula"], "idx_profesores_usuario");
-    table.index(["id_ubicacion"], "idx_profesores_ubicacion");
-    table.index(["id_categoria"], "idx_profesores_categoria");
-    table.index(["id_dedicacion"], "idx_profesores_dedicacion");
     table.index(["fecha_ingreso"], "idx_profesores_antiguedad");
   });
 }
