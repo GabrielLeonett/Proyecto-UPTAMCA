@@ -16,7 +16,7 @@ import Profesores from "./pages/Profesores";
 import Login from "./pages/login";
 import HorarioForm from "./pages/registerHorario";
 import PnfForm from "./pages/PnfFrom";
-import MateriaForm from "./pages/Materia";
+import UnidadCurricularForm from "./pages/UnidadCurricular";
 import PNF from "./pages/PNF";
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
@@ -33,6 +33,8 @@ import ButtonChageTheme from "./components/buttonChageTheme";
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
 import Secciones from "./pages/Secciones";
+
+
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -117,7 +119,7 @@ export default function App() {
                       "SuperAdmin",
                     ]}
                   >
-                    <MateriaForm />
+                    <UnidadCurricularForm />
                   </ProtectedViews>
                 }
               />
@@ -137,6 +139,7 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
+              
               <Route
                 path="/Secciones"
                 element={

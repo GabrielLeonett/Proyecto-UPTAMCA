@@ -17,7 +17,7 @@ const MateriaSchema = z.object({
   descripcion: z.string().optional()
 });
 
-export default function MateriaForm({ onMateriaAdded }) {
+export default function UnidadCurricularForm({ onMateriaAdded }) {
   const [pnfs, setPnfs] = useState([]);
   const [loading, setLoading] = useState(true);
   const { register, handleSubmit, reset, formState: { errors } } = useForm({

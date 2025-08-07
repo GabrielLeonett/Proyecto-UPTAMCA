@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Typography, Stack} from '@mui/material';
+import { Box, Typography, Stack } from '@mui/material';
 import CustomButton from '../components/customButton';
 import CustomLabel from '../components/customLabel';
 import ResponsiveAppBar from "../components/navbar";
@@ -13,15 +13,15 @@ export default function PnfForm() {
 
   const pages = [
     { name: 'Inicio', url: '/' },
-    { 
-      name: 'Profesor', 
+    {
+      name: 'Profesor',
       submenu: [
         { name: 'Ver', url: '/Profesores' },
         { name: 'Registrar', url: '/registerProfesor' },
       ]
     },
-    { 
-      name: 'PNF', 
+    {
+      name: 'PNF',
       submenu: [
         { name: 'Ver', url: '/PNF' },
         { name: 'Registrar', url: '/registerPNF' },
@@ -30,13 +30,13 @@ export default function PnfForm() {
     { name: 'Contacto', url: '/contact' }
   ];
 
-  const { 
-    register, 
-    handleSubmit, 
-    reset, 
-    formState: { errors, isValid } 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid }
   } = useForm({
-    resolver: zodResolver(PNFSchema), 
+    resolver: zodResolver(PNFSchema),
     mode: 'onChange'
   });
 
@@ -44,7 +44,7 @@ export default function PnfForm() {
     setIsSubmitting(true);
     try {
       await registrarPnfApi({ data });
-
+      reset();
     } finally {
       setIsSubmitting(false);
     }
@@ -52,87 +52,80 @@ export default function PnfForm() {
 
   return (
     <>
-      <ResponsiveAppBar
-        pages={pages}
-        backgroundColor
-      />
-      <Box 
-        sx={{
-          display: 'flex',
-          minHeight: 'calc(100vh - 5px)',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: 2
-        }}
-      >
-        <Box sx={{ 
-          maxWidth: 800, 
-          width: '100%',
-          mx: 'auto', 
-          p: 4, 
-          bgcolor: 'background.paper', 
-          borderRadius: 2, 
-          boxShadow: 3,
-        }}>
-          <Typography variant="h4" gutterBottom sx={{ mb: 3, fontWeight: 'bold' }}>
-            Registrar Nuevo PNF
-          </Typography>
-          
-          <Box 
-            component="form" 
+      <ResponsiveAppBar pages={pages} backgroundColor />
+
+      <Box sx={{ pt: 12, px: 4, pb: 10 }}>
+        <Typography variant="h2"
+          component="h1"
+          gutterBottom
+          sx={{ mt: 6, ml: 6 }}>
+          Registrar PNF
+        </Typography>
+
+        <Box
+          sx={{
+            maxWidth: 1000,
+            mx: 'auto',
+            p: 5,
+            bgcolor: 'background.paper',
+            borderRadius: 4,
+            boxShadow: 4,
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+          }}
+        >
+          <Box
+            component="form"
             onSubmit={handleSubmit(onSubmit)}
             aria-labelledby="pnf-form-title"
           >
-            <Stack spacing={3}>
-              <CustomLabel
-                fullWidth
-                label="Nombre del PNF"
-                variant="outlined"
-                {...register('nombre_pnf')}
-                error={!!errors.nombre_pnf}
-                helperText={errors.nombre_pnf?.message || 'Colocar el nombre del PNF'}
-                inputProps={{ 'aria-required': 'true' }}
-              />
-              
-              <CustomLabel
-                fullWidth
-                label="Código"
-                variant="outlined"
-                {...register('codigoPNF')}
-                error={!!errors.codigoPNF}
-                helperText={errors.codigoPNF?.message}
-                inputProps={{ 'aria-required': 'true' }}
-              />
+            <Stack spacing={5}>
+              {/* Fila 1: Nombre y Código */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+                <CustomLabel
+                  fullWidth
+                  label="Nombre del PNF"
+                  variant="outlined"
+                  {...register('nombre_pnf')}
+                  error={!!errors.nombre_pnf}
+                  helperText={errors.nombre_pnf?.message || 'Colocar el nombre del PNF'}
+                  inputProps={{ 'aria-required': 'true' }}
+                />
 
-              <CustomLabel
-                fullWidth
-                label="Población del PNF"
-                type="number"
-                variant="outlined"
-                {...register('poblacionPNF', { valueAsNumber: true })}
-                error={!!errors.poblacionPNF}
-                helperText={errors.poblacionPNF?.message}
-                inputProps={{ 'aria-required': 'true' }}
-              />
-              
-              <CustomLabel
-                fullWidth
-                label="Descripción (Opcional)"
-                variant="outlined"
-                multiline
-                rows={3}
-                {...register('descripcion')}
-              />
-              
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <CustomButton 
-                  tipo='secondary' 
+                <CustomLabel
+                  fullWidth
+                  label="Código"
+                  variant="outlined"
+                  {...register('codigoPNF')}
+                  error={!!errors.codigoPNF}
+                  helperText={errors.codigoPNF?.message || 'Código único del PNF'}
+                  inputProps={{ 'aria-required': 'true' }}
+                />
+              </Stack>
+
+              {/* Fila 2: Población y Descripción */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+
+                <CustomLabel
+                  fullWidth
+                  label="Descripción (Opcional)"
+                  variant="outlined"
+                  multiline
+                  rows={3}
+                  {...register('descripcion')}
+                />
+              </Stack>
+
+              {/* Botones */}
+              <Stack direction="row" spacing={3} justifyContent="flex-end">
+                <CustomButton
+                  tipo="secondary"
                   onClick={() => reset()}
                   disabled={isSubmitting}
                 >
                   Limpiar
                 </CustomButton>
-                <CustomButton 
+
+                <CustomButton
                   tipo="primary"
                   type="submit"
                   disabled={!isValid || isSubmitting}

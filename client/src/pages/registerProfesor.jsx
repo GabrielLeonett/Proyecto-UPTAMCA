@@ -78,8 +78,9 @@ export default function FormRegister() {
   const transition = {
     type: "tween",
     ease: "anticipate",
-    duration: 0.5,
+    duration: 0.4,
   };
+
 
   // Observa todos los campos del formulario
 
@@ -156,17 +157,17 @@ export default function FormRegister() {
               padding: "50px",
               borderRadius: "25px",
               boxShadow: theme.shadows[10],
+              minHeight: "450px", // 👈 Evita los colapsos bruscos
+              position: "relative", // 👈 Necesario para `position: absolute` interno
             }}
           >
-            <AnimatePresence custom={direction} initial={false}>
+            <AnimatePresence custom={direction} initial={false} mode="wait">
               <motion.div
                 key={step}
-                custom={direction}
-                variants={stepVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={transition}
+                layout
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ type: "tween", duration: 0.3 }}
               >
                 {/* Paso 1: Datos Personales */}
                 {step === 1 && (
@@ -338,48 +339,118 @@ export default function FormRegister() {
                     </Typography>
 
                     <Box className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6">
-                      <CustomLabel
-                        id="area_de_conocimiento"
-                        name="area_de_conocimiento"
-                        label="Área de Conocimiento"
-                        type="text"
-                        variant="outlined"
-                        {...register("area_de_conocimiento")}
-                        error={!!errors.area_de_conocimiento}
-                        helperText={
-                          errors.area_de_conocimiento?.message ||
-                          "Ejemplo: Ingeniería, Medicina, Educación"
-                        }
-                      />
+                     <CustomLabel
+  select
+  id="area_de_conocimiento"
+  name="area_de_conocimiento"
+  label="Área de Conocimiento"
+  variant="outlined"
+  {...register("area_de_conocimiento")}
+  error={!!errors.area_de_conocimiento}
+  helperText={
+    errors.area_de_conocimiento?.message || "Seleccione un área"
+  }
+  fullWidth
+  value={watch("area_de_conocimiento") || ""}
+>
+  <MenuItem value="">Seleccione un área</MenuItem>
+  <MenuItem value="Informática">Informática</MenuItem>
+  <MenuItem value="Sistemas">Sistemas</MenuItem>
+  <MenuItem value="Administración">Administración</MenuItem>
+  <MenuItem value="Psicología">Psicología</MenuItem>
+  <MenuItem value="Enfermería">Enfermería</MenuItem>
+  <MenuItem value="Deporte">Deporte</MenuItem>
+  <MenuItem value="Fisioterapia">Fisioterapia</MenuItem>
+  <MenuItem value="Prevención">Prevención y Seguridad</MenuItem>
+  <MenuItem value="Otro">Otro</MenuItem>
+</CustomLabel>
 
+{watch("area_de_conocimiento") === "Otro" && (
+  <CustomLabel
+    id="area_de_conocimiento_otro"
+    name="area_de_conocimiento_otro"
+    label="Especifique el área de conocimiento"
+    type="text"
+    variant="outlined"
+    {...register("area_de_conocimiento_otro")}
+    error={!!errors.area_de_conocimiento_otro}
+    helperText={errors.area_de_conocimiento_otro?.message}
+  />
+)}
                       <CustomLabel
+                        select
                         id="pre_grado"
                         name="pre_grado"
                         label="Pregrado"
-                        type="text"
                         variant="outlined"
                         {...register("pre_grado")}
                         error={!!errors.pre_grado}
-                        helperText={
-                          errors.pre_grado?.message ||
-                          "Título obtenido en pregrado"
-                        }
-                      />
+                        helperText={errors.pre_grado?.message || "Título obtenido en pregrado"}
+                        fullWidth
+                        value={watch("pre_grado") || ""}
+                      >
+                        <MenuItem value="">Seleccione un pregrado</MenuItem>
+                        <MenuItem value="Informatica">Ingeniería en Informática</MenuItem>
+                        <MenuItem value="Sistemas">Ingeniería en Sistemas</MenuItem>
+                        <MenuItem value="Psicologia">Psicología</MenuItem>
+                        <MenuItem value="Enfermeria">Enfermería</MenuItem>
+                        <MenuItem value="Administracion">Administración</MenuItem>
+                        <MenuItem value="Fisioterapia">Fisioterapia</MenuItem>
+                        <MenuItem value="Deporte">Deporte</MenuItem>
+                        <MenuItem value="Prevencion">Prevención y Riesgos</MenuItem>
+                        <MenuItem value="Otro">Otro</MenuItem>2
+                      </CustomLabel>
+                      {watch("pre_grado") === "Otro" && (
+                        <CustomLabel
+                          id="pre_grado_otro"
+                          name="pre_grado_otro"
+                          label="Especifique otro pregrado"
+                          type="text"
+                          variant="outlined"
+                          {...register("pre_grado_otro", {
+                            required: "Debe especificar el pregrado"
+                          })}
+                          error={!!errors.pre_grado_otro}
+                          helperText={errors.pre_grado_otro?.message}
+                          fullWidth
+                        />
+                      )}
 
-                      <CustomLabel
-                        id="pos_grado"
-                        name="pos_grado"
-                        label="Posgrado"
-                        type="text"
-                        variant="outlined"
-                        onChange={(date) => setValue("fecha_nacimiento", date)}
-                        {...register("pos_grado")}
-                        error={!!errors.pos_grado}
-                        helperText={
-                          errors.pos_grado?.message ||
-                          "Especializaciones, maestrías o doctorados (opcional)"
-                        }
-                      />
+
+                     <CustomLabel
+  select
+  id="pos_grado"
+  name="pos_grado"
+  label="Posgrado"
+  variant="outlined"
+  {...register("pos_grado")}
+  error={!!errors.pos_grado}
+  helperText={
+    errors.pos_grado?.message || "Seleccione un posgrado (opcional)"
+  }
+  fullWidth
+  value={watch("pos_grado") || ""}
+>
+  <MenuItem value="">Sin posgrado</MenuItem>
+  <MenuItem value="Especialización">Especialización</MenuItem>
+  <MenuItem value="Maestría">Maestría</MenuItem>
+  <MenuItem value="Doctorado">Doctorado</MenuItem>
+  <MenuItem value="Otro">Otro</MenuItem>
+</CustomLabel>
+
+{/* Si elige "Otro", permitir escribir el nombre */}
+{watch("pos_grado") === "Otro" && (
+  <CustomLabel
+    id="pos_grado_otro"
+    name="pos_grado_otro"
+    label="Especifique el posgrado"
+    type="text"
+    variant="outlined"
+    {...register("pos_grado_otro")}
+    error={!!errors.pos_grado_otro}
+    helperText={errors.pos_grado_otro?.message}
+  />
+)}
                     </Box>
                   </>
                 )}

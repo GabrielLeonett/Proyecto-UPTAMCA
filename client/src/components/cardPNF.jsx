@@ -3,41 +3,48 @@ import { useTheme } from '@mui/material/styles';
 
 export default function CardPNF({ pnf }) {
   const theme = useTheme();
-  
+
   return (
-    <Box 
+    <Box
+      component="div"
+      id={pnf.codigo}
       sx={{
-        border: `1px solid ${theme.palette.primary.main}`,
-        borderRadius: 2,
-        padding: 2,
-        marginBottom: 2,
+        maxWidth: "1100px",
+        width: "100%",
+        mx: "auto", // centrar horizontalmente
+        mt: 5,
+        p: 4, // padding interno
+        borderRadius: 4, // redondeo moderno
         backgroundColor: theme.palette.background.paper,
-        boxShadow: 3,
-        transition: "transform 0.3s, box-shadow 0.3s",
+        boxShadow: 5, // sombra elegante
+        border: `1px solid ${theme.palette.divider}`, // borde sutil
+        transition: "all 0.3s ease",
         "&:hover": {
-          transform: "scale(1.02)",
-          boxShadow: 6,
-          borderColor: theme.palette.primary.dark,
+          boxShadow: 8,
+          transform: "scale(1.01)",
+          borderColor: theme.palette.primary.main,
         },
       }}
-      component="div"
-      id={pnf.codigo} // Usar código en lugar de id si no existe id
     >
-      <Typography 
-        component="h2" 
-        variant="h6" 
-        color={theme.palette.primary.main} 
+      <Typography
+        component="h2"
+        variant="h5"
         gutterBottom
-        sx={{ fontWeight: 'bold' }}
+        sx={{
+          fontWeight: 'bold',
+          color: theme.palette.primary.main,
+        }}
       >
         {pnf.name} - {pnf.codigo}
       </Typography>
-      <Typography variant="body1" color="text.secondary" paragraph>
-        Población estudiantil: {pnf.poblacion}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
+
+      <Typography
+        variant="body2"
+        sx={{ fontSize: 15 }}
+        color="text.secondary"
+      >
         {pnf.descripcion || "Descripción no disponible"}
       </Typography>
     </Box>
   );
-} 
+}
