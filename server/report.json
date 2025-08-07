@@ -352,5 +352,34 @@
     "details": {
       "path": "UserModel.loginUser"
     }
+  },
+  {
+    "timestamp": "2025-08-05T19:46:12.590Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos"
+  },
+  {
+    "timestamp": "2025-08-05T19:47:29.932Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "rows is not defined"
+  },
+  {
+    "timestamp": "2025-08-05T19:49:38.527Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos"
+  },
+  {
+    "timestamp": "2025-08-06T22:08:12.400Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_post_grado($1, $2, $3, NULL) - no existe la relación «post_grado»",
+    "code": "42P01"
   }
 ]
