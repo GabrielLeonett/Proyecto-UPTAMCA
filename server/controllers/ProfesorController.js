@@ -1,6 +1,6 @@
 import { validationUser } from "../schemas/UserSchema.js";
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
-import ProfesorModel from "../models/ProfesorModel.js";
+import ProfesorModel from "../models/profesorModel.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
 
@@ -144,12 +144,178 @@ export default class ProfesorController {
   static async buscarProfesor(req, res) {
     try {
       const result = await ProfesorModel.buscarProfesor({ datos: req.body });
-    
 
       FormatResponseController.respuestaDatos(res, result, {
         timestamp: Date.now,
       });
     } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Mostrar los pre-grados existentes
+   *
+   * @static
+   * @async
+   * @method mostrarPreGrados
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {string} req.param.tipo - el tipo de pre-grado que desea buscar
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo de query params:
+   * /Profesor/pre-grado?tipo=TSU
+   */
+  static async mostrarPreGrados(req, res) {
+    try {
+      const result =  await ProfesorModel.mostrarPreGrados();
+      FormatResponseController.respuestaDatos(res, result)
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error)
+    }
+  }
+
+  /**
+   * Mostrar los post-grados existentes
+   *
+   * @static
+   * @async
+   * @method mostrarPostGrados
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {string} req.param.tipo - el tipo de post-grado que desea buscar
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo de query params:
+   * /Profesor/post-grado?tipo=Maestría
+   */
+  static async mostrarPostGrados(req, res) {
+    try {
+      const result =  await ProfesorModel.mostrarPostGrados();
+      FormatResponseController.respuestaDatos(res, result)
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error)
+    }
+  }
+
+  /**
+   * Buscar las areas de conocimiento existentes
+   *
+   * @static
+   * @async
+   * @method mostrarAreasConocimiento
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo de query params:
+   * /Profesor/areas-conocimiento
+   */
+  static async mostrarAreasConocimiento(req, res) {
+    try {
+      const result =  await ProfesorModel.mostrarAreasConocimiento();
+      FormatResponseController.respuestaDatos(res, result)
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error)
+    }
+  }
+
+  /**
+   * Registrar un Pre-Grado 
+   *
+   * @static
+   * @async
+   * @method registerPreGrado
+   * @param {Object} req.body.tipo - Tipo de pre-grado que se desea registrar 
+   * @param {Object} req.body.nombre - Nombre del pre-grado que se desea registrar 
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo del body:
+   * {
+   *  tipo: "TSU",
+   *  Nombre: "en Imformática"
+   * }
+   */
+  static async registerPreGrado(req, res) {
+    try {
+      const result = await ProfesorModel.registerPreGrado({usuario_accion: req.user, datos:req.body})
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Registrar un Post-Grado
+   *
+   * @static
+   * @async
+   * @method registerPostGrado
+   * @param {Object} req.body.tipo - Tipo de post-grado que se desea registrar 
+   * @param {Object} req.body.nombre - Nombre del post-grado que se desea registrar 
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo del body:
+   * {
+   *  tipo: "Doctorardo",
+   *  Nombre: "en IA"
+   * }
+   */
+  static async registerPostGrado(req, res) {
+    try {
+      const result = await ProfesorModel.registerPostGrado({usuario_accion: req.user, datos:req.body})
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      console.log(error)
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Registrar una area de conocimiento de docentes
+   *
+   * @static
+   * @async
+   * @method registerAreaConocimiento
+   * @param {Object} req.body.area_conocimiento - Nombre de un area conocimiento que se desea registrar 
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la búsqueda
+   *
+   * @throws {500} Si ocurre un error en la búsqueda
+   *
+   * @example
+   * // Ejemplo de body:
+   * {
+   *  area_conocimiento: "Matematicas"
+   * }
+   */
+  static async registerAreaConocimiento(req, res) {
+    try {
+      const result = await ProfesorModel.registerAreaConocimiento({usuario_accion: req.user, datos:req.body})
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      console.log(error)
+      // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
     }
   }
