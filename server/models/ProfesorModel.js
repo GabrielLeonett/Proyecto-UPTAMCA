@@ -51,7 +51,6 @@ export default class ProfesorModel {
         telefono_local,
         fecha_nacimiento,
         genero,
-        ubicacion,
         fecha_ingreso,
         dedicacion,
         categoria,
@@ -125,9 +124,6 @@ export default class ProfesorModel {
 
       return resultado;
     } catch (error) {
-      error.details = {
-        path: "ProfesorModel.RegisterProfesor",
-      };
       // Manejo y formateo de errores
       throw FormatResponseModel.respuestaError(
         error,
@@ -170,6 +166,9 @@ export default class ProfesorModel {
 
       return result.rows;
     } catch (error) {
+      error.details = {
+        path: "ProfesorModel.RegisterProfesor",
+      };
       throw error;
     }
   }
@@ -195,6 +194,9 @@ export default class ProfesorModel {
         "Profesor registrado con exito"
       );
     } catch (error) {
+      error.details = {
+        path: "ProfesorModel.RegisterProfesor",
+      };
       error.details = {
         path: "ProfesorModel.mostrarProfesor",
       };
@@ -222,13 +224,17 @@ export default class ProfesorModel {
 
       // Validación de término de búsqueda
       if (busqueda === undefined || busqueda === null || busqueda === "") {
-        throw new Error("La busqueda no puede esta vacia");
+        throw {
+          status: 404,
+          state: "error",
+          title: "Error al hacer la busqueda.",
+          message: "La busqueda esta vacía.",
+        };
       }
 
       // Consulta con búsqueda insensible a mayúsculas/minúsculas
       const { rows } = await db.raw(
-        `SELECT * FROM PROFESORES_INFORMACION_COMPLETA 
-        WHERE nombres ILIKE ? OR apellidos ILIKE ? OR id ILIKE ?`,
+        `SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE ? OR apellidos ILIKE ? OR cedula ILIKE ?`,
         [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]
       );
 
@@ -240,13 +246,15 @@ export default class ProfesorModel {
 
       return resultado;
     } catch (error) {
+      error.details = {
+        path: "ProfesorModel.buscarProfesor",
+      };
       throw FormatResponseModel.respuestaError(
         error,
         "Error al obtener los datos del Profesores"
       );
     }
   }
-
 
   /**
    * Mostrar los pre-grados existentes
@@ -267,21 +275,32 @@ export default class ProfesorModel {
    */
   static async mostrarPreGrados() {
     try {
-      const {rows} = await db.raw('SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado')
-      return FormatResponseModel.respuestaPostgres(rows, 'Todos los Pre-Grados');
+      const { rows } = await db.raw(
+        "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Todos los Pre-Grados"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, 'Error al obtener los Pre-Grados')
+      error.details = {
+        path: "ProfesorModel.mostrarPreGrados",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los Pre-Grados"
+      );
     }
   }
 
   /**
-   * Mostrar los post-grados existentes
+   * Mostrar los pos-grados existentes
    *
    * @static
    * @async
-   * @method mostrarPostGrados
+   * @method mostrarPosGrados
    * @param {Object} req - Objeto de solicitud de Express
-   * @param {string} req.param.tipo - el tipo de post-grado que desea buscar
+   * @param {string} req.param.tipo - el tipo de pos-grado que desea buscar
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -289,14 +308,25 @@ export default class ProfesorModel {
    *
    * @example
    * // Ejemplo de query params:
-   * /Profesor/post-grado?tipo=Maestría
+   * /Profesor/pos-grado?tipo=Maestría
    */
-  static async mostrarPostGrados() {
+  static async mostrarPosGrados() {
     try {
-      const {rows} = await db.raw('SELECT id_post_grado, nombre_post_grado, tipo_post_grado FROM post_grado')
-      return FormatResponseModel.respuestaPostgres(rows, 'Todos los pre-Grados');
+      const { rows } = await db.raw(
+        "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Todos los Pos-Grados"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, 'Error al obtener los pre-Grados')
+      error.details = {
+        path: "ProfesorModel.mostrarPosGrados",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los Pos-Grados"
+      );
     }
   }
 
@@ -318,10 +348,21 @@ export default class ProfesorModel {
    */
   static async mostrarAreasConocimiento() {
     try {
-      const {rows} = await db.raw('SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO')
-      return FormatResponseModel.respuestaPostgres(rows, 'Todas las areas de conocimiento');
+      const { rows } = await db.raw(
+        "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Todas las areas de conocimiento"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, 'Error al obtener las areas de conocimiento')
+      error.details = {
+        path: "ProfesorModel.mostrarAreasConocimiento",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener las areas de conocimiento"
+      );
     }
   }
 
@@ -343,7 +384,7 @@ export default class ProfesorModel {
    * // Ejemplo de query params:
    * /Profesor/search?busqueda=3124460
    */
-  static async registerPreGrado({usuario_accion, datos}) {
+  static async registerPreGrado({ usuario_accion, datos }) {
     try {
       const { tipo, nombre } = datos;
 
@@ -354,24 +395,33 @@ export default class ProfesorModel {
       const params = [usuario_accion.id, nombre, tipo];
 
       // Ejecución de la consulta
-      const {rows} = await db.raw(query, params);
+      const { rows } = await db.raw(query, params);
 
-      return FormatResponseModel.respuestaPostgres(rows,"Pre-grado registrado Exitosamente");
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Pre-grado registrado Exitosamente"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, "Error al registra pre-grado");
+      error.details = {
+        path: "ProfesorModel.registerPreGrado",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registra pre-grado"
+      );
     }
   }
 
   /**
-   * Registrar un Post-Grado
+   * Registrar un Pos-Grado
    *
    * @static
    * @async
-   * @method registerPostGrado
+   * @method registerPosGrado
    * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar el registro del Post-Grado
-   * @param {Object} datos.tipo - Tipo de Post-Grado para el registro.
-   * @param {Object} datos.Nombre - Nombre del Post-Grado para el registro.
+   * @param {Object} datos - Datos para realizar el registro del Pos-Grado
+   * @param {Object} datos.tipo - Tipo de Pos-Grado para el registro.
+   * @param {Object} datos.Nombre - Nombre del Pos-Grado para el registro.
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
    * @throws {500} Si ocurre un error en la búsqueda
@@ -380,22 +430,31 @@ export default class ProfesorModel {
    * // Ejemplo de query params:
    * /Profesor/search?busqueda=3124460
    */
-  static async registerPostGrado({usuario_accion, datos}) {
+  static async registerPosGrado({ usuario_accion, datos }) {
     try {
       const { tipo, nombre } = datos;
 
-     // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_post_grado(?, ?, ?, NULL)`;
+      // Consulta SQL para registrar profesor usando procedimiento almacenado
+      const query = `CALL public.registrar_pos_grado(?, ?, ?, NULL)`;
 
       // Parámetros para la consulta
       const params = [usuario_accion.id, nombre, tipo];
 
       // Ejecución de la consulta
-      const {rows} = await db.raw(query, params);
+      const { rows } = await db.raw(query, params);
 
-      return FormatResponseModel.respuestaPostgres(rows,"Post-grado registrado Exitosamente");
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Pos-grado registrado Exitosamente"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, "Error al registra post-grado");
+      error.details = {
+        path: "ProfesorModel.registerPosGrado",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registra pos-grado"
+      );
     }
   }
   /**
@@ -406,7 +465,7 @@ export default class ProfesorModel {
    * @method registerAreaConocimiento
    * @param {number} usuario_accion - Id del usuario que desea realizar la acción
    * @param {Object} datos - Datos para realizar el registro del Area de conocimiento
-   * @param {Object} datos.area_conocimiento - Area de conocimiento para el registro. 
+   * @param {Object} datos.area_conocimiento - Area de conocimiento para el registro.
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
    * @throws {500} Si ocurre un error en la búsqueda
@@ -415,7 +474,7 @@ export default class ProfesorModel {
    * // Ejemplo de query params:
    * /Profesor/search?busqueda=3124460
    */
-  static async registerAreaConocimiento({usuario_accion, datos}) {
+  static async registerAreaConocimiento({ usuario_accion, datos }) {
     try {
       const { area_conocimiento } = datos;
 
@@ -426,13 +485,20 @@ export default class ProfesorModel {
       const params = [usuario_accion.id, area_conocimiento];
 
       // Ejecución de la consulta
-      const {rows} = await db.raw(query, params);
+      const { rows } = await db.raw(query, params);
 
-      return FormatResponseModel.respuestaPostgres(rows, "Area de Conocimiento Registrada Exitosamente")
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Area de Conocimiento Registrada Exitosamente"
+      );
     } catch (error) {
-      throw FormatResponseModel.respuestaError(error, "Error al registra area de conocimiento");
+      error.details = {
+        path: "ProfesorModel.registerAreaConocimiento",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registra area de conocimiento"
+      );
     }
   }
-
-  
 }

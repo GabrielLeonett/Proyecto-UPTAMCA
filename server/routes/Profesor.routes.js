@@ -3,7 +3,7 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import ProfesorController from "../controllers/ProfesorController.js";
 
 // Destructuración de los métodos del controlador de profesores
-const { registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor, mostrarPreGrados, mostrarPostGrados, mostrarAreasConocimiento, registerPreGrado, registerPostGrado, registerAreaConocimiento} = ProfesorController;
+const { registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor, mostrarPreGrados, mostrarPosGrados, mostrarAreasConocimiento, registerPreGrado, registerPosGrado, registerAreaConocimiento} = ProfesorController;
 
 // Creación del router para las rutas de profesores
 export const profesorRouter = Router();
@@ -66,8 +66,8 @@ profesorRouter.get(
 );
 
 /**
- * @name GET /Profesor/post-grado
- * @description Obtener un listado de los post-grado de los profesores existentes 
+ * @name GET /Profesor/pos-grado
+ * @description Obtener un listado de los pos-grado de los profesores existentes 
  * @query {string} [tipo] - Filtro por tipo (Maestria, Doctorado, etc.)
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -76,17 +76,17 @@ profesorRouter.get(
  *   - Coordinador
  * @example
  * // Ejemplo de URL:
- * curl -X GET 'http://localhost:3000/Profesor/post-grado?tipo=Maestria'
+ * curl -X GET 'http://localhost:3000/Profesor/pos-grado?tipo=Maestria'
  */
 profesorRouter.get(
-"/Profesor/post-grado",
+"/Profesor/pos-grado",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
     'Director General de Gestión Curricular',
     'Coordinador'
   ]),
-  mostrarPostGrados
+  mostrarPosGrados
 );
 
 /**
@@ -132,12 +132,12 @@ profesorRouter.get(
 
 /**
  * =============================================
- * SECCIÓN DE RUTAS POST
+ * SECCIÓN DE RUTAS POS
  * =============================================
  */
 
 /**
- * @name POST /Profesor/register
+ * @name POS /Profesor/register
  * @description Registra un nuevo profesor en el sistema
  * @body {Object} Datos del profesor - Ver estructura completa abajo
  * @middleware Requiere uno de estos roles:
@@ -177,7 +177,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/search
+ * @name POS /Profesor/search
  * @description Busca profesores por cédula, nombre o apellido
  * @query {string} busqueda - Término de búsqueda (cédula o nombre)
  * @middleware Requiere uno de estos roles:
@@ -203,7 +203,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/pre-grado
+ * @name POS /Profesor/pre-grado
  * @description Registrar el pre-grado de un profesor
  * @body {Object} pre_grado.tipo tipo de pre-grado TSU, Licenciatura, etc
  * @body {Object} pre_grado.nombre Nombre de pre-grado Informatica, Ciencias Administrativas, etc.
@@ -231,10 +231,10 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/post-grado
- * @description Registrar el post-grado de un profesor
- * @body {Object} post_grado.tipo tipo de post-grado Maestria, Doctorado, especializacion, etc.
- * @body {Object} post_grado.nombre Nombre de post-grado IA, TIC, etc.
+ * @name POS /Profesor/pos-grado
+ * @description Registrar el pos-grado de un profesor
+ * @body {Object} pos_grado.tipo tipo de pos-grado Maestria, Doctorado, especializacion, etc.
+ * @body {Object} pos_grado.nombre Nombre de pos-grado IA, TIC, etc.
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
@@ -242,24 +242,24 @@ profesorRouter.post(
  *   - Coordinador
  * @example
  * // Ejemplo de body JSON:
- * post_grado :{
+ * pos_grado :{
  *    tipo: "Maestria",
  *    nombre: "En IA"
  * }
  */
 profesorRouter.post(
-  "/Profesor/post-grado",
+  "/Profesor/pos-grado",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
     'Director General de Gestión Curricular',
     'Coordinador'
   ]),
-  registerPostGrado
+  registerPosGrado
 );
 
 /**
- * @name POST /Profesor/areas-conocimiento
+ * @name POS /Profesor/areas-conocimiento
  * @description Registrar el areas conocimiento de un profesor
  * @body {Object} area_conocimiento Area conocimiento Matematicas, Contabilidad, etc.
  * @middleware Requiere uno de estos roles:

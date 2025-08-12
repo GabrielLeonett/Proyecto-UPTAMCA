@@ -1,6 +1,5 @@
-import { validationUser } from "../schemas/UserSchema.js";
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
-import ProfesorModel from "../models/profesorModel.js";
+import ProfesorModel from "../models/ProfesorModel.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
 
@@ -34,10 +33,10 @@ export default class ProfesorController {
    */
   static async registrarProfesor(req, res) {
     try {
+
+      const input = {...req.body};
       // Validación de datos del profesor usando el esquema definido
-      let validaciones = validationErrors(
-        validationProfesor({ input: req.body })
-      );
+      let validaciones = validationErrors(validationProfesor(input));
 
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
@@ -46,16 +45,7 @@ export default class ProfesorController {
           message: "Los datos estan errados",
           error: validaciones,
         });
-      }
-
-      validaciones = validationErrors(validationUser({ input: req.body }));
-      if (validaciones !== true) {
-        FormatResponseController.respuestaError(res, {
-          status: 401,
-          title: "Datos Erroneos",
-          message: "Los datos estan errados",
-          error: validaciones,
-        });
+        return
       }
 
       // Registrar profesor en la base de datos
@@ -180,13 +170,13 @@ export default class ProfesorController {
   }
 
   /**
-   * Mostrar los post-grados existentes
+   * Mostrar los pos-grados existentes
    *
    * @static
    * @async
-   * @method mostrarPostGrados
+   * @method mostrarPosGrados
    * @param {Object} req - Objeto de solicitud de Express
-   * @param {string} req.param.tipo - el tipo de post-grado que desea buscar
+   * @param {string} req.param.tipo - el tipo de pos-grado que desea buscar
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -194,11 +184,11 @@ export default class ProfesorController {
    *
    * @example
    * // Ejemplo de query params:
-   * /Profesor/post-grado?tipo=Maestría
+   * /Profesor/pos-grado?tipo=Maestría
    */
-  static async mostrarPostGrados(req, res) {
+  static async mostrarPosGrados(req, res) {
     try {
-      const result =  await ProfesorModel.mostrarPostGrados();
+      const result =  await ProfesorModel.mostrarPosGrados();
       FormatResponseController.respuestaDatos(res, result)
     } catch (error) {
       FormatResponseController.respuestaError(res, error)
@@ -261,13 +251,13 @@ export default class ProfesorController {
   }
 
   /**
-   * Registrar un Post-Grado
+   * Registrar un Pos-Grado
    *
    * @static
    * @async
-   * @method registerPostGrado
-   * @param {Object} req.body.tipo - Tipo de post-grado que se desea registrar 
-   * @param {Object} req.body.nombre - Nombre del post-grado que se desea registrar 
+   * @method registerPosGrado
+   * @param {Object} req.body.tipo - Tipo de pos-grado que se desea registrar 
+   * @param {Object} req.body.nombre - Nombre del pos-grado que se desea registrar 
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -280,9 +270,9 @@ export default class ProfesorController {
    *  Nombre: "en IA"
    * }
    */
-  static async registerPostGrado(req, res) {
+  static async registerPosGrado(req, res) {
     try {
-      const result = await ProfesorModel.registerPostGrado({usuario_accion: req.user, datos:req.body})
+      const result = await ProfesorModel.registerPosGrado({usuario_accion: req.user, datos:req.body})
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
       console.log(error)
