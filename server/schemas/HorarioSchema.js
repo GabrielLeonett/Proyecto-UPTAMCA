@@ -15,7 +15,7 @@ const HorarioSchema = z.object({
     })
     .positive("El id de profesor debe ser positivo"),
 
-  unidad_curricular_id: z
+  id_unidad_curricular: z
     .number({
       invalid_type_error: "El id de unidad curricular debe ser un número",
       required_error: "El id de unidad curricular es obligatorio",
@@ -34,13 +34,12 @@ const HorarioSchema = z.object({
     })
     .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Formato de hora inválido (HH:MM:SS)"),
 
-  aula: z
-    .string({
-      invalid_type_error: "El aula debe ser un texto",
-      required_error: "El aula es obligatoria",
+  id_aula: z
+    .number({
+      invalid_type_error: "El id del aula debe ser un número",
+      required_error: "El id del aula es obligatorio",
     })
-    .min(3, "El aula debe tener al menos 3 caracteres")
-    .max(50, "El aula no puede exceder los 50 caracteres"),
+    .positive("El id del aula debe ser positivo"),
 });
 
 // Validación completa

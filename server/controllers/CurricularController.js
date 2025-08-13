@@ -32,7 +32,6 @@ export default class CurricularController {
     try {
       // Validacion de los datos para el PNF
       const validaciones = validationErrors(validationPNF({ input: req.body }));
-
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
           status: 401,
@@ -40,6 +39,7 @@ export default class CurricularController {
           message: "Los datos estan errados",
           error: validaciones,
         });
+        return
       }
 
       const respuestaModel = await CurricularModel.registrarPNF({
@@ -121,10 +121,12 @@ export default class CurricularController {
    * @returns {Object} Respuesta JSON con lista de trayectos
    * @throws {500} Si ocurre un error en el servidor
    */
-  static async mostrarTrayectos(res) {
+  static async mostrarTrayectos(req, res) {
     try {
-      const respuestaModel = await CurricularModel.mostrarPNF();
+      const respuestaModel = await CurricularModel.mostrarTrayecto();
+      console.log(respuestaModel)
       FormatResponseController.respuestaExito(res, respuestaModel);
+      return
     } catch (error) {
       FormatResponseController.respuestaError(res, error);
     }
@@ -139,7 +141,7 @@ export default class CurricularController {
    * @returns {Object} Respuesta JSON con datos del trayecto
    * @throws {500} Si ocurre un error en el servidor
    */
-  static async mostrarUnTrayecto(res) {
+  static async mostrarUnTrayecto(req, res) {
     try {
       const respuestaModel = await CurricularModel.mostrarPNF();
       FormatResponseController.respuestaExito(res, respuestaModel);

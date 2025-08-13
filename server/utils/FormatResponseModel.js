@@ -107,7 +107,7 @@ export default class FormatResponseModel {
    * @returns {Object} Respuesta formateada según el tipo de resultado
    * @throws {Error} Si la respuesta indica un error explícito
    */
-  static respuestaPostgres(rows, titleSuccess = "Completado") {
+  static respuestaPostgres(rows, titleSuccess = "Completado", ) {
     try {
       const resultado = this.validacionesComunes(rows);
 
@@ -117,7 +117,13 @@ export default class FormatResponseModel {
         throw resultado;
       }
 
-      return resultado;
+      return {
+        status: resultado.status_code || 200,
+        state: "success",
+        title: titleSuccess,
+        message: resultado.message || "Se obtuvieron los datos",
+        data: resultado
+      };
     } catch (error) {
       throw error;
     }

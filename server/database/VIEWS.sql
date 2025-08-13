@@ -40,30 +40,52 @@ ALTER VIEW public.horarios_completos OWNER TO postgres;
 -- Name: profesores_informacion_completa; Type: VIEW; Schema: public; Owner: postgres
 --
 
-CREATE VIEW public.profesores_informacion_completa AS
- SELECT (p.id_cedula)::character varying AS id,
-    (u.nombres)::character varying AS nombres,
-    (u.apellidos)::character varying AS apellidos,
-    (u.email)::character varying AS email,
-    (d.nombre_dedicacion)::character varying AS dedicacion,
-    (c.nombre_categoria)::character varying AS categoria,
-    (p.post_grado)::character varying AS post_grado,
-    (p.pre_grado)::character varying AS pre_grado,
-    (ub.nombre_ubicacion)::character varying AS ubicacion,
-    (p.area_de_conocimiento)::character varying AS area_de_conocimiento,
-    p.fecha_ingreso,
-    (u.genero)::character varying AS genero,
-    (d.horas_docencia_semanales - ( SELECT COALESCE(sum((h2.hora_fin - h2.hora_inicio)), '00:00:00'::interval) AS "coalesce"
-           FROM public.horarios h2
-          WHERE (h2.profesor_id = p.id_profesor))) AS disponibilidad
-   FROM ((((public.profesores p
-     JOIN public.users u ON ((p.id_cedula = u.cedula)))
-     LEFT JOIN public.dedicaciones d ON ((p.id_dedicacion = d.id_dedicacion)))
-     LEFT JOIN public.categorias c ON ((p.id_categoria = c.id_categoria)))
-     LEFT JOIN public.ubicaciones ub ON ((p.id_ubicacion = ub.id_ubicacion)));
-
-
-ALTER VIEW public.profesores_informacion_completa OWNER TO postgres;
+CREATE OR REPLACE VIEW public.profesores_informacion_completa
+    AS
+     SELECT 
+    u.nombres,
+    u.apellidos,
+    u.cedula::text AS cedula,
+    u.telefono_movil,
+    u.telefono_local,
+    u.fecha_nacimiento,
+    u.genero,
+    u.email,
+    pr.fecha_ingreso,
+    ( SELECT dedicaciones.nombre_dedicacion
+           FROM dedicaciones
+          WHERE dedicaciones.id_dedicacion = (( SELECT relacion_dedicacion_profesor.dedicacion_id
+                   FROM relacion_dedicacion_profesor
+                  WHERE relacion_dedicacion_profesor.profesor_id = pr.id_profesor AND relacion_dedicacion_profesor.fecha_fin IS NULL))) AS dedicacion,
+    ( SELECT categorias.nombre_categoria
+           FROM categorias
+          WHERE categorias.id_categoria = (( SELECT relacion_categoria_profesor.categoria_id
+                   FROM relacion_categoria_profesor
+                  WHERE relacion_categoria_profesor.profesor_id = pr.id_profesor AND relacion_categoria_profesor.fecha_fin IS NULL))) AS categoria,
+    ARRAY( SELECT areas_de_conocimiento.nombre_area_conocimiento
+           FROM areas_de_conocimiento
+          WHERE (areas_de_conocimiento.id_area_conocimiento IN ( SELECT profesor_area_conocimiento.area_id
+                   FROM profesor_area_conocimiento
+                  WHERE profesor_area_conocimiento.profesor_id = pr.id_profesor))) AS areas_de_conocimiento,
+    ARRAY( SELECT format('%s %s'::text, pre_grado.tipo_pre_grado, pre_grado.nombre_pre_grado) AS format
+           FROM pre_grado
+          WHERE (pre_grado.id_pre_grado IN ( SELECT relacion_profesor_pre_grado.pre_grado_id
+                   FROM relacion_profesor_pre_grado
+                  WHERE relacion_profesor_pre_grado.profesor_id = pr.id_profesor))) AS pre_grados,
+    ARRAY( SELECT format('%s %s'::text, pos_grado.tipo_pos_grado, pos_grado.nombre_pos_grado) AS format
+           FROM pos_grado
+          WHERE (pos_grado.id_pos_grado IN ( SELECT relacion_profesor_pos_grado.pos_grado_id
+                   FROM relacion_profesor_pos_grado
+                  WHERE relacion_profesor_pos_grado.profesor_id = pr.id_profesor))) AS pos_grados,
+    (( SELECT dedicaciones.horas_docencia_semanales
+           FROM dedicaciones
+          WHERE dedicaciones.id_dedicacion = (( SELECT relacion_dedicacion_profesor.dedicacion_id
+                   FROM relacion_dedicacion_profesor
+                  WHERE relacion_dedicacion_profesor.profesor_id = pr.id_profesor AND relacion_dedicacion_profesor.fecha_fin IS NULL)))) - COALESCE(( SELECT sum(h.hora_fin - h.hora_inicio) AS sum
+           FROM horarios h
+          WHERE h.profesor_id = pr.id_profesor), '00:00:00'::interval) AS disponibilidad
+   FROM profesores pr
+     JOIN users u ON pr.id_cedula = u.cedula;
 
 -- Completed on 2025-06-24 19:22:33
 

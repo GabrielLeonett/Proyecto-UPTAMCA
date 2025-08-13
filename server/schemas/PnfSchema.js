@@ -34,7 +34,7 @@ const PNFSchema = z.object({
     .trim()
     .toUpperCase(),
 
-    ubicacionPNF: z.number({
+    sedePNF: z.number({
         invalid_type_error: 'El código debe ser un texto',
         required_error: 'El código del PNF es obligatorio'
     })
