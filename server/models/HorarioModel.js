@@ -44,7 +44,7 @@ export default class HorarioModel {
   static async registrarHorario({ datos, usuario_accion }) {
     try {
       // Extracción de parámetros del objeto datos
-      const { id_seccion, id_profesor, unidad_curricular_id, dia_semana, hora_inicio, aula } = datos;
+      const { id_seccion, id_profesor, unidad_curricular_id, dia_semana, hora_inicio, id_aula } = datos;
 
       // Consulta SQL que llama al procedimiento almacenado
       const query = `CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)`;
@@ -55,10 +55,12 @@ export default class HorarioModel {
         id_seccion, 
         id_profesor, 
         unidad_curricular_id, 
+        id_aula, 
         dia_semana, 
         hora_inicio, 
-        aula 
       ];
+
+      console.log(param);
 
       // Ejecución de la consulta
       const { rows } = await db.raw(query, param);

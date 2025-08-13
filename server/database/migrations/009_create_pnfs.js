@@ -5,8 +5,8 @@
  * @returns { Promise<void> }
  */
 export async function up(knex){
-  await knex.schema.createTable('pnfs', (table) => {
-    table.smallint('id_pnf').primary().notNullable();
+  await knex.schema.createTable('pnfs', (table) => {  
+    table.increments('id_pnf', { primaryKey: true }); // Crea como integer primero
     table.string('codigo_pnf', 10).unique().notNullable().comment('Código institucional del PNF (ej: ING-INF)');
     table.string('nombre_pnf', 60).unique().notNullable().comment('Nombre completo del Programa Nacional de Formación');
     table.smallint('id_sede').notNullable();
@@ -30,6 +30,16 @@ export async function up(knex){
 
   await knex.raw(`
     COMMENT ON TABLE pnfs IS 'Esta es la tabla de los pnfs';
+
+    ALTER TABLE pnfs 
+    ALTER COLUMN id_pnf TYPE SMALLINT;
+    
+    CREATE SEQUENCE IF NOT EXISTS pnfs_id_pnf_seq 
+    AS SMALLINT OWNED BY pnfs.id_pnf;
+    
+    ALTER TABLE pnfs 
+    ALTER COLUMN id_pnf 
+    SET DEFAULT nextval('pnfs_id_pnf_seq');
   `);
 };
 

@@ -1,12 +1,13 @@
 // migrations/xxxx_create_trayectos.js
 
+
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 export async function up(knex){
   await knex.schema.createTable('trayectos', (table) => {
-    table.smallint('id_trayecto').primary().notNullable();
+    table.increments('id_trayecto').primary().notNullable();
     table.integer('poblacion_estudiantil').notNullable().defaultTo(0).comment('Cantidad de estudiantes en el trayecto');
     table.string('valor_trayecto', 20).notNullable().comment('Valor identificador del trayecto (ej: Trayecto I, Trayecto II)');
     table.smallint('id_pnf').notNullable().comment('Referencia al PNF al que pertenece el trayecto');
@@ -22,6 +23,11 @@ export async function up(knex){
       .references('id_pnf')
       .inTable('pnfs')
       .onDelete('CASCADE');
+
+    knex.raw(`
+      ALTER TABLE trayectos 
+      ALTER COLUMN TYPE SMALLINT;
+    `)
   });
 };
 

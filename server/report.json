@@ -1,0 +1,255 @@
+[
+  {
+    "timestamp": "2025-08-12T18:55:54.627Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "resultado is not defined",
+    "details": {
+      "path": "CurricularModel.registrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T18:59:24.748Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "CurricularModel.registrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T19:00:08.644Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "rows is not defined",
+    "details": {
+      "path": "CurricularModel.registrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T19:28:34.292Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T19:29:16.835Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T19:29:39.530Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T19:29:56.283Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T19:30:27.014Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T19:30:42.667Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at regitrarPNF (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:52:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T20:07:13.315Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "CurricularModel.MostrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T20:08:26.234Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T20:09:09.827Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T20:09:37.268Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:07:13.828Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:129:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:10:23.707Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:131:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:11:27.795Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:131:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:11:33.897Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:131:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:13:18.679Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:132:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:14:19.012Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT t.id_trayecto, t.nombre_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.id_pnf = pnfs.id_pnf - no existe la columna t.nombre_trayecto",
+    "code": "42703",
+    "details": {
+      "path": "CurricularModel.MostrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:15:40.467Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT t.id_trayecto, t.nombre_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.id_pnf = pnfs.id_pnf - no existe la columna t.nombre_trayecto",
+    "code": "42703",
+    "details": {
+      "path": "CurricularModel.MostrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:16:09.868Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT t.id_trayecto, t.nombre_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.id_pnf = pnfs.id_pnf - no existe la columna t.nombre_trayecto",
+    "code": "42703",
+    "details": {
+      "path": "CurricularModel.MostrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:19:07.133Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at FormatResponseController.respuestaExito (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:40:19)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:128:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:23:41.351Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "res.status is not a function",
+    "stack": "TypeError: res.status is not a function\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:18)\n    at FormatResponseController.respuestaExito (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:40:19)\n    at mostrarTrayectos (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:128:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:39:26.248Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Cannot set headers after they are sent to the client",
+    "stack": "Error [ERR_HTTP_HEADERS_SENT]: Cannot set headers after they are sent to the client\n    at ServerResponse.setHeader (node:_http_outgoing:699:11)\n    at ServerResponse.header (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:684:10)\n    at ServerResponse.send (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:161:12)\n    at ServerResponse.json (C:\\Users\\Admin\\Documents\\Gabriel No tocar\\Proyecto Profesionales\\UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\express\\lib\\response.js:250:15)\n    at FormatResponseController.respuestaError (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/utils/FormatResponseController.js:76:33)\n    at registrarHorario (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/HorarioController.js:76:32)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+  },
+  {
+    "timestamp": "2025-08-12T23:41:05.929Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [3,6] when compiling RAW query: CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)",
+    "details": {
+      "path": "HorarioModel.registrarHorario"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:47:40.532Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo"
+  },
+  {
+    "timestamp": "2025-08-12T23:48:20.652Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3 - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.buscarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-12T23:50:53.598Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [3] when compiling RAW query: CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)",
+    "details": {
+      "path": "HorarioModel.registrarHorario"
+    }
+  }
+]

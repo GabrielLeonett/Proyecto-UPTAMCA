@@ -31,27 +31,15 @@ export default class CurricularModel {
   static async registrarPNF({ datos, usuario_accion }) {
     try {
       //Desestructuracion de los datos para el registro del pnf
-      const { nombre_pnf, descripcion, codigoPNF, ubicacionPNF} = datos;
+      const { nombre_pnf, descripcion, codigoPNF, sedePNF} = datos;
 
       const query = `CALL public.registrar_pnf_completo(?, ?, ?, ?, ?, NULL)`;
 
-      // Verificar la respuesta (ajustado para el formato JSON que mencionaste antes)
-      if (!resultado.rows[0] || resultado.rows.length === 0) {
-        throw "No se recibió respuesta del procedimiento almacenado";
-      }
+      const param  = [usuario_accion.id, nombre_pnf, descripcion, codigoPNF, sedePNF];
 
-      const respuesta = resultado.rows[0].p_resultado;
+      const { rows } = await db.raw(query, param);
       
-
-      if (respuesta.status !== "success") {
-        throw respuesta.message || "Error al registrar el PNF";
-      }
-
-
-      return {
-        message: respuesta.message,
-        success: true,
-      };
+      return FormatResponseModel.respuestaPostgres(rows, 'PNF registrado exitosamente.')
     } catch (error) {
       error.details = {
         path: 'CurricularModel.registrarPNF'
@@ -111,7 +99,29 @@ export default class CurricularModel {
   static async mostrarPNF() {
     try {
       const { rows } = await db.raw(`SELECT * FROM pnfs`);
-      return rows
+      return FormatResponseModel.respuestaPostgres(rows, 'Estos son Los PNFs')
+    } catch (error) {
+      error.details = {
+        path: 'CurricularModel.MostrarPNF'
+      }
+      throw FormatResponseModel.respuestaError(error,'Error al obtener los PNFs');
+    }
+  }
+  
+  /**
+   * @static
+   * @async
+   * @method mostrarTrayectos
+   * @description Obtiene todos los trayectos con el PNF al que pertenecen
+   * @returns {Promise<Object>} Objeto con el resultado de la consulta
+   * @property {Array} data - Lista de todos los PNFs registrados
+   * @property {boolean} success - Indica si la operación fue exitosa
+   * @throws {string} Error si falla la consulta
+   */
+  static async mostrarTrayecto() {
+    try {
+      const { rows } = await db.raw(`SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.id_pnf = pnfs.id_pnf`);
+      return FormatResponseModel.respuestaPostgres(rows, 'Estos son Los PNFs')
     } catch (error) {
       error.details = {
         path: 'CurricularModel.MostrarPNF'

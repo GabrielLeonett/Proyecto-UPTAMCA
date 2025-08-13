@@ -6,7 +6,7 @@
  */
 export async function up(knex){
   await knex.schema.createTable('unidades_curriculares', (table) => {
-    table.bigInteger('id_unidad_curricular').primary().notNullable().comment('ID único de la unidad curricular');
+    table.increments('id_unidad_curricular').primary().notNullable().comment('ID único de la unidad curricular');
     table.bigInteger('id_trayecto').notNullable().comment('Trayecto al que pertenece la unidad curricular');
     table.string('codigo_unidad', 20).unique().notNullable().comment('Código único identificador de la unidad (ej: MAT-101)');
     table.string('nombre_unidad_curricular', 100).notNullable().comment('Nombre completo de la unidad curricular');
