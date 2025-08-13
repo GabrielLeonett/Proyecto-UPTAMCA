@@ -214,7 +214,7 @@ profesorRouter.post(
  *   - Coordinador
  * @example
  * // Ejemplo de body JSON:
- * pre_grado :{
+ * {
  *    tipo: "TSU",
  *    nombre: "En informática"
  * }

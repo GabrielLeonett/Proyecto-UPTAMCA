@@ -1,6 +1,6 @@
 import { validationUser } from "../schemas/UserSchema.js";
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
-import ProfesorModel from "../models/profesorModel.js";
+import ProfesorModel from "../models/ProfesorModel.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
 

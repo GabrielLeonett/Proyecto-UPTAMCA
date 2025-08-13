@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ProfesorSchema } from "../schemas/ProfesorSchema";
 import dayjs from "dayjs";
 import { registrarProfesorApi } from "../apis/registrarProfesorApi";
+import DeletableChips from "../components/ui/customChip";
 
 export default function FormRegister() {
   const theme = useTheme();
@@ -339,33 +340,38 @@ export default function FormRegister() {
                     </Typography>
 
                     <Box className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6">
-                     <CustomLabel
-  select
-  id="area_de_conocimiento"
+                     <Controller
   name="area_de_conocimiento"
-  label="Área de Conocimiento"
-  variant="outlined"
-  {...register("area_de_conocimiento")}
-  error={!!errors.area_de_conocimiento}
-  helperText={
-    errors.area_de_conocimiento?.message || "Seleccione un área"
-  }
-  fullWidth
-  value={watch("area_de_conocimiento") || ""}
->
-  <MenuItem value="">Seleccione un área</MenuItem>
-  <MenuItem value="Informática">Informática</MenuItem>
-  <MenuItem value="Sistemas">Sistemas</MenuItem>
-  <MenuItem value="Administración">Administración</MenuItem>
-  <MenuItem value="Psicología">Psicología</MenuItem>
-  <MenuItem value="Enfermería">Enfermería</MenuItem>
-  <MenuItem value="Deporte">Deporte</MenuItem>
-  <MenuItem value="Fisioterapia">Fisioterapia</MenuItem>
-  <MenuItem value="Prevención">Prevención y Seguridad</MenuItem>
-  <MenuItem value="Otro">Otro</MenuItem>
-</CustomLabel>
+  control={control}
+  defaultValue={[]}
+  render={({ field }) => (
+    <>
+      <DeletableChips values={field.value} onChange={field.onChange} />
+      {errors.area_de_conocimiento && (
+        <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+          {errors.area_de_conocimiento.message}
+        </Typography>
+      )}
 
-{watch("area_de_conocimiento") === "Otro" && (
+      {field.value.includes("Otro") && (
+        <CustomLabel
+          id="area_de_conocimiento_otro"
+          name="area_de_conocimiento_otro"
+          label="Especifique el área de conocimiento"
+          type="text"
+          variant="outlined"
+          {...register("area_de_conocimiento_otro")}
+          error={!!errors.area_de_conocimiento_otro}
+          helperText={errors.area_de_conocimiento_otro?.message}
+          sx={{ mt: 2 }}
+        />
+      )}
+    </>
+  )}
+/>
+
+{/* Opcional: Si el array incluye "Otro", mostrar input para especificar */}
+{watch("area_de_conocimiento")?.includes("Otro") && (
   <CustomLabel
     id="area_de_conocimiento_otro"
     name="area_de_conocimiento_otro"
@@ -417,40 +423,40 @@ export default function FormRegister() {
                       )}
 
 
-                     <CustomLabel
-  select
-  id="pos_grado"
-  name="pos_grado"
-  label="Posgrado"
-  variant="outlined"
-  {...register("pos_grado")}
-  error={!!errors.pos_grado}
-  helperText={
-    errors.pos_grado?.message || "Seleccione un posgrado (opcional)"
-  }
-  fullWidth
-  value={watch("pos_grado") || ""}
->
-  <MenuItem value="">Sin posgrado</MenuItem>
-  <MenuItem value="Especialización">Especialización</MenuItem>
-  <MenuItem value="Maestría">Maestría</MenuItem>
-  <MenuItem value="Doctorado">Doctorado</MenuItem>
-  <MenuItem value="Otro">Otro</MenuItem>
-</CustomLabel>
+                      <CustomLabel
+                        select
+                        id="pos_grado"
+                        name="pos_grado"
+                        label="Posgrado"
+                        variant="outlined"
+                        {...register("pos_grado")}
+                        error={!!errors.pos_grado}
+                        helperText={
+                          errors.pos_grado?.message || "Seleccione un posgrado (opcional)"
+                        }
+                        fullWidth
+                        value={watch("pos_grado") || ""}
+                      >
+                        <MenuItem value="">Sin posgrado</MenuItem>
+                        <MenuItem value="Especialización">Especialización</MenuItem>
+                        <MenuItem value="Maestría">Maestría</MenuItem>
+                        <MenuItem value="Doctorado">Doctorado</MenuItem>
+                        <MenuItem value="Otro">Otro</MenuItem>
+                      </CustomLabel>
 
-{/* Si elige "Otro", permitir escribir el nombre */}
-{watch("pos_grado") === "Otro" && (
-  <CustomLabel
-    id="pos_grado_otro"
-    name="pos_grado_otro"
-    label="Especifique el posgrado"
-    type="text"
-    variant="outlined"
-    {...register("pos_grado_otro")}
-    error={!!errors.pos_grado_otro}
-    helperText={errors.pos_grado_otro?.message}
-  />
-)}
+                      {/* Si elige "Otro", permitir escribir el nombre */}
+                      {watch("pos_grado") === "Otro" && (
+                        <CustomLabel
+                          id="pos_grado_otro"
+                          name="pos_grado_otro"
+                          label="Especifique el posgrado"
+                          type="text"
+                          variant="outlined"
+                          {...register("pos_grado_otro")}
+                          error={!!errors.pos_grado_otro}
+                          helperText={errors.pos_grado_otro?.message}
+                        />
+                      )}
                     </Box>
                   </>
                 )}

@@ -459,6 +459,51 @@
     "title": "Error en el modelo",
     "message": "resultado is not defined",
     "details": {
-      "path": "CurricularModel.registrarPNF"  }
+      "path": "CurricularModel.registrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-07T16:15:40.895Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-08T21:05:01.762Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-08T21:45:37.658Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-08T21:45:37.698Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
   }
 ]
