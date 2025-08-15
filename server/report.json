@@ -10,13 +10,6 @@
     }
   },
   {
-<<<<<<< HEAD
-    "timestamp": "2025-08-07T16:15:40.895Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
-=======
     "timestamp": "2025-08-12T18:59:24.748Z",
     "status": 500,
     "state": "error",
@@ -100,61 +93,32 @@
     "state": "error",
     "title": "Error en el modelo",
     "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
->>>>>>> 77eedee326493bfcdec6c230eb39ebdc4a68dcff
     "code": "42P01",
     "details": {
       "path": "ProfesorModel.mostrarProfesor"
     }
   },
   {
-<<<<<<< HEAD
-    "timestamp": "2025-08-08T21:05:01.762Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
-    "code": "42P01",
-=======
     "timestamp": "2025-08-12T20:09:09.827Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
     "message": "No se recibió respuesta del servidor de base de datos",
->>>>>>> 77eedee326493bfcdec6c230eb39ebdc4a68dcff
     "details": {
       "path": "ProfesorModel.mostrarProfesor"
     }
   },
   {
-<<<<<<< HEAD
-    "timestamp": "2025-08-08T21:45:37.658Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
-    "code": "42P01",
-=======
     "timestamp": "2025-08-12T20:09:37.268Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
     "message": "No se recibió respuesta del servidor de base de datos",
->>>>>>> 77eedee326493bfcdec6c230eb39ebdc4a68dcff
     "details": {
       "path": "ProfesorModel.mostrarProfesor"
     }
   },
   {
-<<<<<<< HEAD
-    "timestamp": "2025-08-08T21:45:37.698Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
-    "code": "42P01",
-    "details": {
-      "path": "ProfesorModel.mostrarProfesor"
-=======
     "timestamp": "2025-08-12T23:07:13.828Z",
     "status": 500,
     "state": "critical",
@@ -286,7 +250,49 @@
     "message": "Undefined binding(s) detected for keys [3] when compiling RAW query: CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)",
     "details": {
       "path": "HorarioModel.registrarHorario"
->>>>>>> 77eedee326493bfcdec6c230eb39ebdc4a68dcff
+    }
+  },
+  {
+    "timestamp": "2025-08-13T17:55:22.077Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-14T16:22:33.883Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "No se recibió respuesta del servidor de base de datos",
+    "details": {
+      "path": "CurricularModel.MostrarPNF"
+    }
+  },
+  {
+    "timestamp": "2025-08-14T16:22:44.621Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-08-14T16:22:44.626Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
     }
   }
 ]

@@ -33,6 +33,7 @@ import ButtonChageTheme from "./components/buttonChageTheme";
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
 import Secciones from "./pages/Secciones";
+import Disponibilidad from "./pages/disponibilidadDoc";
 
 
 
@@ -145,6 +146,23 @@ export default function App() {
                 element={
                   <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
                     <Secciones/>
+                  </ProtectedViews>
+                }
+              />
+
+              <Route
+                path="/DisponibilidadDoc"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <Disponibilidad />
                   </ProtectedViews>
                 }
               />
