@@ -1,14 +1,14 @@
 import z from "zod";
 
 const UnidadCurricularSchema = z.object({
-  id_trayecto: z
+  idTrayecto: z
     .number({
-      invalid_type_error: "El id de trayecto tiene que se un nombre",
+      invalid_type_error: "El id de trayecto tiene que se un numero",
       required_error: "El id de trayecto es obligatorio",
     })
     .positive("El id tiene que se positivo"),
 
-  nombre_unidad: z
+  nombreUnidadCurricular: z
     .string({
       invalid_type_error: "El nombre del Unidad Curricular debe ser un texto",
       required_error: "El nombre del Unidad Curricular es obligatorio",
@@ -20,7 +20,7 @@ const UnidadCurricularSchema = z.object({
       "Solo se permiten letras, números, espacios y guiones"
     ),
 
-  descripcion_unidad: z
+  descripcionUnidadCurricular: z
     .string({
       invalid_type_error: "La descripción debe ser un texto",
       required_error: "La descripción es obligatoria",
@@ -28,7 +28,7 @@ const UnidadCurricularSchema = z.object({
     .min(20, "La descripción debe tener al menos 20 caracteres")
     .max(200, "La descripción no puede exceder los 200 caracteres"),
 
-  carga_horas_unidad: z
+  cargaHorasAcademicas: z
     .number({
       invalid_type_error:
         "La carga de horas de la unidad curricular debe ser un numero",
@@ -39,7 +39,7 @@ const UnidadCurricularSchema = z.object({
       "La carga de horas de la unidad curricular debe ser un numero positivo"
     ),
 
-  codigo_unidad: z
+  codigoUnidadCurricular: z
     .string({
       invalid_type_error: "El código debe ser un texto",
       required_error: "El código del Unidad Curricular es obligatorio",

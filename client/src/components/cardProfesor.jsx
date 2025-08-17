@@ -49,9 +49,9 @@ export default function CardProfesor({ profesor }) {
                 <br />
               <Typography variant="subtitle2" gutterBottom sx={{color: theme.palette.secondary.light}}>Información Educativa</Typography>
               <Box>
-                <Typography variant="body2"><strong>Áreas de Conocimiento:</strong> {profesor?.area_de_conocimiento|| 'No especificado'}</Typography>
-                <Typography variant="body2"><strong>Pre-Grado:</strong> {profesor?.pre_grado || 'No especificado'}</Typography>
-                <Typography variant="body2"><strong>Post-Grado:</strong> {profesor?.post_grado || 'No especificado'}</Typography>
+                <Typography variant="body2"><strong>Áreas de Conocimiento:</strong> {profesor?.areas_de_conocimiento|| 'No especificado'}</Typography>
+                <Typography variant="body2"><strong>Pre-Grado:</strong> {profesor?.pre_grados || 'No especificado'}</Typography>
+                <Typography variant="body2"><strong>Pos-Grado:</strong> {profesor?.pos_grados || 'No especificado'}</Typography>
               </Box>
             </Grid>
 
@@ -62,7 +62,6 @@ export default function CardProfesor({ profesor }) {
                 <Typography variant="body2"><strong>Fecha Ingreso:</strong> {profesor?.fecha_ingreso ? dayjs(profesor.fecha_ingreso).format('DD/MM/YYYY') : 'No especificado'}</Typography>
                 <Typography variant="body2"><strong>Categoría:</strong> {profesor?.categoria || 'No especificado'}</Typography>
                 <Typography variant="body2"><strong>Dedicación:</strong> {profesor?.dedicacion || 'No especificado'}</Typography>
-                <Typography variant="body2"><strong>Ubicación:</strong> {profesor?.ubicacion || 'No especificado'}</Typography>
                 <Typography variant="body2">
                   <strong>Disponibilidad:</strong> 
                   {profesor?.disponibilidad 

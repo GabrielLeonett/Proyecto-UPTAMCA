@@ -2,7 +2,7 @@ import { Router } from "express";
 import CurricularController from '../controllers/CurricularController.js';
 import { middlewareAuth } from '../middlewares/auth.js'
 
-const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, mostrarUnTrayecto } = CurricularController;
+const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, CrearSecciones, asignacionTurnoSeccion } = CurricularController;
 
 /**
  * @module CurricularRouter
@@ -14,6 +14,12 @@ const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, mos
  * Todas las rutas requieren autenticación mediante middlewareAuth y roles específicos.
  */
 export const CurricularRouter = Router();
+
+/**
+ * =============================================
+ * SECCIÓN DE RUTAS GET
+ * =============================================
+ */
 
 /**
  * @name GET /PNF
@@ -51,7 +57,9 @@ CurricularRouter.get(
  *  - Director General de Gestión Curricular
  *  - Coordinador
  *  - Profesor
+ * @param {string} PNF Codigo del pnf que se desea obtener los trayecto.
  * @returns {Array} Lista de trayectos académicos
+ * @example /Trayectos?PNF=INF_101
  */
 CurricularRouter.get(
     '/Trayectos',
@@ -66,8 +74,8 @@ CurricularRouter.get(
 );
 
 /**
- * @name GET /Trayecto
- * @description Obtiene un trayecto académico específico
+ * @name GET /Secciones
+ * @description Obtiene todos las secciones del trayecto al que pertenecen
  * @memberof module:CurricularRouter
  * @function
  * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
@@ -76,11 +84,38 @@ CurricularRouter.get(
  *  - Director General de Gestión Curricular
  *  - Coordinador
  *  - Profesor
- * @query {string} id - ID del trayecto a consultar
+ * @param {string} PNF Codigo del pnf que se desea obtener los trayecto.
+ * @returns {Array} Lista de secciones del trayecto que se pidio
+ * @example /Secciones?Trayecto=1
+ */
+CurricularRouter.get(
+    '/Secciones',
+    middlewareAuth([
+        'SuperAdmin',
+        'Vicerrector',
+        'Director General de Gestión Curricular',
+        'Coordinador',
+        'Profesor'
+    ]), 
+    mostrarTrayectos
+);
+
+/**
+ * @name GET /Trayecto/Secciones?Trayecto=1
+ * @description Obtiene las secciones de un trayecto académico específico
+ * @memberof module:CurricularRouter
+ * @function
+ * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ *  - Coordinador
+ *  - Profesor
+ * @query {number} Trayecto - ID del trayecto a consultar para traer las secciones
  * @returns {Object} Datos completos del trayecto solicitado
  */
 CurricularRouter.get(
-    '/Trayecto',
+    '/Trayecto/Secciones:Trayecto',
     middlewareAuth([
         'SuperAdmin',
         'Vicerrector',
@@ -88,8 +123,39 @@ CurricularRouter.get(
         'Coordinador',
         'Profesor'
     ]),
-    mostrarUnTrayecto
 );
+
+/**
+ * @name GET /Trayecto/Unidades-Curriculares?Trayecto=1
+ * @description Obtiene las unidades curriculares de un trayecto académico específico
+ * @memberof module:CurricularRouter
+ * @function
+ * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ *  - Coordinador
+ *  - Profesor
+ * @query {number} Trayecto - ID del trayecto a consultar
+ * @returns {Object} Datos completos del trayecto solicitado
+ */
+CurricularRouter.get(
+    '/Trayecto/Unidades-Curriculares:Trayecto',
+    middlewareAuth([
+        'SuperAdmin',
+        'Vicerrector',
+        'Director General de Gestión Curricular',
+        'Coordinador',
+        'Profesor'
+    ]),
+
+);
+
+/**
+ * =============================================
+ * SECCIÓN DE RUTAS POST
+ * =============================================
+ */
 
 /**
  * @name POST /PNF/create
@@ -142,4 +208,54 @@ CurricularRouter.post(
         'Director General de Gestión Curricular',
     ]), 
     regitrarUnidadCurricular
+);
+
+/**
+ * @name POST /Trayecto/create-secciones
+ * @description Registra una nueva Unidad Curricular
+ * @memberof module:CurricularRouter
+ * @function
+ * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @body {Object} datos - Datos de la unidad curricular
+ * @body {number} datos.id_trayecto - ID del trayecto al que pertenece (requerido)
+ * @body {string} datos.nombre_unidad - Nombre de la unidad (requerido)
+ * @body {string} datos.descripcion_unidad - Descripción de la unidad
+ * @body {number} datos.carga_horas_unidad - Carga horaria en horas (requerido)
+ * @body {string} datos.codigo_unidad - Código único de la unidad (requerido)
+ * @returns {Object} Objeto con mensaje de confirmación
+ */
+CurricularRouter.post(
+    '/Trayecto/:idTrayecto/create-secciones',
+    middlewareAuth([
+        'SuperAdmin',
+        'Vicerrector',
+        'Director General de Gestión Curricular',
+    ]), 
+    CrearSecciones
+);
+
+/**
+ * @name POST /Secciones
+ * @description Registra una nueva Unidad Curricular
+ * @memberof module:CurricularRouter
+ * @function
+ * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
+ *  - SuperAdmin
+ *  - Vicerrector
+ *  - Director General de Gestión Curricular
+ * @body {number} idSeccion - ID del seccion a la que se le asignara turno (requerido)
+ * @body {number} idTurno - ID del turno que se desea asignar (requerido)
+ * @returns {Object} Objeto con mensaje de confirmación
+ */
+CurricularRouter.post(
+    '/Secciones/asignar-turno',
+    middlewareAuth([
+        'SuperAdmin',
+        'Vicerrector',
+        'Director General de Gestión Curricular',
+    ]), 
+    asignacionTurnoSeccion
 );

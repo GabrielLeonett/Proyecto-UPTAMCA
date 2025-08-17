@@ -6,7 +6,7 @@
  */
 export async function up(knex){
   await knex.schema.createTable('horarios', (table) => {
-    table.bigInteger('id_horario').primary().notNullable().comment('ID único del horario');
+    table.increments('id_horario').primary().notNullable().comment('ID único del horario');
     table.bigInteger('seccion_id').notNullable().comment('Sección asociada al horario');
     table.bigInteger('profesor_id').notNullable().comment('Profesor asignado');
     table.smallint('aula_id').notNullable().comment('Id de la Aula o espacio físico asignado');

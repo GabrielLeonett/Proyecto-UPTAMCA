@@ -18,9 +18,7 @@ export default class FormatResponseModel {
   static validacionesComunes(rows) {
     try {
       if (!rows || (Array.isArray(rows) && rows.length === 0)) {
-        throw new Error(
-          "No se recibió respuesta del servidor de base de datos"
-        );
+        return rows;
       }
 
       // Maneja tanto arrays como objetos individuales
@@ -122,7 +120,7 @@ export default class FormatResponseModel {
         state: "success",
         title: titleSuccess,
         message: resultado.message || "Se obtuvieron los datos",
-        data: resultado
+        data: resultado 
       };
     } catch (error) {
       throw error;

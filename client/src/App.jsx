@@ -18,6 +18,7 @@ import HorarioForm from "./pages/registerHorario";
 import PnfForm from "./pages/PnfFrom";
 import UnidadCurricularForm from "./pages/UnidadCurricular";
 import PNF from "./pages/PNF";
+import Horario from "./components/Horario";
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
 
@@ -63,6 +64,22 @@ export default function App() {
                     ]}
                   >
                     <Profesores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/Horarios"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <Horario />
                   </ProtectedViews>
                 }
               />
