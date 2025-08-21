@@ -1,18 +1,24 @@
 import { useTheme } from "@mui/material";
 import { Box, Typography } from "@mui/material";
 
-export default function Clase({ profesor, unidad_curricular }) {
-    const theme = useTheme();
+export default function Clase({ clase }) {
+  const theme = useTheme();
   return (
     <>
-    <Box sx={{ width: "100%", height: "100vh", display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: theme.palette.background.default }}>
-        <Typography variant="h4" color={theme.palette.primary.main} sx={{ textAlign: "center" }}>
-            {profesor}
-        </Typography>
-        <Typography variant="h4" color={theme.palette.primary.main} sx={{ textAlign: "center" }}>
-            {unidad_curricular}
-        </Typography>
-    </Box>
+      <td
+        key={day}
+        onClick={() => toggleBlock(day, hour)}
+        style={{
+          cursor: "pointer",
+          backgroundColor: "#fff",
+          textAlign: "center",
+          width: "120px",
+          height: "60px",
+          border: '1px solid black',
+        }}
+      >
+        {selectedBlocks[day]?.includes(hour) ? "✔" : ""}
+      </td>
     </>
   );
 }

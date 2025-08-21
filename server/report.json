@@ -253,289 +253,46 @@
     }
   },
   {
-    "timestamp": "2025-08-15T16:46:29.766Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo"
-  },
-  {
-    "timestamp": "2025-08-16T15:54:36.672Z",
+    "timestamp": "2025-08-13T17:55:22.077Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [1,2,3,4,5] when compiling RAW query: CALL public.registrar_unidad_curricular_completo(?, ?, ?, ?, ?, ?, NULL)",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
     "details": {
-      "path": "CurricularModel.registrarUnidadCurricular"
+      "path": "ProfesorModel.mostrarProfesor"
     }
   },
   {
-    "timestamp": "2025-08-16T16:53:15.840Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.MostrarPNF"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:55:18.613Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.MostrarPNF"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:55:51.021Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.MostrarPNF"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:56:01.001Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.MostrarPNF"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:56:22.110Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.MostrarPNF"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:59:00.839Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T16:59:46.031Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:00:49.009Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:02:07.408Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:06:06.362Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT t.id_trayecto, t.poblacion_estudiantil, t.valor_trayecto, pnfs.nombre_pnf FROM trayectos t JOIN pnfs ON t.codigo_pnf = $1 - no existe la columna t.codigo_pnf",
-    "code": "42703",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:10:31.181Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT \n                t.id_trayecto, \n                t.poblacion_estudiantil, \n                t.valor_trayecto, \n                p.nombre_pnf \n            FROM \n                trayectos t\n            JOIN \n                pnfs p ON t.codigo_pnf = p.codigo_pnf\n            WHERE \n                p.codigo_pnf = $1 - no existe la columna t.codigo_pnf",
-    "code": "42703",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:12:03.936Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "rows is not defined",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T17:12:53.082Z",
+    "timestamp": "2025-08-14T16:22:33.883Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
     "message": "No se recibió respuesta del servidor de base de datos",
     "details": {
-      "path": "CurricularModel.mostrarTrayecto"
+      "path": "CurricularModel.MostrarPNF"
     }
   },
   {
-    "timestamp": "2025-08-16T17:13:30.023Z",
+    "timestamp": "2025-08-14T16:22:44.621Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
-    "message": "No se recibió respuesta del servidor de base de datos",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
     "details": {
-      "path": "CurricularModel.mostrarTrayecto"
+      "path": "ProfesorModel.mostrarProfesor"
     }
   },
   {
-    "timestamp": "2025-08-16T20:31:13.447Z",
+    "timestamp": "2025-08-14T16:22:44.626Z",
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [1,2,3,4,5,6] when compiling RAW query: CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)",
+    "message": "SELECT * FROM profesores_informacion_completa; - relation \"profesores_informacion_completa\" does not exist",
+    "code": "42P01",
     "details": {
-      "path": "HorarioModel.registrarHorario"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T20:50:43.187Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "No se recibió respuesta del servidor de base de datos",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T20:52:47.322Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT \n                t.id_trayecto, \n                t.poblacion_estudiantil, \n                t.valor_trayecto, \n                p.nombre_pnf,\n                p.id_pnf\n            FROM \n                trayectos t\n            JOIN \n                pnfs p ON t.id_pnf = p.id_pnf\n            WHERE \n                p.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T20:54:09.086Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT \n                t.id_trayecto, \n                t.poblacion_estudiantil, \n                t.valor_trayecto, \n                p.nombre_pnf,\n                p.id_pnf\n            FROM \n                trayectos t\n            JOIN \n                pnfs p ON t.id_pnf = p.id_pnf\n            WHERE \n                p.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T20:54:35.310Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: SELECT \n                t.id_trayecto, \n                t.poblacion_estudiantil, \n                t.valor_trayecto, \n                p.nombre_pnf,\n                p.id_pnf\n            FROM \n                trayectos t\n            JOIN \n                pnfs p ON t.id_pnf = p.id_pnf\n            WHERE \n                p.codigo_pnf = ?",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T21:29:43.215Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: \tSELECT \n              s.id_seccion,\n              s.valor_seccion,\n              s.cupos_disponibles,\n              t.nombre_turno\n          FROM \n              secciones s\n          JOIN \n\t\t\t\t      turnos t ON s.id_turno = t.id_turno\n          WHERE \n              s.id_trayecto = ?\n\t\t\t    ORDER BY s.id_seccion ASC;",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T21:30:20.619Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: \tSELECT \n              s.id_seccion,\n              s.valor_seccion,\n              s.cupos_disponibles,\n              t.nombre_turno\n          FROM \n              secciones s\n          JOIN \n\t\t\t\t      turnos t ON s.id_turno = t.id_turno\n          WHERE \n              s.id_trayecto = ?\n\t\t\t    ORDER BY s.id_seccion ASC;",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T21:31:41.080Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: \tSELECT \n              s.id_seccion,\n              s.valor_seccion,\n              s.cupos_disponibles,\n              t.nombre_turno\n          FROM \n              secciones s\n          JOIN \n\t\t\t\t      turnos t ON s.id_turno = t.id_turno\n          WHERE \n              s.id_trayecto = ?\n\t\t\t    ORDER BY s.id_seccion ASC;",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T21:32:18.091Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: \tSELECT \n              s.id_seccion,\n              s.valor_seccion,\n              s.cupos_disponibles,\n              t.nombre_turno\n          FROM \n              secciones s\n          JOIN \n\t\t\t\t      turnos t ON s.id_turno = t.id_turno\n          WHERE \n              s.id_trayecto = ?\n\t\t\t    ORDER BY s.id_seccion ASC;",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T21:32:51.695Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: \tSELECT \n              s.id_seccion,\n              s.valor_seccion,\n              s.cupos_disponibles,\n              t.nombre_turno\n          FROM \n              secciones s\n          JOIN \n\t\t\t\t      turnos t ON s.id_turno = t.id_turno\n          WHERE \n              s.id_trayecto = ?\n\t\t\t    ORDER BY s.id_seccion ASC;",
-    "details": {
-      "path": "CurricularModel.mostrarTrayecto"
-    }
-  },
-  {
-    "timestamp": "2025-08-16T22:07:29.274Z",
-    "status": 500,
-    "state": "critical",
-    "title": "Error en el manejador de errores",
-    "message": "FormatResponseModel.CrearSecciones is not a function",
-    "stack": "TypeError: FormatResponseModel.CrearSecciones is not a function\n    at CurricularModel.CrearSecciones (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/models/CurricularModel.js:268:33)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async CrearSecciones (file:///C:/Users/Admin/Documents/Gabriel%20No%20tocar/Proyecto%20Profesionales/UPTAMCA/Proyecto-UPTAMCA/server/controllers/CurricularController.js:232:30)"
-  },
-  {
-    "timestamp": "2025-08-17T16:45:31.930Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "idTrayecto is not defined",
-    "details": {
-      "path": "CurricularModel.asignacionTurnoSeccion"
-    }
-  },
-  {
-    "timestamp": "2025-08-17T16:45:56.685Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "idTrayecto is not defined",
-    "details": {
-      "path": "CurricularModel.asignacionTurnoSeccion"
+      "path": "ProfesorModel.mostrarProfesor"
     }
   }
 ]
