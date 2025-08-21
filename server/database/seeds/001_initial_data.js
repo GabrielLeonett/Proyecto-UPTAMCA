@@ -45,17 +45,6 @@ export async function seed(knex) {
     { usuario_id: 999999999, rol_id: 20 },
   ]);
 
-  await knex("sedes").insert([
-    {
-      id_sede: 1,
-      nombre_sede: "Núcleo de Humanidades y Ciencias Sociales",
-    },
-    {
-      id_sede: 2,
-      nombre_sede: "Núcleo de Tecnología y Ciencias Administrativas",
-    },
-    { id_sede: 3, nombre_sede: "Núcleo de Salud y Deporte" },
-  ]);
 
   await knex("categorias").insert([
     { id_categoria: 1, nombre_categoria: "Instructor" },
@@ -66,6 +55,14 @@ export async function seed(knex) {
   ]);
 
   await knex("turnos").insert([
+    { 
+        id_turno: 0, 
+        nombre_turno: "Por Asignar",
+        inicio_hora: '00:00:00',
+        fin_hora: '23:59:59', 
+        created_at: knex.fn.now(), 
+        updated_at: knex.fn.now()
+    },
     { 
         id_turno: 1, 
         nombre_turno: "Matutino",

@@ -8,14 +8,12 @@ import db from "../db.js";
 import FormatResponseModel from "../utils/FormatResponseModel.js";
 
 /**
- * @class SedeModel
+ * @class AulaModel
  * @description Contiene los metodos para todo lo que tiene que ver con sedes
  */
 
-export default class SedeModel {
-    static async registerSede({nombreSede, UbicacionSede, GoogleSede}) {
-        const resultado = await db.raw('SELECT id_sede FROM sedes GROUP BY DESC LIMIT 1;');
-        const id_sede = resultado.rows[0].id_sede + 1;
-        const { rows } = await db.raw('',)
+export default class AulaModel {
+    static async registerAula() {
+        
     }
 }

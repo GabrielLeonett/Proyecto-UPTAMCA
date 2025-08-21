@@ -17,12 +17,12 @@ export default class HorarioModel {
    * @description Registra un nuevo horario académico llamando a un procedimiento almacenado
    * @param {Object} params - Objeto con parámetros de registro
    * @param {Object} params.datos - Datos del horario a registrar
-   * @param {number} params.datos.id_seccion - ID de la sección académica
-   * @param {number} params.datos.id_profesor - ID del profesor asignado
-   * @param {number} params.datos.unidad_curricular_id - ID de la unidad curricular
-   * @param {string} params.datos.dia_semana - Día de la semana (Lunes, Martes, etc.)
-   * @param {string} params.datos.hora_inicio - Hora de inicio del horario (formato HH:MM)
-   * @param {string} params.datos.aula - Aula asignada
+   * @param {number} params.datos.idSeccion - ID de la sección académica
+   * @param {number} params.datos.idProfesor - ID del profesor asignado
+   * @param {number} params.datos.idUnidadCurricular - ID de la unidad curricular
+   * @param {string} params.datos.diaSemana - Día de la semana (Lunes, Martes, etc.)
+   * @param {string} params.datos.horaInicio - Hora de inicio del horario (formato HH:MM)
+   * @param {number} params.datos.idAula - Aula asignada
    * @param {Object} params.usuario_accion - Información del usuario que realiza la acción
    * @param {number} params.usuario_accion.id - ID del usuario
    * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
@@ -31,12 +31,12 @@ export default class HorarioModel {
    * @example
    * const resultado = await HorarioModel.registrarHorario({
    *   datos: {
-   *     id_seccion: 1,
-   *     id_profesor: 5,
-   *     unidad_curricular_id: 10,
-   *     dia_semana: 'Lunes',
-   *     hora_inicio: '08:00',
-   *     aula: 'A-201'
+   *     idSeccion: 1,
+   *     idProfesor: 5,
+   *     idUnidadCurricular: 10,
+   *     diaSemana: 'Lunes',
+   *     horaInicio: '08:00',
+   *     idAula: 1
    *   },
    *   usuario_accion: { id: 1 }
    * });
@@ -44,7 +44,7 @@ export default class HorarioModel {
   static async registrarHorario({ datos, usuario_accion }) {
     try {
       // Extracción de parámetros del objeto datos
-      const { id_seccion, id_profesor, unidad_curricular_id, dia_semana, hora_inicio, id_aula } = datos;
+      const { idSeccion, idProfesor, idUnidadCurricular, diaSemana, horaInicio, idAula}= datos;
 
       // Consulta SQL que llama al procedimiento almacenado
       const query = `CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)`;
@@ -52,18 +52,45 @@ export default class HorarioModel {
       // Parámetros para el procedimiento almacenado
       const param = [ 
         usuario_accion.id, 
-        id_seccion, 
-        id_profesor, 
-        unidad_curricular_id, 
-        id_aula, 
-        dia_semana, 
-        hora_inicio, 
+        idSeccion, 
+        idProfesor, 
+        idUnidadCurricular, 
+        idAula, 
+        diaSemana, 
+        horaInicio,
       ];
-
-      console.log(param);
 
       // Ejecución de la consulta
       const { rows } = await db.raw(query, param);
+
+      // Formateo de la respuesta
+      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');
+
+      return resultado;
+    } catch (error) {
+      // Manejo y formateo de errores
+      error.details = {
+        path: 'HorarioModel.registrarHorario'
+      }
+      throw FormatResponseModel.respuestaError(error, 'Error al registrar el horario');
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarHorarios
+   * @description mostrar los horarios academicos
+   * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
+   * @throws {Error} Cuando ocurre un error en el registro
+   */
+  static async mostrarHorarios() {
+    try {
+      // Consulta SQL que llama a la vista horarios_completos
+      const query = `SELECT * FROM public.horarios_completos`;
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query);
 
       // Formateo de la respuesta
       const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');

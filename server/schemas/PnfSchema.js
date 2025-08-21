@@ -1,7 +1,7 @@
 import z from 'zod';
 
 const PNFSchema = z.object({
-    nombre_pnf: z.string({
+    nombrePNF: z.string({
         invalid_type_error: 'El nombre del PNF debe ser un texto',
         required_error: 'El nombre del PNF es obligatorio'
     })
@@ -9,7 +9,7 @@ const PNFSchema = z.object({
     .max(100, 'El nombre no puede exceder los 100 caracteres')
     .regex(/^[A-Za-zÁ-ÿ0-9\s\-]+$/, 'Solo se permiten letras, números, espacios y guiones'),
     
-    descripcion: z.string({
+    descripcionPNF: z.string({
         invalid_type_error: 'La descripción debe ser un texto',
         required_error: 'La descripción es obligatoria'
     })
@@ -30,16 +30,14 @@ const PNFSchema = z.object({
     })
     .min(3, 'El código debe tener mínimo 3 caracteres')  // Corregido: mínimo 5
     .max(7, 'El código debe tener máximo 5 caracteres')  // Corregido: máximo 5
-    .regex(/^[A-Z0-9-]{3,7}$/, 'Formato inválido. Use AAA-AAA o AAA-913')
+    .regex(/^[A-Z]{3}-(?:[A-Z]{3}|\d{3})$/, 'Formato inválido. Use AAA-AAA o AAA-913')
     .trim()
     .toUpperCase(),
 
     sedePNF: z.number({
-        invalid_type_error: 'El código debe ser un texto',
-        required_error: 'El código del PNF es obligatorio'
-    })
-    .min(1, 'Tiene que ser entre 1 y 3')
-    .max(3, 'Tiene que ser entre 1 y 3')
+        invalid_type_error: 'La sede debe ser un numero',
+        required_error: 'La sede del PNF es obligatorio'
+    }).positive('Debe ser un numero positivo')
 });
 
 // Validación completa
