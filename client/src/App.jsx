@@ -17,6 +17,7 @@ import Login from "./pages/login";
 import HorarioForm from "./pages/registerHorario";
 import PnfForm from "./pages/PnfFrom";
 import UnidadCurricularForm from "./pages/UnidadCurricular";
+import Prueba from "./pages/prueba";
 import PNF from "./pages/PNF";
 import Horario from "./components/Horario";
 //Importacion para la pagina 404 o notFound
@@ -35,8 +36,6 @@ import ButtonChageTheme from "./components/buttonChageTheme";
 import ProtectedViews from "./security/ProtectedViews";
 import Secciones from "./pages/Secciones";
 import Disponibilidad from "./pages/disponibilidadDoc";
-
-
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -127,20 +126,7 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-              <Route
-                path="/registerUnidadCurricular"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <UnidadCurricularForm />
-                  </ProtectedViews>
-                }
-              />
+              <Route path="/Prueba" element={<Prueba />} />
               <Route
                 path="/PNF"
                 element={
@@ -157,12 +143,19 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
-              
+
               <Route
                 path="/Secciones"
                 element={
-                  <ProtectedViews allowedRoles={["Vicerrector", "Profesor", "Coordinador", "Director General de Gestión Curricular",]}>
-                    <Secciones/>
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                    ]}
+                  >
+                    <Secciones />
                   </ProtectedViews>
                 }
               />

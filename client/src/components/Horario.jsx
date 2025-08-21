@@ -7,29 +7,28 @@ import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import { useState, useEffect } from "react";
 
+const initialHours = {
+  700: true,
+  745: true,
+  830: true,
+  915: true,
+  1000: true,
+  1045: true,
+  1130: true,
+  1215: true,
+  1300: true,
+  1345: true,
+  1430: true,
+  1515: true,
+  1600: true,
+  1645: true,
+  1730: true,
+  1815: true,
+  1900: true,
+  1945: true,
+  2030: true,
+};
 export default function Horario({ Horario }) {
-  const initialHours = {
-    700: true,
-    745: true,
-    830: true,
-    915: true,
-    1000: true,
-    1045: true,
-    1130: true,
-    1215: true,
-    1300: true,
-    1345: true,
-    1430: true,
-    1515: true,
-    1600: true,
-    1645: true,
-    1730: true,
-    1815: true,
-    1900: true,
-    1945: true,
-    2030: true,
-  };
-
   const [tableMatriz, setTableMatriz] = useState([
     { dia: "lunes", horas: { ...initialHours } },
     { dia: "martes", horas: { ...initialHours } },
@@ -48,14 +47,40 @@ export default function Horario({ Horario }) {
         }));
 
         Horario.dias.forEach((dia) => {
-          const diaKey = dia.nombre.toLowerCase();
-          const diaIndex = nuevaMatriz.findIndex((item) => item.dia === diaKey);
+          let idDia;
+          switch (dia.nombre.toLowerCase()) {
+            case "lunes": {
+              idDia = 0;
+              break;
+            }
+            case "martes": {
+              idDia = 1;
+              break;
+            }
+            case "miercoles": {
+              idDia = 2;
+              break;
+            }
+            case "jueves": {
+              idDia = 3;
+              break;
+            }
+            case "viernes": {
+              idDia = 4;
+              break;
+            }
+            case "sabado": {
+              idDia = 5;
+              break;
+            }
+          }
 
           dia.clases.forEach((clase) => {
             const [horaInicioH, horaInicioM] = clase.horaInicio.split(":");
             const [horaFinH, horaFinM] = clase.horaFin.split(":");
 
-            const inicioMinutos = parseInt(horaInicioH) * 60 + parseInt(horaInicioM);
+            const inicioMinutos =
+              parseInt(horaInicioH) * 60 + parseInt(horaInicioM);
             const finMinutos = parseInt(horaFinH) * 60 + parseInt(horaFinM);
             const duracionMinutos = finMinutos - inicioMinutos;
 
@@ -67,19 +92,18 @@ export default function Horario({ Horario }) {
               const minutos = minutosActual % 60;
               const horaHHMM = horas * 100 + minutos;
 
-              if (nuevaMatriz[diaIndex].horas[horaHHMM] !== undefined) {
+              if (nuevaMatriz[idDia].horas[horaHHMM] !== undefined) {
                 // Guardamos la información completa de la clase y el bloque
-                nuevaMatriz[diaIndex].horas[horaHHMM] = {
+                nuevaMatriz[idDia].horas[horaHHMM] = {
                   ocupado: true,
                   datosClase: clase,
                   bloque: i,
-                  bloquesTotales: bloques
+                  bloquesTotales: bloques,
                 };
               }
             }
           });
         });
-        console.log(nuevaMatriz)
         return nuevaMatriz;
       });
     };
@@ -87,25 +111,36 @@ export default function Horario({ Horario }) {
     obtenerClases();
   }, [Horario]);
 
-  //useEffect(()=>{
-  //  console.log(tableMatriz)
-  //}, [tableMatriz])
-
-  const horasOrdenadas = Object.keys(initialHours).map(Number).sort((a, b) => a - b);
+  const horasOrdenadas = Object.keys(initialHours)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   return (
     <TableContainer>
-      <Table style={{ border: "1px solid black" }}>
+      <Table
+        style={{ border: "1px solid black", width: "1000px", margin: "100px" }}
+      >
         <TableHead>
           <TableRow>
-            <TableCell colSpan={7}>
-              {Horario.pnf} Trayecto {Horario.trayecto} Sección {Horario.seccion}
+            <TableCell colSpan={7} style={{ textAlign: "center" }}>
+              {Horario.pnf} Trayecto {Horario.trayecto} Sección{" "}
+              {Horario.seccion}
             </TableCell>
           </TableRow>
           <TableRow>
-            <TableCell>Hora</TableCell>
+            <TableCell
+              style={{
+                backgroundColor: "#c4c4c4ff",
+                border: "1px solid black",
+              }}
+            >
+              Hora
+            </TableCell>
             {tableMatriz.map((columna) => (
-              <TableCell key={columna.dia}>
+              <TableCell
+                key={columna.dia}
+                style={{ textAlign: "center", border: "1px solid black" }}
+              >
                 {columna.dia.charAt(0).toUpperCase() + columna.dia.slice(1)}
               </TableCell>
             ))}
@@ -114,27 +149,46 @@ export default function Horario({ Horario }) {
         <TableBody>
           {horasOrdenadas.map((hora) => (
             <TableRow key={hora}>
-              <TableCell>
-                {Math.floor(hora / 100)}:{String(hora % 100).padStart(2, '0')}
+              <TableCell
+                style={{
+                  backgroundColor: "#c4c4c4ff",
+                  border: "1px solid black",
+                }}
+              >
+                {Math.floor(hora / 100) > 12
+                  ? Math.floor(hora / 100 - 12)
+                  : Math.floor(hora / 100)}
+                :{String(hora % 100).padStart(2, "0")}
+                {Math.floor(hora / 100) > 12 ? " PM" : " AM"}
               </TableCell>
               {tableMatriz.map((columna) => {
                 const celda = columna.horas[hora];
-                
+                const cellKey = `${columna.dia}-${hora}`;
+
+                // Si la celda está ocupada y NO es el primer bloque, OMITIR
+                if (celda && celda.ocupado && celda.bloque !== 0) {
+                  return null;
+                }
+
                 return (
-                  <TableCell key={`${columna.dia}-${hora}`} style={{ padding: 0 }}>
-                    {celda && celda.ocupado && celda.bloque === 0 ? (
-                      // Solo mostrar el componente Clase en el primer bloque
-                      <Clase 
-                        clase={celda.datosClase} 
-                        rowSpan={celda.bloquesTotales}
-                        style={{ height: `${celda.bloquesTotales * 50}px` }}
-                      />
-                    ) : celda && celda.ocupado ? (
-                      // Bloques posteriores - celda vacía pero con el rowSpan
-                      <></>
+                  <TableCell
+                    key={cellKey}
+                    rowSpan={celda && celda.ocupado ? celda.bloquesTotales : 1}
+                    style={{
+                      padding: 0,
+                      verticalAlign: "top",
+                      height:
+                        celda && celda.ocupado
+                          ? `${celda.bloquesTotales * 50}px`
+                          : "50px",
+                    }}
+                  >
+                    {celda && celda.ocupado ? (
+                      <Clase clase={celda.datosClase} />
                     ) : (
-                      // Celda disponible
-                      <div style={{ height: "50px", border: "1px solid #ccc" }}></div>
+                      <div
+                        style={{ height: "100%", border: "1px solid #ccc" }}
+                      ></div>
                     )}
                   </TableCell>
                 );
