@@ -11,7 +11,7 @@ export default function Clase({ clase }) {
 
   const convertirAMinutos = (hora) => {
     const [horas, minutos] = hora.split(":");
-    return parseInt(horas) * 60 + parseInt(minutos);
+    return parseInt(horas) * 100 + parseInt(minutos);
   };
 
   useEffect(() => {

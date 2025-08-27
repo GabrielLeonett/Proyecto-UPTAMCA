@@ -15,20 +15,20 @@ const HorarioExample = {
       nombre: "Lunes", // Ahora coincidirá con 'lunes' en tableMatriz
       clases: [
         {
-        id: 1,
-        horaInicio: "07:00:00",
-        horaFin: "09:15:00",
-        nombreProfesor: "Gabriel Dayer",
-        apellidoProfesor: "Leonett Armas",
-        nombreUnidadCurricular: "Matemáticas Avanzadas",
+          id: 1,
+          horaInicio: "07:00:00",
+          horaFin: "09:15:00",
+          nombreProfesor: "Gabriel Dayer",
+          apellidoProfesor: "Leonett Armas",
+          nombreUnidadCurricular: "Matemáticas Avanzadas",
         },
         {
-        id: 2,
-        horaInicio: "09:15:00",
-        horaFin: "11:30:00",
-        nombreProfesor: "Gabriel Dayer",
-        apellidoProfesor: "Leonett Armas",
-        nombreUnidadCurricular: "Programación I",
+          id: 2,
+          horaInicio: "12:15:00",
+          horaFin: "14:30:00",
+          nombreProfesor: "Gabriel Dayer",
+          apellidoProfesor: "Leonett Armas",
+          nombreUnidadCurricular: "Programación I",
         },
       ],
     },
@@ -36,12 +36,12 @@ const HorarioExample = {
       nombre: "Viernes", // Ahora coincidirá con 'lunes' en tableMatriz
       clases: [
         {
-        id: 1,
-        horaInicio: "07:00:00",
-        horaFin: "09:15:00",
-        nombreProfesor: "Gabriel Dayer",
-        apellidoProfesor: "Leonett Armas",
-        nombreUnidadCurricular: "Matemáticas Avanzadas",
+          id: 1,
+          horaInicio: "07:00:00",
+          horaFin: "09:15:00",
+          nombreProfesor: "Gabriel Dayer",
+          apellidoProfesor: "Leonett Armas",
+          nombreUnidadCurricular: "Matemáticas Avanzadas",
         },
       ],
     },
@@ -49,7 +49,19 @@ const HorarioExample = {
 };
 
 export default function Prueba() {
-  return <Horario Horario={HorarioExample}></Horario>;
+  return (<>
+    <Horario Horario={HorarioExample}></Horario>
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData("text/plain", "componente-id");
+      }}
+    >
+      Arrástrame
+    </div>
+
+  </>
+  )
 }
 
 /*const clase = {

@@ -118,7 +118,7 @@ export default function Horario({ Horario }) {
   return (
     <TableContainer>
       <Table
-        style={{ border: "1px solid black", width: "1000px", margin: "100px" }}
+        style={{ border: "1px solid black", width: "1200px"}}
       >
         <TableHead>
           <TableRow>

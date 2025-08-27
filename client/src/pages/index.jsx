@@ -61,7 +61,7 @@ export default function Index() {
         <Typography variant="h2" component="h2" gutterBottom>
           Programas Nacionales de Formación
         </Typography>
-        <hr className="my-4" />
+        
         <Slider />
       </div>
     </>
