@@ -294,5 +294,36 @@
     "details": {
       "path": "ProfesorModel.mostrarProfesor"
     }
+  },
+  {
+    "timestamp": "2025-08-25T20:24:05.010Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "\tSELECT \n              id_unidad_curricular,\n              horas_clase,\n              nombre_unidad_curricular\n          FROM \n              unidades_curriculares\n          WHERE\n              id_trayecto = $1\n\t\t\t    ORDER BY s.id_seccion ASC; - falta una entrada para la tabla «s» en la cláusula FROM",
+    "code": "42P01",
+    "details": {
+      "path": "CurricularModel.mostrarTrayecto"
+    }
+  },
+  {
+    "timestamp": "2025-08-27T13:42:55.114Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot read properties of undefined (reading 'charAt')",
+    "details": {
+      "path": "HorarioModel.mostrarHorarios"
+    }
+  },
+  {
+    "timestamp": "2025-08-27T13:51:50.249Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot read properties of null (reading 'find')",
+    "details": {
+      "path": "HorarioModel.mostrarHorarios"
+    }
   }
 ]

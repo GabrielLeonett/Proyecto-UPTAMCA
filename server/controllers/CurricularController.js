@@ -162,6 +162,45 @@ export default class CurricularController {
   /**
    * @static
    * @async
+   * @method mostrarUnidadesCurriculares
+   * @description Obtiene todas las unidades curriculares de un trayecto por su id
+   * @param {object} req - Objeto de solicitud de Express
+   * @param {object} req.trayecto - Id del trayecto que se desea consultar sus secciones
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Object} Respuesta JSON con lista de trayectos
+   * @throws {500} Si ocurre un error en el servidor
+   */
+  static async mostrarUnidadesCurriculares(req, res) {
+    try {
+      //Inicializa el codigo de un pnf si llego en la query de la url
+      const idTrayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
+      //hace las validaciones respectivas
+      const validaciones = validationErrors(
+        validationPartialUnidadCurricular({ input: { idTrayecto: idTrayecto } })
+      );
+      if (validaciones !== true) {
+        //Si la validacion da un error, lo devuelve al usuario
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
+        });
+        return;
+      }
+      const respuestaModel = await CurricularModel.mostrarUnidadesCurriculares(
+        idTrayecto
+      );
+      FormatResponseController.respuestaExito(res, respuestaModel);
+      return;
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method mostrarSeccion
    * @description Obtiene todos las secciones del trayecto al que pertenecen
    * @param {object} req - Objeto de solicitud de Express
@@ -170,7 +209,7 @@ export default class CurricularController {
    * @returns {Object} Respuesta JSON con lista de trayectos
    * @throws {500} Si ocurre un error en el servidor
    */
-  static async mostrarTrayectos(req, res) {
+  static async mostrarSecciones(req, res) {
     try {
       //Inicializa el codigo de un pnf si llego en la query de la url
       const idTrayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
@@ -250,7 +289,9 @@ export default class CurricularController {
    */
   static async asignacionTurnoSeccion(req, res) {
     try {
-      const validaciones = validationErrors(validationPartialSeccion({ input: req.body }));
+      const validaciones = validationErrors(
+        validationPartialSeccion({ input: req.body })
+      );
 
       if (validaciones !== true) {
         //Si la validacion da un error, lo devuelve al usuario
@@ -263,7 +304,10 @@ export default class CurricularController {
         return;
       }
 
-      const respuestaModel = await CurricularModel.asignacionTurnoSeccion(req.user, req.body);
+      const respuestaModel = await CurricularModel.asignacionTurnoSeccion(
+        req.user,
+        req.body
+      );
       FormatResponseController.respuestaExito(res, respuestaModel);
       return;
     } catch (error) {
