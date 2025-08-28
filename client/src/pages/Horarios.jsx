@@ -1,7 +1,120 @@
-import Horario from '../components/Horario';
+import { useEffect, useState } from "react";
+import Horario from "../components/Horario";
+import ResponsiveAppBar from "../components/navbar";
+import { Box, CircularProgress, Typography } from "@mui/material";
+import axios from "../apis/axios";
 
-export default function PageHorarios(){
-    return(
-        <Horario></Horario>
+export default function Horarios() {
+  const [horarios, setHorarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const getHorarios = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axios.get("/Horarios");
+        console.log("Datos recibidos:", data.data);
+        setHorarios(data.data || []);
+      } catch (err) {
+        console.error("Error al obtener horarios:", err);
+        setError("Error al cargar los horarios");
+      } finally {
+        setLoading(false);
+      }
+    };
+    getHorarios();
+  }, []);
+
+  const pages = [
+    { name: "Inicio", url: "/" },
+    {
+      name: "Profesor",
+      submenu: [
+        { name: "Ver", url: "/Profesores" },
+        { name: "Registrar", url: "/registerProfesor" },
+      ],
+    },
+    {
+      name: "PNF",
+      submenu: [
+        { name: "Ver", url: "/PNF" },
+        { name: "Registrar", url: "/registerPNF" },
+      ],
+    },
+    { name: "Contacto", url: "/contact" },
+  ];
+
+  if (loading) {
+    return (
+      <>
+        <ResponsiveAppBar pages={pages} backgroundColor={true} />
+        <Box
+          marginTop={"200px"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography variant={"h2"} textAlign={"start"} width={"100%"}>
+            Horarios
+          </Typography>
+          <CircularProgress />
+        </Box>
+      </>
     );
+  }
+
+  if (error) {
+    return (
+      <>
+        <ResponsiveAppBar pages={pages} backgroundColor={true} />
+        <Box
+          marginTop={"200px"}
+          display={"flex"}
+          justifyContent={"center"}
+          alignItems={"center"}
+        >
+          <Typography variant={"h2"} textAlign={"start"} width={"100%"}>
+            Horarios
+          </Typography>
+          <Typography color="error">{error}</Typography>
+        </Box>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <ResponsiveAppBar pages={pages} backgroundColor={true} />
+      <Box
+        marginTop={"120px"}
+        display={"flex"}
+        flexDirection={"column"}
+        alignItems={"center"}
+        justifyItems={"center"}
+        gap={4}
+        p={3}
+        width={"100%"}
+      >
+        <Typography variant={"h2"} textAlign={"start"} width={"100%"}>
+          Horarios
+        </Typography>
+        {horarios && horarios.length > 0 ? (
+          horarios.map((horario, index) => (
+            <Horario
+              key={index}
+              PNF={horario.pnf}
+              Trayecto={horario.trayecto}
+              Seccion={horario.seccion}
+              Horario={horario.dias}
+            />
+          ))
+        ) : (
+          <Typography variant="h6" color="textSecondary">
+            No hay horarios disponibles
+          </Typography>
+        )}
+      </Box>
+    </>
+  );
 }

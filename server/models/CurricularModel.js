@@ -246,6 +246,42 @@ export default class CurricularModel {
   /**
    * @static
    * @async
+   * @method mostrarUnidadesCurriculares
+   * @description Obtiene todos las secciones del trayecto al que pertenecen
+   * @returns {Promise<Object>} Objeto con el resultado de la consulta
+   * @property {Array} data - Lista de todos los PNFs registrados
+   * @property {boolean} success - Indica si la operación fue exitosa
+   * @throws {string} Error si falla la consulta
+   */
+  static async mostrarUnidadesCurriculares(trayecto) {
+    try {
+      const { rows } = await db.raw(
+        `	SELECT 
+              id_unidad_curricular,
+              horas_clase,
+              nombre_unidad_curricular
+          FROM 
+              unidades_curriculares
+          WHERE
+              id_trayecto = ?
+			    ORDER BY id_unidad_curricular ASC;`,
+        [trayecto]
+      );
+      return FormatResponseModel.respuestaPostgres(rows, "Estos son Los PNFs");
+    } catch (error) {
+      error.details = {
+        path: "CurricularModel.mostrarTrayecto",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los PNFs"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method CrearSecciones
    * @description Crear las secciones para un trayecto de forma automatica
    * @returns {Promise<Object>} Objeto con el resultado de la consulta
@@ -254,13 +290,16 @@ export default class CurricularModel {
    * @throws {string} Error si falla la consulta
    */
   static async CrearSecciones(datos) {
-      const { idTrayecto, poblacionEstudiantil } = datos;
+    const { idTrayecto, poblacionEstudiantil } = datos;
     try {
       const { rows } = await db.raw(
         `CALL public.distribuir_estudiantes_secciones(?, ?,NULL)`,
         [idTrayecto, poblacionEstudiantil]
       );
-      return FormatResponseModel.respuestaPostgres(rows, `Estos es el resultado de la creacion de las secciones para el trayecto: ${idTrayecto}` );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        `Estos es el resultado de la creacion de las secciones para el trayecto: ${idTrayecto}`
+      );
     } catch (error) {
       error.details = {
         path: "CurricularModel.CrearSecciones",
@@ -277,19 +316,22 @@ export default class CurricularModel {
    * @async
    * @method asignacionTurnoSeccion
    * @description Crear las secciones para un trayecto de forma automatica
-   * @param {object} usuario_accion Objeto que contiene los datos del usuario 
-   * @param {object} datos Objeto que contiene los datos para hacer la asignacion 
+   * @param {object} usuario_accion Objeto que contiene los datos del usuario
+   * @param {object} datos Objeto que contiene los datos para hacer la asignacion
    * @returns {Promise<Object>} Objeto con el resultado de la consulta
    * @throws {string} Error si falla la consulta
    */
   static async asignacionTurnoSeccion(usuario_accion, datos) {
-      const { idSeccion, idTurno } = datos;
+    const { idSeccion, idTurno } = datos;
     try {
       const { rows } = await db.raw(
         `CALL public.asignar_turno_seccion(?, ?, ?,NULL)`,
         [usuario_accion.id, idSeccion, idTurno]
       );
-      return FormatResponseModel.respuestaPostgres(rows, `Se asigno correctamente el turno a la sección.` );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        `Se asigno correctamente el turno a la sección.`
+      );
     } catch (error) {
       error.details = {
         path: "CurricularModel.asignacionTurnoSeccion",

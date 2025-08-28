@@ -19,7 +19,7 @@ import PnfForm from "./pages/PnfFrom";
 import UnidadCurricularForm from "./pages/UnidadCurricular";
 import Prueba from "./pages/prueba";
 import PNF from "./pages/PNF";
-import Horario from "./components/Horario";
+import Horarios from "./pages/Horarios";
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
 
@@ -80,7 +80,7 @@ export default function App() {
                       "SuperAdmin",
                     ]}
                   >
-                    <Horario />
+                    <Horarios />
                   </ProtectedViews>
                 }
               />

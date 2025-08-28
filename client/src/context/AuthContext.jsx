@@ -1,7 +1,7 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { loginAPI } from "../apis/AuthApi.js"; // Corregí el nombre del archivo
 import { verifyApi } from "../apis/vefiryApi.js"; // Corregí el nombre del archivo
-import { useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
@@ -12,15 +12,10 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   const login = useCallback(async (userData) => {
-    try {
-      const loginData = await loginAPI(userData);
-      if (loginData?.user) {
-        setUser(loginData.user);
-        setIsAuthenticated(true);
-      }
-    } catch (error) {
-      console.error("Login failed:", error);
-      throw error; // Propaga el error para manejarlo en el componente
+    const loginData = await loginAPI(userData);
+    if (loginData?.user) {
+      setUser(loginData.user);
+      setIsAuthenticated(true);
     }
   }, []);
 
@@ -38,19 +33,18 @@ export function AuthProvider({ children }) {
         setUser(verifiedData);
         setIsAuthenticated(true);
       }
-    } catch (error) {
-      console.error("Verification failed:", error);
-      setUser(null);
-      setIsAuthenticated(false);
-    } finally {
+    }finally {
       setIsLoading(false);
     }
   }, []);
 
-  const checkUserAccess = useCallback((requiredRoles) => {
-    if (!isAuthenticated || !user?.roles) return false;
-    return user.roles.some(role => requiredRoles.includes(role));
-  }, [user, isAuthenticated]);
+  const checkUserAccess = useCallback(
+    (requiredRoles) => {
+      if (!isAuthenticated || !user?.roles) return false;
+      return user.roles.some((role) => requiredRoles.includes(role));
+    },
+    [user, isAuthenticated]
+  );
 
   useEffect(() => {
     verifyAuth();
@@ -64,7 +58,7 @@ export function AuthProvider({ children }) {
         logout,
         isAuthenticated,
         isLoading, // Exportamos el estado de carga
-        checkUserAccess
+        checkUserAccess,
       }}
     >
       {children}

@@ -137,7 +137,7 @@ profesorRouter.get(
  */
 
 /**
- * @name POS /Profesor/register
+ * @name POST /Profesor/register
  * @description Registra un nuevo profesor en el sistema
  * @body {Object} Datos del profesor - Ver estructura completa abajo
  * @middleware Requiere uno de estos roles:

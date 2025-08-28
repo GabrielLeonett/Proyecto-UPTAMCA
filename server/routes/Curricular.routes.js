@@ -2,7 +2,7 @@ import { Router } from "express";
 import CurricularController from '../controllers/CurricularController.js';
 import { middlewareAuth } from '../middlewares/auth.js'
 
-const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, CrearSecciones, asignacionTurnoSeccion } = CurricularController;
+const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, mostrarSecciones, mostrarUnidadesCurriculares, CrearSecciones, asignacionTurnoSeccion } = CurricularController;
 
 /**
  * @module CurricularRouter
@@ -74,33 +74,6 @@ CurricularRouter.get(
 );
 
 /**
- * @name GET /Secciones
- * @description Obtiene todos las secciones del trayecto al que pertenecen
- * @memberof module:CurricularRouter
- * @function
- * @middleware middlewareAuth - Requiere autenticación y uno de estos roles:
- *  - SuperAdmin
- *  - Vicerrector
- *  - Director General de Gestión Curricular
- *  - Coordinador
- *  - Profesor
- * @param {string} PNF Codigo del pnf que se desea obtener los trayecto.
- * @returns {Array} Lista de secciones del trayecto que se pidio
- * @example /Secciones?Trayecto=1
- */
-CurricularRouter.get(
-    '/Secciones',
-    middlewareAuth([
-        'SuperAdmin',
-        'Vicerrector',
-        'Director General de Gestión Curricular',
-        'Coordinador',
-        'Profesor'
-    ]), 
-    mostrarTrayectos
-);
-
-/**
  * @name GET /Trayecto/Secciones?Trayecto=1
  * @description Obtiene las secciones de un trayecto académico específico
  * @memberof module:CurricularRouter
@@ -123,6 +96,7 @@ CurricularRouter.get(
         'Coordinador',
         'Profesor'
     ]),
+    mostrarSecciones
 );
 
 /**
@@ -140,7 +114,7 @@ CurricularRouter.get(
  * @returns {Object} Datos completos del trayecto solicitado
  */
 CurricularRouter.get(
-    '/Trayecto/Unidades-Curriculares:Trayecto',
+    '/Trayecto/Unidades-Curriculares',
     middlewareAuth([
         'SuperAdmin',
         'Vicerrector',
@@ -148,7 +122,7 @@ CurricularRouter.get(
         'Coordinador',
         'Profesor'
     ]),
-
+    mostrarUnidadesCurriculares
 );
 
 /**

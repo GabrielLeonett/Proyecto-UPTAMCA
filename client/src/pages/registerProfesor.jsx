@@ -83,7 +83,6 @@ export default function FormRegister() {
     duration: 0.4,
   };
 
-
   // Observa todos los campos del formulario
 
   const onSubmit = async (data) => {
@@ -359,12 +358,15 @@ export default function FormRegister() {
                                   const { value: text } = await Swal.fire({
                                     title: "Agregar otra área",
                                     input: "text",
-                                    inputLabel: "Especifique el área de conocimiento",
+                                    inputLabel:
+                                      "Especifique el área de conocimiento",
                                     inputPlaceholder: "Escribe aquí...",
                                     showCancelButton: true,
                                     inputValidator: (val) => {
-                                      if (!val) return "Por favor ingresa un valor";
-                                      if (field.value.includes(val)) return "Esta área ya está agregada";
+                                      if (!val)
+                                        return "Por favor ingresa un valor";
+                                      if (field.value.includes(val))
+                                        return "Esta área ya está agregada";
                                       return null;
                                     },
                                   });
@@ -372,26 +374,40 @@ export default function FormRegister() {
                                   if (text) {
                                     field.onChange([...field.value, text]);
                                   }
-                                } else if (value && !field.value.includes(value)) {
+                                } else if (
+                                  value &&
+                                  !field.value.includes(value)
+                                ) {
                                   field.onChange([...field.value, value]);
                                 }
                               }}
                               value=""
                             >
                               <MenuItem value="">Seleccione un área</MenuItem>
-                              <MenuItem value="Informática">Informática</MenuItem>
+                              <MenuItem value="Informática">
+                                Informática
+                              </MenuItem>
                               <MenuItem value="Sistemas">Sistemas</MenuItem>
-                              <MenuItem value="Administración">Administración</MenuItem>
+                              <MenuItem value="Administración">
+                                Administración
+                              </MenuItem>
                               <MenuItem value="Psicología">Psicología</MenuItem>
                               <MenuItem value="Enfermería">Enfermería</MenuItem>
                               <MenuItem value="Deporte">Deporte</MenuItem>
-                              <MenuItem value="Fisioterapia">Fisioterapia</MenuItem>
-                              <MenuItem value="Prevención">Prevención y Seguridad</MenuItem>
+                              <MenuItem value="Fisioterapia">
+                                Fisioterapia
+                              </MenuItem>
+                              <MenuItem value="Prevención">
+                                Prevención y Seguridad
+                              </MenuItem>
                               <MenuItem value="Otro">Otro</MenuItem>
                             </CustomLabel>
 
                             {/* Chips dinámicos */}
-                            <DeletableChips values={field.value} onChange={field.onChange} />
+                            <DeletableChips
+                              values={field.value}
+                              onChange={field.onChange}
+                            />
 
                             {/* Mostrar error si existe */}
                             {errors.area_de_conocimiento && (
@@ -438,8 +454,10 @@ export default function FormRegister() {
                                     inputPlaceholder: "Escribe aquí...",
                                     showCancelButton: true,
                                     inputValidator: (val) => {
-                                      if (!val) return "Por favor ingrese un valor";
-                                      if (field.value.includes(val)) return "Este pregrado ya está agregado";
+                                      if (!val)
+                                        return "Por favor ingrese un valor";
+                                      if (field.value.includes(val))
+                                        return "Este pregrado ya está agregado";
                                       return null;
                                     },
                                   });
@@ -447,20 +465,30 @@ export default function FormRegister() {
                                   if (text) {
                                     field.onChange([...field.value, text]);
                                   }
-                                } else if (value && !field.value.includes(value)) {
+                                } else if (
+                                  value &&
+                                  !field.value.includes(value)
+                                ) {
                                   field.onChange([...field.value, value]);
                                 }
                               }}
                               value=""
                             >
-                              <MenuItem value="">Seleccione un pregrado</MenuItem>
-                              <MenuItem value="Licenciatura">Licenciatura</MenuItem>
+                              <MenuItem value="">
+                                Seleccione un pregrado
+                              </MenuItem>
+                              <MenuItem value="Licenciatura">
+                                Licenciatura
+                              </MenuItem>
                               <MenuItem value="Ingeniería">Ingeniería</MenuItem>
                               <MenuItem value="Tecnología">Tecnología</MenuItem>
                               <MenuItem value="Otro">Otro</MenuItem>
                             </CustomLabel>
 
-                            <DeletableChips values={field.value} onChange={field.onChange} />
+                            <DeletableChips
+                              values={field.value}
+                              onChange={field.onChange}
+                            />
 
                             {errors.pre_grado && (
                               <Typography color="error" variant="body2">
@@ -470,8 +498,6 @@ export default function FormRegister() {
                           </>
                         )}
                       />
-
-
 
                       <Controller
                         name="pos_grado"
@@ -495,8 +521,10 @@ export default function FormRegister() {
                                     inputPlaceholder: "Escribe aquí...",
                                     showCancelButton: true,
                                     inputValidator: (val) => {
-                                      if (!val) return "Por favor ingrese un valor";
-                                      if (field.value.includes(val)) return "Este posgrado ya está agregado";
+                                      if (!val)
+                                        return "Por favor ingrese un valor";
+                                      if (field.value.includes(val))
+                                        return "Este posgrado ya está agregado";
                                       return null;
                                     },
                                   });
@@ -504,20 +532,28 @@ export default function FormRegister() {
                                   if (text) {
                                     field.onChange([...field.value, text]);
                                   }
-                                } else if (value && !field.value.includes(value)) {
+                                } else if (
+                                  value &&
+                                  !field.value.includes(value)
+                                ) {
                                   field.onChange([...field.value, value]);
                                 }
                               }}
                               value=""
                             >
                               <MenuItem value="">Sin posgrado</MenuItem>
-                              <MenuItem value="Especialización">Especialización</MenuItem>
+                              <MenuItem value="Especialización">
+                                Especialización
+                              </MenuItem>
                               <MenuItem value="Maestría">Maestría</MenuItem>
                               <MenuItem value="Doctorado">Doctorado</MenuItem>
                               <MenuItem value="Otro">Otro</MenuItem>
                             </CustomLabel>
 
-                            <DeletableChips values={field.value} onChange={field.onChange} />
+                            <DeletableChips
+                              values={field.value}
+                              onChange={field.onChange}
+                            />
 
                             {errors.pos_grado && (
                               <Typography color="error" variant="body2">
@@ -527,7 +563,6 @@ export default function FormRegister() {
                           </>
                         )}
                       />
-
                     </Box>
                   </>
                 )}

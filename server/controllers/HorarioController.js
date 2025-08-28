@@ -37,6 +37,27 @@ export default class HorarioController {
   /**
    * @static
    * @async
+   * @method mostrarProfesoresParaHorario
+   * @description Mostrar los horarios academicos
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @throws {400} Si la validación de datos falla
+   * @throws {500} Si ocurre un error en el servidor
+   */
+  static async mostrarProfesoresParaHorario(req, res) {
+    try {
+      // 1. Registro del horario mediante el modelo
+      const respuestaModel = await HorarioModel.mostrarProfesoresParaHorario();
+
+      FormatResponseController.respuestaExito(res, respuestaModel);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method registrarHorario
    * @description Endpoint para registrar un nuevo horario académico
    *

@@ -2,7 +2,7 @@
 import db from "../db.js";
 
 // Importación de clase para formateo de respuestas
-import FormatResponseModel from '../utils/FormatResponseModel.js'
+import FormatResponseModel from "../utils/FormatResponseModel.js";
 
 /**
  * @class HorarioModel
@@ -27,7 +27,7 @@ export default class HorarioModel {
    * @param {number} params.usuario_accion.id - ID del usuario
    * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
    * @throws {Error} Cuando ocurre un error en el registro
-   * 
+   *
    * @example
    * const resultado = await HorarioModel.registrarHorario({
    *   datos: {
@@ -44,19 +44,26 @@ export default class HorarioModel {
   static async registrarHorario({ datos, usuario_accion }) {
     try {
       // Extracción de parámetros del objeto datos
-      const { idSeccion, idProfesor, idUnidadCurricular, diaSemana, horaInicio, idAula}= datos;
+      const {
+        idSeccion,
+        idProfesor,
+        idUnidadCurricular,
+        diaSemana,
+        horaInicio,
+        idAula,
+      } = datos;
 
       // Consulta SQL que llama al procedimiento almacenado
       const query = `CALL public.registrar_horario_completo(?, ?, ?, ?, ?, ?, ?, TRUE, NULL)`;
-      
+
       // Parámetros para el procedimiento almacenado
-      const param = [ 
-        usuario_accion.id, 
-        idSeccion, 
-        idProfesor, 
-        idUnidadCurricular, 
-        idAula, 
-        diaSemana, 
+      const param = [
+        usuario_accion.id,
+        idSeccion,
+        idProfesor,
+        idUnidadCurricular,
+        idAula,
+        diaSemana,
         horaInicio,
       ];
 
@@ -64,15 +71,21 @@ export default class HorarioModel {
       const { rows } = await db.raw(query, param);
 
       // Formateo de la respuesta
-      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');
+      const resultado = FormatResponseModel.respuestaPostgres(
+        rows,
+        "Horario Registrado exitosamente"
+      );
 
       return resultado;
     } catch (error) {
       // Manejo y formateo de errores
       error.details = {
-        path: 'HorarioModel.registrarHorario'
-      }
-      throw FormatResponseModel.respuestaError(error, 'Error al registrar el horario');
+        path: "HorarioModel.registrarHorario",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registrar el horario"
+      );
     }
   }
 
@@ -86,22 +99,124 @@ export default class HorarioModel {
    */
   static async mostrarHorarios() {
     try {
-      // Consulta SQL que llama a la vista horarios_completos
-      const query = `SELECT * FROM public.horarios_completos`;
+      // Consulta SQL que llama a la vista horarios_completas
+      const query = `SELECT * FROM public.clases_completas`;
 
       // Ejecución de la consulta
       const { rows } = await db.raw(query);
 
+      // Estructura para organizar los horarios
+      const horariosOrganizados = [];
+
+      // Procesar cada fila de la consulta
+      rows.forEach((clase) => {
+        const nuevaClase = {
+          id: clase.id_horario,
+          horaInicio: clase.hora_inicio,
+          horaFin: clase.hora_fin,
+          nombreProfesor: clase.nombres_profesor,
+          apellidoProfesor: clase.apellidos_profesor,
+          nombreUnidadCurricular: clase.nombre_unidad_curricular,
+        };
+
+        // Buscar un horario existente con mismo PNF, trayecto y sección
+        const horarioExistente = horariosOrganizados.find(
+          (horario) =>
+            horario.pnf === clase.nombre_pnf &&
+            horario.trayecto === clase.valor_trayecto &&
+            horario.seccion === clase.valor_seccion
+        );
+
+        if (horarioExistente) {
+          // Buscar si ya existe el día en este horario
+          const nombreDia = clase.dia_semana;
+          let diaExistente = horarioExistente.dias.find(
+            (d) => d.nombre === nombreDia
+          );
+
+          if (!diaExistente) {
+            diaExistente = {
+              nombre: nombreDia,
+              clases: [],
+            };
+            horarioExistente.dias.push(diaExistente);
+          }
+
+          // Agregar la clase al día correspondiente
+          diaExistente.clases.push(nuevaClase);
+        } else {
+          // Crear nuevo horario
+          const nuevoHorario = {
+            pnf: clase.nombre_pnf,
+            trayecto: clase.valor_trayecto,
+            seccion: clase.valor_seccion,
+            turno: {
+              nombreTurno: clase.nombre_turno,
+              horaInicio: clase.turno_hora_inicio,
+              horaFin: clase.turno_hora_fin,
+            },
+            dias: [
+              {
+                nombre: clase.dia_semana,
+                clases: [nuevaClase],
+              },
+            ],
+          };
+          horariosOrganizados.push(nuevoHorario);
+        }
+      });
+
       // Formateo de la respuesta
-      const resultado = FormatResponseModel.respuestaPostgres(rows, 'Horario Registrado exitosamente');
+      const resultado = FormatResponseModel.respuestaPostgres(
+        horariosOrganizados,
+        "Horarios obtenidos exitosamente"
+      );
 
       return resultado;
     } catch (error) {
       // Manejo y formateo de errores
       error.details = {
-        path: 'HorarioModel.registrarHorario'
-      }
-      throw FormatResponseModel.respuestaError(error, 'Error al registrar el horario');
+        path: "HorarioModel.mostrarHorarios",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los horarios"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarProfesoresParaHorario
+   * @description mostrar los horarios academicos
+   * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
+   * @throws {Error} Cuando ocurre un error en el registro
+   */
+  static async mostrarProfesoresParaHorario() {
+    try {
+      // Consulta SQL que llama a la vista horarios_completos
+      const query = `SELECT id_profesor, nombres, apellidos, disponibilidad, horas_disponibles, areas_de_conocimiento FROM public.profesores_informacion_completa`;
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query);
+
+      // Formateo de la respuesta
+      const resultado = FormatResponseModel.respuestaPostgres(
+        rows,
+        "Horario Registrado exitosamente"
+      );
+
+      return resultado;
+    } catch (error) {
+      // Manejo y formateo de errores
+      error.details = {
+        path: "HorarioModel.registrarHorario",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registrar el horario"
+      );
     }
   }
 }
