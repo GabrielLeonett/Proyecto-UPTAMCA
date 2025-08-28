@@ -75,6 +75,7 @@ export default function Profesores() {
       const endpoint = searchTerm ? "/Profesor/search" : "/Profesor";
       const payload = searchTerm ? { busqueda: searchTerm } : {};
       const { data } = await axios.get(endpoint, { params: payload });
+      console.log(data.data.data);
       setProfesores(data.data.data || []);
       setFiltroProfesores(data.data.data || []);
     } catch (error) {
