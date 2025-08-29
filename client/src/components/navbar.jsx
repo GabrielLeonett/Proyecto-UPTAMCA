@@ -214,6 +214,12 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
 
                     {/* Iconos de Facebook y cuenta */}
                     <Box sx={{ flexGrow: 0 }}>
+                        {/* Notificaciones */}
+                        <IconButton sx={{ color: 'white' }}>
+                            <Badge badgeContent={3} color="error">
+                                <NotificationsIcon />
+                            </Badge>
+                        </IconButton>
                         <IconButton
                             onClick={() => handleRedirect('https://www.facebook.com')}
                             sx={{ color: theme.palette.primary.contrastText }}
