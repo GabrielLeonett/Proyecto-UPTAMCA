@@ -1,4 +1,7 @@
-import { validationHorario } from "../schemas/HorarioSchema.js";
+import {
+  validationHorario,
+  validationPartialHorario,
+} from "../schemas/HorarioSchema.js";
 import HorarioModel from "../models/HorarioModel.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
@@ -27,6 +30,49 @@ export default class HorarioController {
     try {
       // 1. Registro del horario mediante el modelo
       const respuestaModel = await HorarioModel.mostrarHorarios();
+
+      FormatResponseController.respuestaExito(res, respuestaModel);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarHorariosProfesores
+   * @description Mostrar los horarios academicos
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @throws {400} Si la validación de datos falla
+   * @throws {500} Si ocurre un error en el servidor
+   */
+  static async mostrarHorariosProfesores(req, res) {
+    try {
+      const idProfesor = parseInt(req.query.Profesor);
+      console.log(idProfesor)
+      if (idProfesor != undefined) {
+        const validaciones = validationErrors(
+          validationPartialHorario({
+            input: { idProfesor: idProfesor },
+          })
+        );
+
+        if (validaciones !== true) {
+          FormatResponseController.respuestaError(res, {
+            status: 401,
+            title: "Datos Erroneos",
+            message: "Los datos estan errados",
+            error: validaciones,
+          });
+          return;
+        }
+      }
+
+      // 1. Registro del horario mediante el modelo
+      const respuestaModel = await HorarioModel.mostrarHorariosProfesores(
+        idProfesor
+      );
 
       FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
