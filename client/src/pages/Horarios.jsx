@@ -14,7 +14,6 @@ export default function Horarios() {
       try {
         setLoading(true);
         const { data } = await axios.get("/Horarios");
-        console.log("Datos recibidos:", data.data);
         setHorarios(data.data || []);
       } catch (err) {
         console.error("Error al obtener horarios:", err);

@@ -112,10 +112,12 @@ export default class HorarioModel {
       rows.forEach((clase) => {
         const nuevaClase = {
           id: clase.id_horario,
+          idProfesor: clase.id_profesor,
           horaInicio: clase.hora_inicio,
           horaFin: clase.hora_fin,
           nombreProfesor: clase.nombres_profesor,
           apellidoProfesor: clase.apellidos_profesor,
+          codigoAula: clase.codigo_aula,
           nombreUnidadCurricular: clase.nombre_unidad_curricular,
         };
 
@@ -155,6 +157,100 @@ export default class HorarioModel {
               horaInicio: clase.turno_hora_inicio,
               horaFin: clase.turno_hora_fin,
             },
+            dias: [
+              {
+                nombre: clase.dia_semana,
+                clases: [nuevaClase],
+              },
+            ],
+          };
+          horariosOrganizados.push(nuevoHorario);
+        }
+      });
+
+      // Formateo de la respuesta
+      const resultado = FormatResponseModel.respuestaPostgres(
+        horariosOrganizados,
+        "Horarios obtenidos exitosamente"
+      );
+
+      return resultado;
+    } catch (error) {
+      // Manejo y formateo de errores
+      error.details = {
+        path: "HorarioModel.mostrarHorarios",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los horarios"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarHorariosProfesores
+   * @description mostrar los horarios de los profesores
+   * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
+   * @throws {Error} Cuando ocurre un error en el registro
+   */
+  static async mostrarHorariosProfesores(idProfesor) {
+    try {
+      let filas = [];
+      console.log(idProfesor)
+      if (idProfesor === undefined || idProfesor === null) {
+        const { rows } = await db.raw(`SELECT * FROM public.clases_completas`);
+        filas = rows;
+      } else {
+        // Ejecución de la consulta
+        const { rows } = await db.raw(
+          `SELECT * FROM public.clases_completas WHERE id_profesor = ${idProfesor}`
+        );
+        filas = rows;
+      }
+
+      // Estructura para organizar los horarios
+      const horariosOrganizados = [];
+
+      // Procesar cada fila de la consulta
+      filas.forEach((clase) => {
+        const nuevaClase = {
+          id: clase.id_horario,
+          idProfesor: clase.id_profesor,
+          horaInicio: clase.hora_inicio,
+          horaFin: clase.hora_fin,
+          nombreProfesor: clase.nombres_profesor,
+          apellidoProfesor: clase.apellidos_profesor,
+          nombreUnidadCurricular: clase.nombre_unidad_curricular,
+        };
+
+        // Buscar un horario existente con mismo PNF, trayecto y sección
+        const horarioExistente = horariosOrganizados.find(
+          (horario) => horario.idProfesor === clase.idProfesor
+        );
+
+        if (horarioExistente) {
+          // Buscar si ya existe el día en este horario
+          const nombreDia = clase.dia_semana;
+          let diaExistente = horarioExistente.dias.find(
+            (d) => d.nombre === nombreDia
+          );
+
+          if (!diaExistente) {
+            diaExistente = {
+              nombre: nombreDia,
+              clases: [],
+            };
+            horarioExistente.dias.push(diaExistente);
+          }
+
+          // Agregar la clase al día correspondiente
+          diaExistente.clases.push(nuevaClase);
+        } else {
+          // Crear nuevo horario
+          const nuevoHorario = {
+            idProfesor: clase.id_profesor,
             dias: [
               {
                 nombre: clase.dia_semana,
