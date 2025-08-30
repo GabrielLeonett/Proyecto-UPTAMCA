@@ -198,7 +198,7 @@ export default class HorarioModel {
   static async mostrarHorariosProfesores(idProfesor) {
     try {
       let filas = [];
-      console.log(idProfesor)
+      console.log(idProfesor);
       if (idProfesor === undefined || idProfesor === null) {
         const { rows } = await db.raw(`SELECT * FROM public.clases_completas`);
         filas = rows;
@@ -289,10 +289,45 @@ export default class HorarioModel {
    * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
    * @throws {Error} Cuando ocurre un error en el registro
    */
-  static async mostrarProfesoresParaHorario() {
+  static async mostrarProfesoresParaHorario(horas_necesarias) {
     try {
       // Consulta SQL que llama a la vista horarios_completos
-      const query = `SELECT id_profesor, nombres, apellidos, disponibilidad, horas_disponibles, areas_de_conocimiento FROM public.profesores_informacion_completa`;
+      const query = `SELECT id_profesor, nombres, apellidos, disponibilidad, horas_disponibles, areas_de_conocimiento FROM public.profesores_informacion_completa WHERE horas_disponibles > (${horas_necesarias} * INTERVAL '45 minutes')`;
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query);
+
+      // Formateo de la respuesta
+      const resultado = FormatResponseModel.respuestaPostgres(
+        rows,
+        "Horario Registrado exitosamente"
+      );
+
+      return resultado;
+    } catch (error) {
+      // Manejo y formateo de errores
+      error.details = {
+        path: "HorarioModel.registrarHorario",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registrar el horario"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarAulasParaHorario
+   * @description mostrar los horarios academicos
+   * @returns {Promise<Object>} Objeto con el resultado de la operación formateado
+   * @throws {Error} Cuando ocurre un error en el registro
+   */
+  static async mostrarAulasParaHorario(nombrePNF) {
+    try {
+      // Consulta SQL que llama a la vista horarios_completos
+      const query = `SELECT id_aula, codigo_aula FROM public.sedes_completas WHERE nombre_pnf = '${nombrePNF}'`;
 
       // Ejecución de la consulta
       const { rows } = await db.raw(query);

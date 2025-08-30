@@ -103,6 +103,7 @@ export default function Horarios() {
             <Horario
               key={index}
               PNF={horario.pnf}
+              Turno={horario.turno}
               Trayecto={horario.trayecto}
               Seccion={horario.seccion}
               Horario={horario.dias}

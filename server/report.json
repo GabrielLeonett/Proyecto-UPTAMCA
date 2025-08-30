@@ -110,5 +110,27 @@
     "details": {
       "path": "HorarioModel.mostrarHorarios"
     }
+  },
+  {
+    "timestamp": "2025-08-29T22:25:27.334Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT id_profesor, nombres, apellidos, disponibilidad, horas_disponibles, areas_de_conocimiento FROM public.profesores_informacion_completa WHERE(horas_disponibles / 45minutes) > 3 - basura sigue después de un literal numérico en o cerca de «45minutes»",
+    "code": "42601",
+    "details": {
+      "path": "HorarioModel.registrarHorario"
+    }
+  },
+  {
+    "timestamp": "2025-08-29T23:27:12.933Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT id_aula, codigo_aula FROM public.sedes_completas WHERE nombre_pnf = Informática - no existe la columna «informática»",
+    "code": "42703",
+    "details": {
+      "path": "HorarioModel.registrarHorario"
+    }
   }
 ]
