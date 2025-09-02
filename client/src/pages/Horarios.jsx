@@ -25,29 +25,10 @@ export default function Horarios() {
     getHorarios();
   }, []);
 
-  const pages = [
-    { name: "Inicio", url: "/" },
-    {
-      name: "Profesor",
-      submenu: [
-        { name: "Ver", url: "/Profesores" },
-        { name: "Registrar", url: "/registerProfesor" },
-      ],
-    },
-    {
-      name: "PNF",
-      submenu: [
-        { name: "Ver", url: "/PNF" },
-        { name: "Registrar", url: "/registerPNF" },
-      ],
-    },
-    { name: "Contacto", url: "/contact" },
-  ];
-
   if (loading) {
     return (
       <>
-        <ResponsiveAppBar pages={pages} backgroundColor={true} />
+        <ResponsiveAppBar backgroundColor={true} />
         <Box
           marginTop={"200px"}
           display={"flex"}
@@ -66,7 +47,7 @@ export default function Horarios() {
   if (error) {
     return (
       <>
-        <ResponsiveAppBar pages={pages} backgroundColor={true} />
+        <ResponsiveAppBar backgroundColor={true} />
         <Box
           marginTop={"200px"}
           display={"flex"}
@@ -84,7 +65,7 @@ export default function Horarios() {
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor={true} />
+      <ResponsiveAppBar backgroundColor={true} />
       <Box
         marginTop={"120px"}
         display={"flex"}
@@ -105,7 +86,10 @@ export default function Horarios() {
               PNF={horario.pnf}
               Turno={horario.turno}
               Trayecto={horario.trayecto}
-              Seccion={horario.seccion}
+              Seccion={{
+                seccion: horario.seccion,
+                idSeccion: horario.idSeccion,
+              }}
               Horario={horario.dias}
             />
           ))

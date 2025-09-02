@@ -113,11 +113,12 @@ export default class HorarioModel {
         const nuevaClase = {
           id: clase.id_horario,
           idProfesor: clase.id_profesor,
+          idAula: clase.id_aula,
+          idUnidadCurricular: clase.id_unidad_curricular,
           horaInicio: clase.hora_inicio,
           horaFin: clase.hora_fin,
           nombreProfesor: clase.nombres_profesor,
           apellidoProfesor: clase.apellidos_profesor,
-          codigoAula: clase.codigo_aula,
           nombreUnidadCurricular: clase.nombre_unidad_curricular,
         };
 
@@ -152,6 +153,7 @@ export default class HorarioModel {
             pnf: clase.nombre_pnf,
             trayecto: clase.valor_trayecto,
             seccion: clase.valor_seccion,
+            idSeccion: clase.id_seccion,
             turno: {
               nombreTurno: clase.nombre_turno,
               horaInicio: clase.turno_hora_inicio,
@@ -218,6 +220,8 @@ export default class HorarioModel {
         const nuevaClase = {
           id: clase.id_horario,
           idProfesor: clase.id_profesor,
+          idAula: clase.id_aula,
+          idUnidadCurricular: clase.id_unidad_curricular,
           horaInicio: clase.hora_inicio,
           horaFin: clase.hora_fin,
           nombreProfesor: clase.nombres_profesor,

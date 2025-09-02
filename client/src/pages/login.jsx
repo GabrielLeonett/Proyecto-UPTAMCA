@@ -29,24 +29,7 @@ export default function Login() {
 
   const { login } = useAuth();
 
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    { 
-      name: 'Profesor', 
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    { 
-      name: 'PNF', 
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
+  
 
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
@@ -66,10 +49,7 @@ export default function Login() {
 
   return (
     <>
-      <ResponsiveAppBar
-        pages={pages}
-        backgroundColor
-      />
+      <ResponsiveAppBar  backgroundColor />
 
       <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center ">
         <Box

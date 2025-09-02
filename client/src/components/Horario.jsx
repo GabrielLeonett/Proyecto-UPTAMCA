@@ -7,15 +7,19 @@ import {
   TableContainer,
   TableRow,
   CircularProgress,
+  Fade,
+  IconButton,
   Box,
   MenuItem,
   Typography,
   Button,
 } from "@mui/material";
+import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel";
 import { useState, useEffect, useCallback } from "react";
 import axios from "../apis/axios.js";
 import { UTILS } from "../utils/utils.js";
+import { Edit } from "@mui/icons-material";
 
 const initialHours = {
   700: null,
@@ -37,6 +41,39 @@ const initialHours = {
   1900: null,
   1945: null,
   2030: null,
+};
+
+// Componente de capa flotante
+const TableOverlay = ({ isVisible }) => {
+  return (
+    <Fade in={isVisible}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "rgba(43, 43, 43, 0.3)",
+          zIndex: 10,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "4px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+          p: 2,
+        }}
+      >
+        <Typography variant="h3" sx={{display:'flex', flexDirection:'column', }}>
+          <IconButton size="large">
+            <Edit fontSize="large"></Edit>
+          </IconButton>
+          Editar
+        </Typography>
+      </Box>
+    </Fade>
+  );
 };
 
 export default function Horario({
@@ -86,6 +123,21 @@ export default function Horario({
     1.1. Ejecuta la funcion de 
   */
 
+  // Nuevo estado para el overlay
+  const [overlayVisible, setOverlayVisible] = useState(false);
+
+  const handleMouseEnter = () => {
+    setOverlayVisible(true);
+  };
+
+  const handleMouseLeave = () => {
+    setOverlayVisible(false);
+  };
+
+  const handleCloseOverlay = () => {
+    setOverlayVisible(false);
+  };
+
   const obtenerTurno = (Turno) => {
     const [horaInicio, minInicio] = Turno.horaInicio.split(":");
     const [horaFin, minFin] = Turno.horaFin.split(":");
@@ -98,6 +150,56 @@ export default function Horario({
 
     return { horaInicioHHMM, horaFinHHMM };
   };
+
+  const verificarSiExisteUnidadCurricular = useCallback(
+    (unidades) => {
+      if (unidades.length === 0) return unidades;
+
+      const idsUnidadesExistentes = new Set();
+      const unidadesExistentes = [];
+
+      // Recorrer el horario para encontrar unidades existentes
+      tableHorario.forEach((dia) => {
+        Object.values(dia.horas).forEach((horaActual) => {
+          if (horaActual?.datosClase?.idUnidadCurricular) {
+            const existeUnidad = unidades.find(
+              (unidad) =>
+                unidad.id_unidad_curricular ===
+                horaActual.datosClase.idUnidadCurricular
+            );
+
+            if (
+              existeUnidad &&
+              !idsUnidadesExistentes.has(
+                horaActual.datosClase.idUnidadCurricular
+              )
+            ) {
+              unidadesExistentes.push({
+                ...existeUnidad,
+                esVista: true,
+              });
+              idsUnidadesExistentes.add(
+                horaActual.datosClase.idUnidadCurricular
+              );
+            }
+          }
+        });
+      });
+
+      // Actualizar todas las unidades con la propiedad esVista
+      return unidades.map((unidad) => {
+        const existe = unidadesExistentes.some(
+          (u) => u.id_unidad_curricular === unidad.id_unidad_curricular
+        );
+        if (existe) {
+          return { ...unidad, esVista: true };
+        } else {
+          return { ...unidad, esVista: false };
+        }
+      });
+    },
+    [tableHorario]
+  );
 
   // Función para encontrar el slot original de una clase
   const findOriginalSlot = useCallback(
@@ -192,13 +294,7 @@ export default function Horario({
       const slotsDisponibles = [];
       const disponibilidadDocente = [];
 
-      // Obtener datos de profesores si no existen
-      if (!profesores || profesores.length === 0) {
-        console.log("Obteniendo datos de profesores...");
-        getDataProfesores(clase.horasClase);
-        setAvailableSlots([]);
-        return;
-      }
+      getDataProfesores(clase.horasClase);
 
       // Buscar profesor y su disponibilidad
       const profesor = profesores.find(
@@ -314,8 +410,7 @@ export default function Horario({
             if (!esDisponible) continue;
 
             // Verificar disponibilidad del profesor
-            const idProfesor =
-              newClass.profesor?.idProfesor || clase.idProfesor;
+            const idProfesor = clase.idProfesor;
             console.log("id del profesor: ", idProfesor);
             const profesorDisponible = verificarDisponibilidadProfesor(
               idProfesor,
@@ -347,12 +442,7 @@ export default function Horario({
       console.log("Slots disponibles para colocar la clase:", slotsDisponibles);
       setAvailableSlots(slotsDisponibles);
     },
-    [
-      profesores,
-      tableHorario,
-      newClass.profesor,
-      verificarDisponibilidadProfesor,
-    ]
+    [profesores, tableHorario, verificarDisponibilidadProfesor]
   );
 
   // Función para manejar la solicitud de mover clase
@@ -366,7 +456,8 @@ export default function Horario({
 
       // Calcular nuevos horarios disponibles
       if (original) {
-        calcularHorariosDisponibles(clase, original);
+        setSelectedClass(clase);
+        calcularHorariosDisponibles(clase);
       }
     },
     [findOriginalSlot, calcularHorariosDisponibles]
@@ -383,11 +474,7 @@ export default function Horario({
   // Función para completar el movimiento de una clase
   const completarMovimiento = useCallback(
     (nuevoSlot) => {
-      if (!classToMove || !originalSlot) return;
-
-      console.log("Ejecutando completarMovimiento"); // ← DEBUG
-      console.log("Original slot:", originalSlot); // ← DEBUG
-      console.log("Nuevo slot:", nuevoSlot); // ← DEBUG
+      if (!classToMove) return;
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -396,26 +483,33 @@ export default function Horario({
         }));
 
         // 1. Liberar slot original CORREGIDO
-        for (let i = 0; i < originalSlot.bloquesNecesarios; i++) {
-          const minutosExtra = i * 45;
-          const minutosTotales =
-            Math.floor(originalSlot.horaInicio / 100) * 60 +
-            (originalSlot.horaInicio % 100) +
-            minutosExtra;
+        if (originalSlot) {
+          for (let i = 0; i < originalSlot.bloquesNecesarios; i++) {
+            const minutosExtra = i * 45;
+            const minutosTotales =
+              Math.floor(originalSlot.horaInicio / 100) * 60 +
+              (originalSlot.horaInicio % 100) +
+              minutosExtra;
 
-          const nuevasHoras = Math.floor(minutosTotales / 60);
-          const nuevosMinutos = minutosTotales % 60;
-          const horaHHMM = nuevasHoras * 100 + nuevosMinutos;
+            const nuevasHoras = Math.floor(minutosTotales / 60);
+            const nuevosMinutos = minutosTotales % 60;
+            const horaHHMM = nuevasHoras * 100 + nuevosMinutos;
 
-          console.log(
-            `Liberando hora ${horaHHMM} en día ${originalSlot.diaIndex}`
-          ); // ← DEBUG
-          nuevaMatriz[originalSlot.diaIndex].horas[horaHHMM] = null;
+            nuevaMatriz[originalSlot.diaIndex].horas[horaHHMM] = null;
+          }
         }
 
         // 2. Ocupar nuevo slot
         const { diaIndex, horaInicio, bloquesNecesarios } = nuevoSlot;
-
+        console.log(UTILS.sumar45MinutosHHMM(horaInicio, bloquesNecesarios));
+        if (classToMove.nuevaClase) {
+          actualizarDisponibilidadProfesores({
+            ...classToMove,
+            horaInicio: UTILS.sumar45MinutosHHMM(horaInicio, 0),
+            horasClase: bloquesNecesarios,
+            diaIndex: diaIndex,
+          });
+        }
         for (let i = 0; i < bloquesNecesarios; i++) {
           const minutosExtra = i * 45;
           const minutosTotales =
@@ -427,15 +521,17 @@ export default function Horario({
           const nuevosMinutos = minutosTotales % 60;
           const horaHHMM = nuevasHoras * 100 + nuevosMinutos;
 
-          console.log(`Ocupando hora ${horaHHMM} en día ${diaIndex}`); // ← DEBUG
           nuevaMatriz[diaIndex].horas[horaHHMM] = {
             ocupado: true,
-            datosClase: classToMove, // ← Mantener la clase original
+            datosClase: {
+              ...classToMove,
+              horaInicio: UTILS.sumar45MinutosHHMM(horaInicio, 0),
+              horaFin: UTILS.sumar45MinutosHHMM(horaInicio, bloquesNecesarios),
+            }, // ← Mantener la clase original
             bloque: i,
             bloquesTotales: bloquesNecesarios,
           };
         }
-
         return nuevaMatriz;
       });
 
@@ -444,6 +540,7 @@ export default function Horario({
       setOriginalSlot(null);
       setAvailableSlots([]);
       setSelectedClass(null);
+      setNewClass({ profesor: null, unidad: null, aula: null });
 
       // Mostrar mensaje de éxito
       alert(
@@ -471,17 +568,93 @@ export default function Horario({
     [availableSlots]
   );
 
-  // Función para manejar la selección de clase
-  const handleClassSelect = useCallback(
-    (clase) => {
-      setSelectedClass(clase);
-      calcularHorariosDisponibles(clase);
-    },
-    [tableHorario, newClass.profesor]
-  );
+  // Función para actualizar la disponibilidad de profesores después de agregar una clase
+  const actualizarDisponibilidadProfesores = useCallback((claseAgregada) => {
+    if (!claseAgregada || !claseAgregada.idProfesor) return;
+
+    setProfesores((prevProfesores) => {
+      return prevProfesores.map((profesor) => {
+        if (profesor.id_profesor === claseAgregada.idProfesor) {
+          // Convertir la nueva clase en un bloque de indisponibilidad
+          const nuevaIndisponibilidad = {
+            dia_semana: UTILS.obtenerDiaNombre(claseAgregada.diaIndex),
+            hora_inicio: claseAgregada.horaInicio,
+            hora_fin: UTILS.sumar45MinutosHHMM(
+              claseAgregada.horaInicio,
+              claseAgregada.horasClase
+            ),
+          };
+
+          // Filtrar disponibilidades que se superponen con la nueva clase
+          const disponibilidadFiltrada = profesor.disponibilidad.filter(
+            (disp) => {
+              if (disp.dia_semana !== nuevaIndisponibilidad.dia_semana) {
+                return true; // Días diferentes, mantener
+              }
+
+              // Verificar superposición de horarios
+              const [dispHoraIni, dispMinIni] = disp.hora_inicio
+                .split(":")
+                .map(Number);
+              const [dispHoraFin, dispMinFin] = disp.hora_fin
+                .split(":")
+                .map(Number);
+              const [nuevaHoraIni, nuevaMinIni] =
+                nuevaIndisponibilidad.hora_inicio.split(":").map(Number);
+              const [nuevaHoraFin, nuevaMinFin] = nuevaIndisponibilidad.hora_fin
+                .split(":")
+                .map(Number);
+
+              const dispInicioMin = dispHoraIni * 60 + dispMinIni;
+              const dispFinMin = dispHoraFin * 60 + dispMinFin;
+              const nuevaInicioMin = nuevaHoraIni * 60 + nuevaMinIni;
+              const nuevaFinMin = nuevaHoraFin * 60 + nuevaMinFin;
+
+              // Si no hay superposición, mantener la disponibilidad
+              return (
+                nuevaFinMin <= dispInicioMin || nuevaInicioMin >= dispFinMin
+              );
+            }
+          );
+
+          return {
+            ...profesor,
+            disponibilidad: disponibilidadFiltrada,
+          };
+        }
+        return profesor;
+      });
+    });
+  }, []);
+
+  const crearClaseEnHorario = useCallback(() => {
+    const nuevaClase = {
+      id: Date.now(),
+      idProfesor: newClass.profesor.id_profesor,
+      idAula: newClass.aula.id_aula,
+      idUnidadCurricular: newClass.unidad.id_unidad_curricular,
+      nombreProfesor: newClass.profesor.nombres,
+      apellidoProfesor: newClass.profesor.apellidos,
+      nombreUnidadCurricular: newClass.unidad.nombre_unidad_curricular,
+      nuevaClase: true,
+    };
+    setSelectedClass({ ...nuevaClase });
+    setClassToMove({ ...nuevaClase });
+  }, [newClass]);
+
+  //Efecto para cuando la nueva clase este completa
+  useEffect(() => {
+    if (newClass.aula && newClass.profesor && newClass.unidad) {
+      calcularHorariosDisponibles({
+        idProfesor: newClass.profesor.id_profesor,
+        horasClase: newClass.unidad.horas_clase,
+      });
+      crearClaseEnHorario();
+    }
+  }, [newClass]);
 
   // Función para agregar clase al horario
-  const agregarClaseAlHorario = useCallback(
+  const MoverClassEnHorario = useCallback(
     (slot) => {
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -492,32 +665,13 @@ export default function Horario({
         const { diaIndex, horaInicio, bloquesNecesarios } = slot;
 
         // DIFERENCIAR ENTRE CLASE NUEVA Y CLASE MOVIDA
-        const nuevaClase = classToMove
-          ? {
-              ...classToMove, // Mantener todos los datos originales
-              horaInicio: `${Math.floor(horaInicio / 100)}:${String(
-                horaInicio % 100
-              ).padStart(2, "0")}`,
-              horaFin: UTILS.sumar45Minutos(horaInicio, bloquesNecesarios),
-            }
-          : {
-              id: Date.now(), // Solo nuevo ID para clases nuevas
-              horasClase: bloquesNecesarios,
-              nombreUnidadCurricular:
-                newClass.unidad?.nombre_unidad_curricular ||
-                selectedClass.nombreUnidadCurricular,
-              nombreProfesor:
-                newClass.profesor?.nombres || selectedClass.nombreProfesor,
-              apellidoProfesor:
-                newClass.profesor?.apellidos || selectedClass.apellidoProfesor,
-              profesorId:
-                newClass.profesor?.id_profesor || selectedClass.profesorId,
-              aulaId: newClass.aula?.id_aula || selectedClass.aulaId,
-              horaInicio: `${Math.floor(horaInicio / 100)}:${String(
-                horaInicio % 100
-              ).padStart(2, "0")}`,
-              horaFin: UTILS.sumar45Minutos(horaInicio, bloquesNecesarios),
-            };
+        const nuevaClase = {
+          ...classToMove, // Mantener todos los datos originales
+          horaInicio: `${Math.floor(horaInicio / 100)}:${String(
+            horaInicio % 100
+          ).padStart(2, "0")}`,
+          horaFin: UTILS.sumar45Minutos(horaInicio, bloquesNecesarios),
+        };
 
         for (let i = 0; i < bloquesNecesarios; i++) {
           const minutosExtra = i * 45;
@@ -541,12 +695,11 @@ export default function Horario({
         // Limpiar selección después de agregar
         setSelectedClass(null);
         setAvailableSlots([]);
-        setNewClass({ profesor: null, unidad: null });
 
         return nuevaMatriz;
       });
     },
-    [selectedClass, newClass.profesor, classToMove] // Agregar classToMove a las dependencias
+    [classToMove] // Agregar classToMove a las dependencias
   );
 
   // Función para manejar click en slots disponibles
@@ -586,7 +739,7 @@ export default function Horario({
               )}?`
             )
           ) {
-            agregarClaseAlHorario(slot);
+            MoverClassEnHorario(slot);
           }
         }
       }
@@ -596,7 +749,7 @@ export default function Horario({
       availableSlots,
       classToMove,
       completarMovimiento,
-      agregarClaseAlHorario,
+      MoverClassEnHorario,
     ]
   );
 
@@ -673,7 +826,7 @@ export default function Horario({
     }
   };
 
-  // Cargar datos de profesores y unidades curriculares
+  // Cargar datos de aulas y unidades curriculares
   useEffect(() => {
     const getDataUnidades = async () => {
       try {
@@ -682,7 +835,11 @@ export default function Horario({
             Trayecto
           )}`
         );
-        setUnidadesCurriculares(unidades.data.data);
+        const unidadesActualizadas = verificarSiExisteUnidadCurricular(
+          unidades.data.data
+        );
+        console.log(unidadesActualizadas);
+        setUnidadesCurriculares(unidadesActualizadas);
       } catch (error) {
         console.error(error);
       }
@@ -697,16 +854,18 @@ export default function Horario({
       }
     };
 
-    if (Custom) {
-      getDataUnidades();
-      if (newClass.unidad) {
-        getDataProfesores(newClass.unidad.horas_clase);
-        if (newClass.profesor) {
-          getDataAulas();
+    if (tableHorario.length > 0) {
+      if (Custom) {
+        getDataUnidades();
+        if (newClass.unidad) {
+          getDataProfesores(newClass.unidad.horas_clase);
+          if (newClass.profesor) {
+            getDataAulas();
+          }
         }
       }
     }
-  }, [Trayecto, Custom, newClass, PNF]);
+  }, [Trayecto, Custom, tableHorario, newClass, PNF]);
 
   // Cargar horarios de profesores
   useEffect(() => {
@@ -751,9 +910,6 @@ export default function Horario({
       (u) => u.id_unidad_curricular === unidadId
     );
     setNewClass((prev) => ({ ...prev, unidad }));
-    if (unidad) {
-      handleClassSelect(unidad);
-    }
   };
 
   //Pide los horarios de los profesores que son seleccionados
@@ -761,7 +917,8 @@ export default function Horario({
     try {
       setLoading(true);
       const { data } = await axios.get(`/Horarios/Profesores?Profesor=${id}`);
-      setProfesoresHorarios((prev) => [...prev, ...data.data]);
+      console.log(data);
+      setProfesoresHorarios({ ...data.data });
     } catch (error) {
       console.error("Error fetching profesor horarios:", error);
     } finally {
@@ -769,28 +926,342 @@ export default function Horario({
     }
   }, []);
 
-  //Funcion para mostrar los profesores seleccionados
-  const mostrarProfesorSeleccionado = useCallback(
-    (id_profesor) => {
-      // Buscar el profesor directamente
-      const buscarHorarioProfesor = profesoresHorarios.find(
-        (profesor) => profesor.idProfesor === id_profesor
+  // Función para enviar solo las clases nuevas al backend
+  const enviarHorarioAlBackend = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      // Recopilar solo las clases nuevas (que tienen nuevaClase: true)
+      const clasesNuevasParaEnviar = [];
+      const clasesProcesadas = new Set(); // Para evitar duplicados
+
+      tableHorario.forEach((dia, diaIndex) => {
+        const diaSemana = UTILS.obtenerDiaNombre(diaIndex);
+        const diaSemanaFormateado =
+          diaSemana.charAt(0).toUpperCase() + diaSemana.slice(1);
+
+        Object.values(dia.horas).forEach((horaData) => {
+          if (horaData?.ocupado && horaData.bloque === 0) {
+            const clase = horaData.datosClase;
+
+            // Verificar si es una clase nueva y no ha sido procesada
+            if (clase.nuevaClase && !clasesProcesadas.has(clase.id)) {
+              clasesProcesadas.add(clase.id);
+
+              clasesNuevasParaEnviar.push({
+                idSeccion: Seccion.idSeccion,
+                idProfesor: clase.idProfesor,
+                idUnidadCurricular: clase.idUnidadCurricular,
+                idAula: clase.idAula,
+                diaSemana: diaSemanaFormateado,
+                horaInicio: clase.horaInicio,
+              });
+            }
+          }
+        });
+      });
+
+      if (clasesNuevasParaEnviar.length === 0) {
+        alert("No hay clases nuevas para guardar");
+        return false;
+      }
+
+      console.log("Clases nuevas a enviar:", clasesNuevasParaEnviar);
+
+      // Enviar cada clase nueva individualmente
+      const promises = clasesNuevasParaEnviar.map((clase) =>
+        axios.post("http://localhost:3000/Horario/create", clase)
       );
 
-      // Verificar si NO se encontró el profesor
-      if (!buscarHorarioProfesor) {
-        getProfesoresHorarios(id_profesor);
+      const responses = await Promise.all(promises);
+
+      console.log(responses);
+
+      // Verificar todas las respuestas
+      const todasExitosas = responses.every(
+        (response) => response.status === 200 || response.status === 201
+      );
+
+      if (todasExitosas) {
+        alert(
+          `¡Horario guardado exitosamente! ${clasesNuevasParaEnviar.length} clase(s) nueva(s) agregada(s)`
+        );
+
+        // Opcional: Remover la bandera nuevaClase después de enviar exitosamente
+        setTableHorario((prev) => {
+          const nuevaMatriz = prev.map((item) => ({
+            ...item,
+            horas: { ...item.horas },
+          }));
+
+          Object.values(nuevaMatriz).forEach((dia) => {
+            Object.values(dia.horas).forEach((horaData) => {
+              if (horaData?.ocupado && horaData.datosClase?.nuevaClase) {
+                // Remover la propiedad nuevaClase para que no se envíe de nuevo
+                const { nuevaClase, ...claseSinBandera } = horaData.datosClase;
+                horaData.datosClase = claseSinBandera;
+              }
+            });
+          });
+
+          return nuevaMatriz;
+        });
+
+        return true;
+      } else {
+        throw new Error("Algunas clases no se pudieron guardar");
       }
-    },
-    [profesoresHorarios, getProfesoresHorarios]
-  );
+    } catch (error) {
+      console.error("Error al guardar el horario:", error);
+      alert("Error al guardar el horario. Por favor, intente nuevamente.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [tableHorario, Seccion]);
 
   const horasOrdenadas = Object.keys(tableHorario[0].horas)
     .map(Number)
     .sort((a, b) => a - b);
 
   return (
-    <Box component={"div"}>
+    <Box
+      component={"div"}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: "2rem",
+      }}
+    >
+      {/* Mensajes de estado */}
+      {selectedClass && !classToMove && (
+        <Box
+          sx={{
+            padding: "8px",
+            backgroundColor: "#e8f5e8",
+            border: "2px solid #28a745",
+            borderRadius: "4px",
+            margin: "10px",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="body2" color="green">
+            ✓ Seleccionada: {selectedClass.nombreUnidadCurricular}
+          </Typography>
+          <Typography variant="caption">
+            Haz click en los slots verdes para programar la clase
+          </Typography>
+        </Box>
+      )}
+
+      {classToMove && (
+        <Box
+          sx={{
+            padding: "8px",
+            backgroundColor: "#fff3cd",
+            border: "2px solid #ffc107",
+            borderRadius: "4px",
+            margin: "10px",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="body2" color="#856404">
+            Moviendo: {classToMove.nombreUnidadCurricular}
+          </Typography>
+          <Typography variant="caption">
+            Selecciona un nuevo horario disponible (resaltado en verde)
+          </Typography>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={cancelarMovimiento}
+            sx={{ ml: 2 }}
+          >
+            Cancelar
+          </Button>
+        </Box>
+      )}
+
+      {/* Contenedor de la tabla con overlay */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "center",
+          alignContent: "center",
+          position: "relative",
+        }}
+      >
+        <Box
+          sx={{
+            position: "relative",
+            cursor: overlayVisible ? "pointer" : "default",
+          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+
+          {/* Capa flotante */}
+          <TableOverlay
+            isVisible={overlayVisible}
+            onClose={handleCloseOverlay}
+            PNF={PNF}
+            Trayecto={Trayecto}
+            Seccion={Seccion}
+          />
+
+          {/* Tu tabla original */}
+          <TableContainer>
+            <Table sx={{ border: "1px solid black", width: "1000px" }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell colSpan={7} align="center">
+                    {PNF ? PNF : ""} {Trayecto ? `Trayecto ${Trayecto}` : ""}{" "}
+                    {Seccion.seccion ? `Sección ${Seccion.seccion}` : ""}
+                  </TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell
+                    sx={{
+                      backgroundColor: "#c4c4c4ff",
+                      border: "1px solid black",
+                    }}
+                  >
+                    Hora
+                  </TableCell>
+                  {tableHorario.map((columna) => (
+                    <TableCell
+                      key={columna.dia}
+                      align="center"
+                      sx={{ border: "1px solid black" }}
+                    >
+                      {columna.dia.charAt(0).toUpperCase() +
+                        columna.dia.slice(1)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {horasOrdenadas.map((hora) => (
+                  <TableRow key={hora}>
+                    <TableCell
+                      sx={{
+                        backgroundColor: "#c4c4c4ff",
+                        border: "1px solid black",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {UTILS.formatearHora(hora)}
+                    </TableCell>
+
+                    {tableHorario.map((columna, diaIndex) => {
+                      const celda = columna.horas[hora];
+                      const cellKey = `${columna.dia}-${hora}`;
+                      const disponible =
+                        selectedClass && isSlotAvailable(diaIndex, hora);
+
+                      if (celda?.ocupado && celda.bloque !== 0) {
+                        return null;
+                      }
+
+                      return (
+                        <TableCell
+                          key={cellKey}
+                          rowSpan={celda?.ocupado ? celda.bloquesTotales : 1}
+                          sx={{
+                            padding: 0,
+                            verticalAlign: "top",
+                            height: celda?.ocupado
+                              ? `${celda.bloquesTotales * 50}px`
+                              : "50px",
+                            border: "1px solid black",
+                            minWidth: 120,
+                            backgroundColor: disponible
+                              ? "#e8f5e8"
+                              : "transparent",
+                            position: "relative",
+                            "&:hover": disponible
+                              ? {
+                                  backgroundColor: "#d4edda",
+                                  cursor: "pointer",
+                                }
+                              : {},
+                          }}
+                          onClick={() =>
+                            disponible && handleSlotClick(diaIndex, hora)
+                          }
+                        >
+                          {celda?.ocupado ? (
+                            <Clase
+                              clase={celda.datosClase}
+                              {...(Custom && {
+                                onMoveRequest: handleMoveRequest,
+                                isSelected:
+                                  selectedClass?.id === celda.datosClase?.id,
+                              })}
+                            />
+                          ) : (
+                            disponible && (
+                              <div
+                                style={{
+                                  height: "100%",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  color: "#28a745",
+                                  fontWeight: "bold",
+                                  fontSize: "12px",
+                                }}
+                              >
+                                ✅
+                              </div>
+                            )
+                          )}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {Custom ? (
+            <Box
+              sx={{
+                margin: "0%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                gap: "2rem",
+              }}
+            >
+              <CustomButton
+                variant="contained"
+                sx={{
+                  borderRadius: "0px 5px 5px 0px",
+                  backgroundColor: "#72ff5fff",
+                }}
+                onClick={enviarHorarioAlBackend}
+              >
+                Guardar
+              </CustomButton>
+              <CustomButton
+                variant="contained"
+                sx={{
+                  borderRadius: "0px 5px 5px 0px",
+                  backgroundColor: "#ff5454ff",
+                }}
+              >
+                Eliminar
+              </CustomButton>
+            </Box>
+          ) : null}
+        </Box>
+      </Box>
+
       {Custom && (
         <form>
           <Box
@@ -809,18 +1280,27 @@ export default function Horario({
               onChange={(e) => handleUnidadChange(e.target.value)}
             >
               {unidadesCurriculares.length > 0 ? (
-                unidadesCurriculares.map((unidad) => (
-                  <MenuItem
-                    key={unidad.id_unidad_curricular}
-                    value={unidad.id_unidad_curricular}
-                  >
-                    {unidad.nombre_unidad_curricular} ({unidad.horas_clase}h)
-                  </MenuItem>
-                ))
+                unidadesCurriculares
+                  .filter((unidad) => unidad.esVista != true)
+                  .map((unidad) => (
+                    <MenuItem
+                      key={unidad.id_unidad_curricular}
+                      value={unidad.id_unidad_curricular}
+                    >
+                      {unidad.nombre_unidad_curricular} ({unidad.horas_clase}
+                      h)
+                      {unidad.esVista}
+                    </MenuItem>
+                  ))
               ) : (
-                <MenuItem disabled>Cargando...</MenuItem>
+                <MenuItem disabled>
+                  {unidadesCurriculares.length === 0
+                    ? "Cargando..."
+                    : "No hay unidades disponibles"}
+                </MenuItem>
               )}
             </CustomLabel>
+
             {newClass.unidad ? (
               <CustomLabel
                 select
@@ -845,6 +1325,7 @@ export default function Horario({
                 )}
               </CustomLabel>
             ) : null}
+
             {newClass.profesor ? (
               <CustomLabel
                 select
@@ -869,184 +1350,6 @@ export default function Horario({
           </Box>
         </form>
       )}
-
-      {selectedClass && !classToMove && (
-        <Box
-          sx={{
-            padding: "8px",
-            backgroundColor: "#e8f5e8",
-            border: "2px solid #28a745",
-            borderRadius: "4px",
-            margin: "10px",
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="body2" color="green">
-            ✓ Seleccionada: {selectedClass.nombre_unidad_curricular}
-          </Typography>
-          <Typography variant="caption">
-            Haz click en los slots verdes para programar la clase
-          </Typography>
-        </Box>
-      )}
-
-      {classToMove && (
-        <Box
-          sx={{
-            padding: "8px",
-            backgroundColor: "#fff3cd",
-            border: "2px solid #ffc107",
-            borderRadius: "4px",
-            margin: "10px",
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="body2" color="#856404">
-            Moviendo: {classToMove.nombre_unidad_curricular}
-          </Typography>
-          <Typography variant="caption">
-            Selecciona un nuevo horario disponible (resaltado en verde)
-          </Typography>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={cancelarMovimiento}
-            sx={{ ml: 2 }}
-          >
-            Cancelar
-          </Button>
-        </Box>
-      )}
-
-      <TableContainer>
-        {loading && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 1000,
-            }}
-          >
-            <CircularProgress />
-          </Box>
-        )}
-
-        <Table sx={{ border: "1px solid black", width: "1000px" }}>
-          <TableHead>
-            <TableRow>
-              <TableCell colSpan={7} align="center">
-                {PNF ? PNF : ""} {Trayecto ? `Trayecto ${Trayecto}` : ""}{" "}
-                {Seccion ? `Sección ${Seccion}` : ""}
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell
-                sx={{ backgroundColor: "#c4c4c4ff", border: "1px solid black" }}
-              >
-                Hora
-              </TableCell>
-              {tableHorario.map((columna) => (
-                <TableCell
-                  key={columna.dia}
-                  align="center"
-                  sx={{ border: "1px solid black" }}
-                >
-                  {columna.dia.charAt(0).toUpperCase() + columna.dia.slice(1)}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {horasOrdenadas.map((hora) => (
-              <TableRow key={hora}>
-                <TableCell
-                  sx={{
-                    backgroundColor: "#c4c4c4ff",
-                    border: "1px solid black",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {UTILS.formatearHora(hora)}
-                </TableCell>
-
-                {tableHorario.map((columna, diaIndex) => {
-                  const celda = columna.horas[hora];
-                  const cellKey = `${columna.dia}-${hora}`;
-                  const disponible =
-                    selectedClass && isSlotAvailable(diaIndex, hora);
-
-                  if (celda?.ocupado && celda.bloque !== 0) {
-                    return null;
-                  }
-
-                  return (
-                    <TableCell
-                      key={cellKey}
-                      rowSpan={celda?.ocupado ? celda.bloquesTotales : 1}
-                      sx={{
-                        padding: 0,
-                        verticalAlign: "top",
-                        height: celda?.ocupado
-                          ? `${celda.bloquesTotales * 50}px`
-                          : "50px",
-                        border: "1px solid black",
-                        minWidth: 120,
-                        backgroundColor: disponible ? "#e8f5e8" : "transparent",
-                        position: "relative",
-                        "&:hover": disponible
-                          ? {
-                              backgroundColor: "#d4edda",
-                              cursor: "pointer",
-                            }
-                          : {},
-                      }}
-                      onClick={() =>
-                        disponible && handleSlotClick(diaIndex, hora)
-                      }
-                    >
-                      {celda?.ocupado ? (
-                        <Clase
-                          clase={celda.datosClase}
-                          mostrarProfesorSeleccionado={
-                            mostrarProfesorSeleccionado
-                          }
-                          onSelect={handleClassSelect}
-                          onMoveRequest={handleMoveRequest}
-                          isSelected={
-                            selectedClass?.id === celda.datosClase?.id
-                          }
-                        />
-                      ) : (
-                        disponible && (
-                          <div
-                            style={{
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "#28a745",
-                              fontWeight: "bold",
-                              fontSize: "12px",
-                            }}
-                          >
-                            ✓
-                          </div>
-                        )
-                      )}
-                    </TableCell>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
     </Box>
   );
 }

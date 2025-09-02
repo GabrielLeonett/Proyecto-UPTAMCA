@@ -1,236 +1,427 @@
-import FacebookIcon from '@mui/icons-material/Facebook';
-import MenuIcon from '@mui/icons-material/Menu';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import * as React from 'react';
-import LogoSimple from './ui/logoSimple';
-import LogoTexto from './ui/logoTexto';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import FacebookIcon from "@mui/icons-material/Facebook";
+import MenuIcon from "@mui/icons-material/Menu";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import * as React from "react";
+import LogoSimple from "./ui/logoSimple";
+import LogoTexto from "./ui/logoTexto";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
+import { useEffect, useState } from "react";
 
-function ResponsiveAppBar({ pages, backgroundColor }) {
-    const theme = useTheme();
-    const navigate = useNavigate();
-    const [anchorElNav, setAnchorElNav] = React.useState(null);
+function ResponsiveAppBar({ backgroundColor }) {
+  const theme = useTheme();
+  const [userRoles, setUserRoles] = useState(["publico"]);
+  const navigate = useNavigate();
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const { user } = useAuth();
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
 
-    const handleOpenNavMenu = (event) => {
-        setAnchorElNav(event.currentTarget);
-    };
+  const handleOpenNavMenu = (event) => {
+    setAnchorElNav(event.currentTarget);
+  };
 
-    const handleCloseNavMenu = () => {
-        setAnchorElNav(null);
-    };
+  useEffect(() => {
+    if (user && user.roles) {
+      setUserRoles(user.roles);
+    }
+  }, [user]);
 
-    const handleRedirect = (url) => {
-        window.location.href = url;
-    };
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
 
-    const handleNavigation = (url) => {
-        navigate(url);
-        handleCloseNavMenu();
-    };
+  const handleOpenSubmenu = (event, menuName) => {
+    setAnchorElSubmenu({ ...anchorElSubmenu, [menuName]: event.currentTarget });
+  };
 
-    return (
-        <AppBar position="fixed" color={backgroundColor ? 'primary' : 'transparent'} enableColorOnDark>
-            <Container maxWidth="xl">
-                <Toolbar disableGutters>
-                    {/* LogoTexto: Visible en pantallas grandes (md y arriba) */}
-                    <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', height: '100px' }}>
-                        <LogoTexto />
-                    </Box>
+  const handleCloseSubmenu = (menuName) => {
+    setAnchorElSubmenu({ ...anchorElSubmenu, [menuName]: null });
+  };
 
-                    {/* LogoSimple: Visible en pantallas pequeñas y medianas (xs, sm) */}
-                    <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', height: '100px' }}>
-                        <LogoSimple />
-                    </Box>
+  const handleRedirect = (url) => {
+    window.open(url, "_blank");
+  };
 
-                    {/* Menú para pantallas pequeñas */}
-                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' }, fontFamily: 'Poppins' }}>
-                        <IconButton
-                            size="large"
-                            aria-label="account of current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleOpenNavMenu}
-                            sx={{ color: theme.palette.primary.contrastText }}
-                        >
-                            <MenuIcon />
-                        </IconButton>
-                        <Menu
-                            id="menu-appbar"
-                            anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'left',
-                            }}
-                            keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'left',
-                            }}
-                            open={Boolean(anchorElNav)}
-                            onClose={handleCloseNavMenu}
-                            sx={{ display: { xs: 'block', md: 'none' } }}
-                        >
-                            {pages.map((page) => (
-                                page.submenu ? (
-                                    <div key={page.name}>
-                                        <Typography variant="subtitle1" sx={{ px: 2, py: 1, fontWeight: 'bold' }}>
-                                            {page.name}
-                                        </Typography>
-                                        {page.submenu.map((subPage) => (
-                                            <MenuItem
-                                                key={subPage.name}
-                                                onClick={() => handleNavigation(subPage.url)}
-                                            >
-                                                {subPage.name}
-                                            </MenuItem>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <MenuItem
-                                        key={page.name}
-                                        onClick={() => handleNavigation(page.url)}
-                                    >
-                                        {page.name}
-                                    </MenuItem>
-                                )
-                            ))}
-                        </Menu>
-                    </Box>
+  const handleNavigation = (url) => {
+    navigate(url);
+    handleCloseNavMenu();
+    setAnchorElSubmenu({});
+    handleCloseUserMenu();
+  };
 
-                    {/* Menú para pantallas grandes */}
-                    <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-                        {pages.map((page) => (
-                            page.submenu ? (
-                                <Box key={page.name} sx={{ position: 'relative' }}>
-                                    {/* Botón principal que activa el dropdown */}
-                                    <Button
-                                        onClick={(e) => {
-                                            // Solo abre el menú si no estamos en un dispositivo táctil
-                                            if (!('ontouchstart' in window)) {
-                                                setAnchorElNav(e.currentTarget);
-                                            }
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            // Para dispositivos no táctiles, abre el menú al hacer hover
-                                            if (!('ontouchstart' in window)) {
-                                                setAnchorElNav(e.currentTarget);
-                                            }
-                                        }}
-                                        sx={{
-                                            my: 2,
-                                            color: theme.palette.primary.contrastText,
-                                            display: 'block',
-                                            '&:hover': {
-                                                backgroundColor: theme.palette.primary.dark
-                                            }
-                                        }}
-                                    >
-                                        {page.name}
-                                    </Button>
+  // Verificar si el usuario tiene acceso a una página/subpágina
+  const hasAccess = (requiredRoles) => {
+    if (!userRoles || userRoles.length === 0) return false;
+    return requiredRoles.some((role) => userRoles.includes(role));
+  };
 
-                                    {/* Menú desplegable */}
-                                    <Menu
-                                        anchorEl={anchorElNav}
-                                        open={Boolean(anchorElNav && anchorElNav.textContent === page.name)}
-                                        onClose={handleCloseNavMenu}
-                                        MenuListProps={{
-                                            onMouseLeave: handleCloseNavMenu,
-                                            sx: {
-                                                py: 0,
-                                                minWidth: 200,
-                                                backgroundColor: theme.palette.primary.main
-                                            }
-                                        }}
-                                        PaperProps={{
-                                            elevation: 0,
-                                            sx: {
-                                                overflow: 'visible',
-                                                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                                                mt: 1.5,
-                                                '&:before': {
-                                                    content: '""',
-                                                    display: 'block',
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 14,
-                                                    width: 10,
-                                                    height: 10,
-                                                    bgcolor: 'background.paper',
-                                                    transform: 'translateY(-50%) rotate(45deg)',
-                                                    zIndex: 0
-                                                }
-                                            }
-                                        }}
-                                        transformOrigin={{ horizontal: 'left', vertical: 'top' }}
-                                        anchorOrigin={{ horizontal: 'left', vertical: 'bottom' }}
-                                    >
-                                        {page.submenu.map((subPage) => (
-                                            <MenuItem
-                                                key={subPage.name}
-                                                onClick={() => {
-                                                    handleNavigation(subPage.url);
-                                                    handleCloseNavMenu();
-                                                }}
-                                                sx={{
-                                                    color: theme.palette.primary.contrastText,
-                                                    '&:hover': {
-                                                        backgroundColor: theme.palette.primary.dark
-                                                    }
-                                                }}
-                                            >
-                                                {subPage.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Menu>
-                                </Box>
-                            ) : (
-                                <Button
-                                    key={page.name}
-                                    onClick={() => handleNavigation(page.url)}
-                                    sx={{
-                                        my: 2,
-                                        color: theme.palette.primary.contrastText,
-                                        display: 'block',
-                                        '&:hover': {
-                                            backgroundColor: theme.palette.primary.dark
-                                        }
-                                    }}
-                                >
-                                    {page.name}
-                                </Button>
-                            )
+  const handleOpenUserMenu = (event) => {
+    setAnchorElUser(event.currentTarget);
+  };
+
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null);
+  };
+
+  const pages = [
+    {
+      name: "Inicio",
+      url: "/",
+      roles: [
+        "publico",
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+    },
+    {
+      name: "Profesor",
+      roles: [
+        "Vicerrector",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Ver",
+          url: "/Profesores",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar",
+          url: "/registerProfesor",
+          roles: [
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
+      name: "PNF",
+      roles: [
+        "Vicerrector",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Ver",
+          url: "/PNF",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar",
+          url: "/registerPNF",
+          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
+        },
+      ],
+    },
+    {
+      name: "Horarios",
+      url: "/Horarios",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+    },
+    {
+      name: "Administración",
+      roles: ["SuperAdmin"],
+      submenu: [
+        { name: "Usuarios", url: "/admin/users", roles: ["SuperAdmin"] },
+        {
+          name: "Configuración",
+          url: "/admin/settings",
+          roles: ["SuperAdmin"],
+        },
+        { name: "Auditoría", url: "/admin/audit", roles: ["SuperAdmin"] },
+      ],
+    },
+  ];
+
+  // Filtrar páginas según los roles del usuario
+  const filteredPages = pages.filter(
+    (page) =>
+      hasAccess(page.roles) ||
+      (page.submenu && page.submenu.some((subItem) => hasAccess(subItem.roles)))
+  );
+
+  return (
+    <AppBar
+      position="fixed"
+      color={backgroundColor ? "primary" : "transparent"}
+      enableColorOnDark
+      elevation={backgroundColor ? 4 : 0}
+    >
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
+          {/* LogoTexto: Visible en pantallas grandes (md y arriba) */}
+          <Box
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+              height: "100px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          >
+            <LogoTexto />
+          </Box>
+
+          {/* LogoSimple: Visible en pantallas pequeñas y medianas (xs, sm) */}
+          <Box
+            sx={{
+              display: { xs: "flex", md: "none" },
+              alignItems: "center",
+              height: "100px",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          >
+            <LogoSimple />
+          </Box>
+
+          {/* Menú para pantallas pequeñas */}
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: { xs: "flex", md: "none" },
+              fontFamily: "Poppins",
+            }}
+          >
+            <IconButton
+              size="large"
+              aria-label="menu principal"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              sx={{ color: theme.palette.primary.contrastText }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{ display: { xs: "block", md: "none" } }}
+            >
+              {filteredPages.map((page) => (
+                <div key={page.name}>
+                  {page.submenu ? (
+                    <div>
+                      <MenuItem
+                        onClick={(e) => handleOpenSubmenu(e, page.name)}
+                        aria-haspopup="true"
+                        aria-controls={`${page.name}-menu`}
+                      >
+                        <Typography textAlign="center">{page.name}</Typography>
+                      </MenuItem>
+                      <Menu
+                        id={`${page.name}-menu`}
+                        anchorEl={anchorElSubmenu[page.name]}
+                        open={Boolean(anchorElSubmenu[page.name])}
+                        onClose={() => handleCloseSubmenu(page.name)}
+                        MenuListProps={{
+                          "aria-labelledby": `${page.name}-button`,
+                        }}
+                      >
+                        {page.submenu
+                          .filter((subItem) => hasAccess(subItem.roles))
+                          .map((subItem) => (
+                            <MenuItem
+                              key={subItem.name}
+                              onClick={() => handleNavigation(subItem.url)}
+                            >
+                              <Typography textAlign="center">
+                                {subItem.name}
+                              </Typography>
+                            </MenuItem>
+                          ))}
+                      </Menu>
+                    </div>
+                  ) : (
+                    <MenuItem onClick={() => handleNavigation(page.url)}>
+                      <Typography textAlign="center">{page.name}</Typography>
+                    </MenuItem>
+                  )}
+                </div>
+              ))}
+            </Menu>
+          </Box>
+
+          {/* Menú para pantallas grandes */}
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", md: "flex" },
+              justifyContent: "start",
+              alignItems: "center",
+            }}
+          >
+            {filteredPages.map((page) => (
+              <div key={page.name}>
+                {page.submenu ? (
+                  <div>
+                    <Button
+                      id={`${page.name}-button`}
+                      aria-controls={Boolean(anchorElSubmenu[page.name]) ? `${page.name}-menu` : undefined}
+                      aria-haspopup="true"
+                      aria-expanded={Boolean(anchorElSubmenu[page.name]) ? "true" : undefined}
+                      onClick={(e) => handleOpenSubmenu(e, page.name)}
+                      sx={{
+                        my: 2,
+                        color: "white",
+                        display: "block",
+                        mx: 0.5,
+                      }}
+                    >
+                      {page.name}
+                    </Button>
+                    <Menu
+                      id={`${page.name}-menu`}
+                      anchorEl={anchorElSubmenu[page.name]}
+                      open={Boolean(anchorElSubmenu[page.name])}
+                      onClose={() => handleCloseSubmenu(page.name)}
+                      MenuListProps={{
+                        "aria-labelledby": `${page.name}-button`,
+                      }}
+                    >
+                      {page.submenu
+                        .filter((subItem) => hasAccess(subItem.roles))
+                        .map((subItem) => (
+                          <MenuItem
+                            key={subItem.name}
+                            onClick={() => handleNavigation(subItem.url)}
+                          >
+                            <Typography textAlign="center">
+                              {subItem.name}
+                            </Typography>
+                          </MenuItem>
                         ))}
-                    </Box>
+                    </Menu>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={() => handleNavigation(page.url)}
+                    sx={{
+                      my: 2,
+                      color: "white",
+                      display: "block",
+                      mx: 1,
+                    }}
+                  >
+                    {page.name}
+                  </Button>
+                )}
+              </div>
+            ))}
+          </Box>
 
-                    {/* Iconos de Facebook y cuenta */}
-                    <Box sx={{ flexGrow: 0 }}>
-                        <IconButton
-                            onClick={() => handleRedirect('https://www.facebook.com')}
-                            sx={{ color: theme.palette.primary.contrastText }}
-                        >
-                            <FacebookIcon sx={{ color: 'inherit' }} />
-                        </IconButton>
-                        <IconButton 
-                        sx={{ color: 'white' }} 
-                        onClick={() => handleRedirect('/Inicio-session')}
-                        >
-                            <AccountCircleOutlinedIcon />
-                        </IconButton>
-                    </Box>
-                </Toolbar>
-            </Container>
-        </AppBar>
-    );
+          {/* Iconos de Facebook y cuenta */}
+          <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
+            <IconButton
+              onClick={() => handleRedirect("https://www.facebook.com")}
+              sx={{ color: theme.palette.primary.contrastText }}
+              aria-label="Facebook"
+            >
+              <FacebookIcon sx={{ color: "inherit" }} />
+            </IconButton>
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={handleOpenUserMenu}
+              aria-label="cuenta de usuario"
+              aria-controls="user-menu"
+              aria-haspopup="true"
+            >
+              <AccountCircleOutlinedIcon />
+            </IconButton>
+            <Menu
+              id="user-menu"
+              anchorEl={anchorElUser}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            >
+              <MenuItem onClick={handleCloseUserMenu}>Mi cuenta</MenuItem>
+              <MenuItem onClick={() => {
+                handleCloseUserMenu();
+                // Add logout logic here
+              }}>Cerrar sesión</MenuItem>
+            </Menu>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
+  );
 }
 
 export default ResponsiveAppBar;

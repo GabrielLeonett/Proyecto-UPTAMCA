@@ -58,24 +58,7 @@ export default function FormRegister() {
       position: "absolute",
     }),
   };
-  const pages = [
-    { name: "Inicio", url: "/" },
-    {
-      name: "Profesor",
-      submenu: [
-        { name: "Ver", url: "/Profesores" },
-        { name: "Registrar", url: "/registerProfesor" },
-      ],
-    },
-    {
-      name: "PNF",
-      submenu: [
-        { name: "Ver", url: "/PNF" },
-        { name: "Registrar", url: "/registerPNF" },
-      ],
-    },
-    { name: "Contacto", url: "/contact" },
-  ];
+  
 
   const transition = {
     type: "tween",
@@ -125,7 +108,7 @@ export default function FormRegister() {
   </CustomButton>;
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"

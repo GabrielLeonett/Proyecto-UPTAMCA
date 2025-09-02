@@ -14,7 +14,6 @@ import FormRegister from "./pages/registerProfesor";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
 import Login from "./pages/login";
-import HorarioForm from "./pages/registerHorario";
 import PnfForm from "./pages/PnfFrom";
 import UnidadCurricularForm from "./pages/UnidadCurricular";
 import Prueba from "./pages/prueba";
@@ -108,21 +107,6 @@ export default function App() {
                     ]}
                   >
                     <PnfForm />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/RegistrarHorario"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <HorarioForm />
                   </ProtectedViews>
                 }
               />
