@@ -41,9 +41,19 @@ export default function Index() {
         <Typography variant="h2" component="h2" gutterBottom>
           Programas Nacionales de Formación
         </Typography>
-        <hr className="my-4" />
+        
         <Slider />
       </div>
+      <footer className="bg-gray-900 text-white py-8 mt-16">
+        <div className="container mx-auto px-4 text-center">
+          <Typography variant="body1" className="mb-2">
+            © {new Date().getFullYear()} Universidad Politécnica Territorial.
+          </Typography>
+          <Typography variant="body2" className="text-gray-400">
+            Todos los derechos reservados.
+          </Typography>
+        </div>
+      </footer>
     </>
   );
 }

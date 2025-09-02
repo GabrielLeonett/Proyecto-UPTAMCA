@@ -35,6 +35,7 @@ import ButtonChageTheme from "./components/buttonChageTheme";
 import ProtectedViews from "./security/ProtectedViews";
 import Secciones from "./pages/Secciones";
 import Disponibilidad from "./pages/disponibilidadDoc";
+import EliminarProfesor from "./pages/eliminarProfesor";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -160,6 +161,24 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
+
+              <Route
+                path="/eliminarProfesor"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <EliminarProfesor />
+                  </ProtectedViews>
+                }
+              />
+
 
               {/* Ruta para 404 */}
               <Route path="*" element={<NotFound />} />
