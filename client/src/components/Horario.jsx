@@ -6,7 +6,6 @@ import {
   TableHead,
   TableContainer,
   TableRow,
-  CircularProgress,
   Fade,
   IconButton,
   Box,
@@ -19,7 +18,7 @@ import CustomLabel from "./customLabel";
 import { useState, useEffect, useCallback } from "react";
 import axios from "../apis/axios.js";
 import { UTILS } from "../utils/utils.js";
-import { Edit } from "@mui/icons-material";
+import { Edit, AdfScanner } from "@mui/icons-material";
 
 const initialHours = {
   700: null,
@@ -63,14 +62,36 @@ const TableOverlay = ({ isVisible }) => {
           borderRadius: "4px",
           boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           p: 2,
+          gap: '3rem'
         }}
       >
-        <Typography variant="h3" sx={{display:'flex', flexDirection:'column', }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
           <IconButton size="large">
-            <Edit fontSize="large"></Edit>
+            <Edit sx={{ fontSize: "8rem" }}></Edit>
           </IconButton>
-          Editar
-        </Typography>
+          <Typography variant="h3">Editar</Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignContent: "center",
+          }}
+        >
+          <IconButton>
+            <AdfScanner sx={{ fontSize: "8rem" }}></AdfScanner>
+          </IconButton>
+          <Typography variant="h3">Imprimir</Typography>
+        </Box>
       </Box>
     </Fade>
   );
@@ -1101,7 +1122,6 @@ export default function Horario({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-
           {/* Capa flotante */}
           <TableOverlay
             isVisible={overlayVisible}
