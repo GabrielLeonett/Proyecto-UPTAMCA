@@ -8,7 +8,8 @@
     "dev": "cross-env NODE_ENV=development nodemon server.js",
     "migrate:development": "cross-env NODE_ENV=development npx knex migrate:latest",
     "migrate:production": "cross-env NODE_ENV=production npx knex migrate:latest",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "documents": "node utils/DocumentUtils"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "docx": "^9.5.1",
     "dotenv": "^16.5.0",
     "esm": "3.2.25",
     "express": "^5.1.0",

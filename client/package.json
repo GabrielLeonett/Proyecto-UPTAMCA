@@ -24,6 +24,7 @@
     "dayjs": "^1.11.13",
     "framer-motion": "^12.9.7",
     "js-cookie": "^3.0.5",
+    "lucide-react": "^0.542.0",
     "nodemailer": "^7.0.3",
     "react": "^19.0.0",
     "react-datepicker": "^8.3.0",
