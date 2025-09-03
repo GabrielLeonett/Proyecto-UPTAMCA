@@ -4,6 +4,8 @@ import Typography from "@mui/material/Typography";
 import Slider from "../components/slider";
 import { useScrollDetection } from "../hook/useScrollDetection";
 import imageEstudiantes from "../assets/estudiantes.jpg";
+import Footer from "../components/footer";
+import Nucleos from "../components/ubiSedes";
 
 export default function Index() {
   const [scrolled, setScrolled] = useState(false);
@@ -41,19 +43,22 @@ export default function Index() {
         <Typography variant="h2" component="h2" gutterBottom>
           Programas Nacionales de Formación
         </Typography>
-        
+
         <Slider />
       </div>
-      <footer className="bg-gray-900 text-white py-8 mt-16">
-        <div className="container mx-auto px-4 text-center">
-          <Typography variant="body1" className="mb-2">
-            © {new Date().getFullYear()} Universidad Politécnica Territorial.
-          </Typography>
-          <Typography variant="body2" className="text-gray-400">
-            Todos los derechos reservados.
-          </Typography>
-        </div>
-      </footer>
+      {/* Sección de núcleos */}
+      <div className="container mx-auto px-4 py-8">
+        <Typography variant="h2" component="h2" gutterBottom>
+          Núcleos de Nuestra Institución
+        </Typography>
+
+        <Nucleos />
+      </div>
+      {/* Footer */}
+        <Footer pages={pages}
+          backgroundColor={scrolled}
+        />
+      
     </>
   );
 }

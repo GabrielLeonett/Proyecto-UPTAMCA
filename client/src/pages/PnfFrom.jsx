@@ -26,7 +26,24 @@ export default function PnfForm() {
     setIsSubmitting(true);
     try {
       await registrarPnfApi({ data });
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: 'El PNF se guardó correctamente.',
+        confirmButtonColor: '#3085d6',
+      });
+
       reset();
+    } catch (error) {
+      console.error("❌ Error al guardar PNF:", error);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el PNF. Intenta nuevamente.',
+        confirmButtonColor: '#d33',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +111,7 @@ export default function PnfForm() {
               <Stack direction={{ xs: "column", md: "row" }} spacing={4}>
                 <CustomLabel
                   fullWidth
-                  label="Descripción (Opcional)"
+                  label="Descripción"
                   variant="outlined"
                   multiline
                   rows={3}

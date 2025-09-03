@@ -19,6 +19,9 @@ import UnidadCurricularForm from "./pages/UnidadCurricular";
 import Prueba from "./pages/prueba";
 import PNF from "./pages/PNF";
 import Horarios from "./pages/Horarios";
+import RegisterSede from "./pages/registerSede";
+
+
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +39,12 @@ import ProtectedViews from "./security/ProtectedViews";
 import Secciones from "./pages/Secciones";
 import Disponibilidad from "./pages/disponibilidadDoc";
 import EliminarProfesor from "./pages/eliminarProfesor";
+
+//Importacion para Politica de Privacidad
+import PoliticaPrivacidad from "./pages/poliPriv";
+import TerminosCondiciones from "./pages/terminosCondi";
+import Accesibilidad from "./pages/accesibilidad";
+
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -64,6 +73,22 @@ export default function App() {
                     ]}
                   >
                     <Profesores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/registerSede"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <RegisterSede />
                   </ProtectedViews>
                 }
               />
@@ -113,7 +138,7 @@ export default function App() {
               />
               <Route path="/Prueba" element={<Prueba />} />
               <Route
-                path="/PNF"
+                path="PNF/"
                 element={
                   <ProtectedViews
                     allowedRoles={[
@@ -178,7 +203,56 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
+              <Route
+                path="/politicaPrivacidad"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <PoliticaPrivacidad />
+                  </ProtectedViews>
+                }
+              />
 
+              <Route
+                path="/TerminosCondiciones"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <TerminosCondiciones />
+                  </ProtectedViews>
+                }
+              />
+
+              <Route
+                path="/Accesibilidad"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <Accesibilidad />
+                  </ProtectedViews>
+                }
+              />
 
               {/* Ruta para 404 */}
               <Route path="*" element={<NotFound />} />
