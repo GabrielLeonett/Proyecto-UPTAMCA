@@ -7208,90 +7208,16 @@ ALTER TABLE ONLY public.unidades_curriculares ALTER COLUMN id_unidad_curricular 
 -- Data for Name: areas_de_conocimiento; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.areas_de_conocimiento (id_area_conocimiento, nombre_area_conocimiento, created_at, updated_at) FROM stdin;
-1	Matematicas	2025-08-15 12:46:08.730855-04	2025-08-15 12:46:08.730855-04
-\.
 
 
---
--- TOC entry 5249 (class 0 OID 148566)
--- Dependencies: 256
--- Data for Name: aulas; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.aulas (id_aula, id_sede, codigo_aula, tipo_aula, capacidad_aula, activa, created_at, updated_at) FROM stdin;
-1	1	COM-701	Computación	25	t	2025-08-15 13:23:51.668226-04	2025-08-15 13:23:51.668226-04
-\.
-
-
---
--- TOC entry 5219 (class 0 OID 148264)
--- Dependencies: 226
--- Data for Name: categorias; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.categorias (id_categoria, nombre_categoria, descripcion_categoria, created_at, updated_at) FROM stdin;
-1	Instructor	\N	2025-08-15 12:42:26.312916-04	2025-08-15 12:42:26.312916-04
-2	Asistente	\N	2025-08-15 12:42:26.312916-04	2025-08-15 12:42:26.312916-04
-3	Agregado	\N	2025-08-15 12:42:26.312916-04	2025-08-15 12:42:26.312916-04
-4	Asociado	\N	2025-08-15 12:42:26.312916-04	2025-08-15 12:42:26.312916-04
-5	Titular	\N	2025-08-15 12:42:26.312916-04	2025-08-15 12:42:26.312916-04
-\.
-
-
---
--- TOC entry 5243 (class 0 OID 148510)
--- Dependencies: 250
--- Data for Name: coordinadores; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.coordinadores (id_coordinador, id_profesor, id_pnf, created_at, updated_at) FROM stdin;
-\.
-
-
---
--- TOC entry 5220 (class 0 OID 148276)
--- Dependencies: 227
--- Data for Name: dedicaciones; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.dedicaciones (id_dedicacion, nombre_dedicacion, horas_docencia_semanales, horas_administrativas_semanales, created_at, updated_at) FROM stdin;
-1	Convencional	07:00:00	00:00:00	2025-08-15 12:42:26.318119-04	2025-08-15 12:42:26.318119-04
-2	Medio Tiempo	12:00:00	06:00:00	2025-08-15 12:42:26.318119-04	2025-08-15 12:42:26.318119-04
-3	Tiempo Completo	14:00:00	16:00:00	2025-08-15 12:42:26.318119-04	2025-08-15 12:42:26.318119-04
-4	Exclusivo	18:00:00	18:00:00	2025-08-15 12:42:26.318119-04	2025-08-15 12:42:26.318119-04
-\.
-
-
---
--- TOC entry 5259 (class 0 OID 148915)
--- Dependencies: 266
--- Data for Name: disponibilidad_docente; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.disponibilidad_docente (id_disponibilidad, id_profesor, dia_semana, hora_inicio, hora_fin, created_at, updated_at) FROM stdin;
-1	1	Lunes	08:00:00	12:00:00	2025-08-15 14:25:16.557476-04	2025-08-15 14:25:16.557476-04
-\.
-
-
---
--- TOC entry 5261 (class 0 OID 148946)
--- Dependencies: 268
--- Data for Name: horarios; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.horarios (id_horario, seccion_id, profesor_id, aula_id, unidad_curricular_id, dia_semana, hora_inicio, hora_fin, activo, created_at, updated_at) FROM stdin;
+INSERT INTO public.horarios (id_horario, seccion_id, profesor_id, aula_id, unidad_curricular_id, dia_semana, hora_inicio, hora_fin, activo, created_at, updated_at) Values(
 1	1	1	1	1	Lunes	09:15:00	10:45:00	t	2025-08-15 18:54:59.168342-04	2025-08-15 18:54:59.168342-04
-\.
+);
 
 
---
--- TOC entry 5214 (class 0 OID 124462)
--- Dependencies: 221
--- Data for Name: knex_migrations; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.knex_migrations (id, name, batch, migration_time) FROM stdin;
+INSERT INTO public.knex_migrations (id, name, batch, migration_time) Values(
 657	023_create_disponibilidad_docente.js	3	2025-08-15 13:38:30.743-04
 658	022_create_horarios.js	4	2025-08-15 18:33:08.401-04
 625	001_create_areas_de_conocimiento.js	1	2025-08-15 12:42:16.682-04
@@ -7320,243 +7246,97 @@ COPY public.knex_migrations (id, name, batch, migration_time) FROM stdin;
 650	026_create_notification_roles.js	1	2025-08-15 12:42:17.323-04
 651	027_create_logs.js	1	2025-08-15 12:42:17.35-04
 652	028_create_usuario_rol.js	1	2025-08-15 12:42:17.367-04
-\.
+);
 
 
---
--- TOC entry 5216 (class 0 OID 124469)
--- Dependencies: 223
--- Data for Name: knex_migrations_lock; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.knex_migrations_lock (index, is_locked) FROM stdin;
+INSERT INTO public.knex_migrations_lock (index, is_locked) Values(
 1	0
-\.
+);
 
 
---
--- TOC entry 5256 (class 0 OID 148721)
--- Dependencies: 263
--- Data for Name: logs; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.logs (id, event_type, message, metadata, user_id, reference_id, created_at) FROM stdin;
-1	REGISTRO_EXITOSO	Sede registrada correctamente	{"id_sede": 1, "nombre_sede": "Sede Central", "ubicacion_sede": "Av. Principal 123, Ciudad"}	999999999	{id_sede:1, nombre_sede:Sede Central}	2025-08-15 12:42:45.233066-04
-2	VALIDACION_FALLIDA	Trayecto no encontrado	{"id_trayecto": 1}	\N	distribucion_secciones	2025-08-15 12:42:51.39349-04
-3	REGISTRO_EXITOSO	PNF registrado correctamente	{"id_pnf": 1, "codigo_pnf": "INF-01", "nombre_pnf": "Informática"}	999999999	{id_pnf:1}	2025-08-15 12:43:19.939281-04
-4	REGISTRO_EXITOSO	Unidad curricular registrada correctamente	{"id_unidad": 1, "id_trayecto": 1, "nombre_unidad": "Matemáticas Avanzadas"}	999999999	{id_unidad_curricular:1}	2025-08-15 12:43:36.193866-04
-5	SECCIONES_ACTUALIZADAS	Cupos de secciones actualizados	{"id_trayecto": 1, "secciones_con_extra": 0, "secciones_actualizadas": 0, "estudiantes_por_seccion": 40}	\N	distribucion_secciones	2025-08-15 12:43:58.583589-04
-6	SECCIONES_CREADAS	Nuevas secciones creadas	{"id_trayecto": 1, "secciones_creadas": 5, "estudiantes_por_seccion": 40}	\N	distribucion_secciones	2025-08-15 12:43:58.583589-04
-7	SECCIONES_ACTUALIZADAS	Cupos de secciones actualizados	{"id_trayecto": 1, "secciones_con_extra": 0, "secciones_actualizadas": 5, "estudiantes_por_seccion": 40}	\N	distribucion_secciones	2025-08-15 12:44:28.690018-04
-8	VALIDATION_ERROR	Pre-Grado no encontrado al registrar profesor: Ingeniería En Informática	{"id_pre_grado": "3"}	999999999	\N	2025-08-15 12:45:26.530635-04
-9	REGISTRO_EXITOSO	Pre-Grado registrado correctamente	{"id_pre_grado": 1, "tipo_pre_grado": "Ingeniería", "nombre_pre_grado": "En informática"}	999999999	{id_pre_grado:1}	2025-08-15 12:46:01.695748-04
-10	REGISTRO_EXITOSO	Pos-Grado registrado correctamente	{"id_pos_grado": 1, "tipo_pos_grado": "Especialización", "nombre_pos_grado": "En IA"}	999999999	{id_pos_grado:1}	2025-08-15 12:46:05.308332-04
-11	REGISTRO_EXITOSO	Area de conocimiento registrada correctamente	{"id_area": 1, "nombre_area": "Matematicas"}	999999999	{id_area_conocimiento:1}	2025-08-15 12:46:08.730855-04
-12	REGISTRO_EXITOSO	Profesor y usuario registrados correctamente	{"email": "delegadogabrielleonett@gmail.com", "pos_grados": [1], "pre_grados": [1], "id_profesor": 1, "areas_conocimiento": [1]}	999999999	{id_profesor:1}	2025-08-15 12:46:12.528075-04
-13	DUPLICATE_ENTRY	Intento de registrar usuario con email existente	{"email": "delegadogabrielleonett@gmail.com"}	999999999	\N	2025-08-15 12:46:31.978127-04
-14	VALIDATION_ERROR	Sección sin turno asignado	{"id_seccion": 1}	999999999	\N	2025-08-15 12:46:49.450156-04
-15	VALIDACION_FALLIDA	La sección no tiene un turno asignado	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "07:00:00", "profesor_id": 1, "codigo_error": "SECCION_SIN_TURNO", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 12:46:49.450156-04
-16	ERROR_NO_CONTROLADO	Error inesperado en registro: no existe la columna «aula» en la relación «horarios»	{"tipo_error": "OTRO_ERROR", "error_context": "función PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 56 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 12:54:01.892542-04
-17	ERROR_NO_CONTROLADO	Error inesperado en registro: no existe la columna «id_aula» en la relación «horarios»	{"tipo_error": "OTRO_ERROR", "error_context": "función PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 56 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 12:55:02.305437-04
-18	ERROR_NO_CONTROLADO	Error inesperado en registro: el valor nulo en la columna «id_horario» de la relación «horarios» viola la restricción de no nulo	{"tipo_error": "OTRO_ERROR", "error_context": "sentencia SQL: «INSERT INTO horarios (\\n            seccion_id,\\n            profesor_id,\\n            unidad_curricular_id,\\n            dia_semana,\\n            hora_inicio,\\n            hora_fin,\\n            id_aula,\\n            activo\\n        ) VALUES (\\n            p_id_seccion,\\n            p_id_profesor,\\n            p_unidad_curricular_id,\\n            p_dia_semana,\\n            p_hora_inicio,\\n           \\tv_validacion.hora_fin_validada,\\n            p_id_aula,\\n            p_activo\\n        ) RETURNING id_horario»\\nfunción PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 56 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 12:56:08.442088-04
-31	VALIDACION_FALLIDA	El profesor no está disponible en el horario solicitado	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "09:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_HORARIO", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:26:04.153559-04
-19	REGISTRO_FALLIDO	Violación de clave foránea: inserción o actualización en la tabla «horarios» viola la llave foránea «horarios_id_aula_foreign»	{"tipo_error": "FOREIGN_KEY_VIOLATION", "error_context": "sentencia SQL: «INSERT INTO horarios (\\n            seccion_id,\\n            profesor_id,\\n            unidad_curricular_id,\\n            dia_semana,\\n            hora_inicio,\\n            hora_fin,\\n            id_aula,\\n            activo\\n        ) VALUES (\\n            p_id_seccion,\\n            p_id_profesor,\\n            p_unidad_curricular_id,\\n            p_dia_semana,\\n            p_hora_inicio,\\n           \\tv_validacion.hora_fin_validada,\\n            p_id_aula,\\n            p_activo\\n        ) RETURNING id_horario»\\nfunción PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 56 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 13:12:04.289994-04
-20	ERROR_NO_CONTROLADO	Error inesperado en registro: el valor nulo en la columna «id_horario» de la relación «horarios» viola la restricción de no nulo	{"tipo_error": "OTRO_ERROR", "error_context": "sentencia SQL: «INSERT INTO horarios (\\n            seccion_id,\\n            profesor_id,\\n            unidad_curricular_id,\\n            dia_semana,\\n            hora_inicio,\\n            hora_fin,\\n            aula_id,\\n            activo\\n        ) VALUES (\\n            p_id_seccion,\\n            p_id_profesor,\\n            p_unidad_curricular_id,\\n            p_dia_semana,\\n            p_hora_inicio,\\n           \\tv_validacion.hora_fin_validada,\\n            p_id_aula,\\n            p_activo\\n        ) RETURNING id_horario»\\nfunción PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 55 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 13:15:56.939025-04
-21	REGISTRO_FALLIDO	Violación de clave foránea: inserción o actualización en la tabla «horarios» viola la llave foránea «horarios_aula_id_foreign»	{"tipo_error": "FOREIGN_KEY_VIOLATION", "error_context": "sentencia SQL: «INSERT INTO horarios (\\n            seccion_id,\\n            profesor_id,\\n            unidad_curricular_id,\\n            dia_semana,\\n            hora_inicio,\\n            hora_fin,\\n            aula_id,\\n            activo\\n        ) VALUES (\\n            p_id_seccion,\\n            p_id_profesor,\\n            p_unidad_curricular_id,\\n            p_dia_semana,\\n            p_hora_inicio,\\n           \\tv_validacion.hora_fin_validada,\\n            p_id_aula,\\n            p_activo\\n        ) RETURNING id_horario»\\nfunción PL/pgSQL registrar_horario_completo(integer,bigint,bigint,bigint,bigint,character varying,time without time zone,boolean,jsonb) en la línea 55 en sentencia SQL\\nsentencia SQL: «CALL public.registrar_horario_completo(\\n        p_usuario_accion := 999999999,                     -- ID usuario administrador\\n        p_id_seccion := 1,                        -- ID sección existente\\n        p_id_profesor := 1,                      -- ID profesor existente\\n        p_unidad_curricular_id := 1,               -- ID unidad curricular existente\\n        p_dia_semana := 'Lunes',                   -- Día de la semana\\n        p_hora_inicio := '07:00:00',               -- Hora inicio\\n        p_id_aula := 1,                         -- Aula\\n        p_activo := true,                          -- Horario activo\\n        p_resultado := resultado                   -- Parámetro OUT\\n    )»\\nfunción PL/pgSQL inline_code_block en la línea 5 en CALL", "datos_solicitud": {"seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}}	999999999	horario	2025-08-15 13:16:28.842963-04
-22	VALIDATION_ERROR	Aula no existe	{"id_aula": 1}	999999999	\N	2025-08-15 13:23:06.650851-04
-23	VALIDACION_FALLIDA	El aula especificada no existe	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "07:00:00", "profesor_id": 1, "codigo_error": "AULA_NO_EXISTE", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 13:23:06.650851-04
-24	REGISTRO_EXITOSO	Aula registrada correctamente	{"id_aula": 1, "tipo_aula": "Computación", "codigo_aula": "COM-701", "capacidad_aula": 25}	999999999	{id_aula:1, codigo_aula:COM-701}	2025-08-15 13:23:51.668226-04
-25	REGISTRO_EXITOSO	Horario registrado correctamente	{"id_horario": 2, "seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}	999999999	{id_horario:2}	2025-08-15 13:23:59.475856-04
-26	ERROR_NO_CONTROLADO	Error inesperado en registro: no existe la columna «activo» en la relación «disponibilidad_docente»	{"tipo_error": "OTRO_ERROR", "error_context": "función PL/pgSQL registrar_disponibilidad_docente_completo(integer,integer,character varying,time without time zone,time without time zone) en la línea 100 en sentencia SQL"}	999999999	disponibilidad_docente	2025-08-15 14:25:00.22899-04
-27	REGISTRO_EXITOSO	Disponibilidad docente registrada correctamente	{"horario": "08:00:00 - 12:00:00", "dia_semana": "Lunes", "id_profesor": 1, "horas_totales": "04:00:00", "horas_restantes": "03:00:00", "id_disponibilidad": 1}	999999999	{id_disponibilidad:1, id_profesor:1}	2025-08-15 14:25:16.557476-04
-28	VALIDATION_ERROR	Conflicto de horario	{"conflictos": 1, "dia_semana": "Lunes", "id_profesor": 1, "hora_fin_solicitada": "09:15:00", "hora_inicio_solicitada": "07:00:00"}	999999999	\N	2025-08-15 18:25:10.465398-04
-29	VALIDACION_FALLIDA	El profesor no está disponible en el horario solicitado	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "07:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_HORARIO", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:25:10.465398-04
-30	VALIDATION_ERROR	Conflicto de horario	{"conflictos": 1, "dia_semana": "Lunes", "id_profesor": 1, "hora_fin_solicitada": "11:15:00", "hora_inicio_solicitada": "09:00:00"}	999999999	\N	2025-08-15 18:26:04.153559-04
-32	VALIDATION_ERROR	Conflicto de horario para sección	{"hora_fin": "11:15:00", "conflictos": 1, "dia_semana": "Lunes", "hora_inicio": "09:00:00"}	999999999	\N	2025-08-15 18:30:21.87948-04
-33	VALIDACION_FALLIDA	La sección tiene un conflicto de horario en ese intervalo	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "09:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_SECCION", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:30:21.87948-04
-34	VALIDATION_ERROR	Conflicto de horario	{"conflictos": 1, "dia_semana": "Lunes", "id_profesor": 1, "hora_fin_solicitada": "11:15:00", "hora_inicio_solicitada": "09:00:00"}	999999999	\N	2025-08-15 18:34:03.583908-04
-35	VALIDACION_FALLIDA	El profesor no está disponible en el horario solicitado	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "09:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_HORARIO", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:34:03.583908-04
-36	VALIDATION_ERROR	Conflicto de horario	{"conflictos": 1, "dia_semana": "Lunes", "id_profesor": 1, "hora_fin_solicitada": "11:15:00", "hora_inicio_solicitada": "09:00:00"}	999999999	\N	2025-08-15 18:39:29.895674-04
-37	VALIDACION_FALLIDA	El profesor no está disponible en el horario solicitado	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "09:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_HORARIO", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:39:29.895674-04
-38	REGISTRO_EXITOSO	Horario registrado correctamente	{"id_horario": 1, "seccion_id": 1, "profesor_id": 1, "unidad_curricular_id": 1}	999999999	{id_horario:1}	2025-08-15 18:54:59.168342-04
-39	VALIDATION_ERROR	Conflicto de horario para sección	{"hora_fin": "11:15:00", "conflictos": 1, "dia_semana": "Lunes", "hora_inicio": "09:00:00"}	999999999	\N	2025-08-15 18:55:26.581933-04
-40	VALIDACION_FALLIDA	La sección tiene un conflicto de horario en ese intervalo	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "09:00:00", "profesor_id": 1, "codigo_error": "CONFLICTO_SECCION", "unidad_curricular_id": 1}	999999999	horario	2025-08-15 18:55:26.581933-04
-41	REGISTRO_EXITOSO	PNF registrado correctamente	{"id_pnf": 2, "codigo_pnf": "ISW01", "nombre_pnf": "Ingeniería de Software"}	999999999	{id_pnf:2}	2025-08-16 11:53:52.880988-04
-42	REGISTRO_EXITOSO	Unidad curricular registrada correctamente	{"id_unidad": 2, "id_trayecto": 2, "nombre_unidad": "Programación Orientada a Objetos"}	999999999	{id_unidad_curricular:2}	2025-08-16 11:56:24.718335-04
-43	VALIDATION_ERROR	Aula no existe	{"id_aula": 3}	999999999	\N	2025-08-16 16:31:33.374958-04
-44	VALIDACION_FALLIDA	El aula especificada no existe	{"dia_semana": "Lunes", "seccion_id": 1, "hora_inicio": "10:20:00", "profesor_id": 1, "codigo_error": "AULA_NO_EXISTE", "unidad_curricular_id": 1}	999999999	horario	2025-08-16 16:31:33.374958-04
-45	VALIDATION_ERROR	Sección sin turno asignado	{"id_seccion": 2}	999999999	\N	2025-08-16 16:31:50.511334-04
-46	VALIDACION_FALLIDA	La sección no tiene un turno asignado	{"dia_semana": "Lunes", "seccion_id": 2, "hora_inicio": "10:20:00", "profesor_id": 1, "codigo_error": "SECCION_SIN_TURNO", "unidad_curricular_id": 1}	999999999	horario	2025-08-16 16:31:50.511334-04
-48	ERROR_OPERACION	Error durante la distribución de estudiantes	{"error": "el valor es demasiado largo para el tipo character varying(1)", "detalle": "", "contexto": "sentencia SQL: «INSERT INTO secciones (\\n                        valor_seccion, \\n                        id_trayecto, \\n\\t\\t\\t\\t\\t\\tid_turno,\\n                        cupos_disponibles,\\n                        created_at, \\n                        updated_at\\n                    ) VALUES (\\n                        v_valor_seccion, \\n                        p_id_trayecto,\\n\\t\\t\\t\\t\\t\\t0,\\n                        v_estudiantes_por_seccion + \\n                        CASE WHEN v_contador <= v_resto_estudiantes THEN 1 ELSE 0 END,\\n                        CURRENT_TIMESTAMP, \\n                        CURRENT_TIMESTAMP\\n                    )»\\nfunción PL/pgSQL distribuir_estudiantes_secciones(integer,integer) en la línea 142 en sentencia SQL", "id_trayecto": 1}	\N	distribucion_secciones	2025-08-16 18:07:29.224583-04
-50	ERROR_OPERACION	Error durante la distribución de estudiantes	{"error": "el valor es demasiado largo para el tipo character varying(1)", "detalle": "", "contexto": "sentencia SQL: «INSERT INTO secciones (\\n                        valor_seccion, \\n                        id_trayecto, \\n\\t\\t\\t\\t\\t\\tid_turno,\\n                        cupos_disponibles,\\n                        created_at, \\n                        updated_at\\n                    ) VALUES (\\n                        v_valor_seccion, \\n                        p_id_trayecto,\\n\\t\\t\\t\\t\\t\\t0,\\n                        v_estudiantes_por_seccion + \\n                        CASE WHEN v_contador <= v_resto_estudiantes THEN 1 ELSE 0 END,\\n                        CURRENT_TIMESTAMP, \\n                        CURRENT_TIMESTAMP\\n                    )»\\nfunción PL/pgSQL distribuir_estudiantes_secciones(integer,integer) en la línea 142 en sentencia SQL", "id_trayecto": 1}	\N	distribucion_secciones	2025-08-16 18:09:16.850723-04
-51	SECCIONES_ELIMINADAS	Secciones eliminadas por exceso	{"id_trayecto": 1, "secciones_eliminadas": 2}	\N	distribucion_secciones	2025-08-16 18:10:32.579341-04
-52	SECCIONES_ACTUALIZADAS	Cupos de secciones actualizados	{"id_trayecto": 1, "secciones_con_extra": 1, "secciones_actualizadas": 3, "estudiantes_por_seccion": 33}	\N	distribucion_secciones	2025-08-16 18:10:32.579341-04
-54	ERROR_OPERACION	Error durante la distribución de estudiantes	{"error": "el valor es demasiado largo para el tipo character varying(1)", "detalle": "", "contexto": "sentencia SQL: «INSERT INTO secciones (\\n                        valor_seccion, \\n                        id_trayecto, \\n\\t\\t\\t\\t\\t\\tid_turno,\\n                        cupos_disponibles,\\n                        created_at, \\n                        updated_at\\n                    ) VALUES (\\n                        v_valor_seccion, \\n                        p_id_trayecto,\\n\\t\\t\\t\\t\\t\\t0,\\n                        v_estudiantes_por_seccion + \\n                        CASE WHEN v_contador <= v_resto_estudiantes THEN 1 ELSE 0 END,\\n                        CURRENT_TIMESTAMP, \\n                        CURRENT_TIMESTAMP\\n                    )»\\nfunción PL/pgSQL distribuir_estudiantes_secciones(integer,integer) en la línea 142 en sentencia SQL", "id_trayecto": 1}	\N	distribucion_secciones	2025-08-16 18:10:54.003285-04
-55	SECCIONES_ACTUALIZADAS	Cupos de secciones actualizados	{"id_trayecto": 1, "secciones_con_extra": 0, "secciones_actualizadas": 3, "estudiantes_por_seccion": 40}	\N	distribucion_secciones	2025-08-17 11:31:24.433621-04
-56	SECCIONES_CREADAS	Nuevas secciones creadas	{"id_trayecto": 1, "secciones_creadas": 7, "estudiantes_por_seccion": 40}	\N	distribucion_secciones	2025-08-17 11:31:24.433621-04
-57	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 1}	999999999	{id_seccion:1, id_turno:1}	2025-08-17 12:02:54.75353-04
-58	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 1}	999999999	{id_seccion:1, id_turno:1}	2025-08-17 12:45:09.60744-04
-59	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 1}	999999999	{id_seccion:1, id_turno:1}	2025-08-17 12:45:31.88489-04
-60	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 1}	999999999	{id_seccion:1, id_turno:1}	2025-08-17 12:45:56.645201-04
-61	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 1}	999999999	{id_seccion:1, id_turno:1}	2025-08-17 12:46:37.555827-04
-62	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 2}	999999999	{id_seccion:2, id_turno:1}	2025-08-17 12:47:02.386833-04
-63	ASIGNACION_EXITOSA	Turno asignado a sección correctamente	{"id_turno": 1, "id_seccion": 3}	999999999	{id_seccion:3, id_turno:1}	2025-08-17 12:47:14.36611-04
-64	DUPLICATE_ENTRY	Unidad curricular duplicada	{"id_trayecto": 2, "nombre_unidad": "Programación Orientada a Objetos"}	999999999	\N	2025-08-25 16:23:43.243339-04
-\.
+INSERT INTO public.notification_recipients (notification_id, user_id, is_read) Values(
+);
 
 
---
--- TOC entry 5253 (class 0 OID 148688)
--- Dependencies: 260
--- Data for Name: notification_recipients; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.notification_recipients (notification_id, user_id, is_read) FROM stdin;
-\.
+INSERT INTO public.notification_roles (notification_id, role_id) Values(
+);
 
 
---
--- TOC entry 5254 (class 0 OID 148705)
--- Dependencies: 261
--- Data for Name: notification_roles; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.notification_roles (notification_id, role_id) FROM stdin;
-\.
+INSERT INTO public.notifications (id, user_id, type, title, body, is_read, read_at, metadata, created_at, is_mass, mass_parent_id) Values(
+);
 
 
---
--- TOC entry 5252 (class 0 OID 148665)
--- Dependencies: 259
--- Data for Name: notifications; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.notifications (id, user_id, type, title, body, is_read, read_at, metadata, created_at, is_mass, mass_parent_id) FROM stdin;
-\.
-
-
---
--- TOC entry 5229 (class 0 OID 148345)
--- Dependencies: 236
--- Data for Name: pnfs; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.pnfs (id_pnf, codigo_pnf, nombre_pnf, id_sede, descripcion_pnf, poblacion_estudiantil_pnf, activo, created_at, updated_at) FROM stdin;
-1	INF-01	Informática	1	Programación y sistemas	0	t	2025-08-15 12:43:19.939281-04	2025-08-15 12:43:19.939281-04
+INSERT INTO public.pnfs (id_pnf, codigo_pnf, nombre_pnf, id_sede, descripcion_pnf, poblacion_estudiantil_pnf, activo, created_at, updated_at) Values(
+1	,INF-01	Informática	1	Programación y sistemas	0	t	2025-08-15 12:43:19.939281-04	2025-08-15 12:43:19.939281-04
 2	ISW01	Ingeniería de Software	1	Programa académico enfocado en el desarrollo de sistemas de software de calidad, abarcando desde el análisis de requerimientos hasta el despliegue y mantenimiento de aplicaciones.	0	t	2025-08-16 11:53:52.880988-04	2025-08-16 11:53:52.880988-04
-\.
+);
 
 
---
--- TOC entry 5222 (class 0 OID 148287)
--- Dependencies: 229
--- Data for Name: pos_grado; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.pos_grado (id_pos_grado, nombre_pos_grado, tipo_pos_grado, created_at, updated_at) FROM stdin;
+INSERT INTO public.pos_grado (id_pos_grado, nombre_pos_grado, tipo_pos_grado, created_at, updated_at) Values(
 1	En IA	Especialización	2025-08-15 12:46:05.308332-04	2025-08-15 12:46:05.308332-04
-\.
+);
 
 
---
--- TOC entry 5224 (class 0 OID 148301)
--- Dependencies: 231
--- Data for Name: pre_grado; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.pre_grado (id_pre_grado, nombre_pre_grado, tipo_pre_grado, created_at, updated_at) FROM stdin;
+INSERT INTO public.pre_grado (id_pre_grado, nombre_pre_grado, tipo_pre_grado, created_at, updated_at) Values(
 1	En informática	Ingeniería	2025-08-15 12:46:01.695748-04	2025-08-15 12:46:01.695748-04
-\.
+);
 
 
---
--- TOC entry 5234 (class 0 OID 148414)
--- Dependencies: 241
--- Data for Name: profesor_area_conocimiento; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.profesor_area_conocimiento (id, profesor_id, area_id, created_at, updated_at) FROM stdin;
+INSERT INTO public.profesor_area_conocimiento (id, profesor_id, area_id, created_at, updated_at) Values(
 1	1	1	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5232 (class 0 OID 148396)
--- Dependencies: 239
--- Data for Name: profesores; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.profesores (id_profesor, id_cedula, fecha_ingreso, created_at, updated_at) FROM stdin;
+INSERT INTO public.profesores (id_profesor, id_cedula, fecha_ingreso, created_at, updated_at) Values(
 1	31264460	2021-03-11	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5236 (class 0 OID 148435)
--- Dependencies: 243
--- Data for Name: relacion_categoria_profesor; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.relacion_categoria_profesor (id, profesor_id, categoria_id, fecha_inicio, fecha_fin, created_at, updated_at) FROM stdin;
+INSERT INTO public.relacion_categoria_profesor (id, profesor_id, categoria_id, fecha_inicio, fecha_fin, created_at, updated_at) Values(
 1	1	1	2021-03-11	\N	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5238 (class 0 OID 148454)
--- Dependencies: 245
--- Data for Name: relacion_dedicacion_profesor; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.relacion_dedicacion_profesor (id, profesor_id, dedicacion_id, fecha_inicio, fecha_fin, created_at, updated_at) FROM stdin;
+INSERT INTO public.relacion_dedicacion_profesor (id, profesor_id, dedicacion_id, fecha_inicio, fecha_fin, created_at, updated_at) Values(
 1	1	1	2021-03-11	\N	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5240 (class 0 OID 148473)
--- Dependencies: 247
--- Data for Name: relacion_profesor_pos_grado; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.relacion_profesor_pos_grado (id_r_pos_grado_profesor, profesor_id, pos_grado_id, created_at, updated_at) FROM stdin;
+INSERT INTO public.relacion_profesor_pos_grado (id_r_pos_grado_profesor, profesor_id, pos_grado_id, created_at, updated_at) Values(
 1	1	1	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5242 (class 0 OID 148492)
--- Dependencies: 249
--- Data for Name: relacion_profesor_pre_grado; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.relacion_profesor_pre_grado (id_r_pre_grado_profesor, profesor_id, pre_grado_id, created_at, updated_at) FROM stdin;
+INSERT INTO public.relacion_profesor_pre_grado (id_r_pre_grado_profesor, profesor_id, pre_grado_id, created_at, updated_at) Values(
 1	1	1	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5225 (class 0 OID 148314)
--- Dependencies: 232
--- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.roles (id_rol, nombre_rol, created_at, updated_at) FROM stdin;
+INSERT INTO public.roles (id_rol, nombre_rol, created_at, updated_at) Values(
 1	Vicerrector	2025-08-15 12:42:26.305255-04	2025-08-15 12:42:26.305255-04
 2	Director General de Gestión Curricular	2025-08-15 12:42:26.305255-04	2025-08-15 12:42:26.305255-04
 3	Profesor	2025-08-15 12:42:26.305255-04	2025-08-15 12:42:26.305255-04
 4	Coordinador	2025-08-15 12:42:26.305255-04	2025-08-15 12:42:26.305255-04
 20	SuperAdmin	2025-08-15 12:42:26.305255-04	2025-08-15 12:42:26.305255-04
-\.
+);
 
 
---
--- TOC entry 5251 (class 0 OID 148586)
--- Dependencies: 258
--- Data for Name: secciones; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.secciones (id_seccion, valor_seccion, id_trayecto, id_turno, cupos_disponibles, created_at, updated_at) FROM stdin;
+INSERT INTO public.secciones (id_seccion, valor_seccion, id_trayecto, id_turno, cupos_disponibles, created_at, updated_at) Values(
 21	4	1	0	40	2025-08-17 11:31:24.433621-04	2025-08-17 11:31:24.433621-04
 22	5	1	0	40	2025-08-17 11:31:24.433621-04	2025-08-17 11:31:24.433621-04
 23	6	1	0	40	2025-08-17 11:31:24.433621-04	2025-08-17 11:31:24.433621-04
@@ -7567,27 +7347,17 @@ COPY public.secciones (id_seccion, valor_seccion, id_trayecto, id_turno, cupos_d
 1	1	1	1	40	2025-08-15 12:43:58.583589-04	2025-08-17 11:31:24.433621-04
 2	2	1	1	40	2025-08-15 12:43:58.583589-04	2025-08-17 11:31:24.433621-04
 3	3	1	1	40	2025-08-15 12:43:58.583589-04	2025-08-17 11:31:24.433621-04
-\.
+);
 
 
---
--- TOC entry 5226 (class 0 OID 148323)
--- Dependencies: 233
--- Data for Name: sedes; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.sedes (id_sede, nombre_sede, ubicacion_sede, google_sede, created_at, updated_at) FROM stdin;
+INSERT INTO public.sedes (id_sede, nombre_sede, ubicacion_sede, google_sede, created_at, updated_at) Values(
 1	Sede Central	Av. Principal 123, Ciudad	google-maps-id-123	2025-08-15 12:42:45.233066-04	2025-08-15 12:42:45.233066-04
-\.
+);
 
 
---
--- TOC entry 5245 (class 0 OID 148528)
--- Dependencies: 252
--- Data for Name: trayectos; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.trayectos (id_trayecto, poblacion_estudiantil, valor_trayecto, id_pnf, created_at, updated_at) FROM stdin;
+INSERT INTO public.trayectos (id_trayecto, poblacion_estudiantil, valor_trayecto, id_pnf, created_at, updated_at) Values(
 1	0	I	1	2025-08-15 12:43:19.939281-04	2025-08-15 12:43:19.939281-04
 2	0	II	1	2025-08-15 12:43:19.939281-04	2025-08-15 12:43:19.939281-04
 3	0	III	1	2025-08-15 12:43:19.939281-04	2025-08-15 12:43:19.939281-04
@@ -7596,81 +7366,47 @@ COPY public.trayectos (id_trayecto, poblacion_estudiantil, valor_trayecto, id_pn
 6	0	II	2	2025-08-16 11:53:52.880988-04	2025-08-16 11:53:52.880988-04
 7	0	III	2	2025-08-16 11:53:52.880988-04	2025-08-16 11:53:52.880988-04
 8	0	IV	2	2025-08-16 11:53:52.880988-04	2025-08-16 11:53:52.880988-04
-\.
+);
 
 
---
--- TOC entry 5227 (class 0 OID 148337)
--- Dependencies: 234
--- Data for Name: turnos; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.turnos (id_turno, nombre_turno, inicio_hora, fin_hora, created_at, updated_at) FROM stdin;
+INSERT INTO public.turnos (id_turno, nombre_turno, inicio_hora, fin_hora, created_at, updated_at) Values(
 1	Matutino	07:00:00	12:15:00	2025-08-15 12:42:26.315866-04	2025-08-15 12:42:26.315866-04
 2	Vespertino	12:30:00	18:00:00	2025-08-15 12:42:26.315866-04	2025-08-15 12:42:26.315866-04
 3	Nocturno	18:00:00	21:30:00	2025-08-15 12:42:26.315866-04	2025-08-15 12:42:26.315866-04
 0	Por Asignar	00:00:00	23:59:59	2025-08-16 17:16:55.843379-04	2025-08-16 17:16:55.843379-04
-\.
+);
 
 
---
--- TOC entry 5247 (class 0 OID 148545)
--- Dependencies: 254
--- Data for Name: unidades_curriculares; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.unidades_curriculares (id_unidad_curricular, id_trayecto, codigo_unidad, nombre_unidad_curricular, descripcion_unidad_curricular, horas_clase, created_at, updated_at) FROM stdin;
+INSERT INTO public.unidades_curriculares (id_unidad_curricular, id_trayecto, codigo_unidad, nombre_unidad_curricular, descripcion_unidad_curricular, horas_clase, created_at, updated_at) Values(
 1	1	MAT-313	Matemáticas Avanzadas	Curso de matemáticas para el tercer trayecto	3	2025-08-15 12:43:36.193866-04	2025-08-15 12:43:36.193866-04
 2	2	POO-J1	Programación Orientada a Objetos	Principios de POO con implementación en Java	75	2025-08-16 11:56:24.718335-04	2025-08-16 11:56:24.718335-04
-\.
+);
 
 
---
--- TOC entry 5230 (class 0 OID 148380)
--- Dependencies: 237
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.users (cedula, nombres, apellidos, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero, email, activo, last_login, created_at, updated_at) FROM stdin;
+INSERT INTO public.users (cedula, nombres, apellidos, direccion, password, telefono_movil, telefono_local, fecha_nacimiento, genero, email, activo, last_login, created_at, updated_at) Values(
 999999999	Super	Administrador	Servidor Principal	$2b$10$Uuu1S7WjZa/QLhqgghBlL.m9ualGFB/7aWu0KIgt/ZH.3XOV5IKxy	04141234567	\N	1985-01-01	masculino	superadmin@uptamca.ve	t	2025-08-15 12:42:26.299797-04	2025-08-15 12:42:26.299797-04	2025-08-15 12:42:26.299797-04
 31264460	Gabriel Dayer	Leonett Armas	Av. Bermúdez, Los Teques	$2b$10$ly/bnIbYqLnhqvCRlCwEkOGi9hCGyQqqxf3ZKEpoV7XGeWEDEnQY2	04142245310	\N	2004-11-11	masculino	delegadogabrielleonett@gmail.com	t	\N	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5257 (class 0 OID 148737)
--- Dependencies: 264
--- Data for Name: usuario_rol; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
-COPY public.usuario_rol (usuario_id, rol_id, created_at, updated_at) FROM stdin;
+INSERT INTO public.usuario_rol (usuario_id, rol_id, created_at, updated_at) Values(
 999999999	20	2025-08-15 12:42:26.30796-04	2025-08-15 12:42:26.30796-04
 31264460	3	2025-08-15 12:46:12.528075-04	2025-08-15 12:46:12.528075-04
-\.
+);
 
 
---
--- TOC entry 5479 (class 0 OID 0)
--- Dependencies: 224
--- Name: areas_de_conocimiento_id_area_conocimiento_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
 
 SELECT pg_catalog.setval('public.areas_de_conocimiento_id_area_conocimiento_seq', 1, true);
 
 
---
--- TOC entry 5480 (class 0 OID 0)
--- Dependencies: 255
--- Name: aulas_id_aula_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
 
 SELECT pg_catalog.setval('public.aulas_id_aula_seq', 1, true);
 
 
---
--- TOC entry 5481 (class 0 OID 0)
--- Dependencies: 265
--- Name: disponibilidad_docente_id_disponibilidad_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
 SELECT pg_catalog.setval('public.disponibilidad_docente_id_disponibilidad_seq', 1, true);

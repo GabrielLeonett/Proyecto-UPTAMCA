@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Box, Typography, Stack } from '@mui/material';
+import Swal from 'sweetalert2';
 import CustomButton from '../components/customButton';
 import CustomLabel from '../components/customLabel';
 import ResponsiveAppBar from "../components/navbar";
-import PNFSchema from '../schemas/PnfSchema';
+import PNFSchema from '../schemas/PNFSchema';
 import { registrarPnfApi } from '../apis/PNFApi';
 
 export default function PnfForm() {
@@ -36,7 +37,7 @@ export default function PnfForm() {
     reset,
     formState: { errors, isValid }
   } = useForm({
-    resolver: zodResolver(PNFSchema),
+    resolver: zodResolver(PNFSchema.omit({ poblacionPNF: true })), // quitamos población
     mode: 'onChange'
   });
 
@@ -44,7 +45,24 @@ export default function PnfForm() {
     setIsSubmitting(true);
     try {
       await registrarPnfApi({ data });
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Registro exitoso!',
+        text: 'El PNF se guardó correctamente.',
+        confirmButtonColor: '#3085d6',
+      });
+
       reset();
+    } catch (error) {
+      console.error("❌ Error al guardar PNF:", error);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el PNF. Intenta nuevamente.',
+        confirmButtonColor: '#d33',
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -55,10 +73,12 @@ export default function PnfForm() {
       <ResponsiveAppBar pages={pages} backgroundColor />
 
       <Box sx={{ pt: 12, px: 4, pb: 10 }}>
-        <Typography variant="h2"
+        <Typography
+          variant="h2"
           component="h1"
           gutterBottom
-          sx={{ mt: 6, ml: 6 }}>
+          sx={{ mt: 6, ml: 6 }}
+        >
           Registrar PNF
         </Typography>
 
@@ -102,16 +122,17 @@ export default function PnfForm() {
                 />
               </Stack>
 
-              {/* Fila 2: Población y Descripción */}
+              {/* Fila 2: Descripción */}
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
-
                 <CustomLabel
                   fullWidth
-                  label="Descripción (Opcional)"
+                  label="Descripción"
                   variant="outlined"
                   multiline
                   rows={3}
                   {...register('descripcion')}
+                  error={!!errors.descripcion}
+                  helperText={errors.descripcion?.message || 'Describe el PNF brevemente'}
                 />
               </Stack>
 

@@ -9,6 +9,8 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Badge from '@mui/material/Badge';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import * as React from 'react';
 import LogoSimple from './ui/logoSimple';
 import LogoTexto from './ui/logoTexto';
@@ -216,7 +218,7 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
                     <Box sx={{ flexGrow: 0 }}>
                         {/* Notificaciones */}
                         <IconButton sx={{ color: 'white' }}>
-                            <Badge badgeContent={3} color="error">
+                            <Badge badgeContent={4} color="error">
                                 <NotificationsIcon />
                             </Badge>
                         </IconButton>

@@ -13,9 +13,16 @@ import FormatResponseModel from "../utils/FormatResponseModel.js";
  */
 
 export default class SedeModel {
-    static async registerSede({nombreSede, UbicacionSede, GoogleSede}) {
-        const resultado = await db.raw('SELECT id_sede FROM sedes GROUP BY DESC LIMIT 1;');
-        const id_sede = resultado.rows[0].id_sede + 1;
-        const { rows } = await db.raw('',)
+    static async registerSede({usuarioAccion, data}) {
+        const { nombreSede, UbicacionSede, GoogleSede } = data;
+        try {
+            const idSede = await db.raw("SELECT COUNT(*) + 1 AS id FROM sedes"); 
+            const {rows} = await db.raw("CALL public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)", [usuarioAccion, idSede.rows[0].id, nombreSede, UbicacionSede, GoogleSede]);
+
+            return FormatResponseModel.respuestaPostgres(rows, 'Sede registrada exitosamente');
+        } catch (error) {
+            error.path = "SedesModel.registerSede";
+            throw FormatResponseModel.respuestaError(error, 'Error al registrar la sede');
+        }
     }
 }
