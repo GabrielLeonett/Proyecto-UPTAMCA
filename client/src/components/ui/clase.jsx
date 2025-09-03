@@ -3,8 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 
 export default function Clase({
   clase,
-  onSelect,
-  mostrarProfesorSeleccionado,
   isSelected,
   onMoveRequest,
 }) {
@@ -73,11 +71,7 @@ export default function Clase({
   return (
     <Box
       className={`clase ${isSelected ? "selected" : ""}`}
-      onDoubleClick={() => onMoveRequest(clase)} // Doble click para mover
-      onClick={() => {
-        onSelect(clase);
-        mostrarProfesorSeleccionado(clase.idProfesor);
-      }}
+      onClick={() => onMoveRequest(clase)} // Doble click para mover
       sx={{
         cursor: "pointer",
         display: "flex",

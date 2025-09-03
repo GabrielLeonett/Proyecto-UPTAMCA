@@ -35,6 +35,8 @@ const UnidadCurricularSchema = z.object({
       required_error:
         "La carga de horas de la unidad curricular es obligatoria",
     })
+    .min(2, "Lo minimo son 2 horas de 45min.")
+    .max(4, "Lo maximo son 5 horas de 45min.")
     .positive(
       "La carga de horas de la unidad curricular debe ser un numero positivo"
     ),

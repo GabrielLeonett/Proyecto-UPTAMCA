@@ -2,7 +2,7 @@ import { Router } from "express";
 import HorarioController from "../controllers/HorarioController.js";
 import { middlewareAuth } from "../middlewares/auth.js";
 
-const { registrarHorario, mostrarHorarios, mostrarProfesoresParaHorario, mostrarHorariosProfesores } = HorarioController;
+const { registrarHorario, mostrarHorarios, mostrarProfesoresParaHorario, mostrarAulasParaHorario, mostrarHorariosProfesores } = HorarioController;
 
 export const HorarioRouter = Router();
 
@@ -13,7 +13,7 @@ export const HorarioRouter = Router();
 */
 
 /**
- * @name POST
+ * @name GET
  * @description Ver los horarios
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -33,7 +33,7 @@ HorarioRouter.get(
 );
 
 /**
- * @name POST
+ * @name GET
  * @description Ver los horarios de los profesores
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -53,7 +53,7 @@ HorarioRouter.get(
 );
 
 /**
- * @name POST
+ * @name GET
  * @description Informacion necesaria del profesor para crear un nueva clase
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -70,6 +70,26 @@ HorarioRouter.get(
     "Profesor",
   ]),
   mostrarProfesoresParaHorario
+);
+
+/**
+ * @name GET
+ * @description Informacion necesaria del profesor para crear un nueva clase
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ */
+HorarioRouter.get(
+  "/Aulas/to/horarios",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarAulasParaHorario
 );
 
 /**

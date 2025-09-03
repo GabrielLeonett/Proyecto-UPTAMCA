@@ -1,44 +1,25 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Box, Typography, Stack } from '@mui/material';
-import Swal from 'sweetalert2';
-import CustomButton from '../components/customButton';
-import CustomLabel from '../components/customLabel';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Box, Typography, Stack } from "@mui/material";
+import CustomButton from "../components/customButton";
+import CustomLabel from "../components/customLabel";
 import ResponsiveAppBar from "../components/navbar";
-import PNFSchema from '../schemas/PNFSchema';
-import { registrarPnfApi } from '../apis/PNFApi';
+import PNFSchema from "../schemas/PnfSchema";
+import { registrarPnfApi } from "../apis/PNFApi";
 
 export default function PnfForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    {
-      name: 'Profesor',
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    {
-      name: 'PNF',
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
 
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isValid }
+    formState: { errors, isValid },
   } = useForm({
-    resolver: zodResolver(PNFSchema.omit({ poblacionPNF: true })), // quitamos población
-    mode: 'onChange'
+    resolver: zodResolver(PNFSchema),
+    mode: "onChange",
   });
 
   const onSubmit = async (data) => {
@@ -70,7 +51,7 @@ export default function PnfForm() {
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box sx={{ pt: 12, px: 4, pb: 10 }}>
         <Typography
@@ -85,9 +66,9 @@ export default function PnfForm() {
         <Box
           sx={{
             maxWidth: 1000,
-            mx: 'auto',
+            mx: "auto",
             p: 5,
-            bgcolor: 'background.paper',
+            bgcolor: "background.paper",
             borderRadius: 4,
             boxShadow: 4,
             border: (theme) => `1px solid ${theme.palette.divider}`,
@@ -100,39 +81,41 @@ export default function PnfForm() {
           >
             <Stack spacing={5}>
               {/* Fila 1: Nombre y Código */}
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+              <Stack direction={{ xs: "column", md: "row" }} spacing={4}>
                 <CustomLabel
                   fullWidth
                   label="Nombre del PNF"
                   variant="outlined"
-                  {...register('nombre_pnf')}
+                  {...register("nombre_pnf")}
                   error={!!errors.nombre_pnf}
-                  helperText={errors.nombre_pnf?.message || 'Colocar el nombre del PNF'}
-                  inputProps={{ 'aria-required': 'true' }}
+                  helperText={
+                    errors.nombre_pnf?.message || "Colocar el nombre del PNF"
+                  }
+                  inputProps={{ "aria-required": "true" }}
                 />
 
                 <CustomLabel
                   fullWidth
                   label="Código"
                   variant="outlined"
-                  {...register('codigoPNF')}
+                  {...register("codigoPNF")}
                   error={!!errors.codigoPNF}
-                  helperText={errors.codigoPNF?.message || 'Código único del PNF'}
-                  inputProps={{ 'aria-required': 'true' }}
+                  helperText={
+                    errors.codigoPNF?.message || "Código único del PNF"
+                  }
+                  inputProps={{ "aria-required": "true" }}
                 />
               </Stack>
 
-              {/* Fila 2: Descripción */}
-              <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
+              {/* Fila 2: Población y Descripción */}
+              <Stack direction={{ xs: "column", md: "row" }} spacing={4}>
                 <CustomLabel
                   fullWidth
                   label="Descripción"
                   variant="outlined"
                   multiline
                   rows={3}
-                  {...register('descripcion')}
-                  error={!!errors.descripcion}
-                  helperText={errors.descripcion?.message || 'Describe el PNF brevemente'}
+                  {...register("descripcion")}
                 />
               </Stack>
 
@@ -151,7 +134,7 @@ export default function PnfForm() {
                   type="submit"
                   disabled={!isValid || isSubmitting}
                 >
-                  {isSubmitting ? 'Guardando...' : 'Guardar PNF'}
+                  {isSubmitting ? "Guardando..." : "Guardar PNF"}
                 </CustomButton>
               </Stack>
             </Stack>

@@ -2,6 +2,8 @@ import {
   validationHorario,
   validationPartialHorario,
 } from "../schemas/HorarioSchema.js";
+import { validationPartialUnidadCurricular } from "../schemas/UnidadCurricularSchema.js";
+import { validationPartialPNF } from "../schemas/PnfSchema.js";
 import HorarioModel from "../models/HorarioModel.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
@@ -50,7 +52,6 @@ export default class HorarioController {
   static async mostrarHorariosProfesores(req, res) {
     try {
       const idProfesor = parseInt(req.query.Profesor);
-      console.log(idProfesor)
       if (idProfesor != undefined) {
         const validaciones = validationErrors(
           validationPartialHorario({
@@ -83,6 +84,45 @@ export default class HorarioController {
   /**
    * @static
    * @async
+   * @method mostrarAulasParaHorario
+   * @description Mostrar los horarios academicos
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @throws {400} Si la validación de datos falla
+   * @throws {500} Si ocurre un error en el servidor
+   */
+  static async mostrarAulasParaHorario(req, res) {
+    try {
+      const nombrePNF = req.query.pnf;
+      console.log(nombrePNF)
+      const validaciones = validationErrors(
+        validationPartialPNF({
+          input: { nombrePNF: nombrePNF },
+        })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
+        });
+        return;
+      }
+
+      // 1. Registro del horario mediante el modelo
+      const respuestaModel = await HorarioModel.mostrarAulasParaHorario(nombrePNF);
+
+      FormatResponseController.respuestaExito(res, respuestaModel);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method mostrarProfesoresParaHorario
    * @description Mostrar los horarios academicos
    * @param {Object} req - Objeto de solicitud de Express
@@ -92,8 +132,28 @@ export default class HorarioController {
    */
   static async mostrarProfesoresParaHorario(req, res) {
     try {
+      const horasNecesarias = parseInt(req.query.horasNecesarias);
+      // 1. Validación de datos de entrada
+      const validaciones = validationErrors(
+        validationPartialUnidadCurricular({
+          input: { cargaHorasAcademicas: horasNecesarias },
+        })
+      );
+
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 401,
+          title: "Datos Erroneos",
+          message: "Los datos estan errados",
+          error: validaciones,
+        });
+        return;
+      }
+
       // 1. Registro del horario mediante el modelo
-      const respuestaModel = await HorarioModel.mostrarProfesoresParaHorario();
+      const respuestaModel = await HorarioModel.mostrarProfesoresParaHorario(
+        horasNecesarias
+      );
 
       FormatResponseController.respuestaExito(res, respuestaModel);
     } catch (error) {
@@ -151,6 +211,7 @@ export default class HorarioController {
           message: "Los datos estan errados",
           error: validaciones,
         });
+        return;
       }
 
       // 3. Registro del horario mediante el modelo

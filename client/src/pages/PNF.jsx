@@ -8,25 +8,6 @@ export default function PNF() {
   const [PNFS, setPNFS] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    { 
-      name: 'Profesor', 
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    { 
-      name: 'PNF', 
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
-
   useEffect(() => {
     const fetchPNFS = async () => {
         const data = await pedirPNFApi();
@@ -41,7 +22,6 @@ export default function PNF() {
   return (
     <>
       <ResponsiveAppBar
-        pages={pages}
         backgroundColor
       />
 

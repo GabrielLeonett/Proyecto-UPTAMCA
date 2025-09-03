@@ -10,25 +10,6 @@ import Nucleos from "../components/ubiSedes";
 export default function Index() {
   const [scrolled, setScrolled] = useState(false);
 
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    {
-      name: 'Profesor',
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    {
-      name: 'PNF',
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
-
   useScrollDetection(() => {
     setScrolled(true);
   }, 200);
@@ -37,7 +18,6 @@ export default function Index() {
     <>
 
       <ResponsiveAppBar
-        pages={pages}
         backgroundColor={scrolled}
       />
       <section className="relative flex h-[48rem] items-center justify-end">
