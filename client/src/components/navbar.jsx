@@ -15,6 +15,9 @@ import LogoTexto from './ui/logoTexto';
 import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import pages from "./pages";
+
 
 function ResponsiveAppBar({ pages, backgroundColor }) {
     const theme = useTheme();
@@ -68,100 +71,6 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
     setAnchorElUser(null);
   };
 
-  const pages = [
-    {
-      name: "Inicio",
-      url: "/",
-      roles: [
-        "publico",
-        "Vicerrector",
-        "Profesor",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-    },
-    {
-      name: "Profesor",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/Profesores",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerProfesor",
-          roles: [
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-      ],
-    },
-    {
-      name: "PNF",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/PNF",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerPNF",
-          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
-        },
-      ],
-    },
-    {
-      name: "Horarios",
-      url: "/Horarios",
-      roles: [
-        "Vicerrector",
-        "Profesor",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-    },
-    {
-      name: "Administración",
-      roles: ["SuperAdmin"],
-      submenu: [
-        { name: "Usuarios", url: "/admin/users", roles: ["SuperAdmin"] },
-        {
-          name: "Configuración",
-          url: "/admin/settings",
-          roles: ["SuperAdmin"],
-        },
-        { name: "Auditoría", url: "/admin/audit", roles: ["SuperAdmin"] },
-      ],
-    },
-  ];
 
   // Filtrar páginas según los roles del usuario
   const filteredPages = pages.filter(
