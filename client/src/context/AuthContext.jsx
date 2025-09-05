@@ -22,7 +22,7 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setUser(null);
     setIsAuthenticated(false);
-    navigate("/login");
+    navigate("/Inicio-session");
   }, [navigate]);
 
   const verifyAuth = useCallback(async () => {

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import pages from "../components/pages";
 import ResponsiveAppBar from "../components/navbar";
 import Typography from "@mui/material/Typography";
 import Slider from "../components/slider";
@@ -56,10 +55,9 @@ export default function Index() {
         <Nucleos />
       </div>
       {/* Footer */}
-        <Footer pages={pages}
-          backgroundColor={scrolled}
-        />
-      
+      <Footer
+      />
+
     </>
   );
 }

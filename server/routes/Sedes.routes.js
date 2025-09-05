@@ -2,7 +2,7 @@ import { Router } from "express";
 import SedesController from "../controllers/SedesController.js";
 import { middlewareAuth } from "../middlewares/auth.js";
 
-const {registerSede } = SedesController;
+const {registerSede, mostrarSedes } = SedesController;
 
 export const SedesRouter = Router();
 
@@ -11,6 +11,8 @@ export const SedesRouter = Router();
  * SECCIÓN DE RUTAS GET
  * =============================================
 */
+
+SedesRouter.get("/Sedes", mostrarSedes);
 
 /**
  * =============================================

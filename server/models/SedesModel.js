@@ -25,4 +25,14 @@ export default class SedeModel {
             throw FormatResponseModel.respuestaError(error, 'Error al registrar la sede');
         }
     }
+    static async mostrarSedes() {
+        try {
+            const {rows} = await db.raw("SELECT id_sede, nombre_sede FROM sedes"); 
+
+            return FormatResponseModel.respuestaPostgres(rows, 'Sedes exitosamente');
+        } catch (error) {
+            error.path = "SedesModel.mostrarSedes";
+            throw FormatResponseModel.respuestaError(error, 'Error mostrar las sedes');
+        }
+    }
 }
