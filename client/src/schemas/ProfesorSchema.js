@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { UserSchema } from "./UserSchema.js";
 
-// Esquema para Pre-Grados
+// Esquema para Pre-Grados (si más adelante quieres objetos)
 const preGradoSchema = z.object({
   id_pre_grado: z
     .number({
@@ -57,7 +57,8 @@ export const ProfesorSchema = UserSchema.extend({
       required_error: "La fecha de ingreso es obligatoria",
       invalid_type_error: "La fecha de ingreso debe ser texto",
     })
-    .regex(/^\d{2}-\d{2}-\d{4}$/, "La fecha debe tener el formato DD-MM-AAAA")
+    // ahora acepta el formato del input type="date": YYYY-MM-DD
+    .regex(/^\d{2}-\d{2}-\d{4}$/, "La fecha debe tener el formato AAAA-MM-DD")
     .nonempty("La fecha de ingreso no puede estar vacía"),
 
   dedicacion: z.enum(
@@ -78,21 +79,16 @@ export const ProfesorSchema = UserSchema.extend({
     }
   ),
 
-  area_de_conocimiento: z
-    .array(
-      z
-        .string({
-          required_error: "El Área de conocimiento es requerida",
-          invalid_type_error: "El área de conocimiento debe ser texto"
-        })
-    ,{required_error: "El Área de conocimiento es requerida"})
-    .nonempty("Debe tener al menos un área de conocimiento"),
+  // ahora opcional (puede estar vacío)
+  area_de_conocimiento: z.array(z.string()).optional(),
 
+  // ahora opcional (puede estar vacío)
   pre_grado: z
     .array(preGradoSchema, { required_error: "El Pre-Grado es requerido" })
     .nonempty("Debe tener al menos un Pre-grado"),
 
-  pos_grado: z.array(posGradoSchema).optional(),
+  post_grado: z.array(posGradoSchema).optional(),
+
 });
 
 // Función para validar un profesor completo

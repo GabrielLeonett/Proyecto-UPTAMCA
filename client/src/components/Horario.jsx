@@ -43,7 +43,7 @@ const initialHours = {
 };
 
 // Componente de capa flotante
-const TableOverlay = ({ isVisible }) => {
+const TableOverlay = ({ isVisible, Custom }) => {
   return (
     <Fade in={isVisible}>
       <Box
@@ -72,6 +72,7 @@ const TableOverlay = ({ isVisible }) => {
             justifyContent: "center",
             alignContent: "center",
           }}
+          onClick={() => { return !Custom }}
         >
           <IconButton size="large">
             <Edit sx={{ fontSize: "8rem" }}></Edit>
@@ -103,7 +104,7 @@ export default function Horario({
   Seccion,
   Horario,
   Turno,
-  Custom,
+  Custom=true,
 }) {
   //Estados
   //Estado de la clase seleccionada
@@ -1124,9 +1125,7 @@ export default function Horario({
           {Custom ?? <TableOverlay
             isVisible={overlayVisible}
             onClose={handleCloseOverlay}
-            PNF={PNF}
-            Trayecto={Trayecto}
-            Seccion={Seccion}
+            Custom={Custom}
           />}
 
           {/* Tu tabla original */}

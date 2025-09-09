@@ -23,7 +23,7 @@ function ResponsiveAppBar({ backgroundColor }) {
   const [userRoles, setUserRoles] = useState(["publico"]);
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState(null);
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
 
@@ -245,6 +245,7 @@ function ResponsiveAppBar({ backgroundColor }) {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
+
               {filteredPages.map((page) => (
                 <div key={page.name}>
                   {page.submenu ? (
@@ -411,11 +412,22 @@ function ResponsiveAppBar({ backgroundColor }) {
               transformOrigin={{ horizontal: "right", vertical: "top" }}
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
-              <MenuItem onClick={handleCloseUserMenu}>Mi cuenta</MenuItem>
-              <MenuItem onClick={() => {
-                handleCloseUserMenu();
-                // Add logout logic here
-              }}>Cerrar sesión</MenuItem>
+              {!isAuthenticated ? (
+                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>Iniciar sesión</MenuItem>
+              ) : [
+                <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
+                  Mi cuenta
+                </MenuItem>,
+                <MenuItem
+                  key="cerrar-sesion"
+                  onClick={() => {
+                    handleCloseUserMenu();
+                    // Add logout logic here
+                  }}
+                >
+                  Cerrar sesión
+                </MenuItem>
+              ]}
             </Menu>
           </Box>
         </Toolbar>

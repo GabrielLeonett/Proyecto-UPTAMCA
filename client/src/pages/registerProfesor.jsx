@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import { Box, Typography } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +14,8 @@ import dayjs from "dayjs";
 import { registrarProfesorApi } from "../apis/registrarProfesorApi";
 import DeletableChips from "../components/ui/customChip";
 import Swal from "sweetalert2";
+import axios from "../apis/axios";
+import { Autocomplete, TextField } from "@mui/material";
 
 export default function FormRegister() {
   const theme = useTheme();
@@ -21,7 +23,6 @@ export default function FormRegister() {
     register,
     formState: { errors, isValid },
     control,
-    setValue,
     handleSubmit,
     trigger,
     watch,
@@ -30,46 +31,52 @@ export default function FormRegister() {
     defaultValues: {
       genero: "masculino",
       dedicacion: "Convencional",
-      ubicacion: "Núcleo de Tecnología y Ciencias Administrativas",
       categoria: "Agregado",
     },
-    mode: "onBlur",
+    mode: "onChange",
     shouldFocusError: true,
   });
-
+  const [pregrados, setPregrados] = useState([]);
+  const [areas, setAreas] = useState([]);
+  const [postgrados, setPostgrados] = useState([]);
   const [direction, setDirection] = useState(1); // 1 = forward, -1 = backward
   const [step, setStep] = useState(1); // 1 = forward, -1 = backward
 
-  // Configuración de animaciones
-  const stepVariants = {
-    enter: (direction) => ({
-      opacity: 0,
-      x: direction > 0 ? 50 : -50,
-      position: "absolute",
-    }),
-    center: {
-      opacity: 1,
-      x: 0,
-      position: "relative",
-    },
-    exit: (direction) => ({
-      opacity: 0,
-      x: direction > 0 ? -50 : 50,
-      position: "absolute",
-    }),
-  };
-  
+  useEffect(() => {
+    const fetchData = async () => {
+      let res = await axios.get("/Profesor/areas-conocimiento");
+      setAreas(res.data.data.data);
+      res = await axios.get("/Profesor/pre-grado");
+      setPregrados(res.data.data.data);
+      res = await axios.get("/Profesor/post-grado");
+      setPostgrados(res.data.data.data);
+    };
 
-  const transition = {
-    type: "tween",
-    ease: "anticipate",
-    duration: 0.4,
-  };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    console.log("Cambios del formulario:", watch());
+  }, [watch()]);
+
 
   // Observa todos los campos del formulario
-
   const onSubmit = async (data) => {
-    await registrarProfesorApi({ data });
+    try {
+      console.log("Datos a enviar:", data);
+      await registrarProfesorApi(data); // sin { data }, solo data
+      Swal.fire({
+        icon: "success",
+        title: "Profesor registrado",
+        text: "El profesor se guardó exitosamente en la base de datos.",
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar",
+        text: error.message || "Hubo un problema en el servidor",
+      });
+    }
   };
 
   // Función para manejar el "Siguiente"
@@ -77,17 +84,21 @@ export default function FormRegister() {
     let isValid = false;
 
     if (step === 1) {
+      // Solo validamos los campos obligatorios
       isValid = await trigger([
         "nombres",
         "apellidos",
         "email",
         "cedula",
-        "telefono_movil",
         "genero",
         "fecha_nacimiento",
       ]);
     } else if (step === 2) {
-      isValid = await trigger(["area_de_conocimiento", "pre_grado"]);
+      isValid = await trigger([
+        "area_de_conocimiento",
+        "pre_grado",
+        "post_grado" // si también quieres validar posgrado
+      ]);
     }
 
     if (isValid) {
@@ -96,20 +107,9 @@ export default function FormRegister() {
     }
   };
 
-  // Modifica el botón Siguiente:
-  <CustomButton
-    type="button"
-    variant="contained"
-    className="h-12 w-32 rounded-xl font-medium"
-    tipo="primary"
-    onClick={handleNext} // Usa la nueva función
-  >
-    Siguiente
-  </CustomButton>;
   return (
     <>
       <ResponsiveAppBar backgroundColor />
-
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
         sx={{
@@ -133,7 +133,6 @@ export default function FormRegister() {
         <Box className="flex justify-center items-center flex-grow p-3">
           <Box
             component="form"
-            noValidate
             onSubmit={handleSubmit(onSubmit)}
             sx={{
               backgroundColor: theme.palette.background.paper,
@@ -332,218 +331,162 @@ export default function FormRegister() {
                             <CustomLabel
                               select
                               label="Área de Conocimiento"
-                              variant="outlined"
                               fullWidth
                               onChange={async (e) => {
                                 const value = e.target.value;
-
                                 if (value === "Otro") {
                                   const { value: text } = await Swal.fire({
                                     title: "Agregar otra área",
                                     input: "text",
-                                    inputLabel:
-                                      "Especifique el área de conocimiento",
-                                    inputPlaceholder: "Escribe aquí...",
-                                    showCancelButton: true,
-                                    inputValidator: (val) => {
-                                      if (!val)
-                                        return "Por favor ingresa un valor";
-                                      if (field.value.includes(val))
-                                        return "Esta área ya está agregada";
-                                      return null;
-                                    },
+                                    inputLabel: "Especifique el área",
                                   });
-
-                                  if (text) {
-                                    field.onChange([...field.value, text]);
-                                  }
-                                } else if (
-                                  value &&
-                                  !field.value.includes(value)
-                                ) {
+                                  if (text) field.onChange([...field.value, text]);
+                                } else if (value && !field.value.includes(value)) {
                                   field.onChange([...field.value, value]);
                                 }
                               }}
                               value=""
                             >
                               <MenuItem value="">Seleccione un área</MenuItem>
-                              <MenuItem value="Informática">
-                                Informática
-                              </MenuItem>
-                              <MenuItem value="Sistemas">Sistemas</MenuItem>
-                              <MenuItem value="Administración">
-                                Administración
-                              </MenuItem>
-                              <MenuItem value="Psicología">Psicología</MenuItem>
-                              <MenuItem value="Enfermería">Enfermería</MenuItem>
-                              <MenuItem value="Deporte">Deporte</MenuItem>
-                              <MenuItem value="Fisioterapia">
-                                Fisioterapia
-                              </MenuItem>
-                              <MenuItem value="Prevención">
-                                Prevención y Seguridad
-                              </MenuItem>
+                              {areas.map((a) => (
+                                <MenuItem key={a.id_area_conocimiento} value={a.nombre_area_conocimiento}>
+                                  {a.nombre_area_conocimiento}
+                                </MenuItem>
+                              ))}
                               <MenuItem value="Otro">Otro</MenuItem>
                             </CustomLabel>
-
-                            {/* Chips dinámicos */}
-                            <DeletableChips
-                              values={field.value}
-                              onChange={field.onChange}
-                            />
-
-                            {/* Mostrar error si existe */}
-                            {errors.area_de_conocimiento && (
-                              <Typography color="error" variant="body2">
-                                {errors.area_de_conocimiento.message}
-                              </Typography>
-                            )}
+                            <DeletableChips values={field.value} onChange={field.onChange} />
                           </>
                         )}
                       />
-
-                      {/* Opcional: Si el array incluye "Otro", mostrar input para especificar */}
-                      {watch("area_de_conocimiento")?.includes("Otro") && (
-                        <CustomLabel
-                          id="area_de_conocimiento_otro"
-                          name="area_de_conocimiento_otro"
-                          label="Especifique el área de conocimiento"
-                          type="text"
-                          variant="outlined"
-                          {...register("area_de_conocimiento_otro")}
-                          error={!!errors.area_de_conocimiento_otro}
-                          helperText={errors.area_de_conocimiento_otro?.message}
-                        />
-                      )}
+                      {/* ================= PREGRADO ================= */}
                       <Controller
                         name="pre_grado"
                         control={control}
                         defaultValue={[]}
+                        helperText={
+                          errors.pre_grado?.message ||
+                          "Selecciona en la lista el pregrado"
+                        }
                         render={({ field }) => (
-                          <>
-                            <CustomLabel
-                              select
-                              label="Pregrado"
-                              variant="outlined"
-                              fullWidth
-                              onChange={async (e) => {
-                                const value = e.target.value;
+                          <Autocomplete
+                            multiple
+                            options={[
+                              ...pregrados.map(pg => ({
+                                id_pre_grado: pg.id_pre_grado,
+                                nombre_pre_grado: pg.nombre_pre_grado,
+                                tipo_pre_grado: pg.tipo_pre_grado,
+                              })),
+                              { id_pre_grado: "otro", nombre_pre_grado: "Otro", tipo_pre_grado: "Otros" },
+                            ]}
+                            groupBy={(option) => option.tipo_pre_grado}
+                            getOptionLabel={(option) => option.nombre_pre_grado}
+                            filterSelectedOptions
+                            value={field.value}
+                            onChange={async (_, newValue) => {
+                              // ¿Seleccionó "Otro"?
+                              if (newValue.some(opt => opt.nombre_pre_grado === "Otro")) {
+                                const { value: text } = await Swal.fire({
+                                  title: "Agregar otro pregrado",
+                                  input: "text",
+                                  inputLabel: "Especifique el pregrado",
+                                  inputPlaceholder: "Escribe aquí...",
+                                  showCancelButton: true,
+                                  inputValidator: (val) => {
+                                    if (!val) return "Por favor ingrese un valor";
+                                    if (field.value.some(v => v.nombre_pre_grado === val)) return "Este pregrado ya está agregado";
+                                    return null;
+                                  },
+                                });
 
-                                if (value === "Otro") {
-                                  const { value: text } = await Swal.fire({
-                                    title: "Agregar otro pregrado",
-                                    input: "text",
-                                    inputLabel: "Especifique el pregrado",
-                                    inputPlaceholder: "Escribe aquí...",
-                                    showCancelButton: true,
-                                    inputValidator: (val) => {
-                                      if (!val)
-                                        return "Por favor ingrese un valor";
-                                      if (field.value.includes(val))
-                                        return "Este pregrado ya está agregado";
-                                      return null;
+                                if (text) {
+                                  field.onChange([
+                                    ...newValue.filter(v => v.nombre_pre_grado !== "Otro"),
+                                    {
+                                      id_pre_grado: `custom-${Date.now()}`, // 👈 para diferenciar
+                                      nombre_pre_grado: text,
+                                      tipo_pre_grado: "Otros",
                                     },
-                                  });
-
-                                  if (text) {
-                                    field.onChange([...field.value, text]);
-                                  }
-                                } else if (
-                                  value &&
-                                  !field.value.includes(value)
-                                ) {
-                                  field.onChange([...field.value, value]);
+                                  ]);
                                 }
-                              }}
-                              value=""
-                            >
-                              <MenuItem value="">
-                                Seleccione un pregrado
-                              </MenuItem>
-                              <MenuItem value="Licenciatura">
-                                Licenciatura
-                              </MenuItem>
-                              <MenuItem value="Ingeniería">Ingeniería</MenuItem>
-                              <MenuItem value="Tecnología">Tecnología</MenuItem>
-                              <MenuItem value="Otro">Otro</MenuItem>
-                            </CustomLabel>
-
-                            <DeletableChips
-                              values={field.value}
-                              onChange={field.onChange}
-                            />
-
-                            {errors.pre_grado && (
-                              <Typography color="error" variant="body2">
-                                {errors.pre_grado.message}
-                              </Typography>
+                              } else {
+                                field.onChange(newValue);
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Pregrado"
+                                variant="outlined"
+                                error={!!errors.pre_grado}
+                                helperText={errors.pre_grado?.message}
+                              />
                             )}
-                          </>
+                          />
                         )}
                       />
 
+
+                      {/* ================= POSGRADO ================= */}
                       <Controller
-                        name="pos_grado"
+                        name="post_grado"
                         control={control}
                         defaultValue={[]}
                         render={({ field }) => (
-                          <>
-                            <CustomLabel
-                              select
-                              label="Posgrado"
-                              variant="outlined"
-                              fullWidth
-                              onChange={async (e) => {
-                                const value = e.target.value;
+                          <Autocomplete
+                            multiple
+                            options={[
+                              ...postgrados.map(pg => ({
+                                id_pos_grado: pg.id_pos_grado,
+                                nombre_pos_grado: pg.nombre_pos_grado,
+                                tipo_pos_grado: pg.tipo_pos_grado,
+                              })),
+                              { id_pos_grado: "otro", nombre_pos_grado: "Otro", tipo_pos_grado: "Otros" },
+                            ]}
+                            groupBy={(option) => option.tipo_pos_grado}
+                            getOptionLabel={(option) => option.nombre_pos_grado}
+                            filterSelectedOptions
+                            value={field.value}
+                            onChange={async (_, newValue) => {
+                              // Si el usuario selecciona "Otro"
+                              if (newValue.some(opt => opt.nombre_pos_grado === "Otro")) {
+                                const { value: text } = await Swal.fire({
+                                  title: "Agregar otro posgrado",
+                                  input: "text",
+                                  inputLabel: "Especifique el posgrado",
+                                  inputPlaceholder: "Escribe aquí...",
+                                  showCancelButton: true,
+                                  inputValidator: (val) => {
+                                    if (!val) return "Por favor ingrese un valor";
+                                    if (field.value.some(v => v.nombre_pos_grado === val)) return "Este posgrado ya está agregado";
+                                    return null;
+                                  },
+                                });
 
-                                if (value === "Otro") {
-                                  const { value: text } = await Swal.fire({
-                                    title: "Agregar otro posgrado",
-                                    input: "text",
-                                    inputLabel: "Especifique el posgrado",
-                                    inputPlaceholder: "Escribe aquí...",
-                                    showCancelButton: true,
-                                    inputValidator: (val) => {
-                                      if (!val)
-                                        return "Por favor ingrese un valor";
-                                      if (field.value.includes(val))
-                                        return "Este posgrado ya está agregado";
-                                      return null;
+                                if (text) {
+                                  field.onChange([
+                                    ...newValue.filter(v => v.nombre_pos_grado !== "Otro"),
+                                    {
+                                      id_pos_grado: `custom-${Date.now()}`, // 👈 identificador temporal
+                                      nombre_pos_grado: text,
+                                      tipo_pos_grado: "Otros",
                                     },
-                                  });
-
-                                  if (text) {
-                                    field.onChange([...field.value, text]);
-                                  }
-                                } else if (
-                                  value &&
-                                  !field.value.includes(value)
-                                ) {
-                                  field.onChange([...field.value, value]);
+                                  ]);
                                 }
-                              }}
-                              value=""
-                            >
-                              <MenuItem value="">Sin posgrado</MenuItem>
-                              <MenuItem value="Especialización">
-                                Especialización
-                              </MenuItem>
-                              <MenuItem value="Maestría">Maestría</MenuItem>
-                              <MenuItem value="Doctorado">Doctorado</MenuItem>
-                              <MenuItem value="Otro">Otro</MenuItem>
-                            </CustomLabel>
-
-                            <DeletableChips
-                              values={field.value}
-                              onChange={field.onChange}
-                            />
-
-                            {errors.pos_grado && (
-                              <Typography color="error" variant="body2">
-                                {errors.pos_grado.message}
-                              </Typography>
+                              } else {
+                                field.onChange(newValue);
+                              }
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="Posgrado"
+                                variant="outlined"
+                                error={!!errors.post_grado}
+                                helperText={errors.post_grado?.message}
+                              />
                             )}
-                          </>
+                          />
                         )}
                       />
                     </Box>
@@ -633,31 +576,6 @@ export default function FormRegister() {
                           </MenuItem>
                           <MenuItem value="Exclusivo">Exclusivo</MenuItem>
                         </CustomLabel>
-
-                        {/* Columna 2 - Ubicación */}
-                        <CustomLabel
-                          select
-                          id="ubicacion"
-                          name="ubicacion"
-                          label="Ubicación"
-                          variant="outlined"
-                          {...register("ubicacion")}
-                          error={!!errors.ubicacion}
-                          helperText={errors.ubicacion?.message}
-                          fullWidth
-                          value={watch("ubicacion") || ""} // Maneja el caso undefined
-                        >
-                          <MenuItem value="">Seleccione una ubicación</MenuItem>
-                          <MenuItem value="Núcleo de Tecnología y Ciencias Administrativas">
-                            Núcleo de Tecnología y Ciencias Administrativas
-                          </MenuItem>
-                          <MenuItem value="Núcleo de Salud y Deporte">
-                            Núcleo de Salud y Deporte
-                          </MenuItem>
-                          <MenuItem value="Núcleo de Humanidades y Ciencias Sociales">
-                            Núcleo de Humanidades y Ciencias Sociales
-                          </MenuItem>
-                        </CustomLabel>
                       </Box>
                     </Box>
                   </>
@@ -714,7 +632,8 @@ export default function FormRegister() {
                         variant="contained"
                         className="h-12 w-32 rounded-xl font-medium"
                         tipo="primary"
-                        disabled={!isValid}
+                        onCkick={() => {console.log() }} // Evita múltiples envíos
+                        disabled={!isValid} // Deshabilita si el formulario no es válido
                       >
                         Registrar
                       </CustomButton>
@@ -725,7 +644,7 @@ export default function FormRegister() {
             </AnimatePresence>
           </Box>
         </Box>
-      </Box>
+      </Box >
     </>
   );
 }

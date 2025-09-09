@@ -69,67 +69,6 @@
     "status": 500,
     "state": "error",
     "title": "Error en el modelo",
-<<<<<<< HEAD
-    "message": "Cannot read properties of undefined (reading 'id')"
-  },
-  {
-    "timestamp": "2025-08-29T17:07:59.783Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:09:56.742Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:11:08.509Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:11:49.204Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:12:19.684Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:13:05.529Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "Undefined binding(s) detected for keys [0] when compiling RAW query: public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)"
-  },
-  {
-    "timestamp": "2025-08-29T17:13:31.779Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "public.registrar_sede_completo($1, $2, $3, $4, $5, NULL) - syntax error at or near \"public\"",
-    "code": "42601"
-  },
-  {
-    "timestamp": "2025-08-29T17:14:05.303Z",
-    "status": 500,
-    "state": "error",
-    "title": "Error en el modelo",
-    "message": "SELECT public.registrar_sede_completo($1, $2, $3, $4, $5, NULL) - function public.registrar_sede_completo(unknown, unknown, unknown, unknown, unknown, unknown) does not exist",
-    "code": "42883"
-=======
     "message": "SELECT * FROM public.clases_completas WHERE id_profesor = undefined - no existe la columna «undefined»",
     "code": "42703",
     "details": {
@@ -157,6 +96,15 @@
     "details": {
       "path": "HorarioModel.registrarHorario"
     }
->>>>>>> 5a5eff58eceeaf78757510f19281437c31f193e5
+  },
+  {
+    "timestamp": "2025-09-09T16:12:56.409Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1] when compiling RAW query: CALL public.registrar_area_conocimiento(?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registerAreaConocimiento"
+    }
   }
 ]

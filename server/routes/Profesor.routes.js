@@ -3,7 +3,7 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import ProfesorController from "../controllers/ProfesorController.js";
 
 // Destructuración de los métodos del controlador de profesores
-const { registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor, mostrarPreGrados, mostrarPosGrados, mostrarAreasConocimiento, registerPreGrado, registerPosGrado, registerAreaConocimiento} = ProfesorController;
+const { registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor, mostrarPreGrados, mostrarPosGrados, mostrarAreasConocimiento, registerPreGrado, registerPosGrado, registerAreaConocimiento } = ProfesorController;
 
 // Creación del router para las rutas de profesores
 export const profesorRouter = Router();
@@ -31,7 +31,7 @@ export const profesorRouter = Router();
  * curl -X GET 'http://localhost:3000/api/Profesor?dedicacion=1&categoria=Instructor'
  */
 profesorRouter.get(
-"/api/Profesor",
+  "/api/Profesor",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
@@ -55,7 +55,7 @@ profesorRouter.get(
  * curl -X GET 'http://localhost:3000/Profesor/pre-grado?tipo=TSU'
  */
 profesorRouter.get(
-"/Profesor/pre-grado",
+  "/Profesor/pre-grado",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
@@ -66,7 +66,7 @@ profesorRouter.get(
 );
 
 /**
- * @name GET /Profesor/pos-grado
+ * @name GET /Profesor/post-grado
  * @description Obtener un listado de los pos-grado de los profesores existentes 
  * @query {string} [tipo] - Filtro por tipo (Maestria, Doctorado, etc.)
  * @middleware Requiere uno de estos roles:
@@ -79,7 +79,7 @@ profesorRouter.get(
  * curl -X GET 'http://localhost:3000/Profesor/pos-grado?tipo=Maestria'
  */
 profesorRouter.get(
-"/Profesor/pos-grado",
+  "/Profesor/post-grado",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
@@ -102,7 +102,7 @@ profesorRouter.get(
  * curl -X GET 'http://localhost:3000/Profesor/Areas-conocimiento'
  */
 profesorRouter.get(
-"/Profesor/areas-conocimiento",
+  "/Profesor/areas-conocimiento",
   middlewareAuth([
     'SuperAdmin',
     'Vicerrector',
@@ -147,24 +147,34 @@ profesorRouter.get(
  * @example
  * // Ejemplo de body JSON:
  * {
- *   "nombres": "Gabriel Dayer",
- *   "apellidos": "Leonett Armas",
- *   "email": "gabrielleonett@uptamca.edu.ve",
- *   "id": 31264460,
- *   "password": "12345678",
- *   "direccion": "Av. Bermudez, Los teques",
- *   "telefono_movil": "04142245310",
- *   "telefono_local": "02122641697",
- *   "genero": "masculino",
- *   "fecha_nacimiento": "27-11-2004",
- *   "fecha_ingreso": "22-03-2021",
- *   "dedicacion": "Convencional",
- *   "categoria": "Instructor",
- *   "area_de_conocimiento": "Inteligencia Artificial",
- *   "pre_grado": "Ingeniería en Sistemas",
- *   "pos_grado": "Doctorado en Ciencias de la Computación",
- *   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
- * }
+    "cedula": 31264460,
+    "nombres": "Gabriel Dayer",
+    "apellidos": "Leonett Armas",
+    "email": "delegadogabrielleonett@gmail.com",
+    "direccion": "Av. Bermúdez, Los Teques",
+    "telefono_movil": "04142245310",
+    "telefono_local": null,
+    "fecha_nacimiento": "11-11-2004",
+    "genero": "masculino",
+    "fecha_ingreso": "11-03-2021",
+    "dedicacion": "Convencional",
+    "categoria": "Instructor",
+    "area_de_conocimiento": ["Matematicas"],
+    "pre_grado": [
+        {
+            "id_pre_grado": 1,
+            "nombre_pre_grado": "Licenciatura en Informática",
+            "tipo_pre_grado": "Licenciatura"
+        }
+    ],
+    "pos_grado": [
+        {
+            "id_pos_grado": 1,
+            "nombre_pos_grado": "Maestría en Inteligencia Artificial",
+            "tipo_pos_grado": "Maestría"
+        }
+    ]
+}
  */
 profesorRouter.post(
   "/Profesor/register",
@@ -271,6 +281,7 @@ profesorRouter.post(
  * // Ejemplo de body JSON:
  * area_conocimiento : "Matematicas"
  */
+
 profesorRouter.post(
   "/Profesor/areas-conocimiento",
   middlewareAuth([
