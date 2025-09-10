@@ -29,6 +29,7 @@ export default function FormRegister() {
   } = useForm({
     resolver: zodResolver(ProfesorSchema),
     defaultValues: {
+      telefono_local: "",
       genero: "masculino",
       dedicacion: "Convencional",
       categoria: "Agregado",
@@ -55,16 +56,16 @@ export default function FormRegister() {
     fetchData();
   }, []);
 
+  // Agrega esto para ver por qué isValid es false
   useEffect(() => {
-    console.log("Cambios del formulario:", watch());
-  }, [watch()]);
-
-
+    console.log("Errores actuales:", errors);
+    console.log("¿Formulario válido?", isValid);
+  }, [errors, isValid]);
   // Observa todos los campos del formulario
   const onSubmit = async (data) => {
     try {
       console.log("Datos a enviar:", data);
-      await registrarProfesorApi(data); // sin { data }, solo data
+      await registrarProfesorApi(data);
       Swal.fire({
         icon: "success",
         title: "Profesor registrado",
@@ -97,7 +98,7 @@ export default function FormRegister() {
       isValid = await trigger([
         "area_de_conocimiento",
         "pre_grado",
-        "post_grado" // si también quieres validar posgrado
+        "pos_grado", // si también quieres validar posgrado
       ]);
     }
 
@@ -340,8 +341,12 @@ export default function FormRegister() {
                                     input: "text",
                                     inputLabel: "Especifique el área",
                                   });
-                                  if (text) field.onChange([...field.value, text]);
-                                } else if (value && !field.value.includes(value)) {
+                                  if (text)
+                                    field.onChange([...field.value, text]);
+                                } else if (
+                                  value &&
+                                  !field.value.includes(value)
+                                ) {
                                   field.onChange([...field.value, value]);
                                 }
                               }}
@@ -349,13 +354,19 @@ export default function FormRegister() {
                             >
                               <MenuItem value="">Seleccione un área</MenuItem>
                               {areas.map((a) => (
-                                <MenuItem key={a.id_area_conocimiento} value={a.nombre_area_conocimiento}>
+                                <MenuItem
+                                  key={a.id_area_conocimiento}
+                                  value={a.nombre_area_conocimiento}
+                                >
                                   {a.nombre_area_conocimiento}
                                 </MenuItem>
                               ))}
                               <MenuItem value="Otro">Otro</MenuItem>
                             </CustomLabel>
-                            <DeletableChips values={field.value} onChange={field.onChange} />
+                            <DeletableChips
+                              values={field.value}
+                              onChange={field.onChange}
+                            />
                           </>
                         )}
                       />
@@ -372,12 +383,16 @@ export default function FormRegister() {
                           <Autocomplete
                             multiple
                             options={[
-                              ...pregrados.map(pg => ({
+                              ...pregrados.map((pg) => ({
                                 id_pre_grado: pg.id_pre_grado,
                                 nombre_pre_grado: pg.nombre_pre_grado,
                                 tipo_pre_grado: pg.tipo_pre_grado,
                               })),
-                              { id_pre_grado: "otro", nombre_pre_grado: "Otro", tipo_pre_grado: "Otros" },
+                              {
+                                id_pre_grado: "otro",
+                                nombre_pre_grado: "Otro",
+                                tipo_pre_grado: "Otros",
+                              },
                             ]}
                             groupBy={(option) => option.tipo_pre_grado}
                             getOptionLabel={(option) => option.nombre_pre_grado}
@@ -385,7 +400,11 @@ export default function FormRegister() {
                             value={field.value}
                             onChange={async (_, newValue) => {
                               // ¿Seleccionó "Otro"?
-                              if (newValue.some(opt => opt.nombre_pre_grado === "Otro")) {
+                              if (
+                                newValue.some(
+                                  (opt) => opt.nombre_pre_grado === "Otro"
+                                )
+                              ) {
                                 const { value: text } = await Swal.fire({
                                   title: "Agregar otro pregrado",
                                   input: "text",
@@ -393,15 +412,23 @@ export default function FormRegister() {
                                   inputPlaceholder: "Escribe aquí...",
                                   showCancelButton: true,
                                   inputValidator: (val) => {
-                                    if (!val) return "Por favor ingrese un valor";
-                                    if (field.value.some(v => v.nombre_pre_grado === val)) return "Este pregrado ya está agregado";
+                                    if (!val)
+                                      return "Por favor ingrese un valor";
+                                    if (
+                                      field.value.some(
+                                        (v) => v.nombre_pre_grado === val
+                                      )
+                                    )
+                                      return "Este pregrado ya está agregado";
                                     return null;
                                   },
                                 });
 
                                 if (text) {
                                   field.onChange([
-                                    ...newValue.filter(v => v.nombre_pre_grado !== "Otro"),
+                                    ...newValue.filter(
+                                      (v) => v.nombre_pre_grado !== "Otro"
+                                    ),
                                     {
                                       id_pre_grado: `custom-${Date.now()}`, // 👈 para diferenciar
                                       nombre_pre_grado: text,
@@ -426,22 +453,25 @@ export default function FormRegister() {
                         )}
                       />
 
-
                       {/* ================= POSGRADO ================= */}
                       <Controller
-                        name="post_grado"
+                        name="pos_grado"
                         control={control}
                         defaultValue={[]}
                         render={({ field }) => (
                           <Autocomplete
                             multiple
                             options={[
-                              ...postgrados.map(pg => ({
+                              ...postgrados.map((pg) => ({
                                 id_pos_grado: pg.id_pos_grado,
                                 nombre_pos_grado: pg.nombre_pos_grado,
                                 tipo_pos_grado: pg.tipo_pos_grado,
                               })),
-                              { id_pos_grado: "otro", nombre_pos_grado: "Otro", tipo_pos_grado: "Otros" },
+                              {
+                                id_pos_grado: "otro",
+                                nombre_pos_grado: "Otro",
+                                tipo_pos_grado: "Otros",
+                              },
                             ]}
                             groupBy={(option) => option.tipo_pos_grado}
                             getOptionLabel={(option) => option.nombre_pos_grado}
@@ -449,7 +479,11 @@ export default function FormRegister() {
                             value={field.value}
                             onChange={async (_, newValue) => {
                               // Si el usuario selecciona "Otro"
-                              if (newValue.some(opt => opt.nombre_pos_grado === "Otro")) {
+                              if (
+                                newValue.some(
+                                  (opt) => opt.nombre_pos_grado === "Otro"
+                                )
+                              ) {
                                 const { value: text } = await Swal.fire({
                                   title: "Agregar otro posgrado",
                                   input: "text",
@@ -457,15 +491,23 @@ export default function FormRegister() {
                                   inputPlaceholder: "Escribe aquí...",
                                   showCancelButton: true,
                                   inputValidator: (val) => {
-                                    if (!val) return "Por favor ingrese un valor";
-                                    if (field.value.some(v => v.nombre_pos_grado === val)) return "Este posgrado ya está agregado";
+                                    if (!val)
+                                      return "Por favor ingrese un valor";
+                                    if (
+                                      field.value.some(
+                                        (v) => v.nombre_pos_grado === val
+                                      )
+                                    )
+                                      return "Este posgrado ya está agregado";
                                     return null;
                                   },
                                 });
 
                                 if (text) {
                                   field.onChange([
-                                    ...newValue.filter(v => v.nombre_pos_grado !== "Otro"),
+                                    ...newValue.filter(
+                                      (v) => v.nombre_pos_grado !== "Otro"
+                                    ),
                                     {
                                       id_pos_grado: `custom-${Date.now()}`, // 👈 identificador temporal
                                       nombre_pos_grado: text,
@@ -482,8 +524,8 @@ export default function FormRegister() {
                                 {...params}
                                 label="Posgrado"
                                 variant="outlined"
-                                error={!!errors.post_grado}
-                                helperText={errors.post_grado?.message}
+                                error={!!errors.pos_grado}
+                                helperText={errors.pos_grado?.message}
                               />
                             )}
                           />
@@ -632,8 +674,14 @@ export default function FormRegister() {
                         variant="contained"
                         className="h-12 w-32 rounded-xl font-medium"
                         tipo="primary"
-                        onCkick={() => {console.log() }} // Evita múltiples envíos
-                        disabled={!isValid} // Deshabilita si el formulario no es válido
+                        onClick={() =>
+                          console.log(
+                            "Botón clickeado, isValid:",
+                            isValid,
+                            "Errores:",
+                            errors
+                          )
+                        }
                       >
                         Registrar
                       </CustomButton>
@@ -644,7 +692,7 @@ export default function FormRegister() {
             </AnimatePresence>
           </Box>
         </Box>
-      </Box >
+      </Box>
     </>
   );
 }
