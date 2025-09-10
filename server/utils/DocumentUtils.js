@@ -13,69 +13,35 @@ import {
   HorizontalPositionRelativeFrom,
   VerticalPositionRelativeFrom,
   PageOrientation,
+  TextWrappingType,
+  TextWrappingSide,
 } from "docx";
 
 // Leer la imagen del logo
-const logoData = fs.readFileSync("./utils/LogoSimple.svg");
+const logoData = fs.readFileSync("./utils/LogoSimple.png");
 
+// Crear el ImageRun con floating CORRECTO
 const logo = new ImageRun({
   data: logoData,
   transformation: {
-    width: 100, // Tamaño más manejable
-    height: 100, // Tamaño más manejable
+    width: 80, // Reducido para mejor ajuste
+    height: 80, // Reducido para mejor ajuste
   },
   floating: {
     horizontalPosition: {
-      relative: HorizontalPositionRelativeFrom.PAGE,
-      offset: 100, // Distancia desde el borde izquierdo
+      relative: HorizontalPositionRelativeFrom.MARGIN,
+      offset: 283, // ≈1 cm (28.35 puntos por cm)
     },
     verticalPosition: {
-      relative: VerticalPositionRelativeFrom.PAGE,
-      offset: 100, // Distancia desde el borde superior
+      relative: VerticalPositionRelativeFrom.MARGIN,
+      offset: 283, // ≈1 cm
     },
+    wrap: {
+      type: TextWrappingType.SQUARE,
+      side: TextWrappingSide.BOTH_SIDES,
+    },
+    zIndex: 1, // Importante: asegura que esté encima del texto
   },
-});
-
-const table = new Table({
-  columnWidths: [3505, 5505],
-  rows: [
-    new TableRow({
-      children: [
-        new TableCell({
-          width: {
-            size: 3505,
-            type: WidthType.DXA,
-          },
-          children: [new Paragraph("Hello")],
-        }),
-        new TableCell({
-          width: {
-            size: 5505,
-            type: WidthType.DXA,
-          },
-          children: [],
-        }),
-      ],
-    }),
-    new TableRow({
-      children: [
-        new TableCell({
-          width: {
-            size: 3505,
-            type: WidthType.DXA,
-          },
-          children: [],
-        }),
-        new TableCell({
-          width: {
-            size: 5505,
-            type: WidthType.DXA,
-          },
-          children: [new Paragraph("World")],
-        }),
-      ],
-    }),
-  ],
 });
 
 const doc = new Document({
@@ -83,57 +49,7 @@ const doc = new Document({
   title: "Horarios",
   styles: {
     paragraphStyles: [
-      {
-        id: "Title",
-        name: "Title",
-        basedOn: "Normal",
-        next: "Normal",
-        run: {
-          font: "Calibri Light",
-          size: 56,
-          bold: true,
-          color: "2E74B5",
-        },
-        paragraph: {
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 300 },
-        },
-      },
-      {
-        id: "Heading1",
-        name: "Heading 1",
-        basedOn: "Normal",
-        next: "Normal",
-        run: {
-          font: "Calibri",
-          size: 32,
-          bold: true,
-          color: "2E74B5",
-        },
-        paragraph: {
-          spacing: { before: 240, after: 120 },
-        },
-      },
-      {
-        id: "Normal",
-        name: "Normal",
-        basedOn: "Normal",
-        next: "Normal",
-        run: {
-          font: "Arial",
-          size: 24,
-        },
-      },
-      {
-        id: "Code",
-        name: "Code",
-        basedOn: "Normal",
-        run: {
-          font: "Courier New",
-          size: 22,
-          color: "FF0000",
-        },
-      },
+      // ... (tus estilos existentes)
     ],
   },
   sections: [
@@ -144,7 +60,7 @@ const doc = new Document({
             orientation: PageOrientation.LANDSCAPE,
           },
           margin: {
-            top: 1440,
+            top: 1440, // 1 pulgada = 1440 twips
             right: 1440,
             bottom: 1440,
             left: 1440,
@@ -152,16 +68,36 @@ const doc = new Document({
         },
       },
       children: [
-        // Logo en la parte superior izquierda
+        // Logo como párrafo independiente
         new Paragraph({
           children: [logo],
+          spacing: { before: 0, after: 0 }, // Eliminar espacio alrededor
         }),
 
-        // Título centrado
-        new Paragraph({
-          text: "HORARIOS - FORMATO HORIZONTAL",
-          heading: HeadingLevel.TITLE,
-          alignment: AlignmentType.CENTER,
+        new Table({
+          rows: [
+            // FILA 1
+            new TableRow({
+              children: [
+                new TableCell({
+                  rowSpan: 2,
+                  children: [new Paragraph("Horaio")], // ✅ Correcto
+                }),
+                new TableCell({
+                  children: [new Paragraph("Horaio")], // ✅ Correcto
+                }),
+              ],
+            }),
+            // FILA 2
+            new TableRow({
+              children: [
+                // Se omite la celda con rowSpan
+                new TableCell({
+                  children: [new Paragraph("Horaio")], // ✅ Correcto
+                }),
+              ],
+            }),
+          ],
         }),
       ],
     },
@@ -170,5 +106,5 @@ const doc = new Document({
 
 Packer.toBuffer(doc).then((buffer) => {
   fs.writeFileSync("My Document.docx", buffer);
-  console.log("Documento creado con logo en formato horizontal correctamente!");
+  console.log("Documento creado con logo correctamente!");
 });
