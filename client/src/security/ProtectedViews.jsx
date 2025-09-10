@@ -24,7 +24,7 @@ const ProtectedViews = ({ children, allowedRoles }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/Inicio-session" replace />;
   }
 
   if (!checkUserAccess(allowedRoles)) {

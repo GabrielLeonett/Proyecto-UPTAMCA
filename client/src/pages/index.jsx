@@ -55,10 +55,9 @@ export default function Index() {
         <Nucleos />
       </div>
       {/* Footer */}
-        <Footer pages={pages}
-          backgroundColor={scrolled}
-        />
-      
+      <Footer
+      />
+
     </>
   );
 }

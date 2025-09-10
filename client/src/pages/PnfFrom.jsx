@@ -1,16 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Box, Typography, Stack } from "@mui/material";
+import { Box, Typography, Stack, MenuItem } from "@mui/material";
 import CustomButton from "../components/customButton";
 import CustomLabel from "../components/customLabel";
 import ResponsiveAppBar from "../components/navbar";
 import PNFSchema from "../schemas/PnfSchema";
 import { registrarPnfApi } from "../apis/PNFApi";
+import axios from "../apis/axios"; // Added import for axios
+import Swal from "sweetalert2"; // Missing import
 
 export default function PnfForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  const [sedes, setSedes] = useState([]);
 
   const {
     register,
@@ -21,6 +23,27 @@ export default function PnfForm() {
     resolver: zodResolver(PNFSchema),
     mode: "onChange",
   });
+
+  // Added useEffect to fetch sedes (campuses)
+  useEffect(() => {
+    const fetchSedes = async () => {
+      try {
+        // Replace with your actual API call to get campuses
+        const response = await axios.get("/Sedes");
+        setSedes(response.data.data);
+      } catch (error) {
+        console.error("Error fetching sedes:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar las sedes.',
+          confirmButtonColor: '#d33',
+        });
+      }
+    };
+
+    fetchSedes();
+  }, []);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -86,17 +109,17 @@ export default function PnfForm() {
                   fullWidth
                   label="Nombre del PNF"
                   variant="outlined"
-                  {...register("nombre_pnf")}
-                  error={!!errors.nombre_pnf}
+                  {...register("nombrePNF")}
+                  error={!!errors.nombrePNF}
                   helperText={
-                    errors.nombre_pnf?.message || "Colocar el nombre del PNF"
+                    errors.nombrePNF?.message || "Colocar el nombre del PNF"
                   }
                   inputProps={{ "aria-required": "true" }}
                 />
 
                 <CustomLabel
                   fullWidth
-                  label="Código"
+                  label="Codigo de PNF"
                   variant="outlined"
                   {...register("codigoPNF")}
                   error={!!errors.codigoPNF}
@@ -111,15 +134,37 @@ export default function PnfForm() {
               <Stack direction={{ xs: "column", md: "row" }} spacing={4}>
                 <CustomLabel
                   fullWidth
-                  label="Descripción"
+                  label="Descripcion de PNF"
                   variant="outlined"
                   multiline
                   rows={3}
-                  {...register("descripcion")}
+                  {...register("descripcionPNF")}
+                  error={!!errors.descripcionPNF}
+                  helperText={errors.descripcionPNF?.message}
                 />
-              </Stack>
 
-              {/* Botones */}
+                <CustomLabel
+                  select
+                  fullWidth
+                  label="Sede"
+                  variant="outlined"
+                  {...register("sedePNF")}
+                  error={!!errors.sedePNF}
+                  helperText={errors.sedePNF?.message || "Seleccione una sede"}
+                >
+                  {sedes.length > 0 ? (
+                    sedes.map((sede) => (
+                      <MenuItem key={sede.id} value={sede.id}>
+                        {sede.nombreSede}
+                      </MenuItem>
+                    ))
+                  ) : (
+                    <MenuItem disabled>Cargando sedes...</MenuItem>
+                  )}
+                </CustomLabel>
+              </Stack> {/* Fixed: Added closing tag for this Stack */}
+
+              {/* Fila 3: Botones */}
               <Stack direction="row" spacing={3} justifyContent="flex-end">
                 <CustomButton
                   tipo="secondary"

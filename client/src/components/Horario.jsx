@@ -43,7 +43,7 @@ const initialHours = {
 };
 
 // Componente de capa flotante
-const TableOverlay = ({ isVisible }) => {
+const TableOverlay = ({ isVisible, Custom }) => {
   return (
     <Fade in={isVisible}>
       <Box
@@ -72,6 +72,7 @@ const TableOverlay = ({ isVisible }) => {
             justifyContent: "center",
             alignContent: "center",
           }}
+          onClick={() => { return !Custom }}
         >
           <IconButton size="large">
             <Edit sx={{ fontSize: "8rem" }}></Edit>
@@ -103,7 +104,7 @@ export default function Horario({
   Seccion,
   Horario,
   Turno,
-  Custom,
+  Custom=true,
 }) {
   //Estados
   //Estado de la clase seleccionada
@@ -581,9 +582,9 @@ export default function Horario({
           slot.diaIndex === diaIndex &&
           hora >= slot.horaInicio &&
           hora <
-            parseInt(
-              UTILS.sumar45Minutos(slot.horaInicio, slot.bloquesNecesarios)
-            )
+          parseInt(
+            UTILS.sumar45Minutos(slot.horaInicio, slot.bloquesNecesarios)
+          )
       );
     },
     [availableSlots]
@@ -740,8 +741,7 @@ export default function Horario({
           console.log("Moviendo clase existente"); // ← DEBUG
           if (
             window.confirm(
-              `¿Mover ${
-                classToMove.nombre_unidad_curricular
+              `¿Mover ${classToMove.nombre_unidad_curricular
               } a ${UTILS.obtenerDiaNombre(diaIndex)} a ${UTILS.formatearHora(
                 horaInicio
               )}?`
@@ -753,8 +753,7 @@ export default function Horario({
           console.log("Agregando clase nueva"); // ← DEBUG
           if (
             window.confirm(
-              `¿Programar ${
-                selectedClass.nombre_unidad_curricular
+              `¿Programar ${selectedClass.nombre_unidad_curricular
               } en ${UTILS.obtenerDiaNombre(diaIndex)} a ${UTILS.formatearHora(
                 horaInicio
               )}?`
@@ -1123,13 +1122,11 @@ export default function Horario({
           onMouseLeave={handleMouseLeave}
         >
           {/* Capa flotante */}
-          <TableOverlay
+          {Custom ?? <TableOverlay
             isVisible={overlayVisible}
             onClose={handleCloseOverlay}
-            PNF={PNF}
-            Trayecto={Trayecto}
-            Seccion={Seccion}
-          />
+            Custom={Custom}
+          />}
 
           {/* Tu tabla original */}
           <TableContainer>
@@ -1204,9 +1201,9 @@ export default function Horario({
                             position: "relative",
                             "&:hover": disponible
                               ? {
-                                  backgroundColor: "#d4edda",
-                                  cursor: "pointer",
-                                }
+                                backgroundColor: "#d4edda",
+                                cursor: "pointer",
+                              }
                               : {},
                           }}
                           onClick={() =>

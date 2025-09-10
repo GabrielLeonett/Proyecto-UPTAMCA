@@ -1,25 +1,31 @@
-import FacebookIcon from '@mui/icons-material/Facebook';
-import MenuIcon from '@mui/icons-material/Menu';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import * as React from 'react';
-import LogoSimple from './ui/logoSimple';
-import LogoTexto from './ui/logoTexto';
-import AccountCircleOutlinedIcon from '@mui/icons-material/AccountCircleOutlined';
-import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';
+import FacebookIcon from "@mui/icons-material/Facebook";
+import MenuIcon from "@mui/icons-material/Menu";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import * as React from "react";
+import LogoSimple from "./ui/logoSimple";
+import LogoTexto from "./ui/logoTexto";
+import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
+import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hook/useAuth";
+import { useEffect, useState } from "react";
 
-function ResponsiveAppBar({ pages, backgroundColor }) {
-    const theme = useTheme();
-    const navigate = useNavigate();
-    const [anchorElNav, setAnchorElNav] = React.useState(null);
+function ResponsiveAppBar({ backgroundColor }) {
+  const theme = useTheme();
+  const [userRoles, setUserRoles] = useState(["publico"]);
+  const navigate = useNavigate();
+  const [anchorElUser, setAnchorElUser] = useState(null);
+  const { user, isAuthenticated } = useAuth();
+  const [anchorElNav, setAnchorElNav] = useState(null);
+  const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -239,6 +245,7 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
+
               {filteredPages.map((page) => (
                 <div key={page.name}>
                   {page.submenu ? (
@@ -351,31 +358,82 @@ function ResponsiveAppBar({ pages, backgroundColor }) {
             ))}
           </Box>
 
-                    {/* Iconos de Facebook y cuenta */}
-                    <Box sx={{ flexGrow: 0 }}>
-                        {/* Notificaciones */}
-                        <IconButton sx={{ color: 'white' }}>
-                            <Badge badgeContent={3} color="error">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <IconButton
-                            onClick={() => handleRedirect('https://www.facebook.com')}
-                            sx={{ color: theme.palette.primary.contrastText }}
-                        >
-                            <FacebookIcon sx={{ color: 'inherit' }} />
-                        </IconButton>
-                        <IconButton 
-                        sx={{ color: 'white' }} 
-                        onClick={() => handleRedirect('/Inicio-session')}
-                        >
-                            <AccountCircleOutlinedIcon />
-                        </IconButton>
-                    </Box>
-                </Toolbar>
-            </Container>
-        </AppBar>
-    );
+          {/* Iconos de Facebook y cuenta */}
+          <Box sx={{ flexGrow: 0, display: "flex", alignItems: "center" }}>
+            <IconButton
+              onClick={() => handleRedirect("https://www.facebook.com")}
+              sx={{ color: theme.palette.primary.contrastText }}
+              aria-label="Facebook"
+            >
+              <FacebookIcon sx={{ color: "inherit" }} />
+            </IconButton>
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={handleOpenUserMenu}
+              aria-label="cuenta de usuario"
+              aria-controls="user-menu"
+              aria-haspopup="true"
+            >
+              <AccountCircleOutlinedIcon />
+            </IconButton>
+            <Menu
+              id="user-menu"
+              anchorEl={anchorElUser}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+              slotProps={{
+                paper: {
+                  elevation: 0,
+                  sx: {
+                    overflow: "visible",
+                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    mt: 1.5,
+                    "& .MuiAvatar-root": {
+                      width: 32,
+                      height: 32,
+                      ml: -0.5,
+                      mr: 1,
+                    },
+                    "&::before": {
+                      content: '""',
+                      display: "block",
+                      position: "absolute",
+                      top: 0,
+                      right: 14,
+                      width: 10,
+                      height: 10,
+                      bgcolor: "background.paper",
+                      transform: "translateY(-50%) rotate(45deg)",
+                      zIndex: 0,
+                    },
+                  },
+                },
+              }}
+              transformOrigin={{ horizontal: "right", vertical: "top" }}
+              anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            >
+              {!isAuthenticated ? (
+                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>Iniciar sesión</MenuItem>
+              ) : [
+                <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
+                  Mi cuenta
+                </MenuItem>,
+                <MenuItem
+                  key="cerrar-sesion"
+                  onClick={() => {
+                    handleCloseUserMenu();
+                    // Add logout logic here
+                  }}
+                >
+                  Cerrar sesión
+                </MenuItem>
+              ]}
+            </Menu>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
+  );
 }
 
 export default ResponsiveAppBar;
