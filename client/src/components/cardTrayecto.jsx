@@ -1,24 +1,15 @@
-import { Typography, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { Typography, Grid } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
 
-export default function CardPNF({ pnf }) {
-  useEffect(() => {
-    console.log(pnf);
-  }, [pnf]);
+export default function CardTrayecto({ Trayecto }) {
   const theme = useTheme();
-  const navigate = useNavigate();
-
+  useEffect(() => {
+    console.log(Trayecto);
+  }, [Trayecto]);
   return (
-    <Box
-      component="div"
-      id={pnf.codigo}
-      onClick={() => {
-        navigate(`/PNF/${pnf.codigo}`, {
-          state: { PNF: pnf.name },
-        });
-      }}
+    <Grid
+      key={Trayecto.id_trayecto}
       sx={{
         maxWidth: "1100px",
         width: "100%",
@@ -46,28 +37,12 @@ export default function CardPNF({ pnf }) {
           color: theme.palette.primary.main,
         }}
       >
-        {pnf.name}
-      </Typography>
-      <Typography
-        component="p"
-        variant="body1"
-        gutterBottom
-        color={theme.palette.secondary.main}
-      >
-        Codigo: {pnf.codigo}
-      </Typography>
-      <Typography
-        component="p"
-        variant="body1"
-        gutterBottom
-        color={theme.palette.secondary.main}
-      >
-        Poblacion Estudiantil: {pnf?.poblacion || 0}
+        Trayecto: {Trayecto?.valor_trayecto || "Valor del trayecto"}
       </Typography>
 
       <Typography variant="body2" sx={{ fontSize: 15 }} color="text.secondary">
-        {pnf.descripcion || "Descripción no disponible"}
+        {Trayecto?.poblacion_estudiantil || 0}
       </Typography>
-    </Box>
+    </Grid>
   );
 }

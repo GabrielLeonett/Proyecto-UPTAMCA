@@ -128,7 +128,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       submenu: [
         {
           name: "Ver",
-          url: "/PNF",
+          url: "/PNFS",
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -193,7 +193,6 @@ function ResponsiveAppBar({ backgroundColor }) {
               height: "100px",
               cursor: "pointer",
             }}
-            onClick={() => navigate("/")}
           >
             <LogoTexto />
           </Box>

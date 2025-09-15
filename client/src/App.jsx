@@ -17,10 +17,10 @@ import Login from "./pages/login";
 import PnfForm from "./pages/PnfFrom";
 import UnidadCurricularForm from "./pages/UnidadCurricular";
 import Prueba from "./pages/prueba";
-import PNF from "./pages/PNF";
+import PNFS from "./pages/PNFS";
 import Horarios from "./pages/Horarios";
 import RegisterSede from "./pages/registerSede";
-
+import PNF from "./pages/PNF";
 
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
@@ -44,7 +44,6 @@ import EliminarProfesor from "./pages/eliminarProfesor";
 import PoliticaPrivacidad from "./pages/poliPriv";
 import TerminosCondiciones from "./pages/terminosCondi";
 import Accesibilidad from "./pages/accesibilidad";
-
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -109,6 +108,22 @@ export default function App() {
                 }
               />
               <Route
+                path="/PNF/:codigoPNF"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <PNF />
+                  </ProtectedViews>
+                }
+              />
+              <Route
                 path="/registerProfesor"
                 element={
                   <ProtectedViews
@@ -138,7 +153,7 @@ export default function App() {
               />
               <Route path="/Prueba" element={<Prueba />} />
               <Route
-                path="PNF/"
+                path="PNFS/"
                 element={
                   <ProtectedViews
                     allowedRoles={[
@@ -149,7 +164,7 @@ export default function App() {
                       "SuperAdmin",
                     ]}
                   >
-                    <PNF />
+                    <PNFS />
                   </ProtectedViews>
                 }
               />
