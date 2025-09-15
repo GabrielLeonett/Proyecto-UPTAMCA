@@ -56,15 +56,9 @@ export default function FormRegister() {
     fetchData();
   }, []);
 
-  // Agrega esto para ver por qué isValid es false
-  useEffect(() => {
-    console.log("Errores actuales:", errors);
-    console.log("¿Formulario válido?", isValid);
-  }, [errors, isValid]);
   // Observa todos los campos del formulario
   const onSubmit = async (data) => {
     try {
-      console.log("Datos a enviar:", data);
       await registrarProfesorApi(data);
       Swal.fire({
         icon: "success",
@@ -257,7 +251,7 @@ export default function FormRegister() {
                       <CustomLabel
                         id="direccion"
                         name="direccion"
-                        label="Dirección"
+                        label="Dirección de habitacion"
                         type="text"
                         variant="outlined"
                         {...register("direccion")}
@@ -267,6 +261,15 @@ export default function FormRegister() {
                           "Dirección completa de residencia"
                         }
                       />
+                      <CustomLabel
+                        select
+                        name="municipio"
+                        label="Municipio"
+                      >
+                        <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
+                        <MenuItem value="Los Salias">Los Salias</MenuItem>
+                        <MenuItem value="Carrizal">Carrizal</MenuItem>
+                      </CustomLabel>
                       <CustomLabel
                         select
                         name="genero"

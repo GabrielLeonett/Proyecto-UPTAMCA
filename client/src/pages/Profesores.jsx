@@ -48,6 +48,7 @@ export default function Profesores() {
             flexDirection: "column",
             justifyContent: "center",
             alignContent: "center",
+            gap: 2,
           }}
         >
           {loading ? (

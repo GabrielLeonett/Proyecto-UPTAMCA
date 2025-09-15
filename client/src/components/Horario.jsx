@@ -104,7 +104,7 @@ export default function Horario({
   Seccion,
   Horario,
   Turno,
-  Custom=true,
+  Custom,
 }) {
   //Estados
   //Estado de la clase seleccionada

@@ -33,7 +33,7 @@ export default class ProfesorController {
    */
   static async registrarProfesor(req, res) {
     try {
-
+      console.log(req.body)
       const input = {...req.body};
       // Validación de datos del profesor usando el esquema definido
       let validaciones = validationErrors(validationProfesor(input));

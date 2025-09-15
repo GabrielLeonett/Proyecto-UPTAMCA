@@ -154,8 +154,8 @@ export default function PnfForm() {
                 >
                   {sedes.length > 0 ? (
                     sedes.map((sede) => (
-                      <MenuItem key={sede.id} value={sede.id}>
-                        {sede.nombreSede}
+                      <MenuItem key={sede.id_sede} value={sede.id_sede}>
+                        {sede.nombre_sede}
                       </MenuItem>
                     ))
                   ) : (
