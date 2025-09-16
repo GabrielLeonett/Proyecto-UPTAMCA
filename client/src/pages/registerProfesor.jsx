@@ -33,6 +33,7 @@ export default function FormRegister() {
       genero: "masculino",
       dedicacion: "Convencional",
       categoria: "Agregado",
+      municipio: "",
     },
     mode: "onChange",
     shouldFocusError: true,
@@ -262,21 +263,21 @@ export default function FormRegister() {
                         }
                       />
                       <CustomLabel
-  select
-  id="municipio"
-  name="municipio"
-  label="Municipio"
-  variant="outlined"
-  {...register("municipio", { required: true })}
-  error={!!errors.municipio}
-  helperText={errors.municipio?.message || "Seleccione su municipio"}
-  value={watch("municipio") || ""} // 👈 asegura que no sea undefined
->
-  <MenuItem value="">Seleccione</MenuItem>
-  <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
-  <MenuItem value="Los Salias">Los Salias</MenuItem>
-  <MenuItem value="Carrizal">Carrizal</MenuItem>
-</CustomLabel>
+                        select
+                        id="municipio"
+                        name="municipio"
+                        label="Municipio"
+                        variant="outlined"
+                        {...register("municipio", { required: true })}
+                        error={!!errors.municipio}
+                        helperText={errors.municipio?.message || "Seleccione su municipio"}
+                        value={watch("municipio") || ""} // 👈 asegura que no sea undefined
+                      >
+                        <MenuItem value="">Seleccione</MenuItem>
+                        <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
+                        <MenuItem value="Los Salias">Los Salias</MenuItem>
+                        <MenuItem value="Carrizal">Carrizal</MenuItem>
+                      </CustomLabel>
 
                       <CustomLabel
                         select
