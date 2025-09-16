@@ -65,7 +65,7 @@ export default function Profesores() {
             </Typography>
           ) : (
             profesores.map((profesor) => (
-              <CardProfesor key={profesor.id} profesor={profesor} />
+              <CardProfesor key={profesor.id} profesor={profesor} onProfesorUpdate={fetchProfesores}/>
             ))
           )}
         </Box>

@@ -88,7 +88,7 @@ CurricularRouter.get(
  * @returns {Object} Datos completos del trayecto solicitado
  */
 CurricularRouter.get(
-    '/Trayecto/Secciones:Trayecto',
+    '/Secciones/',
     middlewareAuth([
         'SuperAdmin',
         'Vicerrector',

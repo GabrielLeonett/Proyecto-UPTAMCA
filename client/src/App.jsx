@@ -15,7 +15,7 @@ import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
 import Login from "./pages/login";
 import PnfForm from "./pages/PnfFrom";
-import UnidadCurricularForm from "./pages/UnidadCurricular";
+import RegisterUnidadCurricular from "./pages/RegisterUnidadCurricular";
 import Prueba from "./pages/prueba";
 import PNFS from "./pages/PNFS";
 import Horarios from "./pages/Horarios";
@@ -44,6 +44,7 @@ import EliminarProfesor from "./pages/eliminarProfesor";
 import PoliticaPrivacidad from "./pages/poliPriv";
 import TerminosCondiciones from "./pages/terminosCondi";
 import Accesibilidad from "./pages/accesibilidad";
+import Trayectos from "./pages/Trayecto";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -72,6 +73,22 @@ export default function App() {
                     ]}
                   >
                     <Profesores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/RegisterUnidadCurricular"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <RegisterUnidadCurricular />
                   </ProtectedViews>
                 }
               />
@@ -265,6 +282,23 @@ export default function App() {
                     ]}
                   >
                     <Accesibilidad />
+                  </ProtectedViews>
+                }
+              />
+
+              <Route
+                path="/PNF/Trayecto/:Trayecto"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <Trayectos />
                   </ProtectedViews>
                 }
               />

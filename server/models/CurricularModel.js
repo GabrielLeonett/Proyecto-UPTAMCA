@@ -259,7 +259,9 @@ export default class CurricularModel {
         `	SELECT 
               id_unidad_curricular,
               horas_clase,
-              nombre_unidad_curricular
+              nombre_unidad_curricular, 
+              descripcion_unidad_curricular,
+              codigo_unidad
           FROM 
               unidades_curriculares
           WHERE

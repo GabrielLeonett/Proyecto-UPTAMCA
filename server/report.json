@@ -138,5 +138,16 @@
     "title": "Error en el manejador de errores",
     "message": "input is not defined",
     "stack": "ReferenceError: input is not defined\n    at registrarProfesor (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/ProfesorController.js:38:62)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-15T18:56:41.484Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "\tSELECT \n              id_unidad_curricular,\n              horas_clase,\n              nombre_unidad_curricular, \n              descripcion_unidad_curricular,\n              codigo_unidad_curricular\n          FROM \n              unidades_curriculares\n          WHERE\n              id_trayecto = $1\n\t\t\t    ORDER BY id_unidad_curricular ASC; - column \"codigo_unidad_curricular\" does not exist",
+    "code": "42703",
+    "details": {
+      "path": "CurricularModel.mostrarTrayecto"
+    }
   }
 ]

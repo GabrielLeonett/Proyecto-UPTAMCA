@@ -1,31 +1,39 @@
 import { Typography, Grid } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom'; // ✅ corregido
 
 export default function CardTrayecto({ Trayecto }) {
   const theme = useTheme();
+  const navigate = useNavigate(); // ✅ función de navegación
+
   useEffect(() => {
     console.log(Trayecto);
   }, [Trayecto]);
+
   return (
     <Grid
-      key={Trayecto.id_trayecto}
+      key={Trayecto?.id_trayecto}
       sx={{
         maxWidth: "1100px",
         width: "100%",
-        mx: "auto", // centrar horizontalmente
+        mx: "auto",
         mt: 5,
-        p: 4, // padding interno
-        borderRadius: 4, // redondeo moderno
+        p: 4,
+        borderRadius: 4,
         backgroundColor: theme.palette.background.paper,
-        boxShadow: 5, // sombra elegante
-        border: `1px solid ${theme.palette.divider}`, // borde sutil
+        boxShadow: 5,
+        border: `1px solid ${theme.palette.divider}`,
         transition: "all 0.3s ease",
+        cursor: "pointer",
         "&:hover": {
           boxShadow: 8,
           transform: "scale(1.01)",
           borderColor: theme.palette.primary.main,
         },
+      }}
+      onClick={() => {
+        navigate(`/PNF/Trayecto/${Trayecto?.id_trayecto}`); // ✅ URL corregida
       }}
     >
       <Typography
@@ -41,7 +49,7 @@ export default function CardTrayecto({ Trayecto }) {
       </Typography>
 
       <Typography variant="body2" sx={{ fontSize: 15 }} color="text.secondary">
-        {Trayecto?.poblacion_estudiantil || 0}
+        Población estudiantil: {Trayecto?.poblacion_estudiantil || 0}
       </Typography>
     </Grid>
   );
