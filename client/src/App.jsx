@@ -291,7 +291,7 @@ export default function App() {
               />
 
               <Route
-                path="/PNF/Trayecto/:Trayecto"
+                path="/PNF/:codigoPNF/Trayecto/:Trayecto"
                 element={
                   <ProtectedViews
                     allowedRoles={[

@@ -4,16 +4,12 @@ import Brightness5Icon from "@mui/icons-material/Brightness5"; // Sol
 import WbTwilightIcon from "@mui/icons-material/WbTwilight";   // Tarde
 import NightsStayIcon from "@mui/icons-material/NightsStay";   // Noche
 import AlertTurno from "./alertTurno";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function CardSeccion({ seccion }) {
   const theme = useTheme();
   const [openAlert, setOpenAlert] = useState(false);
   const [turno, setTurno] = useState(seccion.nombre_turno);
-
-  useEffect(() => {
-    console.log(seccion);
-  }, []);
 
   // Determinar el icono según el turno
   let IconoTurno = null;
@@ -22,7 +18,7 @@ export default function CardSeccion({ seccion }) {
     top: -50,
     left: 250,
     fontSize: "8rem",
-    opacity: 0.3,
+    opacity: 0.6,
     zIndex: 0,
   }} />;
   else if (turno === "Vespertino") IconoTurno = <WbTwilightIcon sx={{
@@ -30,7 +26,7 @@ export default function CardSeccion({ seccion }) {
     top: 0,
     left: 250,
     fontSize: "8rem",
-    opacity: 0.3,
+    opacity: 0.6,
     zIndex: 0,
   }} />;
   else if (turno === "Nocturno") IconoTurno = <NightsStayIcon sx={{
@@ -38,7 +34,7 @@ export default function CardSeccion({ seccion }) {
     top: 50,
     left: 250,
     fontSize: "8rem",
-    opacity: 0.3,
+    opacity: 0.6,
     zIndex: 0,
   }} />;
 

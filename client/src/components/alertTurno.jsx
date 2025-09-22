@@ -1,72 +1,130 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box } from "@mui/material";
-import { useState } from "react";
-import { useTheme } from "@mui/material/styles";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+} from "@mui/material";
 import axios from "../apis/axios";
+import Brightness5Icon from "@mui/icons-material/Brightness5";
+import WbTwilightIcon from "@mui/icons-material/WbTwilight";
+import NightsStayIcon from "@mui/icons-material/NightsStay";
+import Swal from "sweetalert2";
 
 export default function AlertTurno({ idSeccion, isOpen, onClose }) {
-    const [selected, setSelected] = useState();
-    const theme = useTheme();
+  const handleSelect = async (turnoId, turnoNombre) => {
+    try {
+      await axios.post("Secciones/asignar-turno", {
+        idSeccion: idSeccion,
+        idTurno: turnoId,
+      });
 
-    const handleSelect = async (turnoId, turnoNombre) => {
-        setSelected(turnoNombre)
+      // Cerrar el diálogo primero
+      onClose();
 
-        try {
-            const response = await axios.post(
-                'Secciones/asignar-turno',
-                {
-                    idSeccion: idSeccion,
-                    idTurno: turnoId
-                }
+      // Mostrar SweetAlert de éxito
+      Swal.fire({
+        title: "¡Turno asignado!",
+        text: `El turno ${turnoNombre} se ha asignado correctamente.`,
+        icon: "success",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#3085d6",
+      }).then(() => {
+        // Recargar la página después de que el usuario haga clic en Aceptar
+        window.location.reload();
+      });
+    } catch (error) {
+      console.error("Error al asignar el turno:", error);
 
-            );
+      // Mostrar SweetAlert de error
+      Swal.fire({
+        title: "Error",
+        text: "Ocurrió un error al asignar el turno.",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
 
-            console.log('Turno asignado correctamente:', response.data);
-            onClose();
-        } catch (error) {
-            console.error('Error al asignar el turno:', error);
-            alert('Ocurrió un error al asignar el turno.');
-        }
-    };
-
-    return (
-        <Dialog open={isOpen} onClose={onClose}>
-            <DialogTitle>Selecciona el turno</DialogTitle>
-            <DialogContent>
-                <Typography variant="body2" color="text.secondary">
-                    Elige el turno correspondiente para esta sección:
-                </Typography>
-            </DialogContent>
-            <DialogActions sx={{ justifyContent: "center", gap: 2, px: 3, pb: 2 }}>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignContent: 'center',
-                    gap: 4
-                }}>
-                    <Button
-                        variant="contained"
-                        sx={{ minWidth: '400px', minHeight: '80px', fontSize: '28px', backgroundColor: 'gray' }}
-                        onClick={() => handleSelect(1, "Matutino")}
-                    >
-                        Matutino
-                    </Button>
-                    <Button
-                        variant="contained"
-                        sx={{ minWidth: '400px', minHeight: '80px', fontSize: '28px', backgroundColor: 'gray' }}
-                        onClick={() => handleSelect(2, "Vespertino")}
-                    >
-                        Vespertino
-                    </Button>
-                    <Button
-                        variant="contained"
-                        sx={{ minWidth: '400px', minHeight: '80px', fontSize: '28px', backgroundColor: 'gray' }}
-                        onClick={() => handleSelect(3, "Nocturno")}
-                    >
-                        Nocturno
-                    </Button>
-                </Box>
-            </DialogActions>
-        </Dialog>
-    );
+  return (
+    <Dialog open={isOpen} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle sx={{ textAlign: "center", pb: 1 }}>
+        Selecciona el turno
+      </DialogTitle>
+      <DialogContent>
+        <Typography variant="body2" color="text.secondary" textAlign="center">
+          Elige el turno correspondiente para esta sección:
+        </Typography>
+      </DialogContent>
+      <DialogActions sx={{ justifyContent: "center", px: 3, pb: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            width: "100%",
+          }}
+        >
+          <Button
+            variant="contained"
+            sx={{
+              py: 2,
+              fontSize: "18px",
+              backgroundColor: "#FFD700",
+              color: "rgba(0, 0, 0, 0.87)",
+              "&:hover": {
+                backgroundColor: "#FFC400",
+              },
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+            onClick={() => handleSelect(1, "Matutino")}
+          >
+            Matutino
+            <Brightness5Icon sx={{ fontSize: "2.5rem" }} />
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              py: 2,
+              fontSize: "18px",
+              backgroundColor: "#FF8C00",
+              "&:hover": {
+                backgroundColor: "#F57C00",
+              },
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+            onClick={() => handleSelect(2, "Vespertino")}
+          >
+            Vespertino
+            <WbTwilightIcon sx={{ fontSize: "2.5rem" }} />
+          </Button>
+          <Button
+            variant="contained"
+            sx={{
+              py: 2,
+              fontSize: "18px",
+              backgroundColor: "#1E90FF",
+              "&:hover": {
+                backgroundColor: "#1565C0",
+              },
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+            onClick={() => handleSelect(3, "Nocturno")}
+          >
+            Nocturno
+            <NightsStayIcon sx={{ fontSize: "2.5rem" }} />
+          </Button>
+        </Box>
+      </DialogActions>
+    </Dialog>
+  );
 }
