@@ -45,6 +45,10 @@ import PoliticaPrivacidad from "./pages/poliPriv";
 import TerminosCondiciones from "./pages/terminosCondi";
 import Accesibilidad from "./pages/accesibilidad";
 import Trayectos from "./pages/Trayecto";
+import ViewSede from "./pages/Sedes";
+import RegisterAula from "./pages/RegisterAula";
+import ViewAula from "./pages/Aulas";
+import AssignCoordinador from "./pages/AssignCoordinador"
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -299,6 +303,72 @@ export default function App() {
                     ]}
                   >
                     <Trayectos />
+                  </ProtectedViews>
+                }
+              />
+
+              <Route
+                path="/Sedes"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <ViewSede />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/RegisterAula"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <RegisterAula />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/Aulas"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <ViewAula />
+                  </ProtectedViews>
+                }
+              />
+
+<Route
+                path="/AssignCoordinador"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <AssignCoordinador />
                   </ProtectedViews>
                 }
               />
