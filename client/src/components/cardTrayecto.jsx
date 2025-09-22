@@ -1,15 +1,10 @@
 import { Typography, Grid } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useEffect } from "react";
-import { useNavigate } from 'react-router-dom'; // ✅ corregido
+import { useNavigate } from "react-router-dom"; // ✅ corregido
 
-export default function CardTrayecto({ Trayecto }) {
+export default function CardTrayecto({ Trayecto, codigoPNF }) {
   const theme = useTheme();
   const navigate = useNavigate(); // ✅ función de navegación
-
-  useEffect(() => {
-    console.log(Trayecto);
-  }, [Trayecto]);
 
   return (
     <Grid
@@ -33,7 +28,7 @@ export default function CardTrayecto({ Trayecto }) {
         },
       }}
       onClick={() => {
-        navigate(`/PNF/Trayecto/${Trayecto?.id_trayecto}`); // ✅ URL corregida
+        navigate(`/PNF/${codigoPNF}/Trayecto/${Trayecto?.id_trayecto}`); // ✅ URL corregida
       }}
     >
       <Typography

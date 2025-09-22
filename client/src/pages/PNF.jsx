@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ResponsiveAppBar from "../components/navbar";
 import {
   Box,
@@ -20,11 +20,6 @@ export default function PNF() {
   const [trayectos, setTrayectos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const location = useLocation();
-
-  // Acceder al state enviado
-  const { state } = location;
 
   useEffect(() => {
     const pedirTrayectos = async () => {
@@ -70,9 +65,6 @@ export default function PNF() {
           </Breadcrumbs>
         </Box>
 
-        <Typography component={"h2"} variant="h2">
-          {state.PNF}
-        </Typography>
         {loading ? (
           <Box display="flex" justifyContent="center" mt={4}>
             <CircularProgress />
@@ -89,7 +81,7 @@ export default function PNF() {
           <Grid container spacing={3}>
             {trayectos.map((trayecto) => (
               <Grid item xs={12} sm={6} md={4} key={trayecto.id}>
-                <CardTrayecto Trayecto={trayecto} />
+                <CardTrayecto Trayecto={trayecto} codigoPNF={codigoPNF} />
               </Grid>
             ))}
           </Grid>
