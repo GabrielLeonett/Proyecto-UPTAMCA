@@ -13,7 +13,20 @@ import FormatResponseModel from "../utils/FormatResponseModel.js";
  */
 
 export default class AulaModel {
-    static async registerAula() {
-        
+  static async registerAula(usuario_accion, datos) {
+    try {
+      const { id_sede, codigo, tipo, capacidad } = datos;
+      const query = `CALL registrar_aula_completo(?, ?, ?, ?, ?, NULL)`;
+
+      const param = [usuario_accion.id, id_sede, codigo, tipo, capacidad];
+      const { rows } = await db.raw(query, param);
+
+      FormatResponseModel.respuestaPostgres(rows, "Registro exitoso del aula.");
+    } catch (error) {
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error en el registro del aula"
+      );
     }
+  }
 }

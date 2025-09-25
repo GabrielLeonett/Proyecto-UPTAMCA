@@ -410,5 +410,140 @@
     "details": {
       "path": "HorarioModel.mostrarHorarios"
     }
+  },
+  {
+    "timestamp": "2025-09-25T00:27:10.355Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM public.clases_completas - no existe la relación «public.clases_completas»",
+    "code": "42P01",
+    "details": {
+      "path": "HorarioModel.mostrarHorarios"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:45:36.696Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:45:44.994Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:46:07.123Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:47:20.226Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:47:55.531Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:48:26.086Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:49:46.502Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:50:06.993Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:51:03.781Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "knex is not defined"
+  },
+  {
+    "timestamp": "2025-09-25T00:51:26.979Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: SELECT * FROM registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:52:07.561Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:52:47.369Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:58:26.891Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NUll)"
+  },
+  {
+    "timestamp": "2025-09-25T00:59:49.950Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 4 bindings, saw 5"
+  },
+  {
+    "timestamp": "2025-09-25T01:00:19.978Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T01:00:54.979Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T01:28:24.691Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM public.registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5) - public.registrar_disponibilidad_docente_completo(unknown, unknown, unknown, unknown, unknown) es un procedimiento",
+    "code": "42809",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "SELECT * FROM public.registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5) - public.registrar_disponibilidad_docente_completo(unknown, unknown, unknown, unknown, unknown) es un procedimiento"
+    }
   }
 ]

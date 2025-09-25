@@ -16,6 +16,7 @@ const {
   registerPreGrado,
   registerPosGrado,
   registerAreaConocimiento,
+  registrarDisponibilidad
 } = ProfesorController;
 
 // Creación del router para las rutas de profesores
@@ -251,6 +252,20 @@ profesorRouter.post(
     "Coordinador",
   ]),
   buscarProfesor
+);
+
+/**
+ * 
+ */
+profesorRouter.post(
+  "/Profesor/Register/Disponibilidad",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  registrarDisponibilidad
 );
 
 /**

@@ -19,6 +19,7 @@ import { CurricularRouter } from "./routes/curricular.routes.js";
 import { UserRouter } from "./routes/user.routes.js";
 import { HorarioRouter } from "./routes/horario.routes.js";
 import { SedesRouter } from "./routes/sedes.routes.js";
+import { AulaRouter } from "./routes/aula.routes.js";
 
 // Creación del servidor
 const app = express();
@@ -46,6 +47,7 @@ app.use("", CurricularRouter);
 app.use("", UserRouter);
 app.use("", HorarioRouter);
 app.use("", SedesRouter);
+app.use("", AulaRouter);
 
 // Encendido del servidor
 app.listen(process.env.SERVER_PORT, () => {

@@ -526,4 +526,84 @@ export default class ProfesorModel {
       );
     }
   }
+
+  /**
+   * Registrar disponibilidad docente
+   *
+   * @static
+   * @async
+   * @method registrarDisponibilidad
+   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
+   * @param {Object} datos - Datos para realizar el registro de disponibilidad
+   * @param {number} datos.id_profesor - ID del profesor
+   * @param {string} datos.dia_semana - Día de la semana (Lunes, Martes, etc.)
+   * @param {string} datos.hora_inicio - Hora de inicio (HH:MM)
+   * @param {string} datos.hora_fin - Hora de fin (HH:MM)
+   * @returns {Promise<Object>} Resultados del registro
+   *
+   * @throws {500} Si ocurre un error en el registro
+   *
+   * @example
+   * // Ejemplo de datos:
+   * {
+   *   id_profesor: 1,
+   *   dia_semana: "Lunes",
+   *   hora_inicio: "08:00",
+   *   hora_fin: "10:00"
+   * }
+   */
+  static async registrarDisponibilidad({ usuario_accion, datos }) {
+    try {
+      const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+
+      // Consulta SQL para registrar disponibilidad usando procedimiento almacenado
+      // ✅ CORRECTO: Usar SELECT para PostgreSQL
+      const query = `CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)`;
+
+      // Parámetros para la consulta (coinciden con el procedimiento)
+      const params = [
+        usuario_accion.id, // p_usuario_accion
+        id_profesor, // p_id_profesor
+        dia_semana, // p_dia_semana
+        hora_inicio, // p_hora_inicio (formato HH:MM:SS)
+        hora_fin, // p_hora_fin (formato HH:MM:SS)
+      ];
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, params);
+
+      // El resultado viene en la propiedad p_resultado
+      const resultado = rows[0].p_resultado;
+
+      // Verificar si fue exitoso
+      if (resultado.status === "success") {
+        return FormatResponseModel.respuestaPostgres(
+          resultado.data,
+          resultado.message || "Disponibilidad registrada exitosamente"
+        );
+      } else {
+        // Si hay error, lanzar excepción
+        throw {
+          message: resultado.message,
+          status: resultado.status_code || 400,
+          details: resultado,
+        };
+      }
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.registrarDisponibilidad",
+        originalError: error.message,
+      };
+
+      // Si ya es un error formateado, relanzarlo
+      if (error.status) {
+        throw error;
+      }
+
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registrar disponibilidad docente"
+      );
+    }
+  }
 }

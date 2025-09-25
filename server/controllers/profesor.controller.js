@@ -4,6 +4,10 @@ import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
 import imagenProcessingServices from "../services/imagenProcessing.services.js";
 import { parseJSONField } from "../utils/utilis.js";
+import {
+  validationDisponibilidadDocente,
+  validationPartialDisponibilidadDocente,
+} from "../schemas/DisponiblidadDocenteSchema.js";
 
 /**
  * Controlador para gestionar todas las operaciones relacionadas con profesores
@@ -76,7 +80,7 @@ export default class ProfesorController {
 
       // Validación de la imagen
       const validation = await imagenProcessingServices.validateImage(
-        'uploads/profesores/',
+        "uploads/profesores/",
         imagen.originalname,
         options
       );
@@ -93,7 +97,7 @@ export default class ProfesorController {
 
       // Registrar profesor en la base de datos
       const result = await ProfesorModel.RegisterProfesor({
-        datos: { ...input},
+        datos: { ...input },
         imagen: imagen,
         usuario_accion: req.user, // Usuario que realiza la acción
       });
@@ -362,6 +366,75 @@ export default class ProfesorController {
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
       console.log(error);
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Registrar disponibilidad docente
+   *
+   * @static
+   * @async
+   * @method registrarDisponibilidad
+   * @param {Object} req.body - Datos de la disponibilidad
+   * @param {number} req.body.id_profesor - ID del profesor
+   * @param {string} req.body.dia_semana - Día de la semana
+   * @param {string} req.body.hora_inicio - Hora de inicio (HH:MM)
+   * @param {string} req.body.hora_fin - Hora de fin (HH:MM)
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados del registro
+   *
+   * @throws {500} Si ocurre un error en el registro
+   *
+   * @example
+   * // Ejemplo de body:
+   * {
+   *   id_profesor: 1,
+   *   dia_semana: "Lunes",
+   *   hora_inicio: "08:00",
+   *   hora_fin: "10:00"
+   * }
+   */
+  static async registrarDisponibilidad(req, res) {
+    try {
+      // ✅ Primero validar los datos con el schema
+      const validation = validationDisponibilidadDocente(req.body);
+
+      if (!validation.success) {
+        const errors = validation.error.issues.map((issue) => ({
+          field: issue.path[0],
+          message: issue.message,
+        }));
+
+        return FormatResponseController.respuestaError(res, {
+          status: 400,
+          title: "Datos inválidos",
+          message: "Error de validación",
+          error: errors,
+        });
+      }
+
+      // ✅ Si la validación pasa, proceder con el registro
+      const result = await ProfesorModel.registrarDisponibilidad({
+        usuario_accion: req.user,
+        datos: validation.data, // Usar los datos validados
+      });
+
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      console.error("Error en controlador registrarDisponibilidad:", error);
+
+      // Manejo de errores específicos del modelo
+      if (error.status) {
+        return FormatResponseController.respuestaError(res, {
+          status: error.status,
+          title: "Error al registrar disponibilidad",
+          message: error.message,
+          error: error.details,
+        });
+      }
+
       // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
     }
