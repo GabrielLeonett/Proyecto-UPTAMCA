@@ -1,4 +1,4 @@
-import z from 'zod'
+import z from "zod";
 
 export const UserSchema = z.object({
     cedula: z.number({invalid_type_error:'Cedula tiene que ser un numero'}).int({invalid_type_error:'Cedula tiene que ser un numero'}).positive({message:'Cedula tiene que ser un numero positivo'}).min(500000, {message:'Cedula tiene que ser un numero de 6 digitos'}),

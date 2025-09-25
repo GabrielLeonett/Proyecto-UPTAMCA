@@ -1,7 +1,13 @@
 import { validationProfesor } from "../schemas/ProfesorSchema.js";
-import ProfesorModel from "../models/ProfesorModel.js";
+import ProfesorModel from "../models/profesor.model.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
+import imagenProcessingServices from "../services/imagenProcessing.services.js";
+import { parseJSONField } from "../utils/utilis.js";
+import {
+  validationDisponibilidadDocente,
+  validationPartialDisponibilidadDocente,
+} from "../schemas/DisponiblidadDocenteSchema.js";
 
 /**
  * Controlador para gestionar todas las operaciones relacionadas con profesores
@@ -33,31 +39,77 @@ export default class ProfesorController {
    */
   static async registrarProfesor(req, res) {
     try {
-      console.log(req.body)
-      const input = {...req.body};
+      const input = { ...req.body };
+      const imagen = req.file;
+
+      // Parsear cada campo
+      const area_de_conocimiento = parseJSONField(
+        input.area_de_conocimiento,
+        "áreas de conocimiento"
+      );
+      const pre_grado = parseJSONField(input.pre_grado, "pregrados");
+      const pos_grado = parseJSONField(input.pos_grado, "posgrados");
+
       // Validación de datos del profesor usando el esquema definido
-      let validaciones = validationErrors(validationProfesor(input));
+      let validaciones = validationErrors(
+        validationProfesor({
+          ...input,
+          cedula: parseInt(input.cedula),
+          pre_grado: pre_grado,
+          pos_grado: pos_grado,
+          area_de_conocimiento: area_de_conocimiento,
+        })
+      );
 
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
-          status: 401,
+          status: 400, // Cambiado a 400 (Bad Request) en lugar de 401
           title: "Datos Erroneos",
-          message: "Los datos estan errados",
+          message: "Los datos del profesor son incorrectos",
           error: validaciones,
         });
-        return
+        return;
+      }
+
+      // Opciones para la validación de imagen
+      const options = {
+        maxSize: 5 * 1024 * 1024, // 5MB
+        maxWidth: 1080,
+        maxHeight: 1080,
+      };
+
+      // Validación de la imagen
+      const validation = await imagenProcessingServices.validateImage(
+        "uploads/profesores/",
+        imagen.originalname,
+        options
+      );
+
+      if (!validation.isValid) {
+        FormatResponseController.respuestaError(res, {
+          status: 400,
+          title: "Imagen Inválida",
+          message: "La imagen no cumple con los requisitos",
+          error: validation.error,
+        });
+        return;
       }
 
       // Registrar profesor en la base de datos
       const result = await ProfesorModel.RegisterProfesor({
-        datos: req.body,
+        datos: { ...input },
+        imagen: imagen,
         usuario_accion: req.user, // Usuario que realiza la acción
       });
 
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      // Manejo de errores inesperados
-      FormatResponseController.respuestaError(res, error);
+      FormatResponseController.respuestaError(res, {
+        status: 500,
+        title: "Error del Servidor",
+        message: "Ocurrió un error al registrar el profesor",
+        error: error.message,
+      });
     }
   }
 
@@ -162,10 +214,10 @@ export default class ProfesorController {
    */
   static async mostrarPreGrados(req, res) {
     try {
-      const result =  await ProfesorModel.mostrarPreGrados();
-      FormatResponseController.respuestaDatos(res, result)
+      const result = await ProfesorModel.mostrarPreGrados();
+      FormatResponseController.respuestaDatos(res, result);
     } catch (error) {
-      FormatResponseController.respuestaError(res, error)
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -188,10 +240,10 @@ export default class ProfesorController {
    */
   static async mostrarPosGrados(req, res) {
     try {
-      const result =  await ProfesorModel.mostrarPosGrados();
-      FormatResponseController.respuestaDatos(res, result)
+      const result = await ProfesorModel.mostrarPosGrados();
+      FormatResponseController.respuestaDatos(res, result);
     } catch (error) {
-      FormatResponseController.respuestaError(res, error)
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
@@ -213,21 +265,21 @@ export default class ProfesorController {
    */
   static async mostrarAreasConocimiento(req, res) {
     try {
-      const result =  await ProfesorModel.mostrarAreasConocimiento();
-      FormatResponseController.respuestaDatos(res, result)
+      const result = await ProfesorModel.mostrarAreasConocimiento();
+      FormatResponseController.respuestaDatos(res, result);
     } catch (error) {
-      FormatResponseController.respuestaError(res, error)
+      FormatResponseController.respuestaError(res, error);
     }
   }
 
   /**
-   * Registrar un Pre-Grado 
+   * Registrar un Pre-Grado
    *
    * @static
    * @async
    * @method registerPreGrado
-   * @param {Object} req.body.tipo - Tipo de pre-grado que se desea registrar 
-   * @param {Object} req.body.nombre - Nombre del pre-grado que se desea registrar 
+   * @param {Object} req.body.tipo - Tipo de pre-grado que se desea registrar
+   * @param {Object} req.body.nombre - Nombre del pre-grado que se desea registrar
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -242,7 +294,10 @@ export default class ProfesorController {
    */
   static async registerPreGrado(req, res) {
     try {
-      const result = await ProfesorModel.registerPreGrado({usuario_accion: req.user, datos:req.body})
+      const result = await ProfesorModel.registerPreGrado({
+        usuario_accion: req.user,
+        datos: req.body,
+      });
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
       // Manejo de errores inesperados
@@ -256,8 +311,8 @@ export default class ProfesorController {
    * @static
    * @async
    * @method registerPosGrado
-   * @param {Object} req.body.tipo - Tipo de pos-grado que se desea registrar 
-   * @param {Object} req.body.nombre - Nombre del pos-grado que se desea registrar 
+   * @param {Object} req.body.tipo - Tipo de pos-grado que se desea registrar
+   * @param {Object} req.body.nombre - Nombre del pos-grado que se desea registrar
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -272,10 +327,13 @@ export default class ProfesorController {
    */
   static async registerPosGrado(req, res) {
     try {
-      const result = await ProfesorModel.registerPosGrado({usuario_accion: req.user, datos:req.body})
+      const result = await ProfesorModel.registerPosGrado({
+        usuario_accion: req.user,
+        datos: req.body,
+      });
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
     }
@@ -287,7 +345,7 @@ export default class ProfesorController {
    * @static
    * @async
    * @method registerAreaConocimiento
-   * @param {Object} req.body.area_conocimiento - Nombre de un area conocimiento que se desea registrar 
+   * @param {Object} req.body.area_conocimiento - Nombre de un area conocimiento que se desea registrar
    * @param {Object} res - Objeto de respuesta de Express
    * @returns {Promise<Object>} Resultados de la búsqueda
    *
@@ -301,10 +359,82 @@ export default class ProfesorController {
    */
   static async registerAreaConocimiento(req, res) {
     try {
-      const result = await ProfesorModel.registerAreaConocimiento({usuario_accion: req.user, datos:req.body})
+      const result = await ProfesorModel.registerAreaConocimiento({
+        usuario_accion: req.user,
+        datos: req.body,
+      });
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      console.log(error)
+      console.log(error);
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Registrar disponibilidad docente
+   *
+   * @static
+   * @async
+   * @method registrarDisponibilidad
+   * @param {Object} req.body - Datos de la disponibilidad
+   * @param {number} req.body.id_profesor - ID del profesor
+   * @param {string} req.body.dia_semana - Día de la semana
+   * @param {string} req.body.hora_inicio - Hora de inicio (HH:MM)
+   * @param {string} req.body.hora_fin - Hora de fin (HH:MM)
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados del registro
+   *
+   * @throws {500} Si ocurre un error en el registro
+   *
+   * @example
+   * // Ejemplo de body:
+   * {
+   *   id_profesor: 1,
+   *   dia_semana: "Lunes",
+   *   hora_inicio: "08:00",
+   *   hora_fin: "10:00"
+   * }
+   */
+  static async registrarDisponibilidad(req, res) {
+    try {
+      // ✅ Primero validar los datos con el schema
+      const validation = validationDisponibilidadDocente(req.body);
+
+      if (!validation.success) {
+        const errors = validation.error.issues.map((issue) => ({
+          field: issue.path[0],
+          message: issue.message,
+        }));
+
+        return FormatResponseController.respuestaError(res, {
+          status: 400,
+          title: "Datos inválidos",
+          message: "Error de validación",
+          error: errors,
+        });
+      }
+
+      // ✅ Si la validación pasa, proceder con el registro
+      const result = await ProfesorModel.registrarDisponibilidad({
+        usuario_accion: req.user,
+        datos: validation.data, // Usar los datos validados
+      });
+
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      console.error("Error en controlador registrarDisponibilidad:", error);
+
+      // Manejo de errores específicos del modelo
+      if (error.status) {
+        return FormatResponseController.respuestaError(res, {
+          status: error.status,
+          title: "Error al registrar disponibilidad",
+          message: error.message,
+          error: error.details,
+        });
+      }
+
       // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
     }

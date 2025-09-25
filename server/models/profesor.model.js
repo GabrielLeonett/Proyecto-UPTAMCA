@@ -16,6 +16,10 @@ import db from "../db.js";
 // Importación de clase para formateo de respuestas
 import FormatResponseModel from "../utils/FormatResponseModel.js";
 
+import imagenProcessingServices from "../services/imagenProcessing.services.js";
+
+import { parseJSONField } from "../utils/utilis.js";
+
 export default class ProfesorModel {
   /**
    * Registra un nuevo profesor en el sistema
@@ -38,7 +42,7 @@ export default class ProfesorModel {
    *   usuario_accion: { id: 1 }
    * });
    */
-  static async RegisterProfesor({ datos, usuario_accion }) {
+  static async RegisterProfesor({ datos, imagen, usuario_accion }) {
     try {
       // Extracción de datos del profesor
       const {
@@ -54,37 +58,57 @@ export default class ProfesorModel {
         fecha_ingreso,
         dedicacion,
         categoria,
-        area_de_conocimiento,
-        pre_grado,
-        pos_grado,
+        municipio,
       } = datos;
+
+      const area_de_conocimiento = parseJSONField(
+        datos.area_de_conocimiento,
+        "áreas de conocimiento"
+      );
+      const pre_grado = parseJSONField(datos.pre_grado, "pregrados");
+      const pos_grado = parseJSONField(datos.pos_grado, "posgrados");
+      // Opciones para la validación de imagen
+      const options = {
+        maxSize: 5 * 1024 * 1024, // 5MB
+        maxWidth: 1080,
+        maxHeight: 1080,
+      };
+
+      const procesardorImagen = new imagenProcessingServices("profesores/");
+
+      const imagenResult = await procesardorImagen.processAndSaveImage(
+        "uploads/profesores/",
+        imagen.originalname,
+        options
+      );
 
       // Generación de contraseña temporal y su hash
       const password = await generarPassword();
       const passwordHash = await hashPassword(password);
 
       // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
+      const query = `CALL public.registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
 
-      // Parámetros para la consulta
       const params = [
-        usuario_accion.id,
-        cedula,
-        nombres,
-        apellidos,
-        email,
-        direccion,
-        passwordHash,
-        telefono_movil,
-        telefono_local || null,
-        fecha_nacimiento,
-        genero,
-        categoria,
-        dedicacion,
-        pre_grado,
-        pos_grado,
-        area_de_conocimiento,
-        fecha_ingreso,
+        usuario_accion.id, // 1. p_usuario_accion
+        cedula, // 2. p_id
+        nombres, // 3. p_nombres
+        apellidos, // 4. p_apellidos
+        email, // 5. p_email
+        direccion, // 6. p_direccion
+        passwordHash, // 7. p_password
+        telefono_movil, // 8. p_telefono_movil
+        telefono_local || null, // 9. p_telefono_local
+        fecha_nacimiento, // 10. p_fecha_nacimiento
+        genero, // 11. p_genero
+        categoria, // 12. p_nombre_categoria
+        dedicacion, // 13. p_nombre_dedicacion
+        pre_grado, // 14. p_pre_grado
+        pos_grado, // 15. p_pos_grado
+        area_de_conocimiento, // 16. p_area_de_conocimiento
+        imagenResult.fileName, // 17. p_imagen
+        municipio, // 18. p_municipio (debes pasar el valor real o null)
+        fecha_ingreso, // 19. p_fecha_ingreso
       ];
 
       // Ejecución de la consulta
@@ -124,6 +148,7 @@ export default class ProfesorModel {
 
       return resultado;
     } catch (error) {
+      console.log(error.message);
       // Manejo y formateo de errores
       throw FormatResponseModel.respuestaError(
         error,
@@ -498,6 +523,86 @@ export default class ProfesorModel {
       throw FormatResponseModel.respuestaError(
         error,
         "Error al registra area de conocimiento"
+      );
+    }
+  }
+
+  /**
+   * Registrar disponibilidad docente
+   *
+   * @static
+   * @async
+   * @method registrarDisponibilidad
+   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
+   * @param {Object} datos - Datos para realizar el registro de disponibilidad
+   * @param {number} datos.id_profesor - ID del profesor
+   * @param {string} datos.dia_semana - Día de la semana (Lunes, Martes, etc.)
+   * @param {string} datos.hora_inicio - Hora de inicio (HH:MM)
+   * @param {string} datos.hora_fin - Hora de fin (HH:MM)
+   * @returns {Promise<Object>} Resultados del registro
+   *
+   * @throws {500} Si ocurre un error en el registro
+   *
+   * @example
+   * // Ejemplo de datos:
+   * {
+   *   id_profesor: 1,
+   *   dia_semana: "Lunes",
+   *   hora_inicio: "08:00",
+   *   hora_fin: "10:00"
+   * }
+   */
+  static async registrarDisponibilidad({ usuario_accion, datos }) {
+    try {
+      const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+
+      // Consulta SQL para registrar disponibilidad usando procedimiento almacenado
+      // ✅ CORRECTO: Usar SELECT para PostgreSQL
+      const query = `CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)`;
+
+      // Parámetros para la consulta (coinciden con el procedimiento)
+      const params = [
+        usuario_accion.id, // p_usuario_accion
+        id_profesor, // p_id_profesor
+        dia_semana, // p_dia_semana
+        hora_inicio, // p_hora_inicio (formato HH:MM:SS)
+        hora_fin, // p_hora_fin (formato HH:MM:SS)
+      ];
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, params);
+
+      // El resultado viene en la propiedad p_resultado
+      const resultado = rows[0].p_resultado;
+
+      // Verificar si fue exitoso
+      if (resultado.status === "success") {
+        return FormatResponseModel.respuestaPostgres(
+          resultado.data,
+          resultado.message || "Disponibilidad registrada exitosamente"
+        );
+      } else {
+        // Si hay error, lanzar excepción
+        throw {
+          message: resultado.message,
+          status: resultado.status_code || 400,
+          details: resultado,
+        };
+      }
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.registrarDisponibilidad",
+        originalError: error.message,
+      };
+
+      // Si ya es un error formateado, relanzarlo
+      if (error.status) {
+        throw error;
+      }
+
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al registrar disponibilidad docente"
       );
     }
   }

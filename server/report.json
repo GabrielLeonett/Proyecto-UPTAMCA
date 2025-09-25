@@ -149,5 +149,401 @@
     "details": {
       "path": "CurricularModel.mostrarTrayecto"
     }
+  },
+  {
+    "timestamp": "2025-09-24T18:58:28.957Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo"
+  },
+  {
+    "timestamp": "2025-09-24T18:58:59.656Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo"
+  },
+  {
+    "timestamp": "2025-09-24T18:59:45.410Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo"
+  },
+  {
+    "timestamp": "2025-09-24T18:59:56.616Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:00:49.467Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:01:21.744Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:02:11.787Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:02:27.615Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:02:35.136Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:02:45.053Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: Input file is missing: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003.jpg"
+  },
+  {
+    "timestamp": "2025-09-24T19:03:33.803Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740613741-h5zhoo.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740613741-h5zhoo.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-24T19:03:44.885Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740624817-2vcofq.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740624817-2vcofq.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-24T19:04:28.377Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740668314-grrbib.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758740668314-grrbib.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-24T19:06:24.946Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "fileName is not defined"
+  },
+  {
+    "timestamp": "2025-09-24T19:08:18.210Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: outputPath is not defined"
+  },
+  {
+    "timestamp": "2025-09-24T19:10:02.594Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758741002515-yls8z4.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assets\\img\\profesores\\IMG-20250227-WA0003-1758741002515-yls8z4.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-24T19:13:22.513Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "fileName is not defined"
+  },
+  {
+    "timestamp": "2025-09-24T19:18:38.155Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assetsundefined\\IMG-20250227-WA0003-1758741518094-xv5qwi.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assetsundefined\\IMG-20250227-WA0003-1758741518094-xv5qwi.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-24T19:19:27.773Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "fileName is not defined"
+  },
+  {
+    "timestamp": "2025-09-24T19:20:06.777Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NULL) - no existe el procedimiento «public.registrar_profesor_completo(unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown)»",
+    "code": "42883"
+  },
+  {
+    "timestamp": "2025-09-24T19:20:42.652Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NULL) - no existe el procedimiento «public.registrar_profesor_completo(unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown)»",
+    "code": "42883"
+  },
+  {
+    "timestamp": "2025-09-24T19:27:44.341Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 19 bindings, saw 18"
+  },
+  {
+    "timestamp": "2025-09-24T19:30:12.448Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 19 bindings, saw 18"
+  },
+  {
+    "timestamp": "2025-09-24T19:30:51.219Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 19 bindings, saw 17"
+  },
+  {
+    "timestamp": "2025-09-24T19:31:07.693Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL) - literal de array mal formado: «[{\"id_pre_grado\":1,\"nombre_pre_grado\":\"En informática\",\"tipo_pre_grado\":\"Ingeniería\"}]»",
+    "code": "22P02"
+  },
+  {
+    "timestamp": "2025-09-24T19:31:21.192Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL) - literal de array mal formado: «[{\"id_pre_grado\":1,\"nombre_pre_grado\":\"En informática\",\"tipo_pre_grado\":\"Ingeniería\"}]»",
+    "code": "22P02"
+  },
+  {
+    "timestamp": "2025-09-24T19:32:41.633Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL) - literal de array mal formado: «[{\"id_pre_grado\":1,\"nombre_pre_grado\":\"En informática\",\"tipo_pre_grado\":\"Ingeniería\"}]»",
+    "code": "22P02"
+  },
+  {
+    "timestamp": "2025-09-24T19:47:46.880Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL) - literal de array mal formado: «[{\"id_pre_grado\":1,\"nombre_pre_grado\":\"En informática\",\"tipo_pre_grado\":\"Ingeniería\"}]»",
+    "code": "22P02"
+  },
+  {
+    "timestamp": "2025-09-25T00:00:24.890Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Error procesando imagen: Error de procesamiento con Sharp: ..\\client\\src\\assets\\img\\profesores\\2829b1615533-1758758424815-zhpwva.jpg: unable to open for write\nsystem error: No such file or directory\n..\\client\\src\\assets\\img\\profesores\\2829b1615533-1758758424815-zhpwva.jpg: write error\nsystem error: No such file or directory\nVipsJpeg: unable to write to target"
+  },
+  {
+    "timestamp": "2025-09-25T00:21:28.322Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:21:28.333Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:21:31.043Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:21:31.048Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM profesores_informacion_completa; - no existe la relación «profesores_informacion_completa»",
+    "code": "42P01",
+    "details": {
+      "path": "ProfesorModel.mostrarProfesor"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:22:50.337Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM public.clases_completas - no existe la relación «public.clases_completas»",
+    "code": "42P01",
+    "details": {
+      "path": "HorarioModel.mostrarHorarios"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:27:10.355Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM public.clases_completas - no existe la relación «public.clases_completas»",
+    "code": "42P01",
+    "details": {
+      "path": "HorarioModel.mostrarHorarios"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T00:45:36.696Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:45:44.994Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:46:07.123Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:47:20.226Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:47:55.531Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:48:26.086Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:49:46.502Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:50:06.993Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Cannot destructure property 'id_sede' of 'datos' as it is undefined."
+  },
+  {
+    "timestamp": "2025-09-25T00:51:03.781Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "knex is not defined"
+  },
+  {
+    "timestamp": "2025-09-25T00:51:26.979Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: SELECT * FROM registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:52:07.561Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:52:47.369Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?)"
+  },
+  {
+    "timestamp": "2025-09-25T00:58:26.891Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NUll)"
+  },
+  {
+    "timestamp": "2025-09-25T00:59:49.950Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 4 bindings, saw 5"
+  },
+  {
+    "timestamp": "2025-09-25T01:00:19.978Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T01:00:54.979Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [2,3,4] when compiling RAW query: CALL registrar_aula_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T01:28:24.691Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "SELECT * FROM public.registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5) - public.registrar_disponibilidad_docente_completo(unknown, unknown, unknown, unknown, unknown) es un procedimiento",
+    "code": "42809",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "SELECT * FROM public.registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5) - public.registrar_disponibilidad_docente_completo(unknown, unknown, unknown, unknown, unknown) es un procedimiento"
+    }
   }
 ]

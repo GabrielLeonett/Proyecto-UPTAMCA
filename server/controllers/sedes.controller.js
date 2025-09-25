@@ -2,7 +2,7 @@
 // Importación de clase para formateo de respuestas
 import FormatResponseController from "../utils/FormatResponseController.js";
 import validationErrors from "../utils/validationsErrors.js";
-import SedeModel from "../models/SedesModel.js";
+import SedeModel from "../models/sedes.model.js";
 import { validationSede, validationPartialSede } from "../schemas/SedeSchema.js";
 
 /**

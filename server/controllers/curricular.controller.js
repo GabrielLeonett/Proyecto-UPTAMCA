@@ -1,4 +1,4 @@
-import CurricularModel from "../models/CurricularModel.js";
+import CurricularModel from "../models/curricular.model.js";
 
 // Importaciones de los esquemas para las validaciones
 import { validationPartialPNF, validationPNF } from "../schemas/PnfSchema.js";

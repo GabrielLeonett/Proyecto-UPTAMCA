@@ -42,16 +42,7 @@ const posGradoSchema = z.object({
 });
 
 // Esquema principal para Profesores
-const ProfesorSchema = UserSchema.extend({
-  cedula: z
-    .number({
-      required_error: "La cédula es obligatoria",
-      invalid_type_error: "La cédula debe ser un número",
-    })
-    .int("La cédula debe ser un número entero")
-    .positive("La cédula debe ser un número positivo")
-    .min(500000, "La cédula debe tener al menos 6 dígitos"),
-
+export const ProfesorSchema = UserSchema.extend({
   fecha_ingreso: z
     .string({
       required_error: "La fecha de ingreso es obligatoria",
@@ -80,12 +71,12 @@ const ProfesorSchema = UserSchema.extend({
 
   area_de_conocimiento: z
     .array(
-      z
-        .string({
-          required_error: "El Área de conocimiento es requerida",
-          invalid_type_error: "El área de conocimiento debe ser texto"
-        })
-    ,{required_error: "El Área de conocimiento es requerida"})
+      z.string({
+        required_error: "El Área de conocimiento es requerida",
+        invalid_type_error: "El área de conocimiento debe ser texto",
+      }),
+      { required_error: "El Área de conocimiento es requerida" }
+    )
     .nonempty("Debe tener al menos un área de conocimiento"),
 
   pre_grado: z
@@ -94,7 +85,6 @@ const ProfesorSchema = UserSchema.extend({
 
   pos_grado: z.array(posGradoSchema).optional(),
 });
-
 // Función para validar un profesor completo
 export const validationProfesor = (input) => {
   return ProfesorSchema.safeParse(input);

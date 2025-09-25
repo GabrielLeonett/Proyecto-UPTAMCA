@@ -1,5 +1,5 @@
 import { Router } from "express";
-import HorarioController from "../controllers/HorarioController.js";
+import HorarioController from "../controllers/horario.controller.js";
 import { middlewareAuth } from "../middlewares/auth.js";
 
 const { registrarHorario, mostrarHorarios, mostrarProfesoresParaHorario, mostrarAulasParaHorario, mostrarHorariosProfesores } = HorarioController;

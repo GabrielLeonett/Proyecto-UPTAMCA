@@ -4,7 +4,7 @@ import {
 } from "../schemas/HorarioSchema.js";
 import { validationPartialUnidadCurricular } from "../schemas/UnidadCurricularSchema.js";
 import { validationPartialPNF } from "../schemas/PnfSchema.js";
-import HorarioModel from "../models/HorarioModel.js";
+import HorarioModel from "../models/horario.model.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
 

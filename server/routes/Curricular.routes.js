@@ -1,5 +1,5 @@
 import { Router } from "express";
-import CurricularController from '../controllers/CurricularController.js';
+import CurricularController from '../controllers/curricular.controller.js';
 import { middlewareAuth } from '../middlewares/auth.js'
 
 const { regitrarPNF, regitrarUnidadCurricular, mostrarPNF, mostrarTrayectos, mostrarSecciones, mostrarUnidadesCurriculares, CrearSecciones, asignacionTurnoSeccion } = CurricularController;
