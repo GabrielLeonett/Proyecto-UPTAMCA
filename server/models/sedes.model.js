@@ -27,7 +27,7 @@ export default class SedeModel {
     }
     static async mostrarSedes() {
         try {
-            const {rows} = await db.raw("SELECT id_sede, nombre_sede FROM sedes"); 
+            const {rows} = await db.raw("SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes"); 
 
             return FormatResponseModel.respuestaPostgres(rows, 'Sedes exitosamente');
         } catch (error) {

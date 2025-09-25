@@ -1,6 +1,7 @@
 import ResponsiveAppBar from "../components/navbar";
 import CardProfesor from "../components/cardProfesor";
-import { Typography, Box, CircularProgress } from "@mui/material";
+import { Typography, Box, CircularProgress, TextField, IconButton } from "@mui/material";
+import { Search } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import axios from "../apis/axios";
 
@@ -8,18 +9,16 @@ export default function Profesores() {
   const [profesores, setProfesores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Función para buscar profesores
-  const fetchProfesores = useCallback(async (searchTerm = "") => {
+  const fetchProfesores = useCallback(async (search = "") => {
     setLoading(true);
     setError(null);
     try {
-      const endpoint = searchTerm ? "/Profesor/search" : "/Profesor";
-      const payload = searchTerm ? { busqueda: searchTerm } : {};
+      const endpoint = search ? "/Profesor/search" : "/Profesor";
+      const payload = search ? { busqueda: search } : {};
       const { data } = await axios.get(endpoint, { params: payload });
-      console.log(data.data.data);
       setProfesores(data.data.data || []);
     } catch (error) {
       console.error("Error cargando los profesores:", error);
@@ -29,10 +28,14 @@ export default function Profesores() {
     }
   }, []);
 
-  // Efecto inicial para cargar profesores
+  // Efecto inicial
   useEffect(() => {
     fetchProfesores();
   }, [fetchProfesores]);
+
+  const handleSearch = () => {
+    fetchProfesores(searchTerm);
+  };
 
   return (
     <>
@@ -42,12 +45,34 @@ export default function Profesores() {
           Profesores
         </Typography>
 
+        {/* Barra de búsqueda */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            mb: 4,
+            maxWidth: 500,
+          }}
+        >
+          <TextField
+            fullWidth
+            label="Buscar profesor"
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          />
+          <IconButton color="primary" onClick={handleSearch}>
+            <Search />
+          </IconButton>
+        </Box>
+
+        {/* Lista de profesores */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignContent: "center",
             gap: 2,
           }}
         >
@@ -65,7 +90,11 @@ export default function Profesores() {
             </Typography>
           ) : (
             profesores.map((profesor) => (
-              <CardProfesor key={profesor.id} profesor={profesor} onProfesorUpdate={fetchProfesores}/>
+              <CardProfesor
+                key={profesor.id}
+                profesor={profesor}
+                onProfesorUpdate={fetchProfesores}
+              />
             ))
           )}
         </Box>
