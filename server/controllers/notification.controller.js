@@ -1,4 +1,4 @@
-import NotificationModel from "../models/notificationModel.js";
+import NotificationModel from "../models/notification.model.js";
 
 export default class NoticationController {
   static async mostrarNotificacion() {

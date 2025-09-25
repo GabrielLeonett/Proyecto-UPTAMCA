@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
-import UserController from "../controllers/UserController.js";
+import UserController from "../controllers/user.controller.js";
 import fs from "node:fs";
-import { error } from "node:console";
-import { date } from "zod";
-import { json } from "node:stream/consumers";
 
 const { login, verificarUsers } = UserController;
 

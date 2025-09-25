@@ -1,9 +1,22 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
-import ProfesorController from "../controllers/ProfesorController.js";
+import ProfesorController from "../controllers/profesor.controller.js";
+import multer from "multer";
+import path from "path";
 
 // Destructuración de los métodos del controlador de profesores
-const { registrarProfesor, mostrarProfesorAPI, mostrarProfesor, buscarProfesor, mostrarPreGrados, mostrarPosGrados, mostrarAreasConocimiento, registerPreGrado, registerPosGrado, registerAreaConocimiento } = ProfesorController;
+const {
+  registrarProfesor,
+  mostrarProfesorAPI,
+  mostrarProfesor,
+  buscarProfesor,
+  mostrarPreGrados,
+  mostrarPosGrados,
+  mostrarAreasConocimiento,
+  registerPreGrado,
+  registerPosGrado,
+  registerAreaConocimiento,
+} = ProfesorController;
 
 // Creación del router para las rutas de profesores
 export const profesorRouter = Router();
@@ -13,6 +26,33 @@ export const profesorRouter = Router();
  * SECCIÓN DE RUTAS GET
  * =============================================
  */
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/profesores/");
+  },
+  filename: (req, file, cb) => {
+    // Generar 12 caracteres hexadecimales únicos
+    const uniqueName = Array.from({ length: 12 }, () =>
+      Math.floor(Math.random() * 16).toString(16)
+    ).join("");
+
+    // Obtener la extensión original del archivo
+    const fileExtension = path.extname(file.originalname);
+
+    // Nuevo nombre del archivo
+    const newFileName = uniqueName + fileExtension;
+
+    // ✅ Actualizar el originalname para que tenga el nuevo valor
+    file.originalname = newFileName;
+
+    cb(null, newFileName);
+  },
+});
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 /**
  * @name GET /api/Profesor
@@ -33,17 +73,17 @@ export const profesorRouter = Router();
 profesorRouter.get(
   "/api/Profesor",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   mostrarProfesorAPI
 );
 
 /**
  * @name GET /Profesor/pre-grado
- * @description Obtener un listado de los pre-grado de los profesores existentes 
+ * @description Obtener un listado de los pre-grado de los profesores existentes
  * @query {string} [tipo] - Filtro por tipo (1: TSU, Tecnico Medio, Licenciado, etc.)
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -57,17 +97,17 @@ profesorRouter.get(
 profesorRouter.get(
   "/Profesor/pre-grado",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   mostrarPreGrados
 );
 
 /**
  * @name GET /Profesor/post-grado
- * @description Obtener un listado de los pos-grado de los profesores existentes 
+ * @description Obtener un listado de los pos-grado de los profesores existentes
  * @query {string} [tipo] - Filtro por tipo (Maestria, Doctorado, etc.)
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -81,17 +121,17 @@ profesorRouter.get(
 profesorRouter.get(
   "/Profesor/post-grado",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   mostrarPosGrados
 );
 
 /**
  * @name GET /Profesor/areas-conocimiento
- * @description Obtener un listado de las areas de conocimiento de los profesores existentes 
+ * @description Obtener un listado de las areas de conocimiento de los profesores existentes
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
  *   - Vicerrector
@@ -104,10 +144,10 @@ profesorRouter.get(
 profesorRouter.get(
   "/Profesor/areas-conocimiento",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   mostrarAreasConocimiento
 );
@@ -122,10 +162,10 @@ profesorRouter.get(
 profesorRouter.get(
   "/Profesor",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   mostrarProfesor
 );
@@ -179,10 +219,11 @@ profesorRouter.get(
 profesorRouter.post(
   "/Profesor/register",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
   ]),
+  upload.single("imagen"),
   registrarProfesor
 );
 
@@ -204,10 +245,10 @@ profesorRouter.post(
 profesorRouter.post(
   "/Profesor/search",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   buscarProfesor
 );
@@ -232,10 +273,10 @@ profesorRouter.post(
 profesorRouter.post(
   "/Profesor/pre-grado",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   registerPreGrado
 );
@@ -260,10 +301,10 @@ profesorRouter.post(
 profesorRouter.post(
   "/Profesor/pos-grado",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   registerPosGrado
 );
@@ -285,10 +326,10 @@ profesorRouter.post(
 profesorRouter.post(
   "/Profesor/areas-conocimiento",
   middlewareAuth([
-    'SuperAdmin',
-    'Vicerrector',
-    'Director General de Gestión Curricular',
-    'Coordinador'
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   registerAreaConocimiento
 );

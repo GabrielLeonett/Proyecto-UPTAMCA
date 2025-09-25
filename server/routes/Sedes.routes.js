@@ -1,5 +1,5 @@
 import { Router } from "express";
-import SedesController from "../controllers/SedesController.js";
+import SedesController from "../controllers/sedes.controller.js";
 import { middlewareAuth } from "../middlewares/auth.js";
 
 const {registerSede, mostrarSedes } = SedesController;

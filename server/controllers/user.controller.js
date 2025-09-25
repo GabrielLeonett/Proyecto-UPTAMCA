@@ -1,5 +1,5 @@
 import { validationPartialUser } from "../schemas/UserSchema.js";
-import UserModel from "../models/UserModel.js";
+import UserModel from "../models/user.model.js";
 import { comparePassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
