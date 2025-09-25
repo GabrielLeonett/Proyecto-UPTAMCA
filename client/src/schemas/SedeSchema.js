@@ -1,0 +1,37 @@
+import { z } from "zod";
+
+export const SedeSchema = z.object({
+  nombreSede: z
+    .string({
+      invalid_type_error: "El nombre de la sede debe ser un texto",
+      required_error: "El nombre de la sede es obligatorio",
+    })
+    .min(3, { message: "El nombre de la sede debe tener al menos 3 caracteres" })
+    .max(100, { message: "El nombre de la sede debe tener como máximo 100 caracteres" }),
+  UbicacionSede: z
+    .string({
+      invalid_type_error: "La ubicación de la sede debe ser un texto",
+      required_error: "La ubicación de la sede es obligatoria",
+    })
+    .min(5, { message: "La ubicación de la sede debe tener al menos 5 caracteres" })
+    .max(200, { message: "La ubicación de la sede debe tener como máximo 200 caracteres" }),
+  GoogleSede: z
+    .string({
+      invalid_type_error: "El enlace de Google Maps debe ser un texto",
+      required_error: "El enlace de Google Maps es obligatorio",
+    })
+    .url({ message: "El enlace de Google Maps debe ser una URL válida" })
+    .max(300, { message: "El enlace de Google Maps debe tener como máximo 300 caracteres" }),
+});
+
+// Validación completa
+export const validationSede = ({ input }) => {
+  const validationResult = SedeSchema.safeParse(input);
+  return validationResult;
+};
+
+// Validación parcial (para actualizaciones)
+export const validationPartialSede = ({ input }) => {
+  const PartialSedeSchema = SedeSchema.partial().safeParse(input);
+  return PartialSedeSchema;
+};
