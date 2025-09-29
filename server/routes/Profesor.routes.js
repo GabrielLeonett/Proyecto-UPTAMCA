@@ -18,6 +18,7 @@ const {
   registerAreaConocimiento,
   registrarDisponibilidad,
   actualizarProfesor,
+  destituirProfesor,
 } = ProfesorController;
 
 // Creación del router para las rutas de profesores
@@ -372,4 +373,13 @@ profesorRouter.put(
  * =============================================
  */
 
-//profesorRouter.put('/Profesor?id', actualizarProfesor)
+profesorRouter.delete(
+  "/Profesores/Delete",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  destituirProfesor
+);

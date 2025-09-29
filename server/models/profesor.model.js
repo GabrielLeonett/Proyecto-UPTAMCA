@@ -756,4 +756,62 @@ export default class ProfesorModel {
       );
     }
   }
+
+  /**
+   * Destituir/eliminar un profesor
+   *
+   * @static
+   * @async
+   * @method destituirProfesor
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {Object} datos - Datos para la destitución
+   * @param {number} datos.id_profesor - ID del profesor (cédula)
+   * @param {string} datos.tipo_accion - Tipo de acción: DESTITUCION, ELIMINACION, RENUNCIA, RETIRO
+   * @param {string} datos.razon - Razón de la destitución
+   * @param {string} [datos.observaciones] - Observaciones adicionales
+   * @param {Date} [datos.fecha_efectiva] - Fecha efectiva de la destitución
+   * @returns {Promise<Object>} Resultado de la operación
+   *
+   * @throws {500} Si ocurre un error en el proceso
+   */
+  static async destituirProfesor({ usuario_accion, datos }) {
+    try {
+      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
+        datos;
+
+      // Consulta SQL para llamar al procedimiento almacenado
+      const query = `
+        CALL public.eliminar_destituir_profesor(
+          NULL, ?, ?, ?, ?, ?, ?
+        )
+      `;
+
+      // Parámetros para la consulta
+      const params = [
+        usuario_accion.id, // p_usuario_accion
+        id_profesor, // p_id_profesor
+        tipo_accion, // p_tipo_accion
+        razon, // p_razon
+        observaciones || null, // p_observaciones
+        fecha_efectiva || null, // p_fecha_efectiva
+      ];
+
+      console.log("Ejecutando destitución con parámetros:", params);
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, params);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Destitucion del profesor exitosa."
+      );
+    } catch (error) {
+      console.error("Error en DestitucionModel.destituirProfesor:", error);
+
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al destituir al profesor"
+      );
+    }
+  }
 }

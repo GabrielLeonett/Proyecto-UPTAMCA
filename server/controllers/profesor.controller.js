@@ -2,6 +2,7 @@ import {
   validationPartialProfesor,
   validationProfesor,
 } from "../schemas/ProfesorSchema.js";
+import { validationDestitucion } from "../schemas/DestitucionSchema.js";
 import ProfesorModel from "../models/profesor.model.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
@@ -514,6 +515,58 @@ export default class ProfesorController {
     } catch (error) {
       // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * Destituir/eliminar un profesor
+   *
+   * @static
+   * @async
+   * @method destituirProfesor
+   * @param {Object} req - Request object
+   * @param {Object} req.body - Datos de la destitución
+   * @param {number} req.body.id_profesor - ID del profesor
+   * @param {string} req.body.tipo_accion - Tipo de acción
+   * @param {string} req.body.razon - Razón de la destitución
+   * @param {string} [req.body.observaciones] - Observaciones
+   * @param {Date} [req.body.fecha_efectiva] - Fecha efectiva
+   * @param {Object} res - Response object
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async destituirProfesor(req, res) {
+    try {
+      // Validar datos de entrada
+      console.log(req.body);
+      let validaciones = validationErrors(validationDestitucion(req.body));
+      console.log(validaciones);
+
+      if (validaciones !== true) {
+        return FormatResponseController.respuestaError(res, {
+          status: 400,
+          title: "Datos inválidos",
+          message: "Error de validación en los datos de destitución",
+          error: validaciones,
+        });
+      }
+
+      // Ejecutar destitución
+      const result = await ProfesorModel.destituirProfesor({
+        usuario_accion: req.user,
+        datos: req.body,
+      });
+
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
+      console.error("Error en DestitucionController.destituirProfesor:", error);
+
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, {
+        status: 500,
+        title: "Error interno",
+        message: "Error inesperado al procesar la destitución",
+        error: error.message,
+      });
     }
   }
 }
