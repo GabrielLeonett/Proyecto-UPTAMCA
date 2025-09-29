@@ -25,10 +25,9 @@ export async function up(knex) {
       .notNullable()
       .comment("Municipio donde vive el profesor");
     table
-      .timestamp("created_at")
-      .notNullable()
-      .defaultTo(knex.fn.now())
-      .comment("Fecha de creación del registro");
+      .boolean("activo")
+      .defaultTo(true)
+      .comment("Indica si el usuario está activo en el sistema como profesor");
     table
       .timestamp("updated_at")
       .notNullable()

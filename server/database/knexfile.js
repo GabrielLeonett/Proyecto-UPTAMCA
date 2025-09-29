@@ -1,8 +1,6 @@
-import dotenv from "dotenv";
+import {loadEnv} from '../utils/utilis.js';
 
-const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-
-dotenv.config({ path: envFile }); // Cargar el archivo correspondiente
+loadEnv();
 
 // knexfile.js
 export default {
@@ -16,10 +14,10 @@ export default {
       port: process.env.DB_PORT,
     },
     migrations: {
-      directory: "./database/migrations",
+      directory: "./migrations",
     },
     seeds: {
-      directory: "./database/seeds",
+      directory: "./seeds",
     },
   },
   production: {
@@ -38,10 +36,10 @@ export default {
       createTimeoutMillis: 30000, // Tiempo máximo para crear nueva conexión
     },
     migrations: {
-      directory: "./database/migrations",
+      directory: "./migrations",
     },
     seeds: {
-      directory: "./database/seeds",
+      directory: "./seeds",
     },
   },
 };

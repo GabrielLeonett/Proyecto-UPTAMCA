@@ -2,7 +2,7 @@
 import { enviarEmail } from "../utils/EnviarCorreos.js";
 
 // Importación de la conexión a la base de datos
-import db from "../db.js";
+import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
 import FormatResponseModel from "../utils/FormatResponseModel.js";

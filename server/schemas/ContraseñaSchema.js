@@ -1,15 +1,6 @@
-import z from 'zod'
+import z from "zod";
 
-export const loginSchema = z.object({
-  email: z
-    .string({
-      required_error: "El email es requerido",
-      invalid_type_error: "El email debe ser texto"
-    })
-    .email("El email no es válido")
-    .max(150, "El email no puede exceder 150 caracteres")
-    .nonempty("El email no puede estar vacío"),
-    
+export const ContraseñaSchema = z.object({
   password: z
     .string({
       required_error: "La contraseña es requerida",
@@ -21,4 +12,22 @@ export const loginSchema = z.object({
     .regex(/\d/, "La contraseña debe contener al menos un número")
     .regex(/^[a-zA-Z0-9!@#$%^&*()_+=[\]{};':"|,.<>/?-]*$/, "La contraseña solo puede contener caracteres alfanuméricos y símbolos especiales")
     .nonempty("La contraseña no puede estar vacía"),
+  
+  repetirPassword: z
+    .string({
+      required_error: "Debes repetir la contraseña",
+      invalid_type_error: "La contraseña debe ser texto",
+    })
+    .optional()
+})
+.refine((data) => data.password === data.repetirPassword, {
+  message: "Las contraseñas no coinciden",
+  path: ["repetirPassword"],
 });
+
+// Validación completa
+export const validationContraseña = ({input}) => {
+  const validationResult = ContraseñaSchema.safeParse(input);
+  return validationResult;
+};
+

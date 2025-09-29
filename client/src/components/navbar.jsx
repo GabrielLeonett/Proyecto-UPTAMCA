@@ -23,7 +23,7 @@ function ResponsiveAppBar({ backgroundColor }) {
   const [userRoles, setUserRoles] = useState(["publico"]);
   const navigate = useNavigate();
   const [anchorElUser, setAnchorElUser] = useState(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
 
@@ -35,7 +35,7 @@ function ResponsiveAppBar({ backgroundColor }) {
     if (user && user.roles) {
       setUserRoles(user.roles);
     }
-  }, [user]);
+  }, [user, isAuthenticated]);
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
@@ -255,7 +255,6 @@ function ResponsiveAppBar({ backgroundColor }) {
               onClose={handleCloseNavMenu}
               sx={{ display: { xs: "block", md: "none" } }}
             >
-
               {filteredPages.map((page) => (
                 <div key={page.name}>
                   {page.submenu ? (
@@ -315,9 +314,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                   <div>
                     <Button
                       id={`${page.name}-button`}
-                      aria-controls={Boolean(anchorElSubmenu[page.name]) ? `${page.name}-menu` : undefined}
                       aria-haspopup="true"
-                      aria-expanded={Boolean(anchorElSubmenu[page.name]) ? "true" : undefined}
                       onClick={(e) => handleOpenSubmenu(e, page.name)}
                       sx={{
                         my: 2,
@@ -423,21 +420,24 @@ function ResponsiveAppBar({ backgroundColor }) {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               {!isAuthenticated ? (
-                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>Iniciar sesión</MenuItem>
-              ) : [
-                <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
-                  Mi cuenta
-                </MenuItem>,
-                <MenuItem
-                  key="cerrar-sesion"
-                  onClick={() => {
-                    handleCloseUserMenu();
-                    // Add logout logic here
-                  }}
-                >
-                  Cerrar sesión
+                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>
+                  Iniciar sesión
                 </MenuItem>
-              ]}
+              ) : (
+                [
+                  <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
+                    Mi cuenta
+                  </MenuItem>,
+                  <MenuItem
+                    key="cerrar-sesion"
+                    onClick={() => {
+                      logout();
+                    }}
+                  >
+                    Cerrar sesión
+                  </MenuItem>
+                ]
+              )}
             </Menu>
           </Box>
         </Toolbar>

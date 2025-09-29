@@ -1,8 +1,56 @@
+// utils/envLoader.js
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
+
+/**
+ * Carga las variables de entorno desde el archivo correspondiente al entorno actual
+ * @returns {Object} Objeto con las variables de entorno cargadas
+ * @example
+ * // Carga .env.development o .env.production según NODE_ENV
+ * const env = loadEnv();
+ * console.log(env.DB_PASSWORD);
+ */
+export function loadEnv() {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  
+  const env = process.env.NODE_ENV || "development";
+  const envFile = path.resolve(__dirname, `../.env.${env}`);
+  
+  // Cargar y verificar
+  const result = dotenv.config({ path: envFile });
+  
+  if (result.error) {
+    console.error("Error loading .env file:", result.error);
+    throw result.error;
+  }
+}
+/**
+ * Convierte una variable a string en minúsculas si es de tipo string
+ * @param {*} variable - Variable a convertir
+ * @returns {string|undefined} String en minúsculas o undefined si no es string
+ * @example
+ * asegurarStringEnMinusculas("HOLA"); // "hola"
+ * asegurarStringEnMinusculas(123); // undefined
+ */
 export function asegurarStringEnMinusculas(variable) {
   if (typeof variable === "string") {
     return variable.toLowerCase();
   }
 }
+
+/**
+ * Parsea un campo que puede ser JSON string, array u otro tipo a array
+ * @param {*} field - Campo a parsear (string JSON, array, u otro tipo)
+ * @param {string} fieldName - Nombre del campo para mensajes de error
+ * @returns {Array} Array parseado
+ * @throws {Error} Si el formato del campo es inválido
+ * @example
+ * parseJSONField('["a", "b"]', 'tags'); // ["a", "b"]
+ * parseJSONField(["a", "b"], 'tags'); // ["a", "b"]
+ * parseJSONField("texto", 'tags'); // Error
+ */
 export const parseJSONField = (field, fieldName) => {
   if (!field) return [];
 

@@ -11,7 +11,7 @@ import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 import { useTheme } from "@mui/material/styles";
 
-export default function Login() {
+export default function IniciarSession() {
   const theme = useTheme();
   const [processing, setProcessing] = useState(false);
 
@@ -28,8 +28,6 @@ export default function Login() {
   });
 
   const { login } = useAuth();
-
-  
 
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
@@ -49,7 +47,7 @@ export default function Login() {
 
   return (
     <>
-      <ResponsiveAppBar  backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box className="my-10 flex min-h-[calc(100vh-64px)] items-center justify-center ">
         <Box

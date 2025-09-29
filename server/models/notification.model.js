@@ -3,7 +3,7 @@ import {
   getNotificationClient,
   disconnectNotificationListener
 } from '../db.js';
-import db from '../db.js';
+import db from "../database/db.js";
 
 export default class NotificationModel {
   static listeners = new Map();

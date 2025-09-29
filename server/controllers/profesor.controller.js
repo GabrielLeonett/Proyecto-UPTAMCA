@@ -1,4 +1,7 @@
-import { validationProfesor } from "../schemas/ProfesorSchema.js";
+import {
+  validationPartialProfesor,
+  validationProfesor,
+} from "../schemas/ProfesorSchema.js";
 import ProfesorModel from "../models/profesor.model.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
@@ -435,6 +438,80 @@ export default class ProfesorController {
         });
       }
 
+      // Manejo de errores inesperados
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+  /**
+   * Actualizar información de profesor
+   *
+   * @static
+   * @async
+   * @method actualizarProfesor
+   * @param {Object} req - Objeto de request de Express
+   * @param {Object} req.body - Datos para la actualización del profesor
+   * @param {number} req.body.id_profesor - ID del profesor (cédula) - REQUERIDO
+   * @param {string} [req.body.nombres] - Nombres del profesor
+   * @param {string} [req.body.apellidos] - Apellidos del profesor
+   * @param {string} [req.body.email] - Email del profesor
+   * @param {string} [req.body.direccion] - Dirección del profesor
+   * @param {string} [req.body.password] - Password del profesor
+   * @param {string} [req.body.telefono_movil] - Teléfono móvil
+   * @param {string} [req.body.telefono_local] - Teléfono local
+   * @param {Date} [req.body.fecha_nacimiento] - Fecha de nacimiento
+   * @param {string} [req.body.genero] - Género (masculino/femenino)
+   * @param {string} [req.body.nombre_categoria] - Nombre de la categoría
+   * @param {string} [req.body.nombre_dedicacion] - Nombre de la dedicación
+   * @param {Array} [req.body.pre_grado] - Array de pre-grados
+   * @param {Array} [req.body.pos_grado] - Array de pos-grados
+   * @param {Array} [req.body.area_de_conocimiento] - Array de áreas de conocimiento
+   * @param {string} [req.body.imagen] - URL de la imagen
+   * @param {string} [req.body.municipio] - Municipio
+   * @param {Date} [req.body.fecha_ingreso] - Fecha de ingreso
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Resultados de la actualización
+   *
+   * @throws {500} Si ocurre un error en la actualización
+   *
+   * @example
+   * // Ejemplo de body:
+   * {
+   *   id_profesor: 31264460,
+   *   nombres: "Juan",
+   *   apellidos: "Pérez",
+   *   email: "juan.perez@email.com",
+   *   genero: "masculino",
+   *   nombre_categoria: "Instructor",
+   *   nombre_dedicacion: "Tiempo Completo"
+   * }
+   */
+  static async actualizarProfesor(req, res) {
+    try {
+      // ✅ Primero validar los datos con el schema
+      const validation = validationPartialProfesor(req.body);
+
+      if (!validation.success) {
+        const errors = validation.error.issues.map((issue) => ({
+          field: issue.path[0],
+          message: issue.message,
+        }));
+
+        return FormatResponseController.respuestaError(res, {
+          status: 400,
+          title: "Datos inválidos",
+          message: "Error de validación",
+          error: errors,
+        });
+      }
+
+      // ✅ Si la validación pasa, proceder con la actualización
+      const result = await ProfesorModel.actualizarProfesor({
+        usuario_accion: req.user,
+        datos: req.body, // Usar los datos validados
+      });
+
+      FormatResponseController.respuestaExito(res, result);
+    } catch (error) {
       // Manejo de errores inesperados
       FormatResponseController.respuestaError(res, error);
     }

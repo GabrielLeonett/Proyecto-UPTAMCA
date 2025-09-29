@@ -89,12 +89,6 @@ export async function enviarEmail({ Destinatario, Correo }) {
                       a quien va dirigido, le solicitamos eliminarlo y notificarlo al remitente.
             </p>
           </div>
-          <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-              <a href="http://localhost:5173/login" style="display: inline-block; background-color: #1C75BA; color: white; 
-                        padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-                  Acceder a la plataforma
-              </a>
-          </div>
           <footer style="background-color: #f3f4f6; padding: 15px; text-align: center; font-size: 12px;">
               © ${año.getUTCFullYear()} UPTAMCA. Todos los derechos reservados.
           </footer>
@@ -110,7 +104,9 @@ export async function enviarEmail({ Destinatario, Correo }) {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    throw "Error al enviar el correo electrónico";
+    throw {message: "Error al enviar el correo electrónico", 
+      tipo: 'Correo'
+    };
   }
 }
 
