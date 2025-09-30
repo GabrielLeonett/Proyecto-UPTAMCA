@@ -27,7 +27,7 @@ import { AulaRouter } from "./routes/aula.routes.js";
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-  cors: ["http://localhost:5173"],
+  cors: ["*"],
 });
 
 // Middleware de seguridad
@@ -35,9 +35,10 @@ app.use(segurityMiddleware);
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
+console.log(process.env.ORIGIN_FRONTEND)
 app.use(
   cors({
-    origin: process.env.ORIGIN_FRONTEND,
+    origin: "*",
     credentials: true,
   })
 );
