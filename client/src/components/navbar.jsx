@@ -16,6 +16,7 @@ import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
+import Notification from "./Notification/index";
 import { useEffect, useState } from "react";
 
 function ResponsiveAppBar({ backgroundColor }) {
@@ -374,6 +375,9 @@ function ResponsiveAppBar({ backgroundColor }) {
             >
               <FacebookIcon sx={{ color: "inherit" }} />
             </IconButton>
+
+            <Notification />
+
             <IconButton
               sx={{ color: "white" }}
               onClick={handleOpenUserMenu}
@@ -435,7 +439,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                     }}
                   >
                     Cerrar sesión
-                  </MenuItem>
+                  </MenuItem>,
                 ]
               )}
             </Menu>
