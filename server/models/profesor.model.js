@@ -557,7 +557,6 @@ export default class ProfesorModel {
       const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
 
       // Consulta SQL para registrar disponibilidad usando procedimiento almacenado
-      // ✅ CORRECTO: Usar SELECT para PostgreSQL
       const query = `CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)`;
 
       // Parámetros para la consulta (coinciden con el procedimiento)
@@ -569,36 +568,20 @@ export default class ProfesorModel {
         hora_fin, // p_hora_fin (formato HH:MM:SS)
       ];
 
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
+      console.log("Datos de disponibilidad recibidos:", params);
+      console.log("Query:", query);
 
-      // El resultado viene en la propiedad p_resultado
-      const resultado = rows[0].p_resultado;
+      // Ejecución de la consulta - usar parámetros posicionales ($1, $2, etc.)
+      const result = await db.raw(query, params);
+      console.log("Resultado de la consulta de disponibilidad:", result);
 
-      // Verificar si fue exitoso
-      if (resultado.status === "success") {
-        return FormatResponseModel.respuestaPostgres(
-          resultado.data,
-          resultado.message || "Disponibilidad registrada exitosamente"
-        );
-      } else {
-        // Si hay error, lanzar excepción
-        throw {
-          message: resultado.message,
-          status: resultado.status_code || 400,
-          details: resultado,
-        };
-      }
+      return FormatResponseModel.respuestaPostgres(
+        result,
+        "Disponibilidad registrada exitosamente"
+      );
     } catch (error) {
-      error.details = {
-        path: "ProfesorModel.registrarDisponibilidad",
-        originalError: error.message,
-      };
-
-      // Si ya es un error formateado, relanzarlo
-      if (error.status) {
-        throw error;
-      }
+      error.path = "ProfesorModel.registrarDisponibilidad";
+      console.log("Error al registrar disponibilidad:", error);
 
       throw FormatResponseModel.respuestaError(
         error,

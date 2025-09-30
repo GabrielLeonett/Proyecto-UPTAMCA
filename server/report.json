@@ -545,5 +545,192 @@
       "path": "ProfesorModel.registrarDisponibilidad",
       "originalError": "SELECT * FROM public.registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5) - public.registrar_disponibilidad_docente_completo(unknown, unknown, unknown, unknown, unknown) es un procedimiento"
     }
+  },
+  {
+    "timestamp": "2025-09-25T14:39:59.697Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "validation is not defined",
+    "stack": "ReferenceError: validation is not defined\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:419:16)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:41:38.040Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:42:48.256Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:44:50.427Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:46:00.174Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:48:23.594Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:49:07.848Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)",
+    "details": {
+      "path": "ProfesorModel.registrarDisponibilidad",
+      "originalError": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+    }
+  },
+  {
+    "timestamp": "2025-09-25T14:50:18.836Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T14:51:15.102Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T14:51:46.876Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Undefined binding(s) detected for keys [1,2,3,4] when compiling RAW query: CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)"
+  },
+  {
+    "timestamp": "2025-09-25T14:53:49.375Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Faltan campos requeridos: id_profesor, dia_semana, hora_inicio, hora_fin"
+  },
+  {
+    "timestamp": "2025-09-25T14:54:49.600Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Se esperaba un objeto, pero se recibió un array"
+  },
+  {
+    "timestamp": "2025-09-25T14:54:57.416Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Se esperaba un objeto, pero se recibió un array"
+  },
+  {
+    "timestamp": "2025-09-25T14:56:09.756Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:403:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:56:27.851Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:403:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:57:19.574Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:403:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:57:31.774Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:403:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:58:36.691Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:402:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:58:59.734Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:403:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T14:59:27.067Z",
+    "status": 500,
+    "state": "critical",
+    "title": "Error en el manejador de errores",
+    "message": "Spread syntax requires ...iterable[Symbol.iterator] to be a function",
+    "stack": "TypeError: Spread syntax requires ...iterable[Symbol.iterator] to be a function\n    at registrarDisponibilidad (file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/controllers/profesor.controller.js:402:9)\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:58:7\n    at C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:261:12\n    at getSecret (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:97:14)\n    at module.exports [as verify] (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\jsonwebtoken\\verify.js:101:10)\n    at file:///C:/Users/David/OneDrive/Documents/Proyecto%20UPTAMCA/Proyecto-UPTAMCA/server/middlewares/auth.js:30:9\n    at Layer.handleRequest (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\layer.js:152:17)\n    at next (C:\\Users\\David\\OneDrive\\Documents\\Proyecto UPTAMCA\\Proyecto-UPTAMCA\\server\\node_modules\\router\\lib\\route.js:157:13)"
+  },
+  {
+    "timestamp": "2025-09-25T15:01:47.604Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "Expected 5 bindings, saw 0"
+  },
+  {
+    "timestamp": "2025-09-29T02:44:21.190Z",
+    "status": 500,
+    "state": "error",
+    "title": "Error en el modelo",
+    "message": "CALL public.registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL) - procedure public.registrar_profesor_completo(unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown, unknown) does not exist",
+    "code": "42883"
   }
 ]

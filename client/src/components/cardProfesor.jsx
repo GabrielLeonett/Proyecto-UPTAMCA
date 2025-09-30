@@ -3,10 +3,12 @@ import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import Swal from "sweetalert2";
 import axios from "../apis/axios";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function CardProfesor({ profesor, onProfesorUpdate }) {
   const theme = useTheme();
-
+  const navigate = useNavigate();
   // Función para eliminar con motivo
   const handleEliminar = async () => {
     const { value: motivo } = await Swal.fire({
@@ -24,7 +26,7 @@ export default function CardProfesor({ profesor, onProfesorUpdate }) {
 
     if (motivo) {
       try {
-        await axios.put(`/Profesor/eliminar/${profesor.id}`, { motivo });
+        await axios.put(`/Profesor/eliminar/${profesor.cedula}`, { motivo });
         Swal.fire("Eliminado", "El profesor fue eliminado correctamente", "success");
         if (onProfesorUpdate) onProfesorUpdate(); // refrescar lista
       } catch (error) {
@@ -38,6 +40,10 @@ export default function CardProfesor({ profesor, onProfesorUpdate }) {
     Swal.fire("Modificar", "Aquí puedes abrir un formulario de edición.", "info");
     // Aquí deberías redirigir a la vista de edición o abrir un modal
   };
+
+  const handleAsignarDisponibilidad = () => {
+    navigate(`/profesor/${profesor.id_profesor}/disponiblidad`); // Redirigir a la página de disponibilidad
+  }
 
   return (
     <Grid
@@ -193,6 +199,9 @@ export default function CardProfesor({ profesor, onProfesorUpdate }) {
         </Button>
         <Button variant="outlined" color="error" onClick={handleEliminar}>
           Eliminar
+        </Button>
+        <Button variant="outlined" color="error" onClick={handleAsignarDisponibilidad}>
+          Asignar Disponibilidad
         </Button>
       </Grid>
     </Grid>

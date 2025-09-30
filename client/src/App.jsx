@@ -207,7 +207,7 @@ export default function App() {
               />
 
               <Route
-                path="/DisponibilidadDoc"
+                path="/profesor/:id_profesor/disponiblidad"
                 element={
                   <ProtectedViews
                     allowedRoles={[
@@ -356,7 +356,7 @@ export default function App() {
                 }
               />
 
-<Route
+              <Route
                 path="/AssignCoordinador"
                 element={
                   <ProtectedViews

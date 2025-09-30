@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Button, Typography, Paper } from "@mui/material";
 import ResponsiveAppBar from "../components/navbar";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import Swal from "sweetalert2";
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
@@ -23,9 +26,50 @@ const generateTimeBlocks = (startHour, endHour, intervalMinutes = 45) => {
   return blocks;
 };
 
+// Función para agrupar horas consecutivas en rangos
+const groupConsecutiveHours = (hours) => {
+  if (hours.length === 0) return [];
+
+  // Convertir horas a minutos para facilitar la comparación
+  const toMinutes = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const minutesArray = hours.map(toMinutes).sort((a, b) => a - b);
+  const ranges = [];
+  let start = minutesArray[0];
+  let end = minutesArray[0];
+
+  for (let i = 1; i < minutesArray.length; i++) {
+    // 45 minutos = duración de cada bloque
+    if (minutesArray[i] === end + 45) {
+      end = minutesArray[i];
+    } else {
+      // Convertir minutos de vuelta a formato HH:MM
+      const startTime = `${Math.floor(start / 60).toString().padStart(2, '0')}:${(start % 60).toString().padStart(2, '0')}`;
+      const endTime = `${Math.floor((end + 45) / 60).toString().padStart(2, '0')}:${((end + 45) % 60).toString().padStart(2, '0')}`;
+      ranges.push({ inicio: startTime, fin: endTime });
+
+      start = minutesArray[i];
+      end = minutesArray[i];
+    }
+  }
+
+  // Agregar el último rango
+  const startTime = `${Math.floor(start / 60).toString().padStart(2, '0')}:${(start % 60).toString().padStart(2, '0')}`;
+  const endTime = `${Math.floor((end + 45) / 60).toString().padStart(2, '0')}:${((end + 45) % 60).toString().padStart(2, '0')}`;
+  ranges.push({ inicio: startTime, fin: endTime });
+
+  return ranges;
+};
+
 export default function Disponibilidad() {
   const [selectedBlocks, setSelectedBlocks] = useState({});
+  const [loading, setLoading] = useState(false);
   const timeBlocks = generateTimeBlocks(7, 20); // 7am a 8pm
+  const parametros = useParams();
+  const { id_profesor } = parametros;
 
   // Inicializar selectedBlocks
   DAYS.forEach(day => {
@@ -39,6 +83,117 @@ export default function Disponibilidad() {
       : [...current, hour];
     setSelectedBlocks({ ...selectedBlocks, [day]: updated });
   };
+
+  const guardarDisponibilidad = async () => {
+    if (!id_profesor) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'ID de profesor no válido'
+      });
+      return;
+    }
+
+    // Preparar los datos para enviar
+    const disponibilidadData = [];
+
+    DAYS.forEach(day => {
+      const horasDia = selectedBlocks[day] || [];
+      if (horasDia.length > 0) {
+        const rangos = groupConsecutiveHours(horasDia);
+        rangos.forEach(rango => {
+          disponibilidadData.push({
+            id_profesor: parseInt(id_profesor),
+            dia_semana: day,
+            hora_inicio: rango.inicio + ':00', // Agregar segundos
+            hora_fin: rango.fin + ':00' // Agregar segundos
+          });
+        });
+      }
+    });
+
+    if (disponibilidadData.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin datos',
+        text: 'No hay horarios seleccionados para guardar'
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Obtener el token de autorización de las cookies
+      const getCookie = (name) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+      };
+
+      const token = getCookie('autorization');
+
+      // Enviar cada registro individualmente
+      const promises = disponibilidadData.map(async (data) => {
+        const response = await axios.post(
+          'http://localhost:3000/Profesor/Register/Disponibilidad',
+          data, // Enviar objeto individual, no array
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Cookie': `autorization=${token}`
+            },
+            withCredentials: true
+          }
+        );
+        return response;
+      });
+
+      // Esperar a que todas las peticiones se completen
+      const results = await Promise.all(promises);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: `Disponibilidad guardada correctamente (${results.length} rangos registrados)`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      console.log('Disponibilidad guardada:', disponibilidadData);
+    } catch (error) {
+      console.error('Error al guardar disponibilidad:', error);
+
+      let errorMessage = 'Error al guardar la disponibilidad';
+      if (error.response) {
+        errorMessage = error.response.data?.message || errorMessage;
+      }
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: errorMessage
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para formatear el resumen por días
+  const getResumenPorDias = () => {
+    const resumen = {};
+
+    DAYS.forEach(day => {
+      const horasDia = selectedBlocks[day] || [];
+      if (horasDia.length > 0) {
+        resumen[day] = groupConsecutiveHours(horasDia);
+      }
+    });
+
+    return resumen;
+  };
+
+  const resumen = getResumenPorDias();
 
   return (
     <>
@@ -91,18 +246,25 @@ export default function Disponibilidad() {
           </table>
         </Paper>
 
-        {/* Resumen */}
+        {/* Resumen mejorado */}
         <div style={{ marginTop: "20px" }}>
           <Typography variant="h6">Resumen de disponibilidad:</Typography>
-          {DAYS.map(day => {
-            const blocks = selectedBlocks[day];
-            if (!blocks || blocks.length === 0) return null;
-            return (
-              <Typography key={day}>
-                <strong>{day}:</strong> {blocks.join(", ")}
-              </Typography>
-            );
-          })}
+          {Object.keys(resumen).length === 0 ? (
+            <Typography color="textSecondary">No hay horarios seleccionados</Typography>
+          ) : (
+            Object.entries(resumen).map(([dia, rangos]) => (
+              <div key={dia} style={{ marginBottom: "10px" }}>
+                <Typography>
+                  <strong>{dia}:</strong>
+                </Typography>
+                {rangos.map((rango, index) => (
+                  <Typography key={index} style={{ marginLeft: "20px" }}>
+                    • {rango.inicio} - {rango.fin}
+                  </Typography>
+                ))}
+              </div>
+            ))
+          )}
         </div>
 
         {/* Botón */}
@@ -110,15 +272,15 @@ export default function Disponibilidad() {
           variant="contained"
           color="primary"
           style={{ marginTop: "15px", borderRadius: "8px" }}
-          onClick={() => console.log(selectedBlocks)}
+          onClick={guardarDisponibilidad}
+          disabled={loading}
         >
-          Guardar disponibilidad
+          {loading ? "Guardando..." : "Guardar disponibilidad"}
         </Button>
       </div>
     </>
   );
 }
-
 
 const styles = {
   th: {

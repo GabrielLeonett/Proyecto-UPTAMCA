@@ -23,50 +23,18 @@ export const DisponibilidadDocenteSchema = z
 
     hora_inicio: z
       .string()
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "La hora de inicio debe tener formato HH:MM (24 horas)",
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, {
+        message: "La hora de inicio debe tener formato HH:MM:SS(24 horas)",
       })
-      .nonempty({ message: "La hora de inicio es obligatoria" })
-      .refine(
-        (hora) => {
-          const [horas, minutos] = hora.split(":").map(Number);
-          return horas >= 0 && horas <= 23 && minutos >= 0 && minutos <= 59;
-        },
-        { message: "Hora de inicio inválida" }
-      ),
-
+      .nonempty({ message: "La hora de inicio es obligatoria" }),
     hora_fin: z
       .string()
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
-        message: "La hora de fin debe tener formato HH:MM (24 horas)",
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, {
+        message: "La hora de fin debe tener formato HH:MM:SS (24 horas)",
       })
       .nonempty({ message: "La hora de fin es obligatoria" })
-      .refine(
-        (hora) => {
-          const [horas, minutos] = hora.split(":").map(Number);
-          return horas >= 0 && horas <= 23 && minutos >= 0 && minutos <= 59;
-        },
-        { message: "Hora de fin inválida" }
-      ),
   })
-  .refine(
-    (data) => {
-      // Validación personalizada: hora_inicio debe ser menor que hora_fin
-      const [horaInicioH, horaInicioM] = data.hora_inicio
-        .split(":")
-        .map(Number);
-      const [horaFinH, horaFinM] = data.hora_fin.split(":").map(Number);
 
-      const inicioMinutos = horaInicioH * 60 + horaInicioM;
-      const finMinutos = horaFinH * 60 + horaFinM;
-
-      return inicioMinutos < finMinutos;
-    },
-    {
-      message: "La hora de inicio debe ser anterior a la hora de fin",
-      path: ["hora_fin"],
-    }
-  );
 
 // Validación completa
 export const validationDisponibilidadDocente = (input) => {
