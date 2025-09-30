@@ -44,6 +44,10 @@ export async function up(knex) {
       .boolean("activo")
       .defaultTo(true)
       .comment("Indica si el usuario está activo en el sistema");
+    table
+      .boolean("primera_vez")
+      .defaultTo(true)
+      .comment("Indica si el usuario ya ingreso al sistema");
     table.timestamp("last_login").comment("Último inicio de sesión");
     table
       .timestamp("created_at")

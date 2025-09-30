@@ -13,7 +13,9 @@ import { lightTheme, darkTheme } from "./components/ui/theme";
 import FormRegister from "./pages/registerProfesor";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
-import Login from "./pages/login";
+import IniciarSession from "./pages/inicioSession";
+import CerrarSession from "./pages/cerrarSession";
+import CambiarContraseña from "./pages/cambiarContraseña";
 import PnfForm from "./pages/PnfFrom";
 import RegisterUnidadCurricular from "./pages/RegisterUnidadCurricular";
 import Prueba from "./pages/prueba";
@@ -48,7 +50,7 @@ import Trayectos from "./pages/Trayecto";
 import ViewSede from "./pages/Sedes";
 import RegisterAula from "./pages/RegisterAula";
 import ViewAula from "./pages/Aulas";
-import AssignCoordinador from "./pages/AssignCoordinador"
+import AssignCoordinador from "./pages/AssignCoordinador";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -61,7 +63,12 @@ export default function App() {
             <Routes>
               {/* Vistas Públicas */}
               <Route path="" element={<Index />} />
-              <Route path="/Inicio-session" element={<Login />} />
+              <Route path="/Inicio-session" element={<IniciarSession />} />
+              <Route path="/Cerrar-session" element={<CerrarSession />} />
+              <Route
+                path="/Cambiar-contraseña"
+                element={<CambiarContraseña />}
+              />
 
               {/* Vistas Protegidas */}
               <Route

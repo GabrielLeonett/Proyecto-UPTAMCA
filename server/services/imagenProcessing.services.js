@@ -114,10 +114,13 @@ class ImageProcessingService {
     }
   }
 
-  async processAndSaveImage(filePath, originalName, options = {}) {
+  async processAndSaveImage(originalName, options = {}) {
+    let tempImagePath = null;
+
     try {
+      // 1. Validar la imagen primero
       const validation = await ImageProcessingService.validateImage(
-        filePath,
+        this.storageImage,
         originalName,
         options
       );
@@ -126,12 +129,12 @@ class ImageProcessingService {
         throw new Error(validation.error || "Error de validación desconocido");
       }
 
-      const fullInputPath = join(filePath, originalName);
+      const fullInputPath = join(this.storageImage, originalName);
+      tempImagePath = fullInputPath; // Guardar referencia para limpieza
 
+      // 2. Generar nombre único PARA LA IMAGEN PROCESADA
       let outputFormat = options.format ? options.format.toLowerCase() : "jpeg";
-      if (outputFormat === "jpg") {
-        outputFormat = "jpeg";
-      }
+      if (outputFormat === "jpg") outputFormat = "jpeg";
 
       const fileExtension =
         outputFormat === "jpeg" ? ".jpg" : `.${outputFormat}`;
@@ -139,6 +142,7 @@ class ImageProcessingService {
       const fileName = uniqueName + fileExtension;
       const outputPath = join(this.storageImage, fileName);
 
+      // 3. Configurar opciones de procesamiento
       const {
         width = 800,
         height = 600,
@@ -147,62 +151,66 @@ class ImageProcessingService {
         withoutEnlargement = true,
       } = options;
 
-      let image;
-      try {
-        image = sharp(fullInputPath);
+      let image = sharp(fullInputPath);
 
-        image = image.resize(width, height, {
-          fit,
-          withoutEnlargement,
-        });
+      // 4. Procesar la imagen
+      image = image.resize(width, height, {
+        fit,
+        withoutEnlargement,
+      });
 
-        switch (outputFormat) {
-          case "jpeg":
-            image = image.jpeg({ quality, mozjpeg: true });
-            break;
-          case "png":
-            image = image.png({ compressionLevel: Math.floor(quality / 10) });
-            break;
-          case "webp":
-            image = image.webp({ quality, lossless: quality === 100 });
-            break;
-          default:
-            image = image.jpeg({ quality });
-            outputFormat = "jpeg";
-        }
-
-        await image.toFile(outputPath);
-      } catch (sharpError) {
-        if (
-          sharpError.message.includes("unsupported image format") ||
-          sharpError.message.includes(
-            "Input file contains unsupported image format"
-          )
-        ) {
-          return await this.convertToSupportedFormat(
-            fullInputPath,
-            originalName,
-            options
-          );
-        }
-        throw new Error(
-          `Error de procesamiento con Sharp: ${sharpError.message}`
-        );
+      switch (outputFormat) {
+        case "jpeg":
+          image = image.jpeg({ quality, mozjpeg: true });
+          break;
+        case "png":
+          image = image.png({ compressionLevel: Math.floor(quality / 10) });
+          break;
+        case "webp":
+          image = image.webp({ quality, lossless: quality === 100 });
+          break;
+        default:
+          image = image.jpeg({ quality });
+          outputFormat = "jpeg";
       }
 
-      this.deleteImage(originalName);
+      await image.toFile(outputPath);
+
+      // 5. ELIMINAR LA IMAGEN ORIGINAL (la temporal)
+      await this.deleteImage(originalName);
+      tempImagePath = null; // Ya no necesitamos limpiar
 
       return {
         success: true,
-        fileName: fileName,
+        fileName: fileName, // ← Este es el nombre ÚNICO de la imagen procesada
+        originalName: originalName, // ← Guardar el nombre original por si acaso
         outputPath: outputPath,
         format: outputFormat === "jpeg" ? "jpg" : outputFormat,
         dimensions: { width, height },
       };
     } catch (error) {
-      const errorMessage =
-        error.message || "Error desconocido al procesar imagen";
-      throw new Error(`Error procesando imagen: ${errorMessage}`);
+      // 6. Limpiar en caso de error
+      if (tempImagePath) {
+        try {
+          await fs.promises.unlink(tempImagePath);
+        } catch (deleteError) {
+          console.error("Error limpiando imagen temporal:", deleteError);
+        }
+      }
+
+      // 7. Manejar errores específicos de formato
+      if (
+        error.message.includes("unsupported image format") ||
+        error.message.includes("Input file contains unsupported image format")
+      ) {
+        return await this.convertToSupportedFormat(
+          tempImagePath,
+          originalName,
+          options
+        );
+      }
+
+      throw new Error(`Error procesando imagen: ${error.message}`);
     }
   }
 
@@ -254,9 +262,9 @@ class ImageProcessingService {
         unlinkSync(filePath);
         return { success: true, message: "Imagen eliminada correctamente" };
       }
-      return { success: false, message: "La imagen no existe" };
+      throw { success: false, message: "La imagen no existe" };
     } catch (error) {
-      throw new Error(`Error eliminando imagen: ${error.message}`);
+      throw `Error eliminando imagen: ${error.message}`;
     }
   }
 }

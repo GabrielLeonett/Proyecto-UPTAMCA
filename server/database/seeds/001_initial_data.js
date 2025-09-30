@@ -20,7 +20,7 @@ export async function seed(knex) {
     nombres: "Super",
     apellidos: "Administrador",
     direccion: "Servidor Principal",
-    password: await hashPassword("12345678"),
+    password: await hashPassword("1234ABCD"),
     telefono_movil: "04141234567",
     telefono_local: null,
     fecha_nacimiento: "1985-01-01",

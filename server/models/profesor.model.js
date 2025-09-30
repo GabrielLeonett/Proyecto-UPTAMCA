@@ -11,14 +11,17 @@ import { hashPassword, generarPassword } from "../utils/encrypted.js";
 import { enviarEmail } from "../utils/EnviarCorreos.js";
 
 // Importación de la conexión a la base de datos
-import db from "../db.js";
+import db from "../database/db.js";
 
 // Importación de clase para formateo de respuestas
 import FormatResponseModel from "../utils/FormatResponseModel.js";
 
+//Importacion de para manejar la imagenes
 import imagenProcessingServices from "../services/imagenProcessing.services.js";
 
-import { parseJSONField } from "../utils/utilis.js";
+//Importacion de Funcion para parsear datos a json
+import { parseJSONField, loadEnv } from "../utils/utilis.js";
+import FormatResponseController from "../utils/FormatResponseController.js";
 
 export default class ProfesorModel {
   /**
@@ -43,8 +46,11 @@ export default class ProfesorModel {
    * });
    */
   static async RegisterProfesor({ datos, imagen, usuario_accion }) {
+    let imagenResult = null;
+    const procesardorImagen = new imagenProcessingServices("profesores/");
+
     try {
-      // Extracción de datos del profesor
+      // 1. Validaciones iniciales
       const {
         cedula,
         nombres,
@@ -61,69 +67,77 @@ export default class ProfesorModel {
         municipio,
       } = datos;
 
+      // Validar campos obligatorios
+      if (!cedula || !nombres || !apellidos || !email) {
+        throw new Error("Datos obligatorios faltantes");
+      }
+
+      // 2. Parsear JSON fields
       const area_de_conocimiento = parseJSONField(
         datos.area_de_conocimiento,
         "áreas de conocimiento"
       );
       const pre_grado = parseJSONField(datos.pre_grado, "pregrados");
       const pos_grado = parseJSONField(datos.pos_grado, "posgrados");
-      // Opciones para la validación de imagen
+
+      // 3. Generar contraseña primero
+      const password = await generarPassword();
+      const passwordHash = await hashPassword(password);
+
+      // 4. Procesar imagen SOLO si pasa validaciones anteriores
       const options = {
-        maxSize: 5 * 1024 * 1024, // 5MB
+        maxSize: 5 * 1024 * 1024,
         maxWidth: 1080,
         maxHeight: 1080,
       };
 
-      const procesardorImagen = new imagenProcessingServices("profesores/");
-
-      const imagenResult = await procesardorImagen.processAndSaveImage(
-        "uploads/profesores/",
+      imagenResult = await procesardorImagen.processAndSaveImage(
         imagen.originalname,
         options
       );
 
-      // Generación de contraseña temporal y su hash
-      const password = await generarPassword();
-      const passwordHash = await hashPassword(password);
-
-      // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
+      // 5. Llamar procedimiento almacenado (sintaxis corregida)
+      const query = `CALL registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
 
       const params = [
-        usuario_accion.id, // 1. p_usuario_accion
-        cedula, // 2. p_id
-        nombres, // 3. p_nombres
-        apellidos, // 4. p_apellidos
-        email, // 5. p_email
-        direccion, // 6. p_direccion
-        passwordHash, // 7. p_password
-        telefono_movil, // 8. p_telefono_movil
-        telefono_local || null, // 9. p_telefono_local
-        fecha_nacimiento, // 10. p_fecha_nacimiento
-        genero, // 11. p_genero
-        categoria, // 12. p_nombre_categoria
-        dedicacion, // 13. p_nombre_dedicacion
-        pre_grado, // 14. p_pre_grado
-        pos_grado, // 15. p_pos_grado
-        area_de_conocimiento, // 16. p_area_de_conocimiento
-        imagenResult.fileName, // 17. p_imagen
-        municipio, // 18. p_municipio (debes pasar el valor real o null)
-        fecha_ingreso, // 19. p_fecha_ingreso
+        usuario_accion.id,
+        cedula,
+        nombres,
+        apellidos,
+        email,
+        direccion,
+        passwordHash,
+        telefono_movil,
+        telefono_local || null,
+        fecha_nacimiento,
+        genero,
+        categoria,
+        dedicacion,
+        pre_grado,
+        pos_grado,
+        area_de_conocimiento,
+        imagenResult.fileName,
+        municipio,
+        fecha_ingreso,
       ];
 
-      // Ejecución de la consulta
       const { rows } = await db.raw(query, params);
 
-      // Formateo de la respuesta
+      // 6. Verificar respuesta del procedimiento
       const resultado = FormatResponseModel.respuestaPostgres(
         rows,
-        "Profesor registrado con exito"
+        "Profesor registrado con éxito"
       );
 
-      // Configuración del correo de bienvenida
-      const Correo = {
-        asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
-        html: `
+      // 7. Cargar variables de entorno para el correo
+      loadEnv();
+
+      // 8. Enviar correo (manejar error específico)
+      try {
+        // Configuración del correo de bienvenida
+        const Correo = {
+          asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
+          html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
           <h2 style="color: #2c3e50;">¡Bienvenido/a, ${nombres}!</h2>
           <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
@@ -140,16 +154,37 @@ export default class ProfesorModel {
           </ul>
           <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
         </div>
+        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
+              <a href="${process.env.ORIGIN_FRONTEND}/Inicio-session" style="display: inline-block; background-color: #1C75BA; color: white; 
+                        padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
+                  Acceder a la plataforma
+              </a>
+          </div>
         `,
-      };
+        };
 
-      // Envío de correo electrónico con las credenciales
-      await enviarEmail({ Destinatario: email, Correo: Correo });
+        await enviarEmail({ Destinatario: email, Correo: Correo });
+      } catch (emailError) {
+        console.warn("⚠️ Correo no enviado:", emailError.message);
+        // No romper el flujo principal por error de correo
+      }
 
       return resultado;
     } catch (error) {
-      console.log(error.message);
-      // Manejo y formateo de errores
+      // 9. Limpiar imagen SI se subió y hay error de BD
+      if (
+        imagenResult.fileName &&
+        (error.message === "El usuario ya está registrado" ||
+          error.message === "El usuario ya está registrado como profesor")
+      ) {
+        try {
+          await procesardorImagen.deleteImage(imagenResult.fileName);
+        } catch (deleteError) {
+          console.error(deleteError);
+        }
+      }
+
+      // 11. Relanzar error formateado
       throw FormatResponseModel.respuestaError(
         error,
         "Error al registrar profesor"
@@ -586,6 +621,179 @@ export default class ProfesorModel {
       throw FormatResponseModel.respuestaError(
         error,
         "Error al registrar disponibilidad docente"
+      );
+    }
+  }
+
+  /**
+   * Actualizar información de profesor
+   *
+   * @static
+   * @async
+   * @method actualizarProfesor
+   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
+   * @param {Object} datos - Datos para realizar la actualización del profesor
+   * @param {number} datos.id_profesor - ID del profesor (cédula)
+   * @param {string} [datos.nombres] - Nombres del profesor
+   * @param {string} [datos.apellidos] - Apellidos del profesor
+   * @param {string} [datos.email] - Email del profesor
+   * @param {string} [datos.direccion] - Dirección del profesor
+   * @param {string} [datos.password] - Password del profesor
+   * @param {string} [datos.telefono_movil] - Teléfono móvil
+   * @param {string} [datos.telefono_local] - Teléfono local
+   * @param {Date} [datos.fecha_nacimiento] - Fecha de nacimiento
+   * @param {string} [datos.genero] - Género (masculino/femenino)
+   * @param {string} [datos.nombre_categoria] - Nombre de la categoría
+   * @param {string} [datos.nombre_dedicacion] - Nombre de la dedicación
+   * @param {Array} [datos.pre_grado] - Array de pre-grados
+   * @param {Array} [datos.pos_grado] - Array de pos-grados
+   * @param {Array} [datos.area_de_conocimiento] - Array de áreas de conocimiento
+   * @param {string} [datos.imagen] - URL de la imagen
+   * @param {string} [datos.municipio] - Municipio
+   * @param {Date} [datos.fecha_ingreso] - Fecha de ingreso
+   * @returns {Promise<Object>} Resultados de la actualización
+   *
+   * @throws {500} Si ocurre un error en la actualización
+   *
+   * @example
+   * // Ejemplo de datos:
+   * {
+   *   id_profesor: 31264460,
+   *   nombres: "Juan",
+   *   apellidos: "Pérez",
+   *   email: "juan.perez@email.com",
+   *   genero: "masculino",
+   *   nombre_categoria: "Instructor",
+   *   nombre_dedicacion: "Tiempo Completo"
+   * }
+   */
+  static async actualizarProfesor({ usuario_accion, datos }) {
+    try {
+      const {
+        id_profesor,
+        nombres,
+        apellidos,
+        email,
+        direccion,
+        password,
+        telefono_movil,
+        telefono_local,
+        fecha_nacimiento,
+        genero,
+        nombre_categoria,
+        nombre_dedicacion,
+        pre_grado,
+        pos_grado,
+        area_de_conocimiento,
+        imagen,
+        municipio,
+        fecha_ingreso,
+      } = datos;
+
+      // Consulta SQL para actualizar profesor usando procedimiento almacenado
+      const query = `
+      CALL public.actualizar_profesor_completo_o_parcial(
+        NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+      )
+    `;
+
+      // Parámetros para la consulta
+      const params = [
+        usuario_accion.id, // p_usuario_accion
+        id_profesor, // p_id
+        nombres || null, // p_nombres
+        apellidos || null, // p_apellidos
+        email || null, // p_email
+        direccion || null, // p_direccion
+        password || null, // p_password
+        telefono_movil || null, // p_telefono_movil
+        telefono_local || null, // p_telefono_local
+        fecha_nacimiento || null, // p_fecha_nacimiento
+        genero || null, // p_genero
+        nombre_categoria || null, // p_nombre_categoria
+        nombre_dedicacion || null, // p_nombre_dedicacion
+        pre_grado ? JSON.stringify(pre_grado) : null, // p_pre_grado
+        pos_grado ? JSON.stringify(pos_grado) : null, // p_pos_grado
+        area_de_conocimiento ? JSON.stringify(area_de_conocimiento) : null, // p_area_de_conocimiento
+        imagen || null, // p_imagen
+        municipio || null, // p_municipio
+        fecha_ingreso || null, // p_fecha_ingreso
+      ];
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, params);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Se actualizo exitosamente al profesor"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.actualizarProfesor",
+        originalError: error.message,
+      };
+
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al actualizar profesor"
+      );
+    }
+  }
+
+  /**
+   * Destituir/eliminar un profesor
+   *
+   * @static
+   * @async
+   * @method destituirProfesor
+   * @param {number} usuario_accion - ID del usuario que realiza la acción
+   * @param {Object} datos - Datos para la destitución
+   * @param {number} datos.id_profesor - ID del profesor (cédula)
+   * @param {string} datos.tipo_accion - Tipo de acción: DESTITUCION, ELIMINACION, RENUNCIA, RETIRO
+   * @param {string} datos.razon - Razón de la destitución
+   * @param {string} [datos.observaciones] - Observaciones adicionales
+   * @param {Date} [datos.fecha_efectiva] - Fecha efectiva de la destitución
+   * @returns {Promise<Object>} Resultado de la operación
+   *
+   * @throws {500} Si ocurre un error en el proceso
+   */
+  static async destituirProfesor({ usuario_accion, datos }) {
+    try {
+      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
+        datos;
+
+      // Consulta SQL para llamar al procedimiento almacenado
+      const query = `
+        CALL public.eliminar_destituir_profesor(
+          NULL, ?, ?, ?, ?, ?, ?
+        )
+      `;
+
+      // Parámetros para la consulta
+      const params = [
+        usuario_accion.id, // p_usuario_accion
+        id_profesor, // p_id_profesor
+        tipo_accion, // p_tipo_accion
+        razon, // p_razon
+        observaciones || null, // p_observaciones
+        fecha_efectiva || null, // p_fecha_efectiva
+      ];
+
+      console.log("Ejecutando destitución con parámetros:", params);
+
+      // Ejecución de la consulta
+      const { rows } = await db.raw(query, params);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Destitucion del profesor exitosa."
+      );
+    } catch (error) {
+      console.error("Error en DestitucionModel.destituirProfesor:", error);
+
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al destituir al profesor"
       );
     }
   }

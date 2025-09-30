@@ -16,7 +16,9 @@ const {
   registerPreGrado,
   registerPosGrado,
   registerAreaConocimiento,
-  registrarDisponibilidad
+  registrarDisponibilidad,
+  actualizarProfesor,
+  destituirProfesor,
 } = ProfesorController;
 
 // Creación del router para las rutas de profesores
@@ -229,7 +231,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POS /Profesor/search
+ * @name POST /Profesor/search
  * @description Busca profesores por cédula, nombre o apellido
  * @query {string} busqueda - Término de búsqueda (cédula o nombre)
  * @middleware Requiere uno de estos roles:
@@ -255,7 +257,7 @@ profesorRouter.post(
 );
 
 /**
- * 
+ *
  */
 profesorRouter.post(
   "/Profesor/Register/Disponibilidad",
@@ -269,7 +271,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POS /Profesor/pre-grado
+ * @name POST /Profesor/pre-grado
  * @description Registrar el pre-grado de un profesor
  * @body {Object} pre_grado.tipo tipo de pre-grado TSU, Licenciatura, etc
  * @body {Object} pre_grado.nombre Nombre de pre-grado Informatica, Ciencias Administrativas, etc.
@@ -297,7 +299,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POS /Profesor/pos-grado
+ * @name POST /Profesor/pos-grado
  * @description Registrar el pos-grado de un profesor
  * @body {Object} pos_grado.tipo tipo de pos-grado Maestria, Doctorado, especializacion, etc.
  * @body {Object} pos_grado.nombre Nombre de pos-grado IA, TIC, etc.
@@ -325,7 +327,7 @@ profesorRouter.post(
 );
 
 /**
- * @name POS /Profesor/areas-conocimiento
+ * @name POST /Profesor/areas-conocimiento
  * @description Registrar el areas conocimiento de un profesor
  * @body {Object} area_conocimiento Area conocimiento Matematicas, Contabilidad, etc.
  * @middleware Requiere uno de estos roles:
@@ -351,7 +353,33 @@ profesorRouter.post(
 
 /**
  * =============================================
- * RUTAS FUTURAS (COMENTADAS)
+ * SECCIÓN DE RUTAS PUT
  * =============================================
  */
-// profesorRouter.put('/Profesor?id', actualizarProfesor)
+
+profesorRouter.put(
+  "/profesores/actualizar",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  actualizarProfesor
+);
+/**
+ * =============================================
+ * SECCIÓN DE RUTAS DELETE
+ * =============================================
+ */
+
+profesorRouter.delete(
+  "/Profesores/Delete",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  destituirProfesor
+);

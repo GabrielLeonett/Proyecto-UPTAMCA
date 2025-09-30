@@ -10,7 +10,7 @@ import path from 'node:path';
  */
 
 export default async function generateReport(errorData) {
-  const reportPath = path.resolve('./report.json');
+  const reportPath = path.resolve('./report/report.json');
   
   try {
     // Intentar leer el archivo existente
