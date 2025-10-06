@@ -9,6 +9,7 @@ import { hashPassword, generarPassword } from "../utils/encrypted.js";
 
 // Importación de la conexión con la base de datos
 import db from "../database/db.js";
+import client from "../database/pg.js";
 
 /**
  * @class UserModel

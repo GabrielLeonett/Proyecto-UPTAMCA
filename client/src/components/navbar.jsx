@@ -376,7 +376,9 @@ function ResponsiveAppBar({ backgroundColor }) {
               <FacebookIcon sx={{ color: "inherit" }} />
             </IconButton>
 
-            <Notification />
+            {isAuthenticated && user && (
+              <Notification userRoles={user.roles} userID={user.id} />
+            )}
 
             <IconButton
               sx={{ color: "white" }}

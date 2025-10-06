@@ -7,24 +7,25 @@ import {
   Grade,
   Message,
 } from "@mui/icons-material";
+import { useEffect } from "react";
 
-export default function NotificationCard({ notification }) {
+export default function NotificationCard({ notification, onMarkAsRead }) { // ✅ Agregar onMarkAsRead
+  useEffect(() => {
+    console.log("La notificacion es la siguiente", notification);
+  }, [notification]);
+  
   const navigate = useNavigate();
   const theme = useTheme();
 
   // Iconos por tipo de notificación
   const getNotificationIcon = (type) => {
     const icons = {
-      course_assigned: <Launch sx={{ color: theme.palette.primary.main }} />,
-      schedule_change: <Schedule sx={{ color: theme.palette.warning.main }} />,
-      grade_published: <Grade sx={{ color: theme.palette.success.main }} />,
-      system_announcement: (
-        <Assignment sx={{ color: theme.palette.error.main }} />
-      ),
-      message_received: (
-        <Message sx={{ color: theme.palette.secondary.main }} />
-      ),
-      deadline_reminder: <Schedule sx={{ color: theme.palette.error.dark }} />,
+      sistema: <Assignment sx={{ color: theme.palette.error.main }} />,
+      curso: <Launch sx={{ color: theme.palette.primary.main }} />,
+      horario: <Schedule sx={{ color: theme.palette.warning.main }} />,
+      calificacion: <Grade sx={{ color: theme.palette.success.main }} />,
+      mensaje: <Message sx={{ color: theme.palette.secondary.main }} />,
+      recordatorio: <Schedule sx={{ color: theme.palette.error.dark }} />,
     };
     return icons[type] || <Assignment />;
   };
@@ -32,39 +33,41 @@ export default function NotificationCard({ notification }) {
   // Colores por prioridad usando el theme
   const getPriorityColor = (priority) => {
     const colors = {
-      low: theme.palette.grey[500],
-      medium: theme.palette.warning.main,
-      high: theme.palette.error.main,
-      urgent: theme.palette.error.dark,
+      baja: theme.palette.grey[500],
+      normal: theme.palette.info.main,
+      media: theme.palette.warning.main,
+      alta: theme.palette.error.main,
+      urgente: theme.palette.error.dark,
     };
     return colors[priority] || theme.palette.grey[500];
   };
 
   // Manejar clic en la notificación
   const handleNotificationClick = () => {
-    if (notification.metadata?.action) {
-      switch (notification.metadata.action) {
-        case "view_course":
-          navigate(`/courses/${notification.metadata.course_id}`);
-          break;
-        case "view_schedule":
-          navigate("/schedule");
-          break;
-        case "view_grade":
-          navigate(`/grades/${notification.metadata.course_id}`);
-          break;
-        case "view_announcement":
-          navigate(`/announcements/${notification.metadata.entity_id}`);
-          break;
-        case "open_chat":
-          navigate(`/messages/${notification.metadata.conversation_id}`);
-          break;
-        case "view_assignment":
-          navigate(`/assignments/${notification.metadata.entity_id}`);
-          break;
-        default:
-          navigate("/notifications");
-      }
+    // ✅ Marcar como leída al hacer clic
+    if (!notification.leida && onMarkAsRead) {
+      onMarkAsRead(notification.id);
+    }
+
+    // Navegación basada en el tipo de notificación
+    switch (notification.tipo_notificacion) {
+      case "curso":
+        navigate("/courses");
+        break;
+      case "horario":
+        navigate("/schedule");
+        break;
+      case "calificacion":
+        navigate("/grades");
+        break;
+      case "sistema":
+        navigate("/announcements");
+        break;
+      case "mensaje":
+        navigate("/messages");
+        break;
+      default:
+        navigate("/notifications");
     }
   };
 
@@ -93,17 +96,17 @@ export default function NotificationCard({ notification }) {
         mb: 1,
         borderRadius: 2,
         border: `1px solid ${
-          notification.is_read
+          notification.leida
             ? theme.palette.divider
             : theme.palette.primary.main
         }`,
-        backgroundColor: notification.is_read
+        backgroundColor: notification.leida
           ? theme.palette.background.paper
           : theme.palette.action.hover,
         cursor: "pointer",
         transition: "all 0.2s ease-in-out",
         "&:hover": {
-          backgroundColor: notification.is_read
+          backgroundColor: notification.leida
             ? theme.palette.action.hover
             : theme.palette.action.selected,
           transform: "translateY(-1px)",
@@ -122,24 +125,24 @@ export default function NotificationCard({ notification }) {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {getNotificationIcon(notification.type)}
+          {getNotificationIcon(notification.tipo_notificacion)}
           <Typography
             variant="h6"
             sx={{
-              fontWeight: notification.is_read ? "normal" : "bold",
-              color: notification.is_read
+              fontWeight: notification.leida ? "normal" : "bold",
+              color: notification.leida
                 ? theme.palette.text.primary
                 : theme.palette.primary.main,
               fontSize: theme.typography.body1.fontSize,
             }}
           >
-            {notification.title}
+            {notification.titulo}
           </Typography>
         </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           {/* Indicador de no leído */}
-          {!notification.is_read && (
+          {!notification.leida && (
             <Box
               sx={{
                 width: 8,
@@ -154,7 +157,7 @@ export default function NotificationCard({ notification }) {
             variant="caption"
             sx={{ color: theme.palette.text.secondary }}
           >
-            {formatDate(notification.created_at)}
+            {formatDate(notification.fecha_creacion)}
           </Typography>
         </Box>
       </Box>
@@ -168,7 +171,7 @@ export default function NotificationCard({ notification }) {
           lineHeight: 1.5,
         }}
       >
-        {notification.body}
+        {notification.contenido}
       </Typography>
 
       {/* Metadata y etiquetas */}
@@ -182,7 +185,7 @@ export default function NotificationCard({ notification }) {
       >
         {/* Chip de tipo */}
         <Chip
-          label={notification.type.replace("_", " ")}
+          label={notification.tipo_notificacion}
           size="small"
           variant="outlined"
           sx={{
@@ -192,73 +195,94 @@ export default function NotificationCard({ notification }) {
         />
 
         {/* Chip de prioridad */}
-        {notification.metadata?.priority && (
+        {notification.prioridad && (
           <Chip
-            label={notification.metadata.priority}
+            label={notification.prioridad}
             size="small"
             sx={{
-              backgroundColor: getPriorityColor(notification.metadata.priority),
+              backgroundColor: getPriorityColor(notification.prioridad),
               color: theme.palette.common.white,
               fontWeight: "bold",
+              textTransform: "capitalize",
             }}
           />
         )}
 
-        {/* Información adicional del metadata */}
-        {notification.metadata?.course_name && (
+        {/* Indicador de notificación masiva */}
+        {notification.es_masiva && (
           <Chip
-            label={notification.metadata.course_name}
+            label="Masiva"
             size="small"
             variant="outlined"
             sx={{
-              borderColor: theme.palette.primary.main,
-              color: theme.palette.primary.main,
+              borderColor: theme.palette.info.main,
+              color: theme.palette.info.main,
             }}
           />
         )}
 
-        {notification.metadata?.due_date && (
+        {/* Información de destinatarios */}
+        {notification.total_destinatarios && (
           <Typography
             variant="caption"
             sx={{
-              color: theme.palette.error.main,
+              color: theme.palette.text.secondary,
+            }}
+          >
+            {notification.total_destinatarios} destinatarios
+          </Typography>
+        )}
+
+        {/* Fecha de mantenimiento si existe */}
+        {notification.metadatos?.maintenance_date && (
+          <Typography
+            variant="caption"
+            sx={{
+              color: theme.palette.warning.main,
               fontWeight: "bold",
             }}
           >
-            Vence: {formatDate(notification.metadata.due_date)}
+            {formatDate(notification.metadatos.maintenance_date)}
           </Typography>
         )}
       </Box>
 
       {/* Acciones rápidas */}
-      {notification.metadata?.actions && (
-        <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-          {notification.metadata.actions.slice(0, 2).map((action, index) => (
-            <IconButton
-              key={index}
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (action.url) {
-                  navigate(action.url);
-                }
-                // Aquí puedes agregar más lógica para otras acciones
-              }}
-              sx={{
-                border: "1px solid",
-                borderColor: theme.palette.divider,
-                borderRadius: 1,
-                color: theme.palette.primary.main,
-                "&:hover": {
-                  backgroundColor: theme.palette.action.hover,
-                },
-              }}
-            >
-              <Launch fontSize="small" />
-            </IconButton>
-          ))}
-        </Box>
-      )}
+      <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "space-between" }}>
+        {/* Botón para marcar como leída/no leída */}
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onMarkAsRead) {
+              onMarkAsRead(notification.id);
+            }
+          }}
+          sx={{
+            border: "1px solid",
+            borderColor: notification.leida ? theme.palette.success.main : theme.palette.divider,
+            borderRadius: 1,
+            color: notification.leida ? theme.palette.success.main : theme.palette.text.secondary,
+            "&:hover": {
+              backgroundColor: theme.palette.action.hover,
+            },
+          }}
+        >
+          <Launch fontSize="small" />
+        </IconButton>
+
+        {/* Estado de lectura */}
+        <Typography
+          variant="caption"
+          sx={{
+            color: notification.leida ? theme.palette.success.main : theme.palette.warning.main,
+            fontWeight: "bold",
+            alignSelf: "center",
+          }}
+        >
+          {notification.leida ? "Leída" : "No leída"}
+        </Typography>
+      </Box>
     </Box>
   );
 }

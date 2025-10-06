@@ -8,12 +8,10 @@ dotenv.config({ path: envFile });
 // Importación de dependencias
 import cookieParser from "cookie-parser";
 import express from "express";
-import picocolors from "picocolors";
-import { segurityMiddleware } from "./middlewares/security.js";
+import { securityMiddleware } from "./middlewares/security.js";
+import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import helmet from "helmet";
-import { Server } from "socket.io";
 import { createServer } from "node:http";
-import cors from "cors";
 
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/profesor.routes.js";
@@ -25,37 +23,14 @@ import { AulaRouter } from "./routes/aula.routes.js";
 
 // Creación del servidor
 const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: ["http://localhost:5173"],
-});
+export const server = createServer(app);
 
 // Middleware de seguridad
-app.use(segurityMiddleware);
+app.use(securityMiddleware);
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: process.env.ORIGIN_FRONTEND,
-    credentials: true,
-  })
-);
-//Middleware para formatear la peticion
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
-    return res.status(400).json({ error: "JSON malformado" });
-  }
-  next();
-});
-
-io.on("connection", (socket) => {
-  console.log("a user connected");
-  io.emit('message', 'Hola como estas')
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-  });
-});
+app.use(jsonSyntaxErrorHandler);
 
 //Rutas del sistema
 app.use("", profesorRouter);
@@ -67,9 +42,8 @@ app.use("", AulaRouter);
 
 // Encendido del servidor
 server.listen(process.env.SERVER_PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${process.env.SERVER_PORT}`);
   console.log(
-    picocolors.bgGreen(
-      `${process.env.APP_NAME} está corriendo en el puerto: ${process.env.SERVER_PORT}`
-    )
+    `Notificaciones WebSocket configuradas en puerto ${process.env.SERVER_PORT}`
   );
 });

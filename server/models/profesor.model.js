@@ -21,7 +21,7 @@ import imagenProcessingServices from "../services/imagenProcessing.services.js";
 
 //Importacion de Funcion para parsear datos a json
 import { parseJSONField, loadEnv } from "../utils/utilis.js";
-import FormatResponseController from "../utils/FormatResponseController.js";
+import NotificationService from "../services/Notification.services.js";
 
 export default class ProfesorModel {
   /**
@@ -48,6 +48,7 @@ export default class ProfesorModel {
   static async RegisterProfesor({ datos, imagen, usuario_accion }) {
     let imagenResult = null;
     const procesardorImagen = new imagenProcessingServices("profesores/");
+    const notificationService = new NotificationService(); // 🔥 NUEVO: Servicio de notificaciones
 
     try {
       // 1. Validaciones iniciales
@@ -129,41 +130,115 @@ export default class ProfesorModel {
         "Profesor registrado con éxito"
       );
 
-      // 7. Cargar variables de entorno para el correo
+      // 🔥 NUEVO: NOTIFICACIONES EN TIEMPO REAL
+
+      // 7.1 Notificación para coordinadores (por roles)
+      try {
+        await notificationService.crearNotificacionMasiva({
+          titulo: "Nuevo Profesor Registrado",
+          tipo: "sistema",
+          contenido: `Se ha registrado al profesor ${nombres} ${apellidos} en el sistema. Cédula: ${cedula}`,
+          metadatos: {
+            accion: "registro_profesor",
+            profesor_id: resultado.data?.id || null,
+            profesor_nombre: `${nombres} ${apellidos}`,
+            profesor_cedula: cedula,
+            registrado_por: usuario_accion.id,
+            fecha_registro: new Date().toISOString(),
+          },
+          roles_ids: [2, 3, 4], // 🔥 IDs de roles de coordinadores (ajusta según tu DB)
+          // Ejemplo: 2=Coordinador Académico, 3=Director, 4=Vicerreptor
+        });
+        console.log("✅ Notificación enviada a coordinadores");
+      } catch (notifError) {
+        console.warn(
+          "⚠️ Error enviando notificación a coordinadores:",
+          notifError.message
+        );
+      }
+
+      // 7.2 Notificación 100% masiva (para todos los usuarios)
+      try {
+        await notificationService.crearNotificacionMasiva({
+          titulo: "Nuevo Miembro del Personal",
+          tipo: "general",
+          contenido: `Damos la bienvenida al profesor ${nombres} ${apellidos} quien se ha unido a nuestra institución.`,
+          metadatos: {
+            accion: "bienvenida_profesor",
+            tipo_notificacion: "informacion_general",
+            profesor_nombre: `${nombres} ${apellidos}`,
+            area_conocimiento: area_de_conocimiento,
+          },
+          roles_ids: [], // 🔥 Vacío para que sea realmente masiva
+          users_ids: [], // 🔥 Vacío para que sea realmente masiva
+        });
+        console.log("✅ Notificación masiva enviada a todos los usuarios");
+      } catch (masivaError) {
+        console.warn(
+          "⚠️ Error enviando notificación masiva:",
+          masivaError.message
+        );
+      }
+
+      // 7.3 Notificación individual para el usuario que registró (opcional)
+      try {
+        await notificationService.crearNotificacionIndividual({
+          titulo: "Registro Exitoso",
+          tipo: "confirmacion",
+          user_id: usuario_accion.id,
+          contenido: `Has registrado exitosamente al profesor ${nombres} ${apellidos}. Se han enviado las credenciales al correo ${email}.`,
+          metadatos: {
+            accion: "registro_exitoso",
+            profesor_id: resultado.data?.id || null,
+            profesor_nombre: `${nombres} ${apellidos}`,
+            email_enviado: email,
+            fecha_accion: new Date().toISOString(),
+          },
+        });
+        console.log("✅ Notificación de confirmación enviada al usuario");
+      } catch (individualError) {
+        console.warn(
+          "⚠️ Error enviando notificación individual:",
+          individualError.message
+        );
+      }
+
+      // 8. Cargar variables de entorno para el correo
       loadEnv();
 
-      // 8. Enviar correo (manejar error específico)
+      // 9. Enviar correo (manejar error específico)
       try {
         // Configuración del correo de bienvenida
         const Correo = {
           asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
           html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="color: #2c3e50;">¡Bienvenido/a, ${nombres}!</h2>
-          <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
-          <p>Sus credenciales de acceso son:</p>
-          <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-            <p><strong>Usuario:</strong> ${email}</p>
-            <p><strong>Contraseña temporal:</strong> ${password}</p>
-          </div>
-          <p><strong>Instrucciones importantes:</strong></p>
-          <ul>
-            <li>Cambie su contraseña después del primer acceso</li>
-            <li>Esta contraseña es temporal y de uso personal</li>
-            <li>Guarde esta información en un lugar seguro</li>
-          </ul>
-          <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color: #2c3e50;">¡Bienvenido/a, ${nombres}!</h2>
+        <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
+        <p>Sus credenciales de acceso son:</p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
+          <p><strong>Usuario:</strong> ${email}</p>
+          <p><strong>Contraseña temporal:</strong> ${password}</p>
         </div>
-        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-              <a href="${process.env.ORIGIN_FRONTEND}/Inicio-session" style="display: inline-block; background-color: #1C75BA; color: white; 
-                        padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-                  Acceder a la plataforma
-              </a>
-          </div>
-        `,
+        <p><strong>Instrucciones importantes:</strong></p>
+        <ul>
+          <li>Cambie su contraseña después del primer acceso</li>
+          <li>Esta contraseña es temporal y de uso personal</li>
+          <li>Guarde esta información en un lugar seguro</li>
+        </ul>
+        <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
+      </div>
+      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
+            <a href="${process.env.ORIGIN_FRONTEND}/Inicio-session" style="display: inline-block; background-color: #1C75BA; color: white; 
+                      padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
+                Acceder a la plataforma
+            </a>
+        </div>
+      `,
         };
 
         await enviarEmail({ Destinatario: email, Correo: Correo });
+        console.log("✅ Correo de bienvenida enviado al profesor");
       } catch (emailError) {
         console.warn("⚠️ Correo no enviado:", emailError.message);
         // No romper el flujo principal por error de correo
@@ -171,9 +246,9 @@ export default class ProfesorModel {
 
       return resultado;
     } catch (error) {
-      // 9. Limpiar imagen SI se subió y hay error de BD
+      // 10. Limpiar imagen SI se subió y hay error de BD
       if (
-        imagenResult.fileName &&
+        imagenResult?.fileName &&
         (error.message === "El usuario ya está registrado" ||
           error.message === "El usuario ya está registrado como profesor")
       ) {
