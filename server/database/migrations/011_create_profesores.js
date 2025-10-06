@@ -29,6 +29,11 @@ export async function up(knex) {
       .defaultTo(true)
       .comment("Indica si el usuario está activo en el sistema como profesor");
     table
+      .timestamp("created_at")
+      .notNullable()
+      .defaultTo(knex.fn.now())
+      .comment("Fecha de última actualización");
+    table
       .timestamp("updated_at")
       .notNullable()
       .defaultTo(knex.fn.now())

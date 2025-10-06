@@ -38,7 +38,7 @@ app.use(cookieParser());
 console.log(process.env.ORIGIN_FRONTEND)
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.ORIGIN_FRONTEND,
     credentials: true,
   })
 );
