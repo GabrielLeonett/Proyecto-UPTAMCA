@@ -6,6 +6,7 @@ import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
+import NotificationService from "../services/Notification.services.js";
 
 /**
  * @class UserController
@@ -213,6 +214,51 @@ export default class UserController {
         message: "Error al cambiar la contraseña",
         error: process.env.NODE_ENV === "development" ? error.message : null,
       });
+    }
+  }
+
+  static async enviarNotificacion(req, res) {
+    try {
+      const servicioNotificaciones = new NotificationService();
+      const usuario = req.user;
+
+      const {
+        soloNoLeidas = "true",
+        limite = "30",
+        fechaDesde = null,
+        ultimaConexion = null, // 🔥 RECIBIR DEL FRONTEND
+      } = req.query;
+
+      // 🔥 ESTRATEGIA DE FECHA:
+      // 1. Usar fechaDesde si se proporciona
+      // 2. Usar ultimaConexion del frontend
+      // 3. Usar último día como fallback
+      let fechaFiltro = fechaDesde;
+
+      if (!fechaFiltro && ultimaConexion) {
+        fechaFiltro = ultimaConexion;
+      }
+
+      if (!fechaFiltro) {
+        // Fallback: últimas 24 horas
+        fechaFiltro = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      }
+
+      const notificaciones = await servicioNotificaciones.searchNotifications({
+        roles: usuario.roles,
+        user_id: usuario.id,
+        options: {
+          soloNoLeidas: soloNoLeidas === "true",
+          limite: parseInt(limite),
+          fechaDesde: fechaFiltro,
+        },
+      });
+
+      //console.log(`✅ Notificaciones desde ${fechaFiltro}: ${notificaciones.length}`);
+      return res.json(notificaciones);
+    } catch (error) {
+      //console.error("❌ Error en enviarNotificacion:", error);
+      return res.status(500).json({ error: "Error interno del servidor" });
     }
   }
 }

@@ -3,7 +3,13 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import UserController from "../controllers/user.controller.js";
 import fs from "node:fs";
 
-const { login, verificarUsers, closeSession, cambiarContraseña } = UserController;
+const {
+  login,
+  verificarUsers,
+  closeSession,
+  cambiarContraseña,
+  enviarNotificacion,
+} = UserController;
 
 export const UserRouter = Router();
 
@@ -21,6 +27,8 @@ UserRouter.post("/login", login);
 UserRouter.get("/vefiry", middlewareAuth(null), verificarUsers);
 
 UserRouter.get("/logout", middlewareAuth(null), closeSession);
+
+UserRouter.get("/notifications", middlewareAuth(null), enviarNotificacion);
 
 UserRouter.put(
   "/cambiar-contrasena",

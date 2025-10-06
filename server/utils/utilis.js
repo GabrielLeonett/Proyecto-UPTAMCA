@@ -14,13 +14,13 @@ import { fileURLToPath } from "url";
 export function loadEnv() {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  
+
   const env = process.env.NODE_ENV || "development";
   const envFile = path.resolve(__dirname, `../.env.${env}`);
-  
+
   // Cargar y verificar
   const result = dotenv.config({ path: envFile });
-  
+
   if (result.error) {
     console.error("Error loading .env file:", result.error);
     throw result.error;
@@ -73,3 +73,20 @@ export const parseJSONField = (field, fieldName) => {
     throw new Error(`Formato inválido en ${fieldName}`);
   }
 };
+
+/**
+ *
+ * @param {string} cookieHeader Objeto Cookie
+ * @param {string} cookieName Nombre de la cookie que se desea obtener
+ * @returns {string} valor de la cookie 
+ * @example
+ * const token = getCookie(socket.handshake.headers.cookie, 'autorization');
+ */
+export function getCookie(cookieHeader, cookieName) {
+  if (!cookieHeader) return null;
+
+  const cookies = cookieHeader.split(";");
+  const cookie = cookies.find((c) => c.trim().startsWith(`${cookieName}=`));
+
+  return cookie ? cookie.split("=")[1].trim() : null;
+}

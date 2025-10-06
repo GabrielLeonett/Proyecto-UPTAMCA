@@ -6,7 +6,7 @@
  */
 export async function up(knex){
   await knex.schema.createTable('notifications', (table) => {
-    table.bigInteger('id').primary().comment('ID único de la notificación');
+    table.bigIncrements('id').primary().comment('ID único de la notificación');
     table.bigInteger('user_id').comment('ID del usuario destinatario (nulo para notificaciones masivas)');
     table.string('type', 50).notNullable().comment('Tipo de notificación');
     table.string('title', 255).notNullable().comment('Título de la notificación');
