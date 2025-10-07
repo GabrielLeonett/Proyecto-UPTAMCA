@@ -529,32 +529,29 @@ export default class ProfesorController {
    */
   static async registrarDisponibilidad(req, res) {
     try {
-      // ✅ Primero validar los datos con el schema
-      const validation = validationDisponibilidadDocente(req.body);
+      let validaciones = validationErrors(
+        validationDisponibilidadDocente(req.body)
+      );
+      console.log(validaciones);
 
-      if (!validation.success) {
-        const errors = validation.error.issues.map((issue) => ({
-          field: issue.path[0],
-          message: issue.message,
-        }));
-
-        return FormatResponseController.respuestaError(res, {
-          status: 400,
-          title: "Datos inválidos",
-          message: "Error de validación",
-          error: errors,
+      if (validaciones !== true) {
+        FormatResponseController.respuestaError(res, {
+          status: 400, // Cambiado a 400 (Bad Request) en lugar de 401
+          title: "Datos Erroneos",
+          message: "Los datos de la disponibilidad son incorrectos",
+          error: validaciones,
         });
+        return;
       }
 
       // ✅ Si la validación pasa, proceder con el registro
       const result = await ProfesorModel.registrarDisponibilidad({
         usuario_accion: req.user,
-        datos: validation.data, // Usar los datos validados
+        datos: req.body, // Usar los datos validados
       });
 
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      console.error("Error en controlador registrarDisponibilidad:", error);
 
       // Manejo de errores específicos del modelo
       if (error.status) {

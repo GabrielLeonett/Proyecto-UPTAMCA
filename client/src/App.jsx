@@ -214,7 +214,7 @@ export default function App() {
               />
 
               <Route
-                path="/DisponibilidadDoc"
+                path="/profesor/:id_profesor/disponiblidad"
                 element={
                   <ProtectedViews
                     allowedRoles={[

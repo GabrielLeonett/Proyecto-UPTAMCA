@@ -155,18 +155,33 @@ function ResponsiveAppBar({ backgroundColor }) {
         "SuperAdmin",
       ],
     },
+
     {
       name: "Sedes",
-      url: "/registerSede",
       roles: [
         "Vicerrector",
-        "Profesor",
         "Coordinador",
         "Director General de Gestión Curricular",
         "SuperAdmin",
       ],
-    },
-    {
+      submenu: [
+        {
+          name: "Sedes",
+          url: "/Sedes",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar",
+          url: "/registerSede",
+          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
+        },
+      ],
+    },{
       name: "Administración",
       roles: ["SuperAdmin"],
       submenu: [
