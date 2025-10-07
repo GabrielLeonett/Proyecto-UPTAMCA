@@ -148,6 +148,133 @@ export default class ProfesorController {
   }
 
   /**
+   * Obtiene la imagen de un profesor en formato API
+   *
+   * @static
+   * @async
+   * @method getImageProfesor
+   * @param {Object} req - Objeto de solicitud de Express
+   * @param {Object} res - Objeto de respuesta de Express
+   * @returns {Promise<Object>} Imagen del profesor procesada
+   *
+   * @throws {400} Si los datos de entrada son incorrectos
+   * @throws {404} Si el profesor no existe o no tiene imagen
+   * @throws {500} Si ocurre un error al procesar la imagen
+   *
+   * @example
+   * // Ejemplo de uso:
+   * GET /api/profesores/imagen?id_profesor=12345678&width=300&height=300&format=jpeg
+   */
+  static async getImageProfesorDirect(req, res) {
+    try {
+      const { id_profesor } = req.params;
+      const { width, height, quality, format } = req.query;
+
+      // Validar que se proporcionó el ID del profesor
+      if (!id_profesor) {
+        return res.status(400).json({
+          success: false,
+          error: "El parámetro id_profesor es requerido",
+        });
+      }
+
+      // Validación de datos del profesor
+      let validaciones = validationErrors(
+        validationPartialProfesor({ cedula: parseInt(id_profesor) })
+      );
+
+      if (validaciones !== true) {
+        return res.status(400).json({
+          success: false,
+          error: "Datos del profesor incorrectos",
+          details: validaciones,
+        });
+      }
+
+      // Preparar opciones para el procesamiento
+      const imageOptions = {};
+
+      if (width) {
+        const parsedWidth = parseInt(width);
+        if (!isNaN(parsedWidth) && parsedWidth > 0)
+          imageOptions.width = parsedWidth;
+      }
+
+      if (height) {
+        const parsedHeight = parseInt(height);
+        if (!isNaN(parsedHeight) && parsedHeight > 0)
+          imageOptions.height = parsedHeight;
+      }
+
+      if (quality) {
+        const parsedQuality = parseInt(quality);
+        if (
+          !isNaN(parsedQuality) &&
+          parsedQuality >= 1 &&
+          parsedQuality <= 100
+        ) {
+          imageOptions.quality = parsedQuality;
+        }
+      }
+
+      if (
+        format &&
+        ["jpeg", "jpg", "png", "webp"].includes(format.toLowerCase())
+      ) {
+        imageOptions.format = format.toLowerCase();
+      }
+
+      // Obtener la imagen como buffer
+      const imageResult = await ProfesorModel.getImageProfesorBuffer(
+        id_profesor,
+        imageOptions
+      );
+
+      if (!imageResult.success) {
+        if (imageResult.message?.includes("no tiene imagen")) {
+          return res.status(404).json({
+            success: false,
+            error: "El profesor no tiene imagen asignada",
+          });
+        }
+        return res.status(404).json({
+          success: false,
+          error: "No se pudo obtener la imagen del profesor",
+        });
+      }
+
+      // Configurar headers para la respuesta de imagen
+      res.set({
+        "Content-Type": imageResult.mimeType,
+        "Content-Length": imageResult.fileSize,
+        "Content-Disposition": `inline; filename="${imageResult.fileName}"`,
+        "Cache-Control": "public, max-age=86400", // Cache de 1 día
+        ETag: `"${imageResult.fileName}-${imageResult.fileSize}"`,
+      });
+
+      // Enviar el buffer de la imagen DIRECTAMENTE
+      res.send(imageResult.buffer);
+    } catch (error) {
+      console.error("Error en getImageProfesorDirect:", error);
+
+      if (
+        error.message?.includes("No se encontró el profesor") ||
+        error.message?.includes("no tiene imagen")
+      ) {
+        return res.status(404).json({
+          success: false,
+          error: error.message,
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        error: "Error interno del servidor al procesar la imagen",
+      });
+    }
+  }
+
+  /**
    * Obtiene el listado de profesores para visualización en interfaz web
    *
    * @static

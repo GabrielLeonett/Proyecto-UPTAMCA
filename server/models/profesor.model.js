@@ -309,6 +309,77 @@ export default class ProfesorModel {
   }
 
   /**
+   * Obtiene la imagen de un profesor para consumo API
+   * @method getImageProfesor
+   * @static
+   * @async
+   * @param {number|string} id_profesor - Cédula del profesor
+   * @param {Object} [options] - Opciones para el procesamiento de la imagen
+   * @param {number} [options.width] - Ancho deseado de la imagen
+   * @param {number} [options.height] - Alto deseado de la imagen
+   * @param {number} [options.quality=80] - Calidad de la imagen (1-100)
+   * @param {string} [options.format] - Formato de salida (jpeg, png, webp)
+   * @returns {Promise<Object>} Objeto con la imagen procesada
+   * @throws {Error} Si ocurre un error en la consulta o procesamiento
+   */
+  static async getImageProfesorBuffer(id_profesor, options = {}) {
+    try {
+      if (!id_profesor) {
+        throw new Error("El ID del profesor es requerido");
+      }
+
+      // Consulta a la base de datos para obtener el nombre de la imagen
+      const result = await db.raw(`SELECT imagen FROM users WHERE cedula = ?`, [
+        id_profesor,
+      ]);
+
+      if (!result.rows || result.rows.length === 0) {
+        throw new Error(
+          `No se encontró el profesor con cédula: ${id_profesor}`
+        );
+      }
+
+      const profesor = result.rows[0];
+
+      if (!profesor.imagen) {
+        return {
+          success: false,
+          message: "El profesor no tiene imagen asignada",
+          id_profesor: id_profesor,
+        };
+      }
+
+      // Crear instancia del servicio de procesamiento de imágenes
+      const imageProcessing = new imagenProcessingServices("profesores");
+
+      // Obtener la imagen como buffer
+      const imageResult = await imageProcessing.getImage(
+        profesor.imagen,
+        options
+      );
+
+      if (!imageResult.success) {
+        throw new Error(`Error al obtener la imagen: ${imageResult.error}`);
+      }
+
+      return {
+        success: true,
+        buffer: imageResult.buffer,
+        fileName: imageResult.fileName,
+        format: imageResult.format,
+        dimensions: imageResult.dimensions,
+        fileSize: imageResult.fileSize,
+      };
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.getImageProfesorBuffer",
+        id_profesor: id_profesor,
+      };
+      throw error;
+    }
+  }
+
+  /**
    * Obtiene listado completo de profesores para visualización
    * @method mostrarProfesor
    * @static

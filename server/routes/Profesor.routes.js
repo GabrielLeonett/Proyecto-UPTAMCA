@@ -7,6 +7,7 @@ import path from "path";
 // Destructuración de los métodos del controlador de profesores
 const {
   registrarProfesor,
+  getImageProfesorDirect,
   mostrarProfesorAPI,
   mostrarProfesor,
   buscarProfesor,
@@ -82,6 +83,33 @@ profesorRouter.get(
     "Coordinador",
   ]),
   mostrarProfesorAPI
+);
+
+/**
+ * @name GET /api/Profesor
+ * @description Obtiene listado de profesores con filtros avanzados (API format)
+ * @query {string} [dedicacion] - Filtro por dedicación (1: Convencional, etc.)
+ * @query {string} [categoria] - Filtro por categoría (ej: "Instructor")
+ * @query {string} [ubicacion] - Filtro por ubicación (1: Núcleo Salud, etc.)
+ * @query {string} [genero] - Filtro por género ("masculino"/"femenino")
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ * @example
+ * // Ejemplo de cURL:
+ * curl -X GET 'http://localhost:3000/api/Profesor?dedicacion=1&categoria=Instructor'
+ */
+profesorRouter.get(
+  "/profesor/img/:id_profesor",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  getImageProfesorDirect
 );
 
 /**

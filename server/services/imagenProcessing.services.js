@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { extname, join, parse } from "path";
 import { existsSync, unlinkSync } from "fs";
 import { access, stat } from "fs/promises";
+import fs from "fs";
 
 class ImageProcessingService {
   constructor(storage) {
@@ -265,6 +266,117 @@ class ImageProcessingService {
       throw { success: false, message: "La imagen no existe" };
     } catch (error) {
       throw `Error eliminando imagen: ${error.message}`;
+    }
+  }
+
+  // Método para obtener/leer una imagen
+  async getImage(fileName, options = {}) {
+    try {
+      if (!fileName || typeof fileName !== "string") {
+        throw new Error("El nombre del archivo es requerido");
+      }
+
+      const filePath = join(this.storageImage, fileName);
+
+      // Verificar que el archivo existe
+      try {
+        await access(filePath);
+      } catch (accessError) {
+        throw new Error(`La imagen no existe: ${fileName}`);
+      }
+
+      // Obtener estadísticas del archivo
+      const fileStats = await stat(filePath);
+
+      // Leer el archivo como buffer
+      const imageBuffer = await fs.promises.readFile(filePath);
+
+      // Obtener metadata de la imagen
+      const metadata = await sharp(imageBuffer).metadata();
+
+      // Si se solicitan opciones de procesamiento, procesar la imagen
+      if (Object.keys(options).length > 0) {
+        const {
+          width,
+          height,
+          quality = 80,
+          format,
+          fit = "inside",
+          withoutEnlargement = true,
+        } = options;
+
+        let processedImage = sharp(imageBuffer);
+
+        // Aplicar resize si se especifica
+        if (width || height) {
+          processedImage = processedImage.resize(width, height, {
+            fit,
+            withoutEnlargement,
+          });
+        }
+
+        // Aplicar formato si se especifica
+        let outputFormat = format ? format.toLowerCase() : metadata.format;
+        if (outputFormat === "jpg") outputFormat = "jpeg";
+
+        switch (outputFormat) {
+          case "jpeg":
+            processedImage = processedImage.jpeg({ quality, mozjpeg: true });
+            break;
+          case "png":
+            processedImage = processedImage.png({
+              compressionLevel: Math.floor(quality / 10),
+            });
+            break;
+          case "webp":
+            processedImage = processedImage.webp({
+              quality,
+              lossless: quality === 100,
+            });
+            break;
+          default:
+            // Mantener formato original si no se especifica o no es soportado
+            outputFormat = metadata.format;
+        }
+
+        const processedBuffer = await processedImage.toBuffer();
+        const processedMetadata = await sharp(processedBuffer).metadata();
+
+        return {
+          success: true,
+          buffer: processedBuffer,
+          metadata: processedMetadata,
+          fileName: fileName,
+          fileSize: processedBuffer.length,
+          format: outputFormat === "jpeg" ? "jpg" : outputFormat,
+          dimensions: {
+            width: processedMetadata.width,
+            height: processedMetadata.height,
+          },
+          processed: true,
+        };
+      }
+
+      // Retornar imagen original sin procesar
+      return {
+        success: true,
+        buffer: imageBuffer,
+        metadata: metadata,
+        fileName: fileName,
+        fileSize: fileStats.size,
+        format: metadata.format,
+        dimensions: {
+          width: metadata.width,
+          height: metadata.height,
+        },
+        processed: false,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message,
+        fileName: fileName,
+      };
     }
   }
 }
