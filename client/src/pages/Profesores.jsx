@@ -1,6 +1,12 @@
 import ResponsiveAppBar from "../components/navbar";
-import CardProfesor from "../components/cardProfesor";
-import { Typography, Box, CircularProgress, TextField, IconButton } from "@mui/material";
+import { PruebaProfesor } from "../components/cardProfesor";
+import {
+  Typography,
+  Box,
+  CircularProgress,
+  TextField,
+  IconButton,
+} from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import axios from "../apis/axios";
@@ -90,10 +96,8 @@ export default function Profesores() {
             </Typography>
           ) : (
             profesores.map((profesor) => (
-              <CardProfesor
-                key={profesor.id}
+              <PruebaProfesor
                 profesor={profesor}
-                onProfesorUpdate={fetchProfesores}
               />
             ))
           )}
