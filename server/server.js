@@ -20,6 +20,7 @@ import { UserRouter } from "./routes/user.routes.js";
 import { HorarioRouter } from "./routes/horario.routes.js";
 import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
+import { coordinadorRouter } from "./routes/coordinador.routes.js";
 
 // Creación del servidor
 const app = express();
@@ -37,8 +38,9 @@ app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);
 app.use("", HorarioRouter);
-app.use("", SedesRouter);
 app.use("", AulaRouter);
+app.use("", SedesRouter);
+app.use("", coordinadorRouter);
 
 // Encendido del servidor
 server.listen(process.env.SERVER_PORT, () => {

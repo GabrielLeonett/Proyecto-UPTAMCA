@@ -9,11 +9,12 @@ import {
 } from "@mui/icons-material";
 import { useEffect } from "react";
 
-export default function NotificationCard({ notification, onMarkAsRead }) { // ✅ Agregar onMarkAsRead
+export default function NotificationCard({ notification, onMarkAsRead }) {
+  // ✅ Agregar onMarkAsRead
   useEffect(() => {
     console.log("La notificacion es la siguiente", notification);
   }, [notification]);
-  
+
   const navigate = useNavigate();
   const theme = useTheme();
 
@@ -49,25 +50,10 @@ export default function NotificationCard({ notification, onMarkAsRead }) { // �
       onMarkAsRead(notification.id);
     }
 
-    // Navegación basada en el tipo de notificación
-    switch (notification.tipo_notificacion) {
-      case "curso":
-        navigate("/courses");
-        break;
-      case "horario":
-        navigate("/schedule");
-        break;
-      case "calificacion":
-        navigate("/grades");
-        break;
-      case "sistema":
-        navigate("/announcements");
-        break;
-      case "mensaje":
-        navigate("/messages");
-        break;
-      default:
-        navigate("/notifications");
+    if (notification.metadatos.url_action) {
+      navigate(notification.metadatos.url_action);
+    } else {
+      navigate("/");
     }
   };
 
@@ -248,7 +234,9 @@ export default function NotificationCard({ notification, onMarkAsRead }) { // �
       </Box>
 
       {/* Acciones rápidas */}
-      <Box sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "space-between" }}>
+      <Box
+        sx={{ display: "flex", gap: 1, mt: 2, justifyContent: "space-between" }}
+      >
         {/* Botón para marcar como leída/no leída */}
         <IconButton
           size="small"
@@ -260,9 +248,13 @@ export default function NotificationCard({ notification, onMarkAsRead }) { // �
           }}
           sx={{
             border: "1px solid",
-            borderColor: notification.leida ? theme.palette.success.main : theme.palette.divider,
+            borderColor: notification.leida
+              ? theme.palette.success.main
+              : theme.palette.divider,
             borderRadius: 1,
-            color: notification.leida ? theme.palette.success.main : theme.palette.text.secondary,
+            color: notification.leida
+              ? theme.palette.success.main
+              : theme.palette.text.secondary,
             "&:hover": {
               backgroundColor: theme.palette.action.hover,
             },
@@ -275,7 +267,9 @@ export default function NotificationCard({ notification, onMarkAsRead }) { // �
         <Typography
           variant="caption"
           sx={{
-            color: notification.leida ? theme.palette.success.main : theme.palette.warning.main,
+            color: notification.leida
+              ? theme.palette.success.main
+              : theme.palette.warning.main,
             fontWeight: "bold",
             alignSelf: "center",
           }}

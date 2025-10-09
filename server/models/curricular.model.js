@@ -129,7 +129,7 @@ export default class CurricularModel {
    */
   static async mostrarPNF() {
     try {
-      const { rows } = await db.raw(`SELECT * FROM pnfs`);
+      const { rows } = await db.raw(`SELECT * FROM public.vista_pnfs`);
       return FormatResponseModel.respuestaPostgres(rows, "Estos son Los PNFs");
     } catch (error) {
       error.details = {

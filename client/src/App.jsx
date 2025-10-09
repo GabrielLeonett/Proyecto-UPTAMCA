@@ -13,6 +13,7 @@ import { lightTheme, darkTheme } from "./components/ui/theme";
 import FormRegister from "./pages/registerProfesor";
 import Index from "./pages/index";
 import Profesores from "./pages/Profesores";
+import Coordinadores from "./pages/Coordinadores";
 import IniciarSession from "./pages/inicioSession";
 import CerrarSession from "./pages/cerrarSession";
 import CambiarContraseña from "./pages/cambiarContraseña";
@@ -23,6 +24,7 @@ import PNFS from "./pages/PNFS";
 import Horarios from "./pages/Horarios";
 import RegisterSede from "./pages/registerSede";
 import PNF from "./pages/PNF";
+import AsignarCoordinador from "./pages/AsignarCoordinador";
 
 //Importacion para la pagina 404 o notFound
 import NotFound from "./pages/NotFound";
@@ -50,7 +52,7 @@ import Trayectos from "./pages/Trayecto";
 import ViewSede from "./pages/Sedes";
 import RegisterAula from "./pages/RegisterAula";
 import ViewAula from "./pages/Aulas";
-import AssignCoordinador from "./pages/AssignCoordinador";
+import AssignCoordinador from "./pages/AsignarCoordinador";
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -84,6 +86,38 @@ export default function App() {
                     ]}
                   >
                     <Profesores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/Coordinadores"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <Coordinadores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/Coordinadores/asignar"
+                element={
+                  <ProtectedViews
+                    allowedRoles={[
+                      "Vicerrector",
+                      "Profesor",
+                      "Coordinador",
+                      "Director General de Gestión Curricular",
+                      "SuperAdmin",
+                    ]}
+                  >
+                    <AsignarCoordinador />
                   </ProtectedViews>
                 }
               />
