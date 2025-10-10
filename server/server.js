@@ -22,6 +22,8 @@ import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
 import { coordinadorRouter } from "./routes/coordinador.routes.js";
 
+import SocketServices from "./services/socket.services.js";
+
 // Creación del servidor
 const app = express();
 export const server = createServer(app);
@@ -41,6 +43,22 @@ app.use("", HorarioRouter);
 app.use("", AulaRouter);
 app.use("", SedesRouter);
 app.use("", coordinadorRouter);
+
+const servicioSocket = new SocketServices();
+
+const io = servicioSocket.initializeService();
+
+io.on("connection", (socket) => {
+  console.log("✅ Usuario conectado:", socket.user.id, "Roles:", socket.user.roles);
+
+  socket.on("disconnect", (reason) => {
+    console.log(`❌ Usuario ${socket.user.id} desconectado. Razón:`, reason);
+  });
+
+  socket.on("error", (error) => {
+    console.error(`💥 Error en socket ${socket.user.id}:`, error);
+  });
+});
 
 // Encendido del servidor
 server.listen(process.env.SERVER_PORT, () => {
