@@ -2,28 +2,10 @@ import ResponsiveAppBar from "../components/navbar";
 import Footer from "../components/footer";
 
 export default function DeclaracionAccesibilidad() {
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    {
-      name: 'Profesor',
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    {
-      name: 'PNF',
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <div className="min-h-screen bg-gray-100 py-12 px-6">
         <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-2xl p-8">

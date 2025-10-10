@@ -1,7 +1,7 @@
-import ResponsiveAppBar from "../components/navbar";
+import ResponsiveAppBar from "../../components/navbar";
 import { Typography, Box, CircularProgress, Button, Stack } from "@mui/material";
 import { useState, useEffect } from "react";
-import axios from "../apis/axios";
+import axios from "../../apis/axios";
 import Swal from "sweetalert2";
 
 export default function ProfesoresEliminados() {

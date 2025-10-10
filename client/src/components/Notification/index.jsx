@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import NotificationCard from "./NotificationCard";
 import NotificationTarget from "./NotificationTarget";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // ✅ Agregar useRef
 import CloseIcon from "@mui/icons-material/Close";
 import io from "socket.io-client";
 import axios from "../../apis/axios";
@@ -23,9 +23,10 @@ export default function Notification({ userRoles, userID }) {
   const [loading, setLoading] = useState(true);
   const [updateTrigger, setUpdateTrigger] = useState(0);
 
+  const socketRef = useRef(null); // ✅ Mover useRef aquí
+
   const getNotificationHistory = async (userID, userRoles) => {
     try {
-      // 🔥 OBTENER Y ENVIAR ÚLTIMA CONEXIÓN
       const ultimaConexion = localStorage.getItem(
         "ultima_conexion_notificaciones"
       );
@@ -34,12 +35,11 @@ export default function Notification({ userRoles, userID }) {
         params: {
           user_id: userID,
           roles: userRoles.join(","),
-          ultimaConexion, // 🔥 ENVIAR AL BACKEND
+          ultimaConexion,
         },
         withCredentials: true,
       });
 
-      // 🔥 ACTUALIZAR ÚLTIMA CONEXIÓN SOLO SI LA PETICIÓN FUE EXITOSA
       localStorage.setItem(
         "ultima_conexion_notificaciones",
         new Date().toISOString()
@@ -62,24 +62,20 @@ export default function Notification({ userRoles, userID }) {
     }
   }, []);
 
-  // 🔥 NUEVO: Cargar historial de notificaciones al montar el componente
+  // 🔥 Cargar historial de notificaciones al montar el componente
   useEffect(() => {
     const loadNotificationHistory = async () => {
       if (!userID) {
-        console.log("⏸️ Sin usuario, no cargando historial");
         setLoading(false);
         return;
       }
 
       try {
-        console.log("📚 Cargando historial de notificaciones...");
         const history = await getNotificationHistory(userID, userRoles);
-        console.log("✅ Historial cargado:", history.length, "notificaciones");
         setNotifications(history);
         setUpdateTrigger((prev) => prev + 1);
       } catch (error) {
         console.error("❌ Error cargando historial:", error);
-        // No detenemos la carga, el socket puede seguir funcionando
       } finally {
         setLoading(false);
       }
@@ -88,51 +84,60 @@ export default function Notification({ userRoles, userID }) {
     loadNotificationHistory();
   }, [userID, userRoles]);
 
-  // Conectar socket cuando el componente se monta
+  // ✅ CONEXIÓN WEBSOCKET CORREGIDA
   useEffect(() => {
     if (!userID) {
-      console.log("⏸️ Sin usuario, no conectando socket");
+      //console.log("⏸️ Sin usuario, no conectando socket");
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+        setSocket(null);
+      }
       return;
     }
 
-    console.log(
-      "🔄 Conectando socket para usuario:",
-      userID,
-      "roles:",
-      userRoles
-    );
+    // ⚠️ Evitar múltiples conexiones
+    if (socketRef.current && socketRef.current.connected) {
+      //console.log("✅ Socket ya conectado, reutilizando...");
+      return;
+    }
+
+    //console.log("🔄 Conectando socket para usuario:", userID);
 
     const newSocket = io("http://localhost:3000", {
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       withCredentials: true,
       auth: { user_id: userID, roles: userRoles },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 20000,
     });
 
-    // Timeout de seguridad
+    socketRef.current = newSocket;
+
     const safetyTimeout = setTimeout(() => {
-      console.log("⏰ Timeout de seguridad - deteniendo carga");
+      //console.log("⏰ Timeout de seguridad - deteniendo carga");
       setLoading(false);
     }, 10000);
 
     const handleConnect = () => {
-      console.log("✅ Conectado al servidor");
+      //console.log("✅ Conectado al servidor, ID:", newSocket.id);
       setSocket(newSocket);
+      setLoading(false);
+      clearTimeout(safetyTimeout);
 
       // Unirse a salas por rol
-      if (userRoles && userRoles.length > 0) {
+      if (userRoles?.length > 0) {
         userRoles.forEach((role) => {
           newSocket.emit("join_role_room", role);
-          console.log(`🎯 Unido a sala de rol: ${role}`);
+          //console.log(`🎯 Unido a sala de rol: ${role}`);
         });
       }
-
-      // ❌ YA NO SOLICITAMOS NOTIFICACIONES POR SOCKET
-      // porque ya las cargamos via HTTP
-      clearTimeout(safetyTimeout);
     };
 
     const handleNewNotification = (data) => {
-      console.log("📨 Nueva notificación en tiempo real:", data);
+      //console.log("📨 Nueva notificación en tiempo real:", data);
 
       let notificationData = data;
 
@@ -146,7 +151,7 @@ export default function Notification({ userRoles, userID }) {
         notificationData = [notificationData];
       }
 
-      console.log("✅ Nueva notificación a agregar:", notificationData);
+      //console.log("✅ Nueva notificación a agregar:", notificationData);
 
       // 🔥 AGREGAR AL INICIO para que las nuevas aparezcan primero
       setNotifications((prev) => [...notificationData, ...prev]);
@@ -156,40 +161,48 @@ export default function Notification({ userRoles, userID }) {
 
     const handleConnectError = (error) => {
       console.error("❌ Error de conexión:", error);
+      setLoading(false);
       clearTimeout(safetyTimeout);
     };
 
-    const handleDisconnect = () => {
-      console.log("🔌 Desconectado del servidor");
+    const handleDisconnect = (reason) => {
+      console.log("🔌 Desconectado del servidor. Razón:", reason);
+      setLoading(false);
       clearTimeout(safetyTimeout);
     };
 
-    // ✅ SOLO los eventos necesarios
+    // Event listeners
     newSocket.on("connect", handleConnect);
-    newSocket.on("new_notification", handleNewNotification); // Solo nuevas notificaciones
+    newSocket.on("new_notification", handleNewNotification);
     newSocket.on("connect_error", handleConnectError);
     newSocket.on("disconnect", handleDisconnect);
 
-    // Cleanup
+    // Cleanup mejorado
     return () => {
-      console.log("🧹 Limpiando conexión socket...");
+      //console.log("🧹 Limpiando conexión socket...");
       clearTimeout(safetyTimeout);
 
-      // Remover todos los listeners
-      newSocket.off("connect", handleConnect);
-      newSocket.off("new_notification", handleNewNotification);
-      newSocket.off("connect_error", handleConnectError);
-      newSocket.off("disconnect", handleDisconnect);
+      if (socketRef.current) {
+        socketRef.current.off("connect", handleConnect);
+        socketRef.current.off("new_notification", handleNewNotification);
+        socketRef.current.off("connect_error", handleConnectError);
+        socketRef.current.off("disconnect", handleDisconnect);
 
-      newSocket.close();
+        // Solo cerrar si no hay userID
+        if (!userID) {
+          socketRef.current.close();
+          socketRef.current = null;
+          setSocket(null);
+        }
+      }
     };
-  }, [userID, userRoles]);
+  }, [userID, userRoles]); // ✅ Dependencies correctas
 
   // 🔥 MEJORADO: Marcar notificación como leída
   const markAsRead = async (notificationId) => {
     try {
       if (socket && socket.connected) {
-        console.log("📝 Marcando notificación como leída:", notificationId);
+        //console.log("📝 Marcando notificación como leída:", notificationId);
         socket.emit("mark_notification_read", { notificationId });
       }
 
@@ -365,7 +378,7 @@ export default function Notification({ userRoles, userID }) {
             ) : (
               filteredNotifications.map((notification, index) => (
                 <NotificationCard
-                  key={`${notification.id}-${updateTrigger}-${index}`} // ✅ Key única que cambia
+                  key={`${notification.id}-${updateTrigger}-${index}`}
                   notification={notification}
                   onMarkAsRead={markAsRead}
                 />

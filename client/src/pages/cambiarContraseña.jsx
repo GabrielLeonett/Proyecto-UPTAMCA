@@ -47,7 +47,7 @@ export default function CambiarContraseña() {
       timerProgressBar: true,
       showConfirmButton: false,
       didDestroy: () => {
-        navigate("/", {
+        navigate("/inicio", {
           state: { message: "Contraseña cambiada exitosamente" },
         });
       }

@@ -27,7 +27,7 @@ export default function PaginaNoEncontrada() {
         variant="contained"
         color="primary"
         size="large"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/Inicio')}
       >
         Volver al inicio
       </Button>

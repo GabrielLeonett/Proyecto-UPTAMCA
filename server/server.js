@@ -13,6 +13,8 @@ import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
 
+import SocketServices from "./services/socket.services.js";
+
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/profesor.routes.js";
 import { CurricularRouter } from "./routes/curricular.routes.js";
@@ -41,6 +43,19 @@ app.use("", HorarioRouter);
 app.use("", AulaRouter);
 app.use("", SedesRouter);
 app.use("", coordinadorRouter);
+
+const servicioSocket = new SocketServices("websocket");
+const io = servicioSocket.initializeService();
+
+io.on("connection", (socket) => {
+
+  socket.on("disconnect", (reason) => {
+  });
+
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
+});
 
 // Encendido del servidor
 server.listen(process.env.SERVER_PORT, () => {

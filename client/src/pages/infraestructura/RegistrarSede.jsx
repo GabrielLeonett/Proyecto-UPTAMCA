@@ -10,7 +10,6 @@ import CustomButton from "../../components/customButton"; // 👈 Importamos tu 
 import axios from "../../apis/axios";
 
 export default function RegistrarSede() {
-    const pages = [{ name: "Inicio", link: "/Profesores" }];
     const theme = useTheme();
     const {
         register,
@@ -52,7 +51,7 @@ export default function RegistrarSede() {
 
     return (
         <>
-            <ResponsiveAppBar pages={pages} backgroundColor />
+            <ResponsiveAppBar backgroundColor />
 
             <Box
                 className="flex flex-col w-full min-h-screen bg-gray-100 p-4"

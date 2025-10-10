@@ -9,7 +9,6 @@ import Swal from "sweetalert2";
 
 export default function GestionSedes() {
   const theme = useTheme();
-  const pages = [{ name: "Inicio", link: "/" }, { name: "Registrar Sede", link: "/register-sede" }];
 
   const [sedes, setSedes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -59,7 +58,7 @@ export default function GestionSedes() {
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box
         className="flex flex-col w-full min-h-screen p-6"

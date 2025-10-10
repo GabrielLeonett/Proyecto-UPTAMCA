@@ -1,90 +1,55 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
 import ResponsiveAppBar from "../../components/navbar";
 import {
+  Typography,
   Box,
   CircularProgress,
-  Grid,
-  Alert,
-  Breadcrumbs,
-  Link,
-  Typography,
 } from "@mui/material";
-import CardTrayecto from "../../components/cardTrayecto";
-import axios from "../../apis/axios";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import CardPNF from "../../components/cardPNF";
+import { pedirPNFApi } from "../../apis/PNFApi";
 
 export default function ProgramasFormacion() {
-  const { codigoPNF } = useParams();
-  const navigate = useNavigate(); // ← Agregar useNavigate
-  const [trayectos, setTrayectos] = useState([]);
+  const [PNFS, setPNFS] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const pedirTrayectos = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await axios.get(`/Trayectos?PNF=${codigoPNF}`);
-        setTrayectos(res.data.data);
-      } catch (error) {
-        console.error("Error fetching trayectos:", error);
-        setError("Error al cargar los trayectos");
-      } finally {
-        setLoading(false);
-      }
+    const fetchPNFS = async () => {
+      const data = await pedirPNFApi();
+      console.log(data);
+      setPNFS(data);
+      setLoading(false);
     };
 
-    pedirTrayectos();
-  }, [codigoPNF]);
+    fetchPNFS();
+  }, []);
 
   return (
     <>
       <ResponsiveAppBar backgroundColor />
 
       <Box sx={{ pt: 12, px: 5 }}>
-        <Box sx={{ mt: 5 }}>
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 3 }}
-          >
-            <Link
-              component="button"
-              underline="hover"
-              color="inherit"
-              onClick={() => navigate("/PNFS")} // ← Agregar onClick
-            >
-              PNFS
-            </Link>
-
-            <Link component="button" underline="hover" color="inherit" disabled>
-              {codigoPNF}
-            </Link>
-          </Breadcrumbs>
-        </Box>
+        <Typography component="h1" variant="h4" sx={{ mt: 4, mr: 4 }}>
+          Programas Nacionales de Formación (PNF)
+        </Typography>
 
         {loading ? (
           <Box display="flex" justifyContent="center" mt={4}>
             <CircularProgress />
           </Box>
-        ) : error ? (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {error}
-          </Alert>
-        ) : trayectos.length === 0 ? (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            No se encontraron trayectos para este PNF
-          </Alert>
         ) : (
-          <Grid container spacing={3}>
-            {trayectos.map((trayecto) => (
-              <Grid item xs={12} sm={6} md={4} key={trayecto.id}>
-                <CardTrayecto Trayecto={trayecto} codigoPNF={codigoPNF} />
-              </Grid>
+          <Box>
+            {PNFS.map((PNF) => (
+              <CardPNF
+                key={PNF.codigo_pnf} // Asegúrate de tener una key única
+                pnf={{
+                  name: PNF.nombre_pnf,
+                  codigo: PNF.codigo_pnf,
+                  poblacion: PNF.poblacion_estudiantil_pnf,
+                  descripcion: PNF.descripcion_pnf,
+                }}
+              />
             ))}
-          </Grid>
+          </Box>
         )}
       </Box>
     </>

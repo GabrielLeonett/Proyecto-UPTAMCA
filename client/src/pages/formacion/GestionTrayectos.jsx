@@ -1,65 +1,49 @@
-import { Box, Typography, Grid, Breadcrumbs, Link } from "@mui/material";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import CardUnidadCurricular from "../../components/cardUnidadCurricular";
-import CardSeccion from "../../components/cardSeccion";
-import ResponsiveAppBar from "../../components/navbar";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import ResponsiveAppBar from "../../components/navbar";
+import {
+  Box,
+  CircularProgress,
+  Grid,
+  Alert,
+  Breadcrumbs,
+  Link,
+  Typography,
+} from "@mui/material";
+import CardTrayecto from "../../components/cardTrayecto";
 import axios from "../../apis/axios";
-import Swal from "sweetalert2";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 export default function GestionTrayectos() {
-  const { codigoPNF, Trayecto } = useParams();
-  const [unidades, setUnidades] = useState([]);
-  const [secciones, setSecciones] = useState([]);
+  const { codigoPNF } = useParams();
+  const navigate = useNavigate(); // ← Agregar useNavigate
+  const [trayectos, setTrayectos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!Trayecto) {
-      Swal.fire({
-        title: "Trayecto No Seleccionado",
-        text: "No se ha seleccionado ningún trayecto. Por favor, regresa a la página anterior y selecciona un trayecto válido.",
-        icon: "warning",
-      });
-    }
-  }, [Trayecto]);
-
-  useEffect(() => {
-    const fetchUnidades = async () => {
+    const pedirTrayectos = async () => {
       try {
-        const response = await axios.get(
-          `/Trayecto/Unidades-Curriculares?Trayecto=${Trayecto}`
-        );
-        setUnidades(response.data.data || []);
-      } catch (err) {
-        console.error("Error cargando unidades curriculares:", err);
+        setLoading(true);
+        setError(null);
+        const res = await axios.get(`/Trayectos?PNF=${codigoPNF}`);
+        setTrayectos(res.data.data);
+      } catch (error) {
+        console.error("Error fetching trayectos:", error);
+        setError("Error al cargar los trayectos");
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchSecciones = async () => {
-      try {
-        const response = await axios.get(`/Secciones/?Trayecto=${Trayecto}`);
-        setSecciones(response.data.data || []);
-      } catch (err) {
-        console.error("Error cargando secciones:", err);
-      }
-    };
-
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchUnidades(), fetchSecciones()]);
-      setLoading(false);
-    };
-
-    loadData();
-  }, [Trayecto]);
+    pedirTrayectos();
+  }, [codigoPNF]);
 
   return (
     <>
       <ResponsiveAppBar backgroundColor />
 
-      <Box sx={{ mt: 18, px: 4, pb: 10 }}>
+      <Box sx={{ pt: 12, px: 5 }}>
         <Box sx={{ mt: 5 }}>
           <Breadcrumbs
             aria-label="breadcrumb"
@@ -75,88 +59,32 @@ export default function GestionTrayectos() {
               PNFS
             </Link>
 
-            <Link
-              component="button"
-              underline="hover"
-              color="inherit"
-              onClick={() => {
-                navigate(`/PNF/${codigoPNF}`);
-              }}
-            >
-              {codigoPNF}
-            </Link>
-
             <Link component="button" underline="hover" color="inherit" disabled>
-              {Trayecto}
+              {codigoPNF}
             </Link>
           </Breadcrumbs>
         </Box>
-        {/* Sección de Secciones */}
-        <Typography
-          variant="h5"
-          sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
-        >
-          Secciones del Trayecto
-        </Typography>
 
         {loading ? (
-          <Typography color="text.secondary" textAlign="center">
-            Cargando...
-          </Typography>
-        ) : secciones.length > 0 ? (
-          <Grid container spacing={2} justifyContent="center" sx={{ mb: 6 }}>
-            {secciones.map((seccion) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={seccion.id}
-                display="flex"
-                justifyContent="center"
-              >
-                <CardSeccion seccion={seccion} />
+          <Box display="flex" justifyContent="center" mt={4}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        ) : trayectos.length === 0 ? (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            No se encontraron trayectos para este PNF
+          </Alert>
+        ) : (
+          <Grid container spacing={3}>
+            {trayectos.map((trayecto) => (
+              <Grid item xs={12} sm={6} md={4} key={trayecto.id}>
+                <CardTrayecto Trayecto={trayecto} codigoPNF={codigoPNF} />
               </Grid>
             ))}
           </Grid>
-        ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay secciones registradas.
-          </Typography>
-        )}
-
-        {/* Sección de Unidades Curriculares */}
-        <Typography
-          variant="h5"
-          sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
-        >
-          Unidades Curriculares
-        </Typography>
-
-        {loading ? (
-          <Typography color="text.secondary" textAlign="center">
-            Cargando...
-          </Typography>
-        ) : unidades.length > 0 ? (
-          <Grid container spacing={2} justifyContent="center">
-            {unidades.map((uc) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={uc.id_unidad_curricular}
-                display="flex"
-                justifyContent="center"
-              >
-                <CardUnidadCurricular unidadCurricular={uc} />
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay unidades curriculares registradas.
-          </Typography>
         )}
       </Box>
     </>

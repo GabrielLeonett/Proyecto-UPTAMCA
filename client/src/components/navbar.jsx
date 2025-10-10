@@ -75,6 +75,7 @@ function ResponsiveAppBar({ backgroundColor }) {
     setAnchorElUser(null);
   };
 
+  // Menú reorganizado en tres columnas principales
   const pages = [
     {
       name: "Inicio",
@@ -89,7 +90,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Personal Académico",
+      name: "Personal",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -119,26 +120,6 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Editar Profesor",
-          url: "/academico/profesores/editar",
-          roles: [
-            "Vicerrector",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-      ],
-    },
-    {
-      name: "Coordinación",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
           name: "Gestión de Coordinadores",
           url: "/coordinacion/coordinadores",
           roles: [
@@ -160,7 +141,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Programas de Formación",
+      name: "Formación Académica",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -170,7 +151,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
       submenu: [
         {
-          name: "Ver Programas",
+          name: "Programas de Formación",
           url: "/formacion/programas",
           roles: [
             "Vicerrector",
@@ -189,17 +170,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-      ],
-    },
-    {
-      name: "Gestión Curricular",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
         {
           name: "Unidades Curriculares",
           url: "/curricular/unidades",
@@ -223,7 +193,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Secciones y Horarios",
+      name: "Gestión Operativa",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -253,17 +223,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-      ],
-    },
-    {
-      name: "Infraestructura",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
         {
           name: "Gestión de Sedes",
           url: "/infraestructura/sedes",
@@ -275,28 +234,8 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Registrar Sede",
-          url: "/infraestructura/sedes/registrar",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
           name: "Gestión de Aulas",
           url: "/infraestructura/aulas",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar Aula",
-          url: "/infraestructura/aulas/registrar",
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -465,6 +404,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                         color: "white",
                         display: "block",
                         mx: 0.5,
+                        fontSize: "0.9rem",
+                        padding: "6px 12px",
                       }}
                     >
                       {page.name}
@@ -477,6 +418,11 @@ function ResponsiveAppBar({ backgroundColor }) {
                       MenuListProps={{
                         "aria-labelledby": `${page.name}-button`,
                       }}
+                      PaperProps={{
+                        sx: {
+                          minWidth: 200,
+                        },
+                      }}
                     >
                       {page.submenu
                         .filter((subItem) => hasAccess(subItem.roles))
@@ -484,6 +430,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                           <MenuItem
                             key={subItem.name}
                             onClick={() => handleNavigation(subItem.url)}
+                            sx={{ fontSize: "0.9rem" }}
                           >
                             <Typography textAlign="center">
                               {subItem.name}
@@ -500,6 +447,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                       color: "white",
                       display: "block",
                       mx: 1,
+                      fontSize: "0.9rem",
+                      padding: "6px 12px",
                     }}
                   >
                     {page.name}

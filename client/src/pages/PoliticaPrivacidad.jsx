@@ -2,30 +2,9 @@ import ResponsiveAppBar from "../components/navbar";
 import Footer from "../components/footer";
 
 export default function PoliticaPrivacidad() {
-  const pages = [
-    { name: 'Inicio', url: '/' },
-    {
-      name: 'Profesor',
-      submenu: [
-        { name: 'Ver', url: '/Profesores' },
-        { name: 'Registrar', url: '/registerProfesor' },
-      ]
-    },
-    {
-      name: 'PNF',
-      submenu: [
-        { name: 'Ver', url: '/PNF' },
-        { name: 'Registrar', url: '/registerPNF' },
-      ]
-    },
-    { name: 'Contacto', url: '/contact' }
-  ];
-
-
-
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor/>   
+      <ResponsiveAppBar backgroundColor/>   
 
 
       <div className="min-h-screen bg-gray-100 py-12 px-6">

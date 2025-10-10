@@ -15,7 +15,7 @@ export default function CardPNF({ pnf }) {
       component="div"
       id={pnf.codigo}
       onClick={() => {
-        navigate(`/PNF/${pnf.codigo}`, {
+        navigate(`/formacion/programas/${pnf.codigo}`, {
           state: { PNF: pnf.name },
         });
       }}

@@ -12,7 +12,6 @@ import { AulaSchema } from "../../schemas/AulaSchema";
 
 export default function RegistrarAula() {
   const theme = useTheme();
-  const pages = [{ name: "Inicio", link: "/" }, { name: "Ver Aulas", link: "/aulas" }];
 
   const {
     control,
@@ -68,7 +67,7 @@ export default function RegistrarAula() {
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"

@@ -9,7 +9,6 @@ import Swal from "sweetalert2";
 
 export default function GestionAulas() {
   const theme = useTheme();
-  const pages = [{ name: "Inicio", link: "/" }, { name: "Registrar Aula", link: "/register-aula" }];
 
   const [aulas, setAulas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +53,7 @@ export default function GestionAulas() {
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box className="flex flex-col w-full min-h-screen p-6" sx={{ mt: 10, backgroundColor: theme.palette.background.default }}>
         <Typography variant="h2" gutterBottom sx={{ textAlign: "center", mb: 4 }}>
