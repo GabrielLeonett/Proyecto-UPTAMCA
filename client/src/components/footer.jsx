@@ -1,7 +1,7 @@
 import { Typography, TextField, Button } from "@mui/material";
 import { Facebook, Instagram, Twitter, Linkedin } from "lucide-react";
 import Swal from "sweetalert2";
-import PoliticaPrivacidad from "../pages/poliPriv";
+import PoliticaPrivacidad from "../pages/PoliticaPrivacidad";
 
 export default function Footer() {
   const handleSubmit = (e) => {

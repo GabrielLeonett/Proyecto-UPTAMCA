@@ -89,64 +89,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Profesor",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/Profesores",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerProfesor",
-          roles: [
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-      ],
-    },
-    {
-      name: "PNF",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/PNFS",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerPNF",
-          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
-        },
-      ],
-    },
-    {
-      name: "Horarios",
-      url: "/Horarios",
+      name: "Personal Académico",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -154,10 +97,40 @@ function ResponsiveAppBar({ backgroundColor }) {
         "Director General de Gestión Curricular",
         "SuperAdmin",
       ],
+      submenu: [
+        {
+          name: "Gestión de Profesores",
+          url: "/academico/profesores",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Profesor",
+          url: "/academico/profesores/registrar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Editar Profesor",
+          url: "/academico/profesores/editar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
     },
-
     {
-      name: "Sedes",
+      name: "Coordinación",
       roles: [
         "Vicerrector",
         "Coordinador",
@@ -166,8 +139,8 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
       submenu: [
         {
-          name: "Sedes",
-          url: "/Sedes",
+          name: "Gestión de Coordinadores",
+          url: "/coordinacion/coordinadores",
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -176,22 +149,177 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Registrar",
-          url: "/registerSede",
-          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
+          name: "Asignar Coordinador",
+          url: "/coordinacion/coordinadores/asignar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
         },
       ],
-    },{
+    },
+    {
+      name: "Programas de Formación",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Ver Programas",
+          url: "/formacion/programas",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Programa",
+          url: "/formacion/programas/registrar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
+      name: "Gestión Curricular",
+      roles: [
+        "Vicerrector",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Unidades Curriculares",
+          url: "/curricular/unidades",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Unidad",
+          url: "/curricular/unidades/registrar",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
+      name: "Secciones y Horarios",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Gestión de Secciones",
+          url: "/secciones",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Horarios",
+          url: "/horarios",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
+      name: "Infraestructura",
+      roles: [
+        "Vicerrector",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Gestión de Sedes",
+          url: "/infraestructura/sedes",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Sede",
+          url: "/infraestructura/sedes/registrar",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Aulas",
+          url: "/infraestructura/aulas",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Aula",
+          url: "/infraestructura/aulas/registrar",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
       name: "Administración",
       roles: ["SuperAdmin"],
       submenu: [
-        { name: "Usuarios", url: "/admin/users", roles: ["SuperAdmin"] },
         {
-          name: "Configuración",
-          url: "/admin/settings",
+          name: "Panel de Administración",
+          url: "/administracion",
           roles: ["SuperAdmin"],
         },
-        { name: "Auditoría", url: "/admin/audit", roles: ["SuperAdmin"] },
+        {
+          name: "Configuración del Sistema",
+          url: "/administracion/configuracion",
+          roles: ["SuperAdmin"],
+        },
       ],
     },
   ];

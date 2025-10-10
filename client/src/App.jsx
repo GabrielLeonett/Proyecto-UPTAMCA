@@ -10,24 +10,50 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { lightTheme, darkTheme } from "./components/ui/theme";
 
 //importaciones de las paginas para su renderizado
-import FormRegister from "./pages/registerProfesor";
-import Index from "./pages/index";
-import Profesores from "./pages/Profesores";
-import Coordinadores from "./pages/Coordinadores";
-import IniciarSession from "./pages/inicioSession";
-import CerrarSession from "./pages/cerrarSession";
-import CambiarContraseña from "./pages/cambiarContraseña";
-import PnfForm from "./pages/PnfFrom";
-import RegisterUnidadCurricular from "./pages/RegisterUnidadCurricular";
-import Prueba from "./pages/prueba";
-import PNFS from "./pages/PNFS";
-import Horarios from "./pages/Horarios";
-import RegisterSede from "./pages/registerSede";
-import PNF from "./pages/PNF";
-import AsignarCoordinador from "./pages/AsignarCoordinador";
+// Vistas Públicas
+import Inicio from "./pages/Inicio";
+import InicioSesion from "./pages/InicioSesion";
+import CerrarSesion from "./pages/CerrarSesion";
+import RecuperarContrasena from "./pages/RecuperarContrasena";
+import TerminosCondiciones from "./pages/TerminosCondiciones";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
+import DeclaracionAccesibilidad from "./pages/DeclaracionAccesibilidad";
+
+// Gestión de Personal Académico
+import GestionProfesores from "./pages/academico/GestionProfesores";
+import RegistrarProfesor from "./pages/academico/RegistrarProfesor";
+import DisponibilidadProfesor from "./pages/academico/DisponibilidadProfesor";
+
+// Gestión de Coordinación
+import GestionCoordinadores from "./pages/coordinacion/GestionCoordinadores";
+import AsignarCoordinador from "./pages/coordinacion/AsignarCoordinador";
+
+// Gestión de Programas de Formación
+import ProgramasFormacion from "./pages/formacion/ProgramasFormacion";
+import RegistrarPrograma from "./pages/formacion/RegistrarPrograma";
+import GestionTrayectos from "./pages/formacion/GestionTrayectos";
+
+// Gestión Curricular
+import RegistrarUnidadCurricular from "./pages/curricular/RegistrarUnidadCurricular";
+
+// Gestión de Secciones y Horarios
+import GestionSecciones from "./pages/secciones/GestionSecciones";
+import GestionHorarios from "./pages/horarios/GestionHorarios";
+
+// Gestión de Infraestructura
+import GestionSedes from "./pages/infraestructura/GestionSedes";
+import RegistrarSede from "./pages/infraestructura/RegistrarSede";
+import GestionAulas from "./pages/infraestructura/GestionAulas";
+import RegistrarAula from "./pages/infraestructura/RegistrarAula";
+
+// Administración del Sistema
+import PanelAdministracion from "./pages/administracion/PanelAdministracion";
+
+// Desarrollo y Pruebas
+import PaginaPruebas from "./pages/desarrollo/PaginaPruebas";
 
 //Importacion para la pagina 404 o notFound
-import NotFound from "./pages/NotFound";
+import PaginaNoEncontrada from "./pages/PaginaNoEncontrada";
 
 //Importacion de useState
 import { useState } from "react";
@@ -36,390 +62,220 @@ import { useState } from "react";
 import "./App.css";
 
 //Importacion para el Boton que cambia entre los temas claros y oscuros
-import ButtonChageTheme from "./components/buttonChageTheme";
+import BotonCambiarTema from "./components/BotonCambiarTema";
 
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
-import Secciones from "./pages/Secciones";
-import Disponibilidad from "./pages/disponibilidadDoc";
-import EliminarProfesor from "./pages/eliminarProfesor";
 
-//Importacion para Politica de Privacidad
-import PoliticaPrivacidad from "./pages/poliPriv";
-import TerminosCondiciones from "./pages/terminosCondi";
-import Accesibilidad from "./pages/accesibilidad";
-import Trayectos from "./pages/Trayecto";
-import ViewSede from "./pages/Sedes";
-import RegisterAula from "./pages/RegisterAula";
-import ViewAula from "./pages/Aulas";
-import AssignCoordinador from "./pages/AsignarCoordinador";
+// Roles comunes para reutilización
+const ROLES = {
+  TODOS_AUTENTICADOS: [
+    "Vicerrector",
+    "Profesor",
+    "Coordinador",
+    "Director General de Gestión Curricular",
+    "SuperAdmin",
+  ],
+  ADMINISTRADORES: [
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "SuperAdmin",
+  ],
+  COORDINADORES: [
+    "Vicerrector",
+    "Coordinador",
+    "Director General de Gestión Curricular",
+    "SuperAdmin",
+  ],
+  PERSONAL_ACADEMICO: [
+    "Vicerrector",
+    "Profesor",
+    "Coordinador",
+    "Director General de Gestión Curricular",
+    "SuperAdmin",
+  ],
+};
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [modoOscuro, setModoOscuro] = useState(false);
 
   return (
-    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+    <ThemeProvider theme={modoOscuro ? darkTheme : lightTheme}>
       <CssBaseline>
         <Router>
           <AuthProvider>
             <Routes>
-              {/* Vistas Públicas */}
-              <Route path="" element={<Index />} />
-              <Route path="/Inicio-session" element={<IniciarSession />} />
-              <Route path="/Cerrar-session" element={<CerrarSession />} />
+              {/* === VISTAS PÚBLICAS === */}
+              <Route path="/" element={<Inicio />} />
+              <Route path="/iniciar-sesion" element={<InicioSesion />} />
+              <Route path="/cerrar-sesion" element={<CerrarSesion />} />
               <Route
-                path="/Cambiar-contraseña"
-                element={<CambiarContraseña />}
+                path="/recuperar-contrasena"
+                element={<RecuperarContrasena />}
+              />
+              <Route
+                path="/terminos-condiciones"
+                element={<TerminosCondiciones />}
+              />
+              <Route
+                path="/politica-privacidad"
+                element={<PoliticaPrivacidad />}
+              />
+              <Route
+                path="/accesibilidad"
+                element={<DeclaracionAccesibilidad />}
               />
 
-              {/* Vistas Protegidas */}
+              {/* === GESTIÓN DE PERSONAL ACADÉMICO === */}
               <Route
-                path="/Profesores"
+                path="/academico/profesores"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Profesores />
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionProfesores />
                   </ProtectedViews>
                 }
               />
               <Route
-                path="/Coordinadores"
+                path="/academico/profesores/registrar"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Coordinadores />
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                    <RegistrarProfesor />
                   </ProtectedViews>
                 }
               />
               <Route
-                path="/Coordinadores/asignar"
+                path="/academico/profesores/:id/disponibilidad"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
+                  <ProtectedViews allowedRoles={ROLES.PERSONAL_ACADEMICO}>
+                    <DisponibilidadProfesor />
+                  </ProtectedViews>
+                }
+              />
+
+              {/* === GESTIÓN DE COORDINACIÓN === */}
+              <Route
+                path="/coordinacion/coordinadores"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionCoordinadores />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/coordinacion/coordinadores/asignar"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
                     <AsignarCoordinador />
                   </ProtectedViews>
                 }
               />
+
+              {/* === PROGRAMAS NACIONALES DE FORMACIÓN === */}
               <Route
-                path="/RegisterUnidadCurricular"
+                path="/formacion/programas"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <RegisterUnidadCurricular />
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <ProgramasFormacion />
                   </ProtectedViews>
                 }
               />
               <Route
-                path="/registerSede"
+                path="/formacion/programas/registrar"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <RegisterSede />
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                    <RegistrarPrograma />
                   </ProtectedViews>
                 }
               />
               <Route
-                path="/Horarios"
+                path="/formacion/programas/:codigo/trayectos/:trayecto"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Horarios />
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionTrayectos />
                   </ProtectedViews>
                 }
               />
+              {/* === GESTIÓN CURRICULAR === */}
               <Route
-                path="/PNF/:codigoPNF"
+                path="/curricular/unidades/registrar"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <PNF />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/registerProfesor"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <FormRegister />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/registerPNF"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <PnfForm />
-                  </ProtectedViews>
-                }
-              />
-              <Route path="/Prueba" element={<Prueba />} />
-              <Route
-                path="PNFS/"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <PNFS />
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <RegistrarUnidadCurricular />
                   </ProtectedViews>
                 }
               />
 
+              {/* === GESTIÓN DE SECCIONES Y HORARIOS === */}
               <Route
-                path="/Secciones"
+                path="/secciones"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                    ]}
-                  >
-                    <Secciones />
+                  <ProtectedViews allowedRoles={ROLES.COORDINADORES}>
+                    <GestionSecciones />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/horarios"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionHorarios />
                   </ProtectedViews>
                 }
               />
 
+              {/* === GESTIÓN DE INFRAESTRUCTURA === */}
               <Route
-                path="/profesor/:id_profesor/disponiblidad"
+                path="/infraestructura/sedes"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Disponibilidad />
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionSedes />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/infraestructura/sedes/registrar"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <RegistrarSede />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/infraestructura/aulas"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionAulas />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/infraestructura/aulas/registrar"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <RegistrarAula />
                   </ProtectedViews>
                 }
               />
 
+              {/* === ADMINISTRACIÓN DEL SISTEMA === */}
               <Route
-                path="/eliminarProfesor"
+                path="/administracion"
                 element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <EliminarProfesor />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/politicaPrivacidad"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <PoliticaPrivacidad />
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                    <PanelAdministracion />
                   </ProtectedViews>
                 }
               />
 
-              <Route
-                path="/TerminosCondiciones"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <TerminosCondiciones />
-                  </ProtectedViews>
-                }
-              />
+              {/* === RUTAS DE DESARROLLO === */}
+              <Route path="/desarrollo/pruebas" element={<PaginaPruebas />} />
 
-              <Route
-                path="/Accesibilidad"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Accesibilidad />
-                  </ProtectedViews>
-                }
-              />
-
-              <Route
-                path="/PNF/:codigoPNF/Trayecto/:Trayecto"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <Trayectos />
-                  </ProtectedViews>
-                }
-              />
-
-              <Route
-                path="/Sedes"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <ViewSede />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/RegisterAula"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <RegisterAula />
-                  </ProtectedViews>
-                }
-              />
-              <Route
-                path="/Aulas"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <ViewAula />
-                  </ProtectedViews>
-                }
-              />
-
-              <Route
-                path="/AssignCoordinador"
-                element={
-                  <ProtectedViews
-                    allowedRoles={[
-                      "Vicerrector",
-                      "Profesor",
-                      "Coordinador",
-                      "Director General de Gestión Curricular",
-                      "SuperAdmin",
-                    ]}
-                  >
-                    <AssignCoordinador />
-                  </ProtectedViews>
-                }
-              />
-
-              {/* Ruta para 404 */}
-              <Route path="*" element={<NotFound />} />
+              {/* === RUTA PARA PÁGINA NO ENCONTRADA === */}
+              <Route path="*" element={<PaginaNoEncontrada />} />
             </Routes>
           </AuthProvider>
         </Router>
-        <ButtonChageTheme setMode={setDarkMode} mode={darkMode} />
+        <BotonCambiarTema setModo={setModoOscuro} modo={modoOscuro} />
       </CssBaseline>
     </ThemeProvider>
   );

@@ -96,7 +96,7 @@ export default class ProfesorController {
           message: "La imagen no cumple con los requisitos",
           error: validation.error,
         });
-        return;
+        throw (error.imagen = true);
       }
 
       // Registrar profesor en la base de datos
@@ -108,6 +108,8 @@ export default class ProfesorController {
 
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
+      const procesamientoImage = new imagenProcessingServices("Profesores");
+      procesamientoImage.deleteImage(req.file.originalname);
       FormatResponseController.respuestaError(res, {
         status: 500,
         title: "Error del Servidor",
@@ -552,7 +554,6 @@ export default class ProfesorController {
 
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-
       // Manejo de errores específicos del modelo
       if (error.status) {
         return FormatResponseController.respuestaError(res, {
