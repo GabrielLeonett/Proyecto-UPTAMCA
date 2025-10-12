@@ -4,8 +4,8 @@ import { Box, Typography } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomCalendar from "../../components/customCalendar";
 import { Controller, useForm } from "react-hook-form";
-import CustomLabel from "../../components/customLabel";
-import CustomButton from "../../components/customButton";
+import CustomLabel from "../components/customLabel";
+import CustomButton from "../components/customButton";
 import ResponsiveAppBar from "../../components/navbar";
 import MenuItem from "@mui/material/MenuItem";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,7 +14,10 @@ import dayjs from "dayjs";
 import DeletableChips from "../../components/ui/customChip";
 import Swal from "sweetalert2";
 import { Autocomplete, TextField } from "@mui/material";
-import axios from "../../apis/axios";
+import axios from "../apis/axios";
+import ModalRegisterAreaConocimiento from "../components/modalRegisterAreaConocimiento";
+import ModalRegisterPreGrado from "../components/ModalRegisterPreGrado";
+import ModalRegisterPosGrado from "../components/ModalRegisterPosGrado";
 
 export default function RegistrarProfesor() {
   const theme = useTheme();
@@ -50,6 +53,12 @@ export default function RegistrarProfesor() {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Agregamos los estados independientes para cada modal
+  const [openModalArea, setOpenModalArea] = useState(false);
+  const [openModalPregrado, setOpenModalPregrado] = useState(false);
+  const [openModalPosgrado, setOpenModalPosgrado] = useState(false);
+
+
   // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +85,15 @@ export default function RegistrarProfesor() {
     fetchData();
   }, []);
 
+  // 👉 Maneja la actualización de la lista cuando se registra una nueva área
+  const actualizarAreas = async () => {
+    try {
+      const res = await axios.get("/Profesor/areas-conocimiento");
+      setAreas(res.data.data.data);
+    } catch (error) {
+      console.error("Error al actualizar áreas:", error);
+    }
+  };
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -414,40 +432,10 @@ export default function RegistrarProfesor() {
                 select
                 label="Área de Conocimiento"
                 fullWidth
-                onChange={async (e) => {
+                onChange={(e) => {
                   const value = e.target.value;
                   if (value === "Otro") {
-                    const { value: text } = await Swal.fire({
-                      title: "Agregar otra área",
-                      input: "text",
-                      inputLabel: "Especifique el área",
-                    });
-
-                    if (text) {
-                      try {
-                        const response = await axios.post(
-                          'http://localhost:3000/Profesor/areas-conocimiento',
-                          {
-                            area_conocimiento: text
-                          }
-                        );
-
-                        if (response.data) {
-                          field.onChange([...field.value, text]);
-
-                          // Actualizar la lista de áreas
-                          axios.get("/Profesor/areas-conocimiento")
-                            .then((res) => {
-                              setAreas(res.data.data.data);
-                            });
-
-                          Swal.fire('Éxito', 'Área agregada correctamente', 'success');
-                        }
-                      } catch (error) {
-                        console.error('Error al agregar área:', error);
-                        Swal.fire('Error', 'No se pudo agregar el área', 'error');
-                      }
-                    }
+                    setOpenModalArea(true);
                   } else if (value && !field.value.includes(value)) {
                     field.onChange([...field.value, value]);
                   }
@@ -465,9 +453,17 @@ export default function RegistrarProfesor() {
                 ))}
                 <MenuItem value="Otro">Otro</MenuItem>
               </CustomLabel>
+
               <DeletableChips values={field.value} onChange={field.onChange} />
             </>
           )}
+        />
+
+        {/* Modal Área */}
+        <ModalRegisterAreaConocimiento
+          open={openModalArea}
+          onClose={() => setOpenModalArea(false)}
+          setState={setAreas}
         />
 
         {/* Pregrado */}
@@ -475,114 +471,59 @@ export default function RegistrarProfesor() {
           name="pre_grado"
           control={control}
           render={({ field }) => (
-            <Autocomplete
-              multiple
-              options={[
-                ...pregrados.map((pg) => ({
-                  id_pre_grado: pg.id_pre_grado,
-                  nombre_pre_grado: pg.nombre_pre_grado,
-                  tipo_pre_grado: pg.tipo_pre_grado,
-                })),
-                {
-                  id_pre_grado: "otro",
-                  nombre_pre_grado: "Otro",
-                  tipo_pre_grado: "Otros",
-                },
-              ]}
-              groupBy={(option) => option.tipo_pre_grado}
-              getOptionLabel={(option) => option.nombre_pre_grado}
-              filterSelectedOptions
-              value={field.value || []}
-              onChange={async (_, newValue) => {
-                const uniqueValues = newValue.filter(
-                  (item, index, self) =>
-                    index ===
-                    self.findIndex((t) => t.id_pre_grado === item.id_pre_grado)
-                );
+            <>
+              <Autocomplete
+                multiple
+                options={[
+                  ...pregrados.map((pg) => ({
+                    id_pre_grado: pg.id_pre_grado,
+                    nombre_pre_grado: pg.nombre_pre_grado,
+                    tipo_pre_grado: pg.tipo_pre_grado,
+                  })),
+                  {
+                    id_pre_grado: "otro",
+                    nombre_pre_grado: "Otro",
+                    tipo_pre_grado: "Otros",
+                  },
+                ]}
+                groupBy={(option) => option.tipo_pre_grado}
+                getOptionLabel={(option) => option.nombre_pre_grado}
+                filterSelectedOptions
+                value={field.value || []}
+                onChange={(_, newValue) => {
+                  const uniqueValues = newValue.filter(
+                    (item, index, self) =>
+                      index === self.findIndex((t) => t.id_pre_grado === item.id_pre_grado)
+                  );
 
-                // Si seleccionó "Otro"
-                if (uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")) {
-                  const { value: text } = await Swal.fire({
-                    title: "Agregar otro pregrado",
-                    input: "text",
-                    inputLabel: "Especifique el pregrado",
-                    inputPlaceholder: "Escribe aquí...",
-                    showCancelButton: true,
-                    inputValidator: (val) => {
-                      if (!val) return "Por favor ingrese un valor";
-                      if (field.value?.some((v) => v.nombre_pre_grado === val))
-                        return "Este pregrado ya existe";
-                      return null;
-                    },
-                  });
+                  if (uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")) {
+                    setOpenModalPregrado(true);
 
-                  if (text) {
-                    try {
-                      // Petición POST para agregar nuevo pregrado
-                      const response = await axios.post(
-                        'http://localhost:3000/Profesor/pre-grado',
-                        {
-                          nombre_pre_grado: text,
-                          tipo_pre_grado: "Otros"
-                        }
-                      );
-
-                      if (response.data) {
-                        // Filtrar "Otro" y agregar el nuevo valor
-                        const filteredValues = uniqueValues.filter(
-                          (v) => v.nombre_pre_grado !== "Otro"
-                        );
-
-                        const newPregrado = {
-                          id_pre_grado: response.data.id_pre_grado || `custom-${Date.now()}`,
-                          nombre_pre_grado: text,
-                          tipo_pre_grado: "Otros",
-                        };
-
-                        field.onChange([...filteredValues, newPregrado]);
-
-                        // Actualizar la lista de pregrados
-                        axios.get("/Profesor/pre-grado")
-                          .then((res) => {
-                            setPregrados(res.data.data.data || res.data.data);
-                          });
-
-                        Swal.fire('Éxito', 'Pregrado agregado correctamente', 'success');
-                      }
-                    } catch (error) {
-                      console.error('Error al agregar pregrado:', error);
-                      Swal.fire('Error', 'No se pudo agregar el pregrado', 'error');
-
-                      // Si hay error, mantener valores sin "Otro"
-                      const filteredValues = uniqueValues.filter(
-                        (v) => v.nombre_pre_grado !== "Otro"
-                      );
-                      field.onChange(filteredValues);
-                    }
-                  } else {
-                    // Si canceló, mantener valores sin "Otro"
                     const filteredValues = uniqueValues.filter(
                       (v) => v.nombre_pre_grado !== "Otro"
                     );
                     field.onChange(filteredValues);
+                  } else {
+                    field.onChange(uniqueValues);
                   }
-                } else {
-                  field.onChange(uniqueValues);
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pregrado"
-                  variant="outlined"
-                  error={!!errors.pre_grado}
-                  helperText={
-                    errors.pre_grado?.message ||
-                    "Seleccione al menos un pregrado"
-                  }
-                />
-              )}
-            />
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Pregrado"
+                    variant="outlined"
+                    error={!!errors.pre_grado}
+                    helperText={errors.pre_grado?.message || "Seleccione al menos un pregrado"}
+                  />
+                )}
+              />
+
+              <ModalRegisterPreGrado
+                open={openModalPregrado}
+                onClose={() => setOpenModalPregrado(false)}
+                setState={setPregrados}
+              />
+            </>
           )}
         />
 
@@ -591,113 +532,62 @@ export default function RegistrarProfesor() {
           name="pos_grado"
           control={control}
           render={({ field }) => (
-            <Autocomplete
-              multiple
-              options={[
-                ...postgrados.map((pg) => ({
-                  id_pos_grado: pg.id_pos_grado,
-                  nombre_pos_grado: pg.nombre_pos_grado,
-                  tipo_pos_grado: pg.tipo_pos_grado,
-                })),
-                {
-                  id_pos_grado: "otro",
-                  nombre_pos_grado: "Otro",
-                  tipo_pos_grado: "Otros",
-                },
-              ]}
-              groupBy={(option) => option.tipo_pos_grado}
-              getOptionLabel={(option) => option.nombre_pos_grado}
-              filterSelectedOptions
-              value={field.value || []}
-              onChange={async (_, newValue) => {
-                const uniqueValues = newValue.filter(
-                  (item, index, self) =>
-                    index ===
-                    self.findIndex((t) => t.id_pos_grado === item.id_pos_grado)
-                );
+            <>
+              <Autocomplete
+                multiple
+                options={[
+                  ...postgrados.map((pg) => ({
+                    id_pos_grado: pg.id_pos_grado,
+                    nombre_pos_grado: pg.nombre_pos_grado,
+                    tipo_pos_grado: pg.tipo_pos_grado,
+                  })),
+                  {
+                    id_pos_grado: "otro",
+                    nombre_pos_grado: "Otro",
+                    tipo_pos_grado: "Otros",
+                  },
+                ]}
+                groupBy={(option) => option.tipo_pos_grado}
+                getOptionLabel={(option) => option.nombre_pos_grado}
+                filterSelectedOptions
+                value={field.value || []}
+                onChange={async (_, newValue) => {
+                  const uniqueValues = newValue.filter(
+                    (item, index, self) =>
+                      index === self.findIndex((t) => t.id_pos_grado === item.id_pos_grado)
+                  );
 
-                // Si seleccionó "Otro"
-                if (uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")) {
-                  const { value: text } = await Swal.fire({
-                    title: "Agregar otro posgrado",
-                    input: "text",
-                    inputLabel: "Especifique el posgrado",
-                    inputPlaceholder: "Escribe aquí...",
-                    showCancelButton: true,
-                    inputValidator: (val) => {
-                      if (!val) return "Por favor ingrese un valor";
-                      if (field.value?.some((v) => v.nombre_pos_grado === val))
-                        return "Este posgrado ya existe";
-                      return null;
-                    },
-                  });
+                  if (uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")) {
+                    setOpenModalPosgrado(true);
 
-                  if (text) {
-                    try {
-                      // Petición POST para agregar nuevo posgrado
-                      const response = await axios.post(
-                        'http://localhost:3000/Profesor/pos-grado',
-                        {
-                          nombre_pos_grado: text,
-                          tipo_pos_grado: "Otros"
-                        }
-                      );
-
-                      if (response.data) {
-                        // Filtrar "Otro" y agregar el nuevo valor
-                        const filteredValues = uniqueValues.filter(
-                          (v) => v.nombre_pos_grado !== "Otro"
-                        );
-
-                        const newPosgrado = {
-                          id_pos_grado: response.data.id_pos_grado || `custom-${Date.now()}`,
-                          nombre_pos_grado: text,
-                          tipo_pos_grado: "Otros",
-                        };
-
-                        field.onChange([...filteredValues, newPosgrado]);
-
-                        // Actualizar la lista de posgrados
-                        axios.get("/Profesor/pos-grado")
-                          .then((res) => {
-                            setPostgrados(res.data.data.data || res.data.data);
-                          });
-
-                        Swal.fire('Éxito', 'Posgrado agregado correctamente', 'success');
-                      }
-                    } catch (error) {
-                      console.error('Error al agregar posgrado:', error);
-                      Swal.fire('Error', 'No se pudo agregar el posgrado', 'error');
-
-                      // Si hay error, mantener valores sin "Otro"
-                      const filteredValues = uniqueValues.filter(
-                        (v) => v.nombre_pos_grado !== "Otro"
-                      );
-                      field.onChange(filteredValues);
-                    }
-                  } else {
-                    // Si canceló, mantener valores sin "Otro"
                     const filteredValues = uniqueValues.filter(
                       (v) => v.nombre_pos_grado !== "Otro"
                     );
                     field.onChange(filteredValues);
+                  } else {
+                    field.onChange(uniqueValues);
                   }
-                } else {
-                  field.onChange(uniqueValues);
-                }
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Posgrado"
-                  variant="outlined"
-                  error={!!errors.pos_grado}
-                  helperText={errors.pos_grado?.message || "Opcional"}
-                />
-              )}
-            />
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Posgrado"
+                    variant="outlined"
+                    error={!!errors.pos_grado}
+                    helperText={errors.pos_grado?.message || "Opcional"}
+                  />
+                )}
+              />
+
+              <ModalRegisterPosGrado
+                open={openModalPosgrado}
+                onClose={() => setOpenModalPosgrado(false)}
+                setState={setPostgrados}
+              />
+            </>
           )}
         />
+
       </Box>
     </>
   );

@@ -8,103 +8,25 @@ import {
   AccordionDetails,
   Tooltip,
   IconButton,
+  AccordionActions,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
 import { ProfesorSchema } from "../schemas/ProfesorSchema.js";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useEffect } from "react";
-import axios from "../apis/axios.js";
+import { zodResolver } from '@hookform/resolvers/zod';
 
 export default function CardProfesor({ profesor }) {
   const theme = useTheme();
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
-
-  // Cargar la imagen del profesor
-  // Cargar la imagen del profesor
-  useEffect(() => {
-    const loadProfessorImage = async () => {
-      if (!profesor?.cedula) {
-        console.log("❌ No hay cédula del profesor");
-        setImageLoading(false);
-        setImageError(true);
-        return;
-      }
-
-      try {
-        console.log(
-          "🔄 Iniciando carga de imagen para cédula:",
-          profesor.cedula
-        );
-        setImageLoading(true);
-        setImageError(false);
-
-        const response = await axios.get(
-          `http://localhost:3000/profesor/img/${profesor.cedula}`,
-          {
-            responseType: "blob", // ¡IMPORTANTE! Agrega esto
-          }
-        );
-
-        console.log("✅ Respuesta recibida:", {
-          status: response.status,
-          statusText: response.statusText,
-          headers: response.headers,
-          dataType: typeof response.data,
-          dataSize: response.data.size,
-        });
-
-        if (response.status === 200 && response.data.size > 0) {
-          // Crear URL para la imagen blob
-          const imageUrl = URL.createObjectURL(response.data);
-          console.log("📷 URL creada:", imageUrl);
-          setAvatarUrl(imageUrl);
-        } else {
-          console.log("❌ Respuesta vacía o inválida");
-          throw new Error("Imagen no encontrada o vacía");
-        }
-      } catch (error) {
-        console.error("❌ Error cargando imagen del profesor:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
-        setImageError(true);
-      } finally {
-        setImageLoading(false);
-      }
-    };
-
-    loadProfessorImage();
-  }, [profesor?.cedula]);
-
-  // Limpiar la URL cuando el componente se desmonte
-  useEffect(() => {
-    return () => {
-      if (avatarUrl) {
-        URL.revokeObjectURL(avatarUrl);
-      }
-    };
-  }, [avatarUrl]);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = useForm({
     resolver: zodResolver(ProfesorSchema),
   });
-
-  // URL de fallback para el avatar
-  const fallbackAvatarUrl = `https://ui-avatars.com/api/?name=${
-    profesor?.nombres || "Profesor"
-  }+${profesor?.apellidos || ""}&background=random&size=256`;
-
   return (
     <Box
       sx={{
@@ -119,7 +41,7 @@ export default function CardProfesor({ profesor }) {
       }}
       spacing={3}
     >
-      {/* Sección de imagen con gradiente */}
+      {/* Imagen de profesor */}
       <Grid item xs={12} md={6}>
         <Box
           sx={{
@@ -180,7 +102,7 @@ export default function CardProfesor({ profesor }) {
             }}
           />
 
-          {/* Texto sobre la imagen */}
+          {/* Nombre del profesor */}
           <Typography
             variant="h3"
             sx={{
@@ -200,9 +122,9 @@ export default function CardProfesor({ profesor }) {
         </Box>
       </Grid>
 
-      {/* Sección de acordeón */}
+      {/* Acordeones */}
       <Grid item xs={12} md={6}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           {/* Acordeón 1: Información Personal */}
           <Accordion
             sx={{
@@ -215,220 +137,101 @@ export default function CardProfesor({ profesor }) {
               aria-controls="panel1-content"
               id="panel1-header"
             >
-              <Typography variant="h6" component="span">
-                Información Personal
-              </Typography>
+              <Typography variant="h6">Información Personal</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Cédula de Identidad:</strong>{" "}
-                  {profesor?.cedula || "No especificado"}
+                <Typography variant="body2">
+                  <strong>Cédula:</strong> {profesor?.cedula || "No especificado"}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Género:</strong>{" "}
-                  {profesor?.genero || "No especificado"}
+                <Typography variant="body2">
+                  <strong>Género:</strong> {profesor?.genero || "No especificado"}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Fecha de Nacimiento:</strong>{" "}
                   {profesor?.fecha_nacimiento
                     ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
                     : "No especificado"}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Email:</strong> {profesor?.email || "No especificado"}
-                  <Tooltip title="Editar email" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Teléfono Celular:</strong>{" "}
-                  {profesor?.telefono_movil || "No especificado"}
-                  <Tooltip title="Editar teléfono" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                 </Typography>
               </Box>
             </AccordionDetails>
           </Accordion>
 
-          {/* Acordeón 2: Información Educativa */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel2-content"
-              id="panel2-header"
-            >
-              <Typography variant="h6" component="span">
-                Información Educativa
-              </Typography>
+          {/* Información Educativa */}
+          <Accordion sx={{ width: "100%", "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Información Educativa</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Áreas de Conocimiento:</strong>{" "}
                   {profesor?.areas_de_conocimiento || "No especificado"}
-                  <Tooltip title="Editar áreas de conocimiento" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Pre-Grado:</strong>{" "}
                   {profesor?.pre_grados || "No especificado"}
-                  <Tooltip title="Editar pre-grado" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Pos-Grado:</strong>{" "}
                   {profesor?.pos_grados || "No especificado"}
-                  <Tooltip title="Editar pos-grado" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                 </Typography>
               </Box>
             </AccordionDetails>
           </Accordion>
 
-          {/* Acordeón 3: Información Profesional */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel3-content"
-              id="panel3-header"
-            >
-              <Typography variant="h6" component="span">
-                Información Profesional
-              </Typography>
+          {/* Información Profesional */}
+          <Accordion sx={{ width: "100%", "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Información Profesional</Typography>
             </AccordionSummary>
             <AccordionDetails>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Fecha Ingreso:</strong>{" "}
                   {profesor?.fecha_ingreso
                     ? dayjs(profesor.fecha_ingreso).format("DD/MM/YYYY")
                     : "No especificado"}
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Categoría:</strong>{" "}
                   {profesor?.categoria || "No especificado"}
-                  <Tooltip title="Editar categoría" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
                 </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
+                <Typography variant="body2">
                   <strong>Dedicación:</strong>{" "}
                   {profesor?.dedicacion || "No especificado"}
-                  <Tooltip title="Editar dedicación" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
-
-                <Typography variant="body2">
-                  <strong>Disponibilidad:</strong>{" "}
-                  {profesor?.horas_disponibles
-                    ? `${profesor?.horas_disponibles?.hours || 0} horas ${
-                        profesor?.horas_disponibles?.minutes || 0
-                      } minutos`
-                    : "No especificado"}
                 </Typography>
               </Box>
             </AccordionDetails>
           </Accordion>
 
-          {/* Acordeón 4: Disponibilidad Horaria */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel5-content"
-              id="panel5-header"
-            >
-              <Typography variant="h6" component="span">
-                Disponibilidad Horaria
-              </Typography>
+          {/* Eliminar profesor */}
+          <Accordion sx={{ width: "100%", "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Eliminar Profesor</Typography>
             </AccordionSummary>
-            <AccordionDetails>
-              <Typography
-                variant="body2"
-                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+            <AccordionActions>
+              <CustomButton
+                tipo="danger"
+                disabled={isSubmitting}
+                onClick={handleOpenModal}
               >
-                Detalles específicos sobre la disponibilidad horaria del
-                profesor...
-              </Typography>
-            </AccordionDetails>
+                Eliminar profesor
+              </CustomButton>
+            </AccordionActions>
           </Accordion>
         </Box>
       </Grid>
+
+      {/* Modal de eliminación */}
+      <ModalEliminacionProfe
+        profesor={profesor}
+        open={openModal}
+        onClose={handleCloseModal}
+      />
     </Box>
   );
 }

@@ -6,7 +6,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import CardPNF from "../components/cardPNF";
-import { pedirPNFApi } from "../apis/PNFApi";
+import axios from "../apis/axios";
 
 export default function PNFS() {
   const [PNFS, setPNFS] = useState([]);
@@ -14,9 +14,9 @@ export default function PNFS() {
 
   useEffect(() => {
     const fetchPNFS = async () => {
-      const data = await pedirPNFApi();
-      console.log(data);
-      setPNFS(data);
+      const data = await axios.get('/PNF');
+      console.log(data.data.data);
+      setPNFS(data.data.data);
       setLoading(false);
     };
 

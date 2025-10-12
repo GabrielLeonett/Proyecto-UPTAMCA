@@ -218,34 +218,24 @@ profesorRouter.get(
  * @example
  * // Ejemplo de body JSON:
  * {
-    "cedula": 31264460,
-    "nombres": "Gabriel Dayer",
-    "apellidos": "Leonett Armas",
-    "email": "delegadogabrielleonett@gmail.com",
-    "direccion": "Av. Bermúdez, Los Teques",
-    "telefono_movil": "04142245310",
-    "telefono_local": null,
-    "fecha_nacimiento": "11-11-2004",
-    "genero": "masculino",
-    "fecha_ingreso": "11-03-2021",
-    "dedicacion": "Convencional",
-    "categoria": "Instructor",
-    "area_de_conocimiento": ["Matematicas"],
-    "pre_grado": [
-        {
-            "id_pre_grado": 1,
-            "nombre_pre_grado": "Licenciatura en Informática",
-            "tipo_pre_grado": "Licenciatura"
-        }
-    ],
-    "pos_grado": [
-        {
-            "id_pos_grado": 1,
-            "nombre_pos_grado": "Maestría en Inteligencia Artificial",
-            "tipo_pos_grado": "Maestría"
-        }
-    ]
-}
+ *   "nombres": "Gabriel Dayer",
+ *   "apellidos": "Leonett Armas",
+ *   "email": "gabrielleonett@uptamca.edu.ve",
+ *   "id": 31264460,
+ *   "password": "12345678",
+ *   "direccion": "Av. Bermudez, Los teques",
+ *   "telefono_movil": "04142245310",
+ *   "telefono_local": "02122641697",
+ *   "genero": "masculino",
+ *   "fecha_nacimiento": "27-11-2004",
+ *   "fecha_ingreso": "22-03-2021",
+ *   "dedicacion": "Convencional",
+ *   "categoria": "Instructor",
+ *   "area_de_conocimiento": "Inteligencia Artificial",
+ *   "pre_grado": "Ingeniería en Sistemas",
+ *   "pos_grado": "Doctorado en Ciencias de la Computación",
+ *   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
+ * }
  */
 profesorRouter.post(
   "/Profesor/register",

@@ -7,12 +7,15 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../apis/axios";
 import Swal from "sweetalert2";
+import CustomButton from "../components/CustomButton";
+import ModalRegistroSeccion from "../components/ModalRegistroSeccion";
 
 export default function GestionTrayectos() {
   const { codigoPNF, Trayecto } = useParams();
   const [unidades, setUnidades] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openModalSeccion, setOpenModalSeccion] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -60,6 +63,7 @@ export default function GestionTrayectos() {
       <ResponsiveAppBar backgroundColor />
 
       <Box sx={{ mt: 18, px: 4, pb: 10 }}>
+        {/* Breadcrumb */}
         <Box sx={{ mt: 5 }}>
           <Breadcrumbs
             aria-label="breadcrumb"
@@ -70,7 +74,7 @@ export default function GestionTrayectos() {
               component="button"
               underline="hover"
               color="inherit"
-              onClick={() => navigate("/PNFS")} // ← Agregar onClick
+              onClick={() => navigate("/PNFS")}
             >
               PNFS
             </Link>
@@ -91,7 +95,8 @@ export default function GestionTrayectos() {
             </Link>
           </Breadcrumbs>
         </Box>
-        {/* Sección de Secciones */}
+
+        {/* Secciones */}
         <Typography
           variant="h5"
           sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
@@ -120,12 +125,20 @@ export default function GestionTrayectos() {
             ))}
           </Grid>
         ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay secciones registradas.
-          </Typography>
+          <Box textAlign="center" sx={{ mb: 6 }}>
+            <Typography color="text.secondary" sx={{ mb: 1 }}>
+              No hay secciones registradas.
+            </Typography>
+            <CustomButton
+              tipo="primary"
+              onClick={() => setOpenModalSeccion(true)}
+            >
+              Registrar Sección
+            </CustomButton>
+          </Box>
         )}
 
-        {/* Sección de Unidades Curriculares */}
+        {/* Unidades Curriculares */}
         <Typography
           variant="h5"
           sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
@@ -154,10 +167,29 @@ export default function GestionTrayectos() {
             ))}
           </Grid>
         ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay unidades curriculares registradas.
-          </Typography>
+          <Box textAlign="center" sx={{ mt: 4 }}>
+            <Typography color="text.secondary" sx={{ mb: 1 }}>
+              No hay unidades curriculares registradas.
+            </Typography>
+            <CustomButton
+              tipo="primary"
+              onClick={() =>
+                navigate("/registerUnidadCurricular", {
+                  state: { idTrayecto: Trayecto },
+                })
+              }
+            >
+              Registrar Unidad Curricular
+            </CustomButton>
+          </Box>
         )}
+
+        {/* Modal de Registro de Sección */}
+        <ModalRegistroSeccion
+          open={openModalSeccion}
+          handleClose={() => setOpenModalSeccion(false)}
+          idTrayecto={Trayecto}
+        />
       </Box>
     </>
   );
