@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { Box, Typography, Grid, CircularProgress, Card, CardContent, CardActions, IconButton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ResponsiveAppBar from "../components/navbar";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi"; // Added import for axios
 import { MapPin, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 
 export default function ViewSede() {
   const theme = useTheme();
+  const axios = useApi();
 
   const [sedes, setSedes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,8 +20,7 @@ export default function ViewSede() {
     const fetchSedes = async () => {
       try {
         const response = await axios.get("/Sedes"); // 👈 endpoint que lista las sedes
-        console.log(response);
-        setSedes(response.data.data);
+        setSedes(response);
       } catch (err) {
         console.error("Error al obtener las sedes:", err);
         setError("No se pudieron cargar las sedes.");

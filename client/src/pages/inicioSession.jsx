@@ -19,7 +19,6 @@ export default function IniciarSession() {
     register,
     handleSubmit,
     formState: { errors, isValid },
-    setError,
     trigger,
   } = useForm({
     resolver: zodResolver(loginSchema),
@@ -34,12 +33,6 @@ export default function IniciarSession() {
     setProcessing(true);
     try {
       login(formData);
-    } catch (error) {
-      console.error("Error en el login:", error);
-      setError("root", {
-        type: "manual",
-        message: error.message || "Credenciales incorrectas",
-      });
     } finally {
       setProcessing(false);
     }

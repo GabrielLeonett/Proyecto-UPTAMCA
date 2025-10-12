@@ -5,7 +5,7 @@ import CardSeccion from "../components/cardSeccion";
 import ResponsiveAppBar from "../components/navbar";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2";
 
 export default function PaginaTrayecto() {
@@ -14,6 +14,7 @@ export default function PaginaTrayecto() {
   const [secciones, setSecciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const axios = useApi();
 
   useEffect(() => {
     if (!Trayecto) {
@@ -31,7 +32,7 @@ export default function PaginaTrayecto() {
         const response = await axios.get(
           `/Trayecto/Unidades-Curriculares?Trayecto=${Trayecto}`
         );
-        setUnidades(response.data.data || []);
+        setUnidades(response || []);
       } catch (err) {
         console.error("Error cargando unidades curriculares:", err);
       }
@@ -40,7 +41,7 @@ export default function PaginaTrayecto() {
     const fetchSecciones = async () => {
       try {
         const response = await axios.get(`/Secciones/?Trayecto=${Trayecto}`);
-        setSecciones(response.data.data || []);
+        setSecciones(response || []);
       } catch (err) {
         console.error("Error cargando secciones:", err);
       }

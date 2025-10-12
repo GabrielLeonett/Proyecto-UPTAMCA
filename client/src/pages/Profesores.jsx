@@ -9,9 +9,10 @@ import {
 } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi";
 
 export default function Profesores() {
+  const axios = useApi();
   const [profesores, setProfesores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,10 +26,7 @@ export default function Profesores() {
       const endpoint = search ? "/Profesor/search" : "/Profesor";
       const payload = search ? { busqueda: search } : {};
       const { data } = await axios.get(endpoint, { params: payload });
-      setProfesores(data.data.data || []);
-    } catch (error) {
-      console.error("Error cargando los profesores:", error);
-      setError("Error al cargar los profesores. Por favor intenta nuevamente.");
+      setProfesores(data || []);
     } finally {
       setLoading(false);
     }
@@ -95,11 +93,7 @@ export default function Profesores() {
               No se encontraron profesores con los filtros seleccionados
             </Typography>
           ) : (
-            profesores.map((profesor) => (
-              <PruebaProfesor
-                profesor={profesor}
-              />
-            ))
+            profesores.map((profesor) => <PruebaProfesor profesor={profesor} />)
           )}
         </Box>
       </Box>

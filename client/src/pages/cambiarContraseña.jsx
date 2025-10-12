@@ -10,10 +10,10 @@ import CustomButton from "../components/customButton";
 import { useTheme } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../apis/axios";
-import Swal from "sweetalert2";
+import useApi from "../hook/useApi"; // Added import for axios
 
 export default function CambiarContraseña() {
+  const axios = useApi();
   const theme = useTheme();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
@@ -23,7 +23,6 @@ export default function CambiarContraseña() {
     handleSubmit,
     formState: { errors, isValid },
     trigger,
-    setError,
     watch,
   } = useForm({
     resolver: zodResolver(ContraseñaSchema),
@@ -32,46 +31,14 @@ export default function CambiarContraseña() {
   });
 
   const onSubmit = async (formData) => {
-  try {
-    setProcessing(true);
-    console.log("Datos a enviar:", formData);
+    try {
+      setProcessing(true);
 
-    await axios.put("/cambiar-contrasena", formData);
-
-    // SweetAlert con redirección automática
-    Swal.fire({
-      icon: 'success',
-      title: '¡Éxito!',
-      text: 'Contraseña cambiada correctamente',
-      timer: 3000,
-      timerProgressBar: true,
-      showConfirmButton: false,
-      didDestroy: () => {
-        navigate("/", {
-          state: { message: "Contraseña cambiada exitosamente" },
-        });
-      }
-    });
-
-  } catch (error) {
-    console.error("Error al cambiar contraseña:", error);
-    
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: error.response?.data?.message || 'Error al cambiar contraseña',
-      confirmButtonText: 'Reintentar',
-      confirmButtonColor: '#d33'
-    });
-
-    setError("root", {
-      type: "manual",
-      message: error.response?.data?.message || "Error al cambiar contraseña",
-    });
-  } finally {
-    setProcessing(false);
-  }
-};
+      await axios.put("/cambiar-contrasena", formData);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   const handleCancelar = () => {
     navigate(-1); // Volver a la página anterior
@@ -132,7 +99,8 @@ export default function CambiarContraseña() {
               {...register("antiguaPassword")}
               error={!!errors.antiguaPassword}
               helperText={
-                errors.antiguaPassword?.message || "Mínimo 8 caracteres alfanuméricos"
+                errors.antiguaPassword?.message ||
+                "Mínimo 8 caracteres alfanuméricos"
               }
             />
 

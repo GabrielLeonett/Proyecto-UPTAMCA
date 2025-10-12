@@ -6,11 +6,11 @@ import CustomButton from "../components/customButton";
 import CustomLabel from "../components/customLabel";
 import ResponsiveAppBar from "../components/navbar";
 import PNFSchema from "../schemas/PnfSchema";
-import { registrarPnfApi } from "../apis/PNFApi";
-import axios from "../apis/axios"; // Added import for axios
+import useApi from "../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2"; // Missing import
 
 export default function PnfForm() {
+  const axios = useApi();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sedes, setSedes] = useState([]);
 
@@ -27,19 +27,8 @@ export default function PnfForm() {
   // Added useEffect to fetch sedes (campuses)
   useEffect(() => {
     const fetchSedes = async () => {
-      try {
-        // Replace with your actual API call to get campuses
-        const response = await axios.get("/Sedes");
-        setSedes(response.data.data);
-      } catch (error) {
-        console.error("Error fetching sedes:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'No se pudieron cargar las sedes.',
-          confirmButtonColor: '#d33',
-        });
-      }
+      const response = await axios.get("/Sedes");
+      setSedes(response);
     };
 
     fetchSedes();
@@ -47,26 +36,11 @@ export default function PnfForm() {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
+    console.log(data)
     try {
-      await registrarPnfApi({ data });
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Registro exitoso!',
-        text: 'El PNF se guardó correctamente.',
-        confirmButtonColor: '#3085d6',
-      });
-
+      await axios.post("/PNF/create", data );
       reset();
-    } catch (error) {
-      console.error("❌ Error al guardar PNF:", error);
-
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo guardar el PNF. Intenta nuevamente.',
-        confirmButtonColor: '#d33',
-      });
+      
     } finally {
       setIsSubmitting(false);
     }
@@ -129,7 +103,6 @@ export default function PnfForm() {
                   inputProps={{ "aria-required": "true" }}
                 />
               </Stack>
-
               {/* Fila 2: Población y Descripción */}
               <Stack direction={{ xs: "column", md: "row" }} spacing={4}>
                 <CustomLabel
@@ -162,8 +135,8 @@ export default function PnfForm() {
                     <MenuItem disabled>Cargando sedes...</MenuItem>
                   )}
                 </CustomLabel>
-              </Stack> {/* Fixed: Added closing tag for this Stack */}
-
+              </Stack>{" "}
+              {/* Fixed: Added closing tag for this Stack */}
               {/* Fila 3: Botones */}
               <Stack direction="row" spacing={3} justifyContent="flex-end">
                 <CustomButton

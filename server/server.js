@@ -45,11 +45,15 @@ app.use("", SedesRouter);
 app.use("", coordinadorRouter);
 
 const servicioSocket = new SocketServices();
-
 const io = servicioSocket.initializeService();
 
 io.on("connection", (socket) => {
-  console.log("✅ Usuario conectado:", socket.user.id, "Roles:", socket.user.roles);
+  console.log(
+    "✅ Usuario conectado:",
+    socket.user.id,
+    "Roles:",
+    socket.user.roles
+  );
 
   socket.on("disconnect", (reason) => {
     console.log(`❌ Usuario ${socket.user.id} desconectado. Razón:`, reason);

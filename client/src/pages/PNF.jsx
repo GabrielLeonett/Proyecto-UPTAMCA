@@ -8,13 +8,14 @@ import {
   Alert,
   Breadcrumbs,
   Link,
-  Typography,
 } from "@mui/material";
 import CardTrayecto from "../components/cardTrayecto";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 export default function PNF() {
+  const axios = useApi();
+
   const { codigoPNF } = useParams();
   const navigate = useNavigate(); // ← Agregar useNavigate
   const [trayectos, setTrayectos] = useState([]);
@@ -27,10 +28,7 @@ export default function PNF() {
         setLoading(true);
         setError(null);
         const res = await axios.get(`/Trayectos?PNF=${codigoPNF}`);
-        setTrayectos(res.data.data);
-      } catch (error) {
-        console.error("Error fetching trayectos:", error);
-        setError("Error al cargar los trayectos");
+        setTrayectos(res);
       } finally {
         setLoading(false);
       }

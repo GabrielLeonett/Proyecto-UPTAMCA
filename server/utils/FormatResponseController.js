@@ -63,7 +63,7 @@ export default class FormatResponseController {
         throw respuestaDatos;
       }
 
-      const status = respuestaDatos.status || 500;
+      const status = respuestaDatos.status || 400;
       const response = {
         success: false,
         status,
@@ -71,8 +71,9 @@ export default class FormatResponseController {
         message: respuestaDatos.message || "Error interno",
         data: null,
         error: respuestaDatos.error || null,
+        type: respuestaDatos.state || "error",
       };
-
+      console.log(response)
       return res.status(status).json(response);
     } catch (internalError) {
       // Fallback para errores en el manejador de errores

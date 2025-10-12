@@ -13,32 +13,23 @@ import Swal from "sweetalert2";
 import ResponsiveAppBar from "../components/navbar";
 import CustomLabel from "../components/customLabel";
 import CustomButton from "../components/customButton";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi"; // Added import for axios
 import { AulaSchema } from "../schemas/AulaSchema";
 
 export default function RegisterAula() {
   const theme = useTheme();
-
-  console.log("🔵 Componente RegisterAula montado");
+  const axios = useApi();
 
   const {
     control,
     register,
-    formState: { errors, isValid, dirtyFields },
+    formState: { errors, isValid },
     handleSubmit,
     reset,
-    watch,
   } = useForm({
     resolver: zodResolver(AulaSchema),
     mode: "onChange",
   });
-
-  // 👉 Watch form values for debugging
-  const formValues = watch();
-  console.log("📝 Valores del formulario:", formValues);
-  console.log("❌ Errores del formulario:", errors);
-  console.log("✅ Formulario válido:", isValid);
-  console.log("✏️ Campos modificados:", dirtyFields);
 
   const [sedes, setSedes] = useState([]);
   const [loadingSedes, setLoadingSedes] = useState(true);
@@ -49,26 +40,9 @@ export default function RegisterAula() {
     console.log("🔄 useEffect ejecutándose - cargando sedes");
     const fetchSedes = async () => {
       try {
-        console.log("🌐 Haciendo petición GET a /Sedes");
         const response = await axios.get("/Sedes");
-        console.log("✅ Respuesta de sedes:", response.data.data);
         setSedes(response.data.data);
-        console.log("📊 Sedes cargadas en estado:", response.data.data.length);
-      } catch (error) {
-        console.error("❌ Error al cargar sedes:", error);
-        console.error("📞 Detalles del error:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "No se pudieron cargar las sedes",
-          confirmButtonColor: "#d33",
-        });
       } finally {
-        console.log("🏁 Finalizando carga de sedes");
         setLoadingSedes(false);
       }
     };
@@ -76,12 +50,7 @@ export default function RegisterAula() {
   }, []);
 
   const onSubmit = async (data) => {
-    console.log("🚀 Iniciando envío del formulario");
-    console.log("📦 Datos recibidos del formulario:", data);
-    console.log("🔄 Estado registering:", registering);
-
     setRegistering(true);
-    console.log("🔄 Estado registering actualizado a:", true);
 
     try {
       // Asegurar que capacidad sea número
@@ -90,69 +59,20 @@ export default function RegisterAula() {
         capacidad: Number(data.capacidad),
       };
 
-      console.log("🔢 Datos procesados para enviar:", formData);
-      console.log("📤 Tipo de capacidad:", typeof formData.capacidad);
-      console.log("🌐 Enviando POST a /Aula/register");
-
-      const response = await axios.post("/Aula/register", formData);
-
-      console.log("✅ Respuesta del servidor:", response.data);
-
-      Swal.fire({
-        icon: "success",
-        title: "¡Registro exitoso!",
-        text: "El aula ha sido registrada correctamente",
-        confirmButtonColor: "#3085d6",
-      });
-
-      console.log("🔄 Reseteando formulario...");
-      reset();
-      console.log("✅ Formulario reseteado");
-    } catch (error) {
-      console.error("❌ Error completo al registrar aula:", error);
-      console.error("📞 Detalles del error:", {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers,
-      });
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text:
-          error.response?.data?.message ||
-          "Hubo un problema al registrar el aula",
-        confirmButtonColor: "#d33",
-      });
+      await axios.post("/Aula/register", formData);
     } finally {
-      console.log("🏁 Finalizando proceso de registro");
       setRegistering(false);
-      console.log("🔄 Estado registering actualizado a:", false);
     }
   };
 
   const handleReset = () => {
-    console.log("🔄 Botón Limpiar clickeado");
-    console.log("📝 Valores antes de resetear:", formValues);
-
     reset({
       codigo: "",
       tipo: "",
       capacidad: "",
       id_sede: "",
     });
-
-    console.log("✅ Formulario reseteado a valores vacíos");
   };
-
-  console.log("🎯 Estado actual del componente:", {
-    loadingSedes,
-    registering,
-    sedesCount: sedes.length,
-    isValid,
-    hasErrors: Object.keys(errors).length > 0,
-  });
 
   return (
     <>
@@ -355,13 +275,7 @@ export default function RegisterAula() {
                 type="button"
                 variant="outlined"
                 color="secondary"
-                onClick={() => {
-                  console.log(
-                    "🔄 Botón Limpiar clickeado - estado actual:",
-                    formValues
-                  );
-                  handleReset();
-                }}
+                onClick={handleReset}
                 disabled={registering}
                 sx={{ minWidth: "120px" }}
               >

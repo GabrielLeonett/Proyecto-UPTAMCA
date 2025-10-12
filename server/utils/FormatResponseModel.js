@@ -42,11 +42,11 @@ export default class FormatResponseModel {
   static respuestaError(rows = null, title = "Error") {
     try {
       const resultado = rows ? this.validacionesComunes(rows) : {};
-
-      if(resultado.status === undefined){
+      
+      if(resultado.status === undefined || resultado.status_code === undefined ){
         throw resultado;
       }
-
+      
       return {
         status: resultado.status_code || 400,
         state: "error",

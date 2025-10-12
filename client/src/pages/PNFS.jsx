@@ -1,21 +1,17 @@
 import { useEffect, useState } from "react";
 import ResponsiveAppBar from "../components/navbar";
-import {
-  Typography,
-  Box,
-  CircularProgress,
-} from "@mui/material";
+import { Typography, Box, CircularProgress } from "@mui/material";
 import CardPNF from "../components/cardPNF";
-import { pedirPNFApi } from "../apis/PNFApi";
+import useApi from "../hook/useApi"; // Added import for axios
 
 export default function PNFS() {
   const [PNFS, setPNFS] = useState([]);
   const [loading, setLoading] = useState(true);
+  const axios = useApi();
 
   useEffect(() => {
     const fetchPNFS = async () => {
-      const data = await pedirPNFApi();
-      console.log(data);
+      const data = await axios.get("/PNF");
       setPNFS(data);
       setLoading(false);
     };

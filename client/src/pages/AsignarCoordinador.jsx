@@ -18,10 +18,11 @@ import Swal from "sweetalert2";
 import ResponsiveAppBar from "../components/navbar";
 import CustomLabel from "../components/customLabel";
 import CustomButton from "../components/customButton";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi"; // Added import for axios
 import { AsignarCoordinadorSchema } from "../schemas/AsignarCoordinadorSchema";
 
 export default function AsignarCoordinador() {
+  const axios = useApi();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 

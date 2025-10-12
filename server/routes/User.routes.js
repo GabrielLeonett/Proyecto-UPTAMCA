@@ -24,7 +24,7 @@ export const UserRouter = Router();
 // }'
 UserRouter.post("/login", login);
 
-UserRouter.get("/vefiry", middlewareAuth(null), verificarUsers);
+UserRouter.get("/verification", middlewareAuth(null), verificarUsers);
 
 UserRouter.get("/logout", middlewareAuth(null), closeSession);
 

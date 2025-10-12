@@ -2,19 +2,20 @@ import { useEffect, useState } from "react";
 import Horario from "../components/Horario";
 import ResponsiveAppBar from "../components/navbar";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi"; // Added import for axios
 
 export default function Horarios() {
   const [horarios, setHorarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const axios = useApi();
 
   useEffect(() => {
     const getHorarios = async () => {
       try {
         setLoading(true);
         const { data } = await axios.get("/Horarios");
-        setHorarios(data.data || []);
+        setHorarios(data || []);
       } catch (err) {
         console.error("Error al obtener horarios:", err);
         setError("Error al cargar los horarios");
