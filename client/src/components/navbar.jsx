@@ -75,6 +75,7 @@ function ResponsiveAppBar({ backgroundColor }) {
     setAnchorElUser(null);
   };
 
+  // Menú reorganizado en tres columnas principales
   const pages = [
     {
       name: "Inicio",
@@ -89,64 +90,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Profesor",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/Profesores",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerProfesor",
-          roles: [
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-      ],
-    },
-    {
-      name: "PNF",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
-          name: "Ver",
-          url: "/PNFS",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar",
-          url: "/registerPNF",
-          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
-        },
-      ],
-    },
-    {
-      name: "Horarios",
-      url: "/Horarios",
+      name: "Personal",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -154,20 +98,30 @@ function ResponsiveAppBar({ backgroundColor }) {
         "Director General de Gestión Curricular",
         "SuperAdmin",
       ],
-    },
-
-    {
-      name: "Sedes",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
       submenu: [
         {
-          name: "Sedes",
-          url: "/Sedes",
+          name: "Gestión de Profesores",
+          url: "/academico/profesores",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Profesor",
+          url: "/academico/profesores/registrar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Coordinadores",
+          url: "/coordinacion/coordinadores",
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -176,22 +130,135 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Registrar",
-          url: "/registerSede",
-          roles: ["Director General de Gestión Curricular", "SuperAdmin"],
+          name: "Asignar Coordinador",
+          url: "/coordinacion/coordinadores/asignar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
         },
       ],
-    },{
+    },
+    {
+      name: "Formación Académica",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Programas de Formación",
+          url: "/formacion/programas",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Programa",
+          url: "/formacion/programas/registrar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Unidades Curriculares",
+          url: "/curricular/unidades",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Unidad",
+          url: "/curricular/unidades/registrar",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
+      name: "Gestión Operativa",
+      roles: [
+        "Vicerrector",
+        "Profesor",
+        "Coordinador",
+        "Director General de Gestión Curricular",
+        "SuperAdmin",
+      ],
+      submenu: [
+        {
+          name: "Gestión de Secciones",
+          url: "/secciones",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Horarios",
+          url: "/horarios",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Sedes",
+          url: "/infraestructura/sedes",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Aulas",
+          url: "/infraestructura/aulas",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
+    },
+    {
       name: "Administración",
       roles: ["SuperAdmin"],
       submenu: [
-        { name: "Usuarios", url: "/admin/users", roles: ["SuperAdmin"] },
         {
-          name: "Configuración",
-          url: "/admin/settings",
+          name: "Panel de Administración",
+          url: "/administracion",
           roles: ["SuperAdmin"],
         },
-        { name: "Auditoría", url: "/admin/audit", roles: ["SuperAdmin"] },
+        {
+          name: "Configuración del Sistema",
+          url: "/administracion/configuracion",
+          roles: ["SuperAdmin"],
+        },
       ],
     },
   ];
@@ -337,6 +404,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                         color: "white",
                         display: "block",
                         mx: 0.5,
+                        fontSize: "0.9rem",
+                        padding: "6px 12px",
                       }}
                     >
                       {page.name}
@@ -349,6 +418,11 @@ function ResponsiveAppBar({ backgroundColor }) {
                       MenuListProps={{
                         "aria-labelledby": `${page.name}-button`,
                       }}
+                      PaperProps={{
+                        sx: {
+                          minWidth: 200,
+                        },
+                      }}
                     >
                       {page.submenu
                         .filter((subItem) => hasAccess(subItem.roles))
@@ -356,6 +430,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                           <MenuItem
                             key={subItem.name}
                             onClick={() => handleNavigation(subItem.url)}
+                            sx={{ fontSize: "0.9rem" }}
                           >
                             <Typography textAlign="center">
                               {subItem.name}
@@ -372,6 +447,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                       color: "white",
                       display: "block",
                       mx: 1,
+                      fontSize: "0.9rem",
+                      padding: "6px 12px",
                     }}
                   >
                     {page.name}

@@ -96,7 +96,7 @@ export default class ProfesorController {
           message: "La imagen no cumple con los requisitos",
           error: validation.error,
         });
-        return;
+        throw (error.imagen = true);
       }
 
       // Registrar profesor en la base de datos

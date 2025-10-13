@@ -13,6 +13,8 @@ import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
 
+import SocketServices from "./services/socket.services.js";
+
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/profesor.routes.js";
 import { CurricularRouter } from "./routes/curricular.routes.js";
