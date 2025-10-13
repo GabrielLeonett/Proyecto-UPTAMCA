@@ -78,7 +78,7 @@ export const parseJSONField = (field, fieldName) => {
  *
  * @param {string} cookieHeader Objeto Cookie
  * @param {string} cookieName Nombre de la cookie que se desea obtener
- * @returns {string} valor de la cookie 
+ * @returns {string} valor de la cookie
  * @example
  * const token = getCookie(socket.handshake.headers.cookie, 'autorization');
  */
@@ -90,3 +90,44 @@ export function getCookie(cookieHeader, cookieName) {
 
   return cookie ? cookie.split("=")[1].trim() : null;
 }
+
+export const UTILS = {
+  formatearHora: (horaHHMM) => {
+    const horas = Math.floor(horaHHMM / 100);
+    const minutos = horaHHMM % 100;
+    const periodo = horas >= 12 ? "PM" : "AM";
+    const horas12 = horas > 12 ? horas - 12 : horas === 0 ? 12 : horas;
+    return `${horas12}:${minutos.toString().padStart(2, "0")} ${periodo}`;
+  },
+
+  obtenerDiaNombre: (diaIndex) => {
+    const dias = [
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+    ];
+    return dias[diaIndex] || "";
+  },
+
+  sumar45Minutos: (horaInicio, bloques) => {
+    const horas = Math.floor(horaInicio / 100);
+    const minutos = horaInicio % 100;
+    const minutosTotales = horas * 60 + minutos + bloques * 45;
+    const nuevasHoras = Math.floor(minutosTotales / 60);
+    const nuevosMinutos = minutosTotales % 60;
+    return nuevasHoras * 100 + nuevosMinutos;
+  },
+
+  horasMinutos: (hora, minuto) => {
+    return parseInt(hora) * 60 + parseInt(minuto);
+  },
+
+  calcularHorasHHMM: (minutosTotales) => {
+    const horas = Math.floor(minutosTotales / 60);
+    const minutos = minutosTotales % 60;
+    return horas * 100 + minutos;
+  },
+};
