@@ -27,6 +27,7 @@ function ResponsiveAppBar({ backgroundColor }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
+  const [menuKey, setMenuKey] = useState(0); // Clave para forzar re-render
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -35,7 +36,11 @@ function ResponsiveAppBar({ backgroundColor }) {
   useEffect(() => {
     if (user && user.roles) {
       setUserRoles(user.roles);
+    } else {
+      setUserRoles(["publico"]);
     }
+    // Forzar re-render del menú cuando cambia la autenticación
+    setMenuKey((prev) => prev + 1);
   }, [user, isAuthenticated]);
 
   const handleCloseNavMenu = () => {
@@ -75,6 +80,15 @@ function ResponsiveAppBar({ backgroundColor }) {
     setAnchorElUser(null);
   };
 
+  const handleLogout = () => {
+    logout();
+    setUserRoles(["publico"]);
+    setMenuKey((prev) => prev + 1);
+    handleCloseUserMenu();
+    navigate("/");
+  };
+
+  // Menú reorganizado en tres columnas principales
   const pages = [
     {
       name: "Inicio",
@@ -89,7 +103,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Personal Académico",
+      name: "Personal",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -119,26 +133,6 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Editar Profesor",
-          url: "/academico/profesores/editar",
-          roles: [
-            "Vicerrector",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-      ],
-    },
-    {
-      name: "Coordinación",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
-        {
           name: "Gestión de Coordinadores",
           url: "/coordinacion/coordinadores",
           roles: [
@@ -160,7 +154,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Programas de Formación",
+      name: "Formación Académica",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -170,7 +164,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
       submenu: [
         {
-          name: "Ver Programas",
+          name: "Programas de Formación",
           url: "/formacion/programas",
           roles: [
             "Vicerrector",
@@ -189,20 +183,9 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-      ],
-    },
-    {
-      name: "Gestión Curricular",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
         {
           name: "Unidades Curriculares",
-          url: "/curricular/unidades",
+          url: "/curricular/unidades/registrar", // Actualizado
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -223,7 +206,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-      name: "Secciones y Horarios",
+      name: "Gestión Operativa",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -253,17 +236,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-      ],
-    },
-    {
-      name: "Infraestructura",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-      submenu: [
         {
           name: "Gestión de Sedes",
           url: "/infraestructura/sedes",
@@ -275,28 +247,8 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Registrar Sede",
-          url: "/infraestructura/sedes/registrar",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
           name: "Gestión de Aulas",
           url: "/infraestructura/aulas",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar Aula",
-          url: "/infraestructura/aulas/registrar",
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -317,14 +269,14 @@ function ResponsiveAppBar({ backgroundColor }) {
         },
         {
           name: "Configuración del Sistema",
-          url: "/administracion/configuracion",
+          url: "/administracion/configuracion", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
       ],
     },
   ];
 
-  // Filtrar páginas según los roles del usuario
+  // Filtrar páginas según los roles del usuario - se recalcula en cada render
   const filteredPages = pages.filter(
     (page) =>
       hasAccess(page.roles) ||
@@ -333,6 +285,7 @@ function ResponsiveAppBar({ backgroundColor }) {
 
   return (
     <AppBar
+      key={menuKey} // Forzar re-render cuando cambie esta clave
       position="fixed"
       color={backgroundColor ? "primary" : "transparent"}
       enableColorOnDark
@@ -348,6 +301,7 @@ function ResponsiveAppBar({ backgroundColor }) {
               height: "100px",
               cursor: "pointer",
             }}
+            onClick={() => navigate("/")}
           >
             <LogoTexto />
           </Box>
@@ -465,6 +419,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                         color: "white",
                         display: "block",
                         mx: 0.5,
+                        fontSize: "0.9rem",
+                        padding: "6px 12px",
                       }}
                     >
                       {page.name}
@@ -477,6 +433,11 @@ function ResponsiveAppBar({ backgroundColor }) {
                       MenuListProps={{
                         "aria-labelledby": `${page.name}-button`,
                       }}
+                      PaperProps={{
+                        sx: {
+                          minWidth: 200,
+                        },
+                      }}
                     >
                       {page.submenu
                         .filter((subItem) => hasAccess(subItem.roles))
@@ -484,6 +445,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                           <MenuItem
                             key={subItem.name}
                             onClick={() => handleNavigation(subItem.url)}
+                            sx={{ fontSize: "0.9rem" }}
                           >
                             <Typography textAlign="center">
                               {subItem.name}
@@ -500,6 +462,8 @@ function ResponsiveAppBar({ backgroundColor }) {
                       color: "white",
                       display: "block",
                       mx: 1,
+                      fontSize: "0.9rem",
+                      padding: "6px 12px",
                     }}
                   >
                     {page.name}
@@ -569,7 +533,7 @@ function ResponsiveAppBar({ backgroundColor }) {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               {!isAuthenticated ? (
-                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>
+                <MenuItem onClick={() => handleNavigation("/iniciar-sesion")}>
                   Iniciar sesión
                 </MenuItem>
               ) : (
@@ -577,12 +541,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                   <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
                     Mi cuenta
                   </MenuItem>,
-                  <MenuItem
-                    key="cerrar-sesion"
-                    onClick={() => {
-                      logout();
-                    }}
-                  >
+                  <MenuItem key="cerrar-sesion" onClick={handleLogout}>
                     Cerrar sesión
                   </MenuItem>,
                 ]

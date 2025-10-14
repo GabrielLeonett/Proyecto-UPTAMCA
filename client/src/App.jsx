@@ -97,10 +97,10 @@ const ROLES = {
 };
 
 export default function App() {
-  const [modoOscuro, setModoOscuro] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   return (
-    <ThemeProvider theme={modoOscuro ? darkTheme : lightTheme}>
+    <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
       <CssBaseline>
         <Router>
           <AuthProvider>
@@ -275,7 +275,7 @@ export default function App() {
             </Routes>
           </AuthProvider>
         </Router>
-        <BotonCambiarTema setModo={setModoOscuro} modo={modoOscuro} />
+        <BotonCambiarTema setMode={setDarkMode} mode={darkMode} />
       </CssBaseline>
     </ThemeProvider>
   );

@@ -334,19 +334,26 @@ export default class ProfesorModel {
       ]);
 
       if (!result.rows || result.rows.length === 0) {
-        throw new Error(
-          `No se encontró el profesor con cédula: ${id_profesor}`
+        return FormatResponseModel.respuestaError(
+          {
+            status: "error",
+            status_code: 404,
+            message: `No se encontró el profesor con cédula: ${id_profesor}`,
+          },
+          "Profesor no encontrado"
         );
       }
 
       const profesor = result.rows[0];
 
       if (!profesor.imagen) {
-        return {
-          success: false,
-          message: "El profesor no tiene imagen asignada",
-          id_profesor: id_profesor,
-        };
+        return FormatResponseModel.respuestaSuccess(
+          {
+            message: "El profesor no tiene imagen asignada",
+            data: { id_profesor: id_profesor, tiene_imagen: false },
+          },
+          "Sin imagen"
+        );
       }
 
       // Crear instancia del servicio de procesamiento de imágenes
@@ -359,23 +366,45 @@ export default class ProfesorModel {
       );
 
       if (!imageResult.success) {
-        throw new Error(`Error al obtener la imagen: ${imageResult.error}`);
+        return FormatResponseModel.respuestaError(
+          {
+            status: "error",
+            status_code: 500,
+            message: `Error al obtener la imagen: ${imageResult.error}`,
+          },
+          "Error al procesar imagen"
+        );
       }
 
-      return {
-        success: true,
-        buffer: imageResult.buffer,
-        fileName: imageResult.fileName,
-        format: imageResult.format,
-        dimensions: imageResult.dimensions,
-        fileSize: imageResult.fileSize,
-      };
+      return FormatResponseModel.respuestaSuccess(
+        {
+          message: "Imagen obtenida exitosamente",
+          data: {
+            buffer: imageResult.buffer,
+            fileName: imageResult.fileName,
+            format: imageResult.format,
+            dimensions: imageResult.dimensions,
+            fileSize: imageResult.fileSize,
+            id_profesor: id_profesor,
+            tiene_imagen: true,
+          },
+        },
+        "Imagen obtenida"
+      );
     } catch (error) {
-      error.details = {
-        path: "ProfesorModel.getImageProfesorBuffer",
-        id_profesor: id_profesor,
-      };
-      throw error;
+      // Para errores inesperados, usar respuestaError con el objeto de error
+      return FormatResponseModel.respuestaError(
+        {
+          status: "error",
+          status_code: 500,
+          message: error.message,
+          details: {
+            path: "ProfesorModel.getImageProfesorBuffer",
+            id_profesor: id_profesor,
+          },
+        },
+        "Error interno"
+      );
     }
   }
 

@@ -95,7 +95,7 @@ export default class UserController {
         .json({
           status: "success",
           message: "Inicio de sesión exitoso",
-          user: {
+          data: {
             id: user.id,
             apellidos: user.apellidos,
             nombres: user.nombres,

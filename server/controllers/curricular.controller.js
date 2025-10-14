@@ -41,10 +41,11 @@ export default class CurricularController {
       const validaciones = validationErrors(validationPNF({ input: req.body }));
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
-          status: 402,
+          status: 400,
           title: "Datos Erroneos",
           message: "Los datos estan errados",
           error: validaciones,
+          state: "validation_error",
         });
         return;
       }

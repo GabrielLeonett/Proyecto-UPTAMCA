@@ -7,13 +7,15 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi";
 import Brightness5Icon from "@mui/icons-material/Brightness5";
 import WbTwilightIcon from "@mui/icons-material/WbTwilight";
 import NightsStayIcon from "@mui/icons-material/NightsStay";
 import Swal from "sweetalert2";
 
 export default function AlertTurno({ idSeccion, isOpen, onClose }) {
+  const axios = useApi();
+
   const handleSelect = async (turnoId, turnoNombre) => {
     try {
       await axios.post("Secciones/asignar-turno", {

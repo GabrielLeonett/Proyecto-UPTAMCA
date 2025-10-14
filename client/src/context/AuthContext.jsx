@@ -1,12 +1,12 @@
 import { createContext, useState, useEffect, useCallback } from "react";
-import { verifyApi } from "../apis/vefiryApi.js"; // Corregí el nombre del archivo
 import { useNavigate } from "react-router-dom";
-import axios from "../apis/axios.js";
+import useApi from "../hook/useApi.jsx";
 import Swal from "sweetalert2";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const axios = useApi();
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Nuevo estado de carga
@@ -16,22 +16,13 @@ export function AuthProvider({ children }) {
     async (userData) => {
       try {
         const { data } = await axios.post("/login", userData);
-
-        if (data?.user) {
-          setUser(data.user);
+        if (data) {
+          setUser(data);
           setIsAuthenticated(true);
-
-          Swal.fire({
-            icon: "success",
-            title: "¡Bienvenido!",
-            text: "Has iniciado sesión correctamente",
-            timer: 1500,
-            showConfirmButton: false,
-          });
 
           // Redirección con React Router
           setTimeout(() => {
-            if (data.user.primera_vez) {
+            if (data.primera_vez) {
               navigate("/cambiar-contraseña");
             } else {
               navigate("/");
@@ -40,31 +31,8 @@ export function AuthProvider({ children }) {
         } else {
           throw new Error("Respuesta del servidor incompleta");
         }
-      } catch (error) {
-        // Manejo de errores (igual que arriba)
-        let errorMessage = "Error al iniciar sesión";
-
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              errorMessage = "Usuario o contraseña incorrectos";
-              break;
-            case 403:
-              errorMessage = "Cuenta desactivada. Contacta al administrador";
-              break;
-            default:
-              errorMessage =
-                error.response.data?.message || "Error del servidor";
-          }
-        }
-
-        Swal.fire({
-          icon: "error",
-          title: "Error de autenticación",
-          text: errorMessage,
-          confirmButtonColor: "#3085d6",
-        });
-
+      } catch (e) {
+        console.error(e);
         setUser(null);
         setIsAuthenticated(false);
       }
@@ -88,21 +56,21 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
 
       // Redirigir a la página de cerrar-session
-      navigate("/cerrar-session");
+      navigate("/cerrar-sesion");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
 
       // Aunque falle la petición, limpiar el estado local y redirigir
       setUser(null);
       setIsAuthenticated(false);
-      navigate("/cerrar-session");
+      navigate("/cerrar-sesion");
     }
   }, [navigate]);
 
   const verifyAuth = useCallback(async () => {
     setIsLoading(true);
     try {
-      const verifiedData = await verifyApi();
+      const verifiedData = await axios.get("/verification");
       if (verifiedData) {
         setUser(verifiedData);
         setIsAuthenticated(true);

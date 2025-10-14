@@ -6,11 +6,12 @@ import CustomButton from "../../components/customButton";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
 import { UnidadCurricularSchema } from "../../schemas/UnidadCurricularSchema";
-import axios from "../../apis/axios";
+import useApi from "../../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2";
 
 export default function RegistrarUnidadCurricular() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const axios = useApi();
 
   const {
     register,

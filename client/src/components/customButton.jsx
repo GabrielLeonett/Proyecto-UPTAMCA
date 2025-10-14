@@ -1,65 +1,226 @@
-import Button from '@mui/material/Button';
-import { useTheme } from '@mui/material/styles';
+import Button from "@mui/material/Button";
+import { useTheme } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 
-export default function CustomButton({ tipo = 'primary', ...props }) {
+// Versión con styled components para mejor performance
+const StyledButton = styled(Button, {
+  shouldForwardProp: (prop) => prop !== "tipo",
+})(({ theme, tipo = "primary" }) => {
+  const getButtonStyles = () => {
+    const baseStyles = {
+      padding: theme.spacing(1, 2),
+      borderRadius: theme.spacing(1.5),
+      fontWeight: theme.typography.fontWeightMedium,
+      textTransform: "none",
+      transition: theme.transitions.create(["all"], {
+        duration: theme.transitions.duration.shorter,
+        easing: theme.transitions.easing.easeInOut,
+      }),
+      boxShadow: "none",
+      "&:hover": {
+        boxShadow: theme.shadows[2],
+        transform: "translateY(-1px)",
+      },
+      "&:active": {
+        transform: "translateY(0)",
+      },
+      "&.Mui-disabled": {
+        backgroundColor: theme.palette.action.disabledBackground,
+        color: theme.palette.action.disabled,
+        border: "none",
+      },
+    };
+
+    const variants = {
+      primary: {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.primary.dark,
+          boxShadow: theme.shadows[4],
+        },
+        "&:active": {
+          backgroundColor: theme.palette.primary.dark,
+        },
+      },
+      secondary: {
+        backgroundColor: theme.palette.secondary.light,
+        color: theme.palette.secondary.dark,
+        border: `1.5px solid ${theme.palette.secondary.main}`,
+        "&:hover": {
+          backgroundColor: theme.palette.secondary.main,
+          color: theme.palette.secondary.contrastText,
+          borderColor: theme.palette.secondary.dark,
+        },
+        "&:active": {
+          backgroundColor: theme.palette.secondary.dark,
+        },
+      },
+      outlined: {
+        backgroundColor: "transparent",
+        color: theme.palette.primary.main,
+        border: `1.5px solid ${theme.palette.primary.main}`,
+        "&:hover": {
+          backgroundColor: theme.palette.primary.main,
+          color: theme.palette.primary.contrastText,
+        },
+      },
+      text: {
+        backgroundColor: "transparent",
+        color: theme.palette.primary.main,
+        border: "none",
+        "&:hover": {
+          backgroundColor: theme.palette.action.hover,
+        },
+      },
+      success: {
+        backgroundColor: theme.palette.success.main,
+        color: theme.palette.success.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.success.dark,
+        },
+      },
+      error: {
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.error.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.error.dark,
+        },
+      },
+      warning: {
+        backgroundColor: theme.palette.warning.main,
+        color: theme.palette.warning.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.warning.dark,
+        },
+      },
+      info: {
+        backgroundColor: theme.palette.info.main,
+        color: theme.palette.info.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.info.dark,
+        },
+      },
+    };
+
+    return {
+      ...baseStyles,
+      ...variants[tipo],
+    };
+  };
+
+  return getButtonStyles();
+});
+
+// Versión con sx prop (alternativa)
+export default function CustomButton({ tipo = "primary", sx = {}, ...props }) {
   const theme = useTheme();
 
-  return (
-    <Button
-      sx={{
-        // Estilos base (equivalente a %Botones)
-        padding: '8px 16px',
-        borderRadius: '4px',
-        fontWeight: 500,
-        textTransform: 'none',
-        transition: 'all 0.5s ease',
+  const getButtonStyles = () => {
+    const baseStyles = {
+      padding: theme.spacing(1, 2),
+      borderRadius: theme.spacing(1.5),
+      fontWeight: theme.typography.fontWeightMedium,
+      textTransform: "none",
+      transition: theme.transitions.create(["all"], {
+        duration: theme.transitions.duration.shorter,
+        easing: theme.transitions.easing.easeInOut,
+      }),
+      boxShadow: "none",
+      "&:hover": {
+        boxShadow: theme.shadows[2],
+        transform: "translateY(-1px)",
+      },
+      "&:active": {
+        transform: "translateY(0)",
+      },
+      "&.Mui-disabled": {
+        backgroundColor: theme.palette.action.disabledBackground,
+        color: theme.palette.action.disabled,
+        border: "none",
+      },
+    };
 
-        // Estilos dinámicos según el tipo
-        ...(tipo === 'primary' && {
-          backgroundColor: theme.palette.primary[500], // $Primary-500
+    const variants = {
+      primary: {
+        backgroundColor: theme.palette.primary.main,
+        color: theme.palette.primary.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.primary.dark,
+          boxShadow: theme.shadows[4],
+        },
+      },
+      secondary: {
+        backgroundColor: theme.palette.secondary.light,
+        color: theme.palette.secondary.dark,
+        border: `1.5px solid ${theme.palette.secondary.main}`,
+        "&:hover": {
+          backgroundColor: theme.palette.secondary.main,
+          color: theme.palette.secondary.contrastText,
+          borderColor: theme.palette.secondary.dark,
+        },
+      },
+      outlined: {
+        backgroundColor: "transparent",
+        color: theme.palette.primary.main,
+        border: `1.5px solid ${theme.palette.primary.main}`,
+        "&:hover": {
+          backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
-          borderRadius: '12px',
-          '&:hover': {
-            backgroundColor: theme.palette.primary[700], // $Primary-900
-          },
-          '&:active': {
-            backgroundColor: theme.palette.primary[800], // $Primary-700
-          },
-          // Estilos cuando está disabled
-          '&.Mui-disabled': {
-            backgroundColor: theme.palette.action.disabledBackground, // o un color personalizado
-            color: theme.palette.action.disabled,
-            // otras propiedades CSS que quieras cambiar
-          }
-        }),
-        ...(tipo === 'secondary' && {
-          backgroundColor: theme.palette.secondary[200], // $Secondary-100
-          color: theme.palette.secondary[500], // $Secondary-700
-          border: `1.5px solid ${theme.palette.secondary[500]}`, // $Secondary-500
-          borderRadius: '12px',
-          '&:hover': {
-            backgroundColor: theme.palette.secondary[300], // $Secondary-400
-          },
-          '&:active': {
-            backgroundColor: theme.palette.secondary[500], // $Secondary-800
-          },
-        }),
-        ...(tipo === 'extra' && {
-          backgroundColor: '#f5f5f5', // $Primary-50
-          color: '#64b5f6', // $Primary-400
-          border: '1px solid #53A6E5', // $Primary-200
-          borderRadius: '12px',
-          '&:hover': {
-            backgroundColor: '#e0e0e0', // $Primary-700 (ajustado a gris)
-          },
-          '&:active': {
-            backgroundColor: '#bdbdbd', // $Primary-800 (ajustado a gris)
-          },
-        }),
-      }}
-      {...props} // 👈 Pasa todas las props nativas de MUI Button (onClick, disabled, etc.)
-    >
-      {props.children}
-    </Button>
-  );
+        },
+      },
+      text: {
+        backgroundColor: "transparent",
+        color: theme.palette.primary.main,
+        border: "none",
+        "&:hover": {
+          backgroundColor: theme.palette.action.hover,
+        },
+      },
+      success: {
+        backgroundColor: theme.palette.success.main,
+        color: theme.palette.success.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.success.dark,
+        },
+      },
+      error: {
+        backgroundColor: theme.palette.error.main,
+        color: theme.palette.error.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.error.dark,
+        },
+      },
+      warning: {
+        backgroundColor: theme.palette.warning.main,
+        color: theme.palette.warning.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.warning.dark,
+        },
+      },
+      info: {
+        backgroundColor: theme.palette.info.main,
+        color: theme.palette.info.contrastText,
+        "&:hover": {
+          backgroundColor: theme.palette.info.dark,
+        },
+      },
+    };
+
+    return {
+      ...baseStyles,
+      ...variants[tipo],
+      ...sx,
+    };
+  };
+
+  // Elige una versión:
+
+  // Versión 1: Con styled components (recomendado para performance)
+  // return <StyledButton tipo={tipo} sx={sx} {...props} />;
+
+  // Versión 2: Con sx prop
+  return <Button sx={getButtonStyles()} {...props} />;
 }
+
+

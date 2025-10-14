@@ -16,7 +16,7 @@ import {
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel";
 import { useState, useEffect, useCallback } from "react";
-import axios from "../apis/axios.js";
+import useApi from "../hook/useApi.jsx";
 import { UTILS } from "../utils/utils.js";
 import { Edit, AdfScanner } from "@mui/icons-material";
 
@@ -109,6 +109,8 @@ export default function Horario({
   Custom = true,
 }) {
   //Estados
+  const axios = useApi();
+
   //Estado de la clase seleccionada
   const [selectedClass, setSelectedClass] = useState(null);
   //Estado de los Slots que esta habilitados para un posible movimiento

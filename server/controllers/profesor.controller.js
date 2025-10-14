@@ -67,7 +67,7 @@ export default class ProfesorController {
 
       if (validaciones !== true) {
         FormatResponseController.respuestaError(res, {
-          status: 400, // Cambiado a 400 (Bad Request) en lugar de 401
+          status: 400,
           title: "Datos Erroneos",
           message: "Los datos del profesor son incorrectos",
           error: validaciones,
@@ -108,14 +108,8 @@ export default class ProfesorController {
 
       FormatResponseController.respuestaExito(res, result);
     } catch (error) {
-      const procesamientoImage = new imagenProcessingServices("Profesores");
-      procesamientoImage.deleteImage(req.file.originalname);
-      FormatResponseController.respuestaError(res, {
-        status: 500,
-        title: "Error del Servidor",
-        message: "Ocurrió un error al registrar el profesor",
-        error: error.message,
-      });
+      console.log(error)
+      FormatResponseController.respuestaError(res, error);
     }
   }
 

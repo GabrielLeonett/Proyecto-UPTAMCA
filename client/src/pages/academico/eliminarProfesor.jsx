@@ -1,12 +1,18 @@
-import ResponsiveAppBar from "../components/navbar";
-import { Typography, Box, CircularProgress, Button, Stack } from "@mui/material";
+import ResponsiveAppBar from "../../components/navbar";
+import {
+  Typography,
+  Box,
+  CircularProgress,
+  Button,
+  Stack,
+} from "@mui/material";
 import { useState, useEffect } from "react";
-import axios from "../apis/axios";
-import Swal from "sweetalert2";
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function ProfesoresEliminados() {
   const [profesores, setProfesores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const axios = useApi();
 
   const fetchEliminados = async () => {
     setLoading(true);
@@ -21,13 +27,8 @@ export default function ProfesoresEliminados() {
   };
 
   const handleRestaurar = async (id) => {
-    try {
-      await axios.put(`/Profesor/restaurar/${id}`);
-      Swal.fire("Restaurado", "El profesor fue restaurado correctamente", "success");
-      fetchEliminados();
-    } catch (error) {
-      Swal.fire("Error", "No se pudo restaurar el profesor", "error");
-    }
+    await axios.put(`/Profesor/restaurar/${id}`);
+    fetchEliminados();
   };
 
   useEffect(() => {
@@ -56,10 +57,20 @@ export default function ProfesoresEliminados() {
               key={prof.id}
               sx={{ border: "1px solid #ccc", p: 2, borderRadius: 2, mb: 2 }}
             >
-              <Typography><strong>{prof.nombres} {prof.apellidos}</strong></Typography>
-              <Typography><strong>Motivo:</strong> {prof.motivo_eliminacion}</Typography>
+              <Typography>
+                <strong>
+                  {prof.nombres} {prof.apellidos}
+                </strong>
+              </Typography>
+              <Typography>
+                <strong>Motivo:</strong> {prof.motivo_eliminacion}
+              </Typography>
               <Stack direction="row" spacing={2} mt={2}>
-                <Button variant="outlined" color="success" onClick={() => handleRestaurar(prof.id)}>
+                <Button
+                  variant="outlined"
+                  color="success"
+                  onClick={() => handleRestaurar(prof.id)}
+                >
                   Restaurar
                 </Button>
               </Stack>
