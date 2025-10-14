@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import axios from "../apis/axios.js";
-import CustomButton from "./CustomButton.jsx";
+import useApi from "../hook/useApi.jsx";
+import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
 import Swal from "sweetalert2";
 
@@ -21,6 +21,7 @@ const TIPOS_POSGRADO = [
 
 export default function ModalRegisterPosgrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
+  const axios = useApi();
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {

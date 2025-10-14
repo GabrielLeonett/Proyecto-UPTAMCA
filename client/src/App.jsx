@@ -14,7 +14,6 @@ import { lightTheme, darkTheme } from "./components/ui/theme";
 import Inicio from "./pages/Inicio";
 import InicioSesion from "./pages/InicioSesion";
 import CerrarSesion from "./pages/CerrarSesion";
-import RecuperarContrasena from "./pages/RecuperarContrasena";
 import TerminosCondiciones from "./pages/TerminosCondiciones";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import DeclaracionAccesibilidad from "./pages/DeclaracionAccesibilidad";
@@ -109,10 +108,6 @@ export default function App() {
               <Route path="/" element={<Inicio />} />
               <Route path="/iniciar-sesion" element={<InicioSesion />} />
               <Route path="/cerrar-sesion" element={<CerrarSesion />} />
-              <Route
-                path="/recuperar-contrasena"
-                element={<RecuperarContrasena />}
-              />
               <Route
                 path="/terminos-condiciones"
                 element={<TerminosCondiciones />}

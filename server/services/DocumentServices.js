@@ -527,7 +527,6 @@ class DocumentServices {
       ],
     });
 
-    console.log("✅ DOCUMENTO WORD CREADO EXITOSAMENTE");
     return doc;
   }
 

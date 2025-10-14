@@ -8,13 +8,14 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import axios from "../apis/axios.js";
+import useApi from "../hook/useApi.jsx";
 import CustomButton from "./CustomButton.jsx";
 import CustomLabel from "./customLabel.jsx";
 import Swal from "sweetalert2";
 
 export default function ModalRegisterPreGrado({ open, onClose, setState }) {
     const [isLoading, setIsLoading] = useState(false);
+    const { axios } = useApi();
 
     const { register, handleSubmit, reset } = useForm({
         defaultValues: {
