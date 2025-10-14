@@ -24,8 +24,6 @@ import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
 import { coordinadorRouter } from "./routes/coordinador.routes.js";
 
-import SocketServices from "./services/socket.services.js";
-
 // Creación del servidor
 const app = express();
 export const server = createServer(app);

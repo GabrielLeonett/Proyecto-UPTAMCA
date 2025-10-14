@@ -1,4 +1,4 @@
-import ResponsiveAppBar from "../components/navbar";
+import ResponsiveAppBar from "../../components/navbar";
 import {
   Typography,
   Box,
@@ -7,7 +7,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import useApi from "../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function ProfesoresEliminados() {
   const [profesores, setProfesores] = useState([]);

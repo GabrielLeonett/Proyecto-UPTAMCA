@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import ResponsiveAppBar from "../components/navbar";
+import ResponsiveAppBar from "../../components/navbar";
 import { Typography, Box, CircularProgress } from "@mui/material";
-import CardPNF from "../components/cardPNF";
-import useApi from "../hook/useApi"; // Added import for axios
+import CardPNF from "../../components/cardPNF";
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function ProgramasFormacion() {
   const [PNFS, setPNFS] = useState([]);

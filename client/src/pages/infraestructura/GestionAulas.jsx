@@ -9,15 +9,12 @@ import {
   CardContent,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import ResponsiveAppBar from "../components/navbar";
-import useApi from "../hook/useApi"; // Added import for axios
+import ResponsiveAppBar from "../../components/navbar";
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function GestionAulas() {
   const theme = useTheme();
-<<<<<<< HEAD:client/src/pages/Aulas.jsx
   const axios = useApi();
-=======
->>>>>>> a6178a861ff2a62c1c3f332e9940ee6b0235e70d:client/src/pages/infraestructura/GestionAulas.jsx
 
   const [aulas, setAulas] = useState([]);
   const [loading, setLoading] = useState(true);

@@ -27,6 +27,7 @@ function ResponsiveAppBar({ backgroundColor }) {
   const { user, isAuthenticated, logout } = useAuth();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElSubmenu, setAnchorElSubmenu] = useState({});
+  const [menuKey, setMenuKey] = useState(0); // Clave para forzar re-render
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -35,7 +36,11 @@ function ResponsiveAppBar({ backgroundColor }) {
   useEffect(() => {
     if (user && user.roles) {
       setUserRoles(user.roles);
+    } else {
+      setUserRoles(["publico"]);
     }
+    // Forzar re-render del menú cuando cambia la autenticación
+    setMenuKey((prev) => prev + 1);
   }, [user, isAuthenticated]);
 
   const handleCloseNavMenu = () => {
@@ -73,6 +78,14 @@ function ResponsiveAppBar({ backgroundColor }) {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setUserRoles(["publico"]);
+    setMenuKey((prev) => prev + 1);
+    handleCloseUserMenu();
+    navigate("/");
   };
 
   // Menú reorganizado en tres columnas principales
@@ -172,7 +185,7 @@ function ResponsiveAppBar({ backgroundColor }) {
         },
         {
           name: "Unidades Curriculares",
-          url: "/curricular/unidades",
+          url: "/curricular/unidades/registrar", // Actualizado
           roles: [
             "Vicerrector",
             "Coordinador",
@@ -256,14 +269,14 @@ function ResponsiveAppBar({ backgroundColor }) {
         },
         {
           name: "Configuración del Sistema",
-          url: "/administracion/configuracion",
+          url: "/administracion/configuracion", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
       ],
     },
   ];
 
-  // Filtrar páginas según los roles del usuario
+  // Filtrar páginas según los roles del usuario - se recalcula en cada render
   const filteredPages = pages.filter(
     (page) =>
       hasAccess(page.roles) ||
@@ -272,6 +285,7 @@ function ResponsiveAppBar({ backgroundColor }) {
 
   return (
     <AppBar
+      key={menuKey} // Forzar re-render cuando cambie esta clave
       position="fixed"
       color={backgroundColor ? "primary" : "transparent"}
       enableColorOnDark
@@ -287,6 +301,7 @@ function ResponsiveAppBar({ backgroundColor }) {
               height: "100px",
               cursor: "pointer",
             }}
+            onClick={() => navigate("/")}
           >
             <LogoTexto />
           </Box>
@@ -518,7 +533,7 @@ function ResponsiveAppBar({ backgroundColor }) {
               anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             >
               {!isAuthenticated ? (
-                <MenuItem onClick={() => handleNavigation("/Inicio-session")}>
+                <MenuItem onClick={() => handleNavigation("/iniciar-sesion")}>
                   Iniciar sesión
                 </MenuItem>
               ) : (
@@ -526,12 +541,7 @@ function ResponsiveAppBar({ backgroundColor }) {
                   <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
                     Mi cuenta
                   </MenuItem>,
-                  <MenuItem
-                    key="cerrar-sesion"
-                    onClick={() => {
-                      logout();
-                    }}
-                  >
+                  <MenuItem key="cerrar-sesion" onClick={handleLogout}>
                     Cerrar sesión
                   </MenuItem>,
                 ]

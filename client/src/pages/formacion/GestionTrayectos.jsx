@@ -9,8 +9,8 @@ import {
   Breadcrumbs,
   Link,
 } from "@mui/material";
-import CardTrayecto from "../components/cardTrayecto";
-import useApi from "../hook/useApi";
+import CardTrayecto from "../../components/cardTrayecto";
+import useApi from "../../hook/useApi";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 export default function PNF() {

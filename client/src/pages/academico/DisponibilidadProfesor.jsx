@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Typography, Paper } from "@mui/material";
 import ResponsiveAppBar from "../../components/navbar";
 import { useParams } from "react-router-dom";

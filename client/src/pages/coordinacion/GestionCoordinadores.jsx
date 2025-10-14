@@ -2,11 +2,7 @@ import ResponsiveAppBar from "../../components/navbar";
 import { CardCoordinador } from "../../components/cardCoordinador";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-<<<<<<< HEAD:client/src/pages/Coordinadores.jsx
-import useApi from "../hook/useApi"; // Added import for axios
-=======
-import axios from "../../apis/axios";
->>>>>>> a6178a861ff2a62c1c3f332e9940ee6b0235e70d:client/src/pages/coordinacion/GestionCoordinadores.jsx
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function Coordinadores() {
   const axios = useApi();

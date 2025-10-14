@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Horario from "../../components/Horario";
 import ResponsiveAppBar from "../../components/navbar";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import useApi from "../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function GestionHorarios() {
   const [horarios, setHorarios] = useState([]);

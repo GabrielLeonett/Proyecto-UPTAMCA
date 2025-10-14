@@ -11,9 +11,9 @@ import MenuItem from "@mui/material/MenuItem";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProfesorSchema } from "../../schemas/ProfesorSchema";
 import dayjs from "dayjs";
-import DeletableChips from "../components/ui/customChip";
+import DeletableChips from "../../components/ui/customChip";
 import { Autocomplete, TextField } from "@mui/material";
-import useApi from "../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function FormRegister() {
   const axios = useApi();

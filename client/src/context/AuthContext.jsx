@@ -56,14 +56,14 @@ export function AuthProvider({ children }) {
       setIsAuthenticated(false);
 
       // Redirigir a la página de cerrar-session
-      navigate("/cerrar-session");
+      navigate("/cerrar-sesion");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
 
       // Aunque falle la petición, limpiar el estado local y redirigir
       setUser(null);
       setIsAuthenticated(false);
-      navigate("/cerrar-session");
+      navigate("/cerrar-sesion");
     }
   }, [navigate]);
 

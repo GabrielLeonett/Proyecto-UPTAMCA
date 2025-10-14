@@ -15,11 +15,11 @@ import { useTheme } from "@mui/material/styles";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Swal from "sweetalert2";
-import ResponsiveAppBar from "../components/navbar";
-import CustomLabel from "../components/customLabel";
-import CustomButton from "../components/customButton";
-import useApi from "../hook/useApi"; // Added import for axios
-import { AsignarCoordinadorSchema } from "../schemas/AsignarCoordinadorSchema";
+import ResponsiveAppBar from "../../components/navbar";
+import CustomLabel from "../../components/customLabel";
+import CustomButton from "../../components/customButton";
+import useApi from "../../hook/useApi"; // Added import for axios
+import { AsignarCoordinadorSchema } from "../../schemas/AsignarCoordinadorSchema";
 
 export default function AsignarCoordinador() {
   const axios = useApi();
@@ -85,8 +85,6 @@ export default function AsignarCoordinador() {
         const pnfsFiltrados = datosPnfs.filter(
           (pnf) => !pnf.tiene_coordinar != true
         );
-
-       
 
         setProfesores(profesoresFiltrados);
         setPnfs(pnfsFiltrados);

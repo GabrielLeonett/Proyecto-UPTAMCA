@@ -5,7 +5,7 @@ import CardSeccion from "../../components/cardSeccion";
 import ResponsiveAppBar from "../../components/navbar";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useApi from "../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2";
 
 export default function GestionTrayecto() {

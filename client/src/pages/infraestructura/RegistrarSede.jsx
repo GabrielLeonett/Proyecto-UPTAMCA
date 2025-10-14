@@ -5,8 +5,8 @@ import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
 import { SedeSchema } from "../../schemas/SedeSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import CustomButton from "../components/customButton"; // 👈 Importamos tu botón
-import useApi from "../hook/useApi"; // Added import for axios
+import CustomButton from "../../components/customButton"; // 👈 Importamos tu botón
+import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function RegisterSede() {
   const pages = [{ name: "Inicio", link: "/Profesores" }];

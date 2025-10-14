@@ -2,8 +2,8 @@
 import { useEffect, useState } from "react";
 import { Box, Typography, Grid, CircularProgress, Card, CardContent, CardActions, IconButton } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import ResponsiveAppBar from "../components/navbar";
-import useApi from "../hook/useApi"; // Added import for axios
+import ResponsiveAppBar from "../../components/navbar";
+import useApi from "../../hook/useApi"; // Added import for axios
 import { MapPin, Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
 

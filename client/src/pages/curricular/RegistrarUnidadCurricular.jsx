@@ -2,11 +2,11 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography, Stack } from "@mui/material";
-import CustomButton from "../components/customButton";
-import CustomLabel from "../components/customLabel";
-import ResponsiveAppBar from "../components/navbar";
-import { UnidadCurricularSchema } from "../schemas/UnidadCurricularSchema";
-import useApi from "../hook/useApi"; // Added import for axios
+import CustomButton from "../../components/customButton";
+import CustomLabel from "../../components/customLabel";
+import ResponsiveAppBar from "../../components/navbar";
+import { UnidadCurricularSchema } from "../../schemas/UnidadCurricularSchema";
+import useApi from "../../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2";
 
 export default function RegistrarUnidadCurricular() {

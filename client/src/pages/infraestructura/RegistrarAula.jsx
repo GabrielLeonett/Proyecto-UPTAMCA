@@ -9,12 +9,11 @@ import {
 import { useTheme } from "@mui/material/styles";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Swal from "sweetalert2";
-import ResponsiveAppBar from "../components/navbar";
-import CustomLabel from "../components/customLabel";
-import CustomButton from "../components/customButton";
-import useApi from "../hook/useApi"; // Added import for axios
-import { AulaSchema } from "../schemas/AulaSchema";
+import ResponsiveAppBar from "../../components/navbar";
+import CustomLabel from "../../components/customLabel";
+import CustomButton from "../../components/customButton";
+import useApi from "../../hook/useApi"; // Added import for axios
+import { AulaSchema } from "../../schemas/AulaSchema";
 
 export default function RegistrarAula() {
   const theme = useTheme();

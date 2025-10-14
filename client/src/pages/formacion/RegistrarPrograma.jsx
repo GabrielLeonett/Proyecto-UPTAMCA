@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Typography, Stack, MenuItem } from "@mui/material";
-import CustomButton from "../components/customButton";
-import CustomLabel from "../components/customLabel";
-import ResponsiveAppBar from "../components/navbar";
-import PNFSchema from "../schemas/PnfSchema";
-import useApi from "../hook/useApi"; // Added import for axios
+import CustomButton from "../../components/customButton";
+import CustomLabel from "../../components/customLabel";
+import ResponsiveAppBar from "../../components/navbar";
+import PNFSchema from "../../schemas/PnfSchema";
+import useApi from "../../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2"; // Missing import
 
 export default function PnfForm() {
