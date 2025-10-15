@@ -8,21 +8,13 @@ loadEnv();
  * Configuración CORS para la aplicación
  * Define los orígenes permitidos, métodos HTTP y credenciales
  */
-import cors from "cors";
-import { loadEnv } from "../utils/utilis.js";
-
-loadEnv();
-
-/**
- * Configuración CORS corregida
- */
 const corsOptions = {
   origin: function (origin, callback) {
     // Lista de orígenes permitidos - REEMPLAZA CON TUS URLs REALES
     const allowedOrigins = [
       "https://proyecto-uptamca-frontend.onrender.com",
       "http://localhost:3000", // para desarrollo local
-      "http://localhost:5173"  // si usas Vite
+      "http://localhost:5173", // si usas Vite
     ];
 
     // En desarrollo, permitir cualquier origen
@@ -49,12 +41,9 @@ const corsOptions = {
     "Origin",
     "Access-Control-Request-Method",
     "Access-Control-Request-Headers",
-    "X-CSRF-Token"
+    "X-CSRF-Token",
   ],
-  exposedHeaders: [
-    "Authorization",
-    "X-CSRF-Token"
-  ],
+  exposedHeaders: ["Authorization", "X-CSRF-Token"],
   preflightContinue: false,
   optionsSuccessStatus: 204,
   maxAge: 86400, // Cache preflight por 24 horas

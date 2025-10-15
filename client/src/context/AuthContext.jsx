@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const axios = useApi();
+  const axios = useApi(true);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Nuevo estado de carga
