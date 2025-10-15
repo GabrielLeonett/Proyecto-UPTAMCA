@@ -72,7 +72,7 @@ export default function Notification({ userRoles, userID }) {
       return;
     }
 
-    const newSocket = io("http://localhost:3000", {
+    const newSocket = io("https://proyecto-uptamca.onrender.com", {
       transports: ["websocket"], // Permitir ambos
       withCredentials: true,
       auth: {
