@@ -6,16 +6,14 @@ import {
     Fade,
     Backdrop,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
 import { useForm } from "react-hook-form";
-import CustomButton from "./CustomButton.jsx";
-import CustomLabel from "./CustomLabel.jsx"; // ✅ tu componente personalizado
+import CustomButton from "./customButton.jsx";
+import CustomLabel from "./customLabel.jsx"; // ✅ tu componente personalizado
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function ModalEliminacionProfe({ profesor, open, onClose }) {
-    const theme = useTheme();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
 
