@@ -6,7 +6,7 @@ import { validationDestitucion } from "../schemas/DestitucionSchema.js";
 import ProfesorModel from "../models/profesor.model.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
-import imagenProcessingServices from "../services/imagenProcessing.services.js";
+import imagenProcessingServices from "../services/imagen.service.js";
 import { parseJSONField } from "../utils/utilis.js";
 import {
   validationDisponibilidadDocente,
