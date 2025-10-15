@@ -13,41 +13,105 @@ const {
 
 export const UserRouter = Router();
 
-//Rutas de autenticacion
+/**
+ * =============================================
+ * RUTAS PÚBLICAS (Sin autenticación)
+ * =============================================
+ */
 
-//El siguiente Endpoint es para inicio de session hay un ejemplo para prueba
-// curl -X POST 'http://127.0.0.1:3000/login' \
-//   --header 'Content-Type: application/json' \
-//   --data-raw '{
-//   "email": "gabrielleonett@uptamca.edu.ve",
-//   "password": "12345678"
-// }'
-UserRouter.post("/login", login);
+/**
+ * @name POST /auth/login
+ * @description Iniciar sesión de usuario
+ * @body {Object} Credenciales de acceso
+ * @body {string} body.email - Correo electrónico
+ * @body {string} body.password - Contraseña
+ */
+UserRouter.post("/auth/login", login);
 
-UserRouter.get("/verification", middlewareAuth(null), verificarUsers);
+/**
+ * =============================================
+ * RUTAS DE AUTENTICACIÓN
+ * =============================================
+ */
 
-UserRouter.get("/logout", middlewareAuth(null), closeSession);
+/**
+ * @name GET /auth/verify
+ * @description Verificar token de autenticación y obtener datos del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.get("/auth/verify", middlewareAuth(null), verificarUsers);
 
-UserRouter.get("/notifications", middlewareAuth(null), enviarNotificacion);
+/**
+ * @name POST /auth/logout
+ * @description Cerrar sesión del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.post("/auth/logout", middlewareAuth(null), closeSession);
 
+/**
+ * @name PUT /auth/password
+ * @description Cambiar contraseña del usuario autenticado
+ * @middleware Requiere uno de estos roles:
+ *   - Profesor
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ */
 UserRouter.put(
-  "/cambiar-contrasena",
-  middlewareAuth(
+  "/auth/password",
+  middlewareAuth([
     "Profesor",
-    "SuperAdmin",
+    "SuperAdmin", 
     "Vicerrector",
     "Director General de Gestión Curricular",
     "Coordinador"
-  ),
+  ]),
   cambiarContraseña
 );
 
-UserRouter.get("/report", middlewareAuth("SuperAdmin"), (req, res) => {
-  fs.readFile("./report/report.json", (err, date) => {
+/**
+ * =============================================
+ * RUTAS DE NOTIFICACIONES
+ * =============================================
+ */
+
+/**
+ * @name GET /notifications
+ * @description Obtener notificaciones del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.get("/notifications", middlewareAuth(null), enviarNotificacion);
+
+/**
+ * =============================================
+ * RUTAS DE ADMINISTRACIÓN
+ * =============================================
+ */
+
+/**
+ * @name GET /admin/reports
+ * @description Obtener reportes del sistema (solo SuperAdmin)
+ * @middleware Requiere rol: SuperAdmin
+ */
+UserRouter.get("/admin/reports", middlewareAuth(["SuperAdmin"]), (req, res) => {
+  fs.readFile("./report/report.json", (err, data) => {
     try {
-      res.json(JSON.parse(date));
+      if (err) {
+        return res.status(500).json({
+          status: 500,
+          title: "Error del servidor",
+          message: "No se pudo leer el archivo de reportes"
+        });
+      }
+      res.json(JSON.parse(data));
     } catch (err) {
       console.log(err);
+      res.status(500).json({
+        status: 500,
+        title: "Error del servidor", 
+        message: "Error al procesar el reporte"
+      });
     }
   });
 });

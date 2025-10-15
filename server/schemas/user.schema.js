@@ -59,12 +59,3 @@ export const UserSchema = z.object({
     error_map: () => ({ message: "Genero tiene que ser masculino o femenino" }),
   }),
 });
-
-
-export const validationUser = ({input}) => {
-  return UserSchema.safeParse(input);
-};
-
-export const validationPartialUser = ({input}) => {
-  return UserSchema.partial().safeParse(input);
-};

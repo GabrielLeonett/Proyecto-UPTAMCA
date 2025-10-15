@@ -1,6 +1,6 @@
 import z from "zod";
 
-const SeccionSchema = z.object({
+export const SeccionSchema = z.object({
     idTrayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que ser un numero",
@@ -24,15 +24,3 @@ const SeccionSchema = z.object({
     .positive("La poblacion tiene que ser positiva"),
 });
 
-// Validación completa
-export const validationSeccion = ({ input }) => {
-  const validationResult = SeccionSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialSeccion = ({ input }) => {
-  const PartialSeccionSchema =
-    SeccionSchema.partial().safeParse(input);
-  return PartialSeccionSchema;
-};

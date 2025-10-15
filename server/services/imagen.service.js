@@ -5,7 +5,7 @@ import { existsSync, unlinkSync } from "fs";
 import { access, stat } from "fs/promises";
 import fs from "fs";
 
-class ImageProcessingService {
+class ImageService {
   constructor(storage) {
     this.storageImage = "uploads/" + storage;
   }

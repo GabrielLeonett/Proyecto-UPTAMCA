@@ -1,38 +1,95 @@
-// Importación de librería para envío de correos electrónicos
-import { enviarEmail } from "../utils/EnviarCorreos.js";
-
-// Importación de la conexión a la base de datos
-import db from "../database/db.js";
-
-// Importación de clase para formateo de respuestas
-import FormatResponseModel from "../utils/FormatResponseModel.js";
+import pg from "../database/pg.js";
 
 /**
  * @class SedeModel
- * @description Contiene los metodos para todo lo que tiene que ver con sedes
+ * @description Modelo para operaciones de base de datos relacionadas con sedes
  */
-
 export default class SedeModel {
-    static async registerSede({usuarioAccion, data}) {
-        const { nombreSede, UbicacionSede, GoogleSede } = data;
-        try {
-            const idSede = await db.raw("SELECT COUNT(*) + 1 AS id FROM sedes"); 
-            const {rows} = await db.raw("CALL public.registrar_sede_completo(?, ?, ?, ?, ?, NULL)", [usuarioAccion, idSede.rows[0].id, nombreSede, UbicacionSede, GoogleSede]);
+  /**
+   * @name crear
+   * @description Crear una nueva sede en la base de datos
+   * @param {Object} datos - Datos de la sede
+   * @param {string} datos.nombreSede - Nombre de la sede
+   * @param {string} datos.UbicacionSede - Ubicación de la sede
+   * @param {string} datos.GoogleSede - Enlace de Google Maps
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
+   */
+  static async crear(datos, usuarioId) {
+    const { nombreSede, UbicacionSede, GoogleSede } = datos;
 
-            return FormatResponseModel.respuestaPostgres(rows, 'Sede registrada exitosamente');
-        } catch (error) {
-            error.path = "SedesModel.registerSede";
-            throw FormatResponseModel.respuestaError(error, 'Error al registrar la sede');
-        }
-    }
-    static async mostrarSedes() {
-        try {
-            const {rows} = await db.raw("SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes"); 
+    // Obtener próximo ID
+    const idResult = await pg.query("SELECT COUNT(*) + 1 AS id FROM sedes");
+    const idSede = idResult.rows[0].id;
 
-            return FormatResponseModel.respuestaPostgres(rows, 'Sedes exitosamente');
-        } catch (error) {
-            error.path = "SedesModel.mostrarSedes";
-            throw FormatResponseModel.respuestaError(error, 'Error mostrar las sedes');
-        }
-    }
+    // Insertar sede
+    const { rows } = await pg.query(
+      "CALL public.registrar_sede_completo($1, $2, $3, $4, $5, NULL)",
+      [usuarioId, idSede, nombreSede, UbicacionSede, GoogleSede]
+    );
+    
+    return rows;
+  }
+
+  /**
+   * @name obtenerTodas
+   * @description Obtener todas las sedes de la base de datos
+   * @returns {Array} Lista de sedes
+   */
+  static async obtenerTodas() {
+    const { rows } = await pg.query(
+      "SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes"
+    );
+    return rows;
+  }
+
+  /**
+   * @name obtenerPorId
+   * @description Obtener una sede específica por ID
+   * @param {number} idSede - ID de la sede
+   * @returns {Array} Datos de la sede
+   */
+  static async obtenerPorId(idSede) {
+    const { rows } = await pg.query(
+      "SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes WHERE id_sede = $1",
+      [idSede]
+    );
+    return rows;
+  }
+
+  /**
+   * @name actualizar
+   * @description Actualizar una sede existente
+   * @param {number} idSede - ID de la sede a actualizar
+   * @param {Object} datos - Datos actualizados
+   * @param {string} datos.nombreSede - Nuevo nombre de la sede
+   * @param {string} datos.ubicacionSede - Nueva ubicación
+   * @param {string} datos.googleSede - Nuevo enlace de Google Maps
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la actualización
+   */
+  static async actualizar(idSede, datos, usuarioId) {
+    const { nombreSede, ubicacionSede, googleSede } = datos;
+    
+    const { rows } = await pg.query(
+      "CALL public.actualizar_sede($1, $2, $3, $4, $5)",
+      [usuarioId, idSede, nombreSede, ubicacionSede, googleSede]
+    );
+    return rows;
+  }
+
+  /**
+   * @name eliminar
+   * @description Eliminar una sede
+   * @param {number} idSede - ID de la sede a eliminar
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la eliminación
+   */
+  static async eliminar(idSede, usuarioId) {
+    const { rows } = await pg.query(
+      "CALL public.eliminar_sede($1, $2)",
+      [usuarioId, idSede]
+    );
+    return rows;
+  }
 }

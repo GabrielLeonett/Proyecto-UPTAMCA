@@ -262,51 +262,6 @@ const HorarioTable = ({
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Leyenda */}
-      <Box
-        sx={{
-          p: 2,
-          backgroundColor: theme.palette.grey[50],
-          borderTop: `1px solid ${theme.palette.divider}`,
-          display: "flex",
-          gap: 2,
-          flexWrap: "wrap",
-          alignItems: "center",
-        }}
-      >
-        <Typography variant="caption" color="text.secondary" fontWeight="bold">
-          Leyenda:
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Box
-            sx={{
-              width: 16,
-              height: 16,
-              backgroundColor: alpha(theme.palette.success.main, 0.1),
-              border: `1px solid ${theme.palette.success.main}`,
-              borderRadius: 1,
-            }}
-          />
-          <Typography variant="caption" color="text.secondary">
-            Slot disponible
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Box
-            sx={{
-              width: 16,
-              height: 16,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              border: `1px solid ${theme.palette.divider}`,
-              borderRadius: 1,
-            }}
-          />
-          <Typography variant="caption" color="text.secondary">
-            Clase programada
-          </Typography>
-        </Box>
-      </Box>
     </Paper>
   );
 };

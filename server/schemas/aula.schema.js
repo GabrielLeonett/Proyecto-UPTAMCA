@@ -35,15 +35,3 @@ export const AulaSchema = z.object({
     .max(500, { message: "La capacidad máxima es 500 estudiantes" })
     .positive({ message: "La capacidad debe ser un número positivo" }),
 });
-
-// Validación completa
-export const validationAula = ({ input }) => {
-  const validationResult = AulaSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialAula = ({ input }) => {
-  const PartialAulaSchema = AulaSchema.partial().safeParse(input);
-  return PartialAulaSchema;
-};

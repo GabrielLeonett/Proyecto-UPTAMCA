@@ -41,15 +41,3 @@ const HorarioSchema = z.object({
     })
     .positive("El id del aula debe ser positivo"),
 });
-
-// Validación completa
-export const validationHorario = ({input}) => {
-  const validationResult = HorarioSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialHorario = ({input}) => {
-  const PartialHorarioSchema = HorarioSchema.partial().safeParse(input);
-  return PartialHorarioSchema;
-};

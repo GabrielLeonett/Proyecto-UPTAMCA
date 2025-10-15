@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const SedeSchema = z.object({
+export const SedeSchema = z.object({
   nombreSede: z
     .string({
       invalid_type_error: "El nombre de la sede debe ser un texto",
@@ -23,15 +23,3 @@ const SedeSchema = z.object({
     .url({ message: "El enlace de Google Maps debe ser una URL válida" })
     .max(300, { message: "El enlace de Google Maps debe tener como máximo 300 caracteres" }),
 });
-
-// Validación completa
-export const validationSede = ({ input }) => {
-  const validationResult = SedeSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialSede = ({ input }) => {
-  const PartialSedeSchema = SedeSchema.partial().safeParse(input);
-  return PartialSedeSchema;
-};

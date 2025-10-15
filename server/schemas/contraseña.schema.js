@@ -24,10 +24,3 @@ export const ContraseñaSchema = z.object({
   message: "Las contraseñas no coinciden",
   path: ["repetirPassword"],
 });
-
-// Validación completa
-export const validationContraseña = ({input}) => {
-  const validationResult = ContraseñaSchema.safeParse(input);
-  return validationResult;
-};
-

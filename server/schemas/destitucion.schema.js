@@ -29,7 +29,3 @@ const DestitucionSchema = z.object({
     .nullable()
     .default(null)
 });
-
-export const validationDestitucion = (input) => {
-  return DestitucionSchema.safeParse(input);
-};

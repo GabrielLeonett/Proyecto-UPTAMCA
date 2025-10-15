@@ -231,24 +231,6 @@ const Horario = ({
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, position: "relative" }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            color: theme.palette.primary.main,
-          }}
-        >
-          <ScheduleIcon fontSize="large" />
-          Gestión de Horario
-        </Typography>
-      </Box>
-
       {/* CONTENEDOR PRINCIPAL CORREGIDO - SIN DUPLICADOS */}
       <Box sx={{ position: "relative", minHeight: "400px" }}>
         <Box

@@ -1,41 +1,41 @@
-// Importación de la conexión a la base de datos
+// ===========================================================
+// Importación de dependencias y conexión a la base de datos
+// ===========================================================
 import db from "../database/db.js";
-
-// Importación de clase para formateo de respuestas
 import FormatResponseModel from "../utils/FormatResponseModel.js";
 
 /**
  * @class CurricularModel
- * @description Modelo para gestionar las operaciones relacionadas con PNFs (Programas Nacionales de Formación)
- * y Unidades Curriculares en la base de datos.
- * Utiliza procedimientos almacenados para las operaciones de registro.
+ * @description Modelo para gestionar las operaciones relacionadas con
+ * Programas Nacionales de Formación (PNF), Unidades Curriculares,
+ * Trayectos y Secciones en la base de datos.
+ * Utiliza procedimientos almacenados y vistas para sus operaciones.
  */
 export default class CurricularModel {
+  // ===========================================================
+  // MÉTODOS DE REGISTRO
+  // ===========================================================
+
   /**
    * @static
    * @async
    * @method registrarPNF
-   * @description Registra un nuevo Programa Nacional de Formación (PNF) en la base de datos
-   * @param {Object} params - Objeto con los datos del PNF
+   * @description Registra un nuevo Programa Nacional de Formación (PNF)
+   * @param {Object} params - Parámetros del registro
    * @param {Object} params.datos - Datos del PNF a registrar
-   * @param {string} params.datos.nombre_pnf - Nombre del PNF
-   * @param {string} params.datos.descripcion - Descripción del PNF
-   * @param {string} params.datos.ubicacionPNF - Ubicacion donde estara el PNF
+   * @param {string} params.datos.nombrePNF - Nombre del PNF
+   * @param {string} params.datos.descripcionPNF - Descripción del PNF
    * @param {string} params.datos.codigoPNF - Código único del PNF
-   * @param {object} usuario_accion - Objeto que contiene datos del usuario que realiza la accion
-   * @returns {Promise<Object>} Objeto con el resultado de la operación
-   * @property {string} message - Mensaje descriptivo del resultado
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla el registro
+   * @param {string} params.datos.sedePNF - Sede donde se imparte el PNF
+   * @param {Object} usuario_accion - Usuario que ejecuta la acción
+   * @returns {Promise<Object>} Resultado del registro
    */
   static async registrarPNF({ datos, usuario_accion }) {
     try {
-      //Desestructuracion de los datos para el registro del pnf
       const { nombrePNF, descripcionPNF, codigoPNF, sedePNF } = datos;
 
       const query = `CALL public.registrar_pnf_completo(?, ?, ?, ?, ?, NULL)`;
-
-      const param = [
+      const params = [
         usuario_accion.id,
         nombrePNF,
         descripcionPNF,
@@ -43,20 +43,15 @@ export default class CurricularModel {
         sedePNF,
       ];
 
-      const { rows } = await db.raw(query, param);
+      const { rows } = await db.raw(query, params);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
         "PNF registrado exitosamente."
       );
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.registrarPNF",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registrar el PNF"
-      );
+      error.details = { path: "CurricularModel.registrarPNF" };
+      throw FormatResponseModel.respuestaError(error, "Error al registrar el PNF");
     }
   }
 
@@ -64,19 +59,16 @@ export default class CurricularModel {
    * @static
    * @async
    * @method registrarUnidadCurricular
-   * @description Registra una nueva Unidad Curricular en la base de datos
-   * @param {Object} params - Objeto con los datos de la Unidad Curricular
+   * @description Registra una nueva Unidad Curricular
+   * @param {Object} params - Parámetros del registro
    * @param {Object} params.datos - Datos de la Unidad Curricular
-   * @param {number} params.datos.id_trayecto - ID del trayecto al que pertenece
-   * @param {string} params.datos.nombre_unidad - Nombre de la unidad curricular
-   * @param {string} params.datos.descripcion_unidad - Descripción de la unidad
-   * @param {number} params.datos.carga_horas_unidad - Carga horaria en horas
-   * @param {string} params.datos.codigo_unidad - Código único de la unidad
-   * @param {object} usuario_accion - Objeto que contiene datos del usuario que realiza la accion
-   * @returns {Promise<Object>} Objeto con el resultado de la operación
-   * @property {string} message - Mensaje descriptivo del resultado
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla el registro
+   * @param {number} params.datos.idTrayecto - ID del trayecto al que pertenece
+   * @param {string} params.datos.nombreUnidadCurricular - Nombre de la unidad curricular
+   * @param {string} params.datos.descripcionUnidadCurricular - Descripción de la unidad
+   * @param {number} params.datos.cargaHorasAcademicas - Carga horaria total
+   * @param {string} params.datos.codigoUnidadCurricular - Código único de la unidad
+   * @param {Object} usuario_accion - Usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado del registro
    */
   static async registrarUnidadCurricular({ datos, usuario_accion }) {
     try {
@@ -89,8 +81,7 @@ export default class CurricularModel {
       } = datos;
 
       const query = `CALL public.registrar_unidad_curricular_completo(?, ?, ?, ?, ?, ?, NULL)`;
-
-      const param = [
+      const params = [
         usuario_accion.id,
         idTrayecto,
         nombreUnidadCurricular,
@@ -99,17 +90,14 @@ export default class CurricularModel {
         codigoUnidadCurricular,
       ];
 
-      const { rows } = await db.raw(query, param);
+      const { rows } = await db.raw(query, params);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Unidad Curricular registrada",
-        "Error al registrar la Unidad Curricular"
+        "Unidad Curricular registrada exitosamente."
       );
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.registrarUnidadCurricular",
-      };
+      error.details = { path: "CurricularModel.registrarUnidadCurricular" };
       throw FormatResponseModel.respuestaError(
         error,
         "Error al registrar la Unidad Curricular"
@@ -117,28 +105,24 @@ export default class CurricularModel {
     }
   }
 
+  // ===========================================================
+  // MÉTODOS DE CONSULTA
+  // ===========================================================
+
   /**
    * @static
    * @async
    * @method mostrarPNF
-   * @description Obtiene todos los PNFs registrados en la base de datos
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @property {Array} data - Lista de todos los PNFs registrados
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla la consulta
+   * @description Obtiene todos los PNFs registrados
+   * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarPNF() {
     try {
       const { rows } = await db.raw(`SELECT * FROM public.vista_pnfs`);
-      return FormatResponseModel.respuestaPostgres(rows, "Estos son Los PNFs");
+      return FormatResponseModel.respuestaPostgres(rows, "Listado de PNFs obtenidos.");
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.MostrarPNF",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
-      );
+      error.details = { path: "CurricularModel.mostrarPNF" };
+      throw FormatResponseModel.respuestaError(error, "Error al obtener los PNFs");
     }
   }
 
@@ -146,61 +130,43 @@ export default class CurricularModel {
    * @static
    * @async
    * @method mostrarTrayectos
-   * @description Obtiene todos los trayectos con el PNF al que pertenecen
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @property {Array} data - Lista de todos los PNFs registrados
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla la consulta
+   * @description Obtiene trayectos y su relación con el PNF
+   * @param {string} [codigoPNF] - Código del PNF para filtrar (opcional)
+   * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarTrayectos(codigoPNF) {
     try {
-      if (codigoPNF !== undefined && codigoPNF !== "") {
-        const { rows } = await db.raw(
-          `SELECT 
-                t.id_trayecto, 
-                t.poblacion_estudiantil, 
-                t.valor_trayecto, 
-                p.nombre_pnf,
-                p.id_pnf
-            FROM 
-                trayectos t
-            JOIN 
-                pnfs p ON t.id_pnf = p.id_pnf
-            WHERE 
-                p.codigo_pnf = ?`,
+      let rows;
+      if (codigoPNF) {
+        ({ rows } = await db.raw(
+          `
+          SELECT 
+            t.id_trayecto, 
+            t.poblacion_estudiantil, 
+            t.valor_trayecto, 
+            p.nombre_pnf,
+            p.id_pnf
+          FROM trayectos t
+          JOIN pnfs p ON t.id_pnf = p.id_pnf
+          WHERE p.codigo_pnf = ?`,
           [codigoPNF]
-        );
-        return FormatResponseModel.respuestaPostgres(
-          rows,
-          "Estos son Los PNFs"
-        );
+        ));
       } else {
-        const { rows } = await db.raw(
-          `SELECT 
-              t.id_trayecto, 
-              t.poblacion_estudiantil, 
-              t.valor_trayecto, 
-              pnfs.nombre_pnf 
-          FROM 
-            trayectos t 
-          JOIN 
-            pnfs 
-          ON 
-              t.id_pnf = pnfs.id_pnf`
-        );
-        return FormatResponseModel.respuestaPostgres(
-          rows,
-          "Estos son Los PNFs"
-        );
+        ({ rows } = await db.raw(`
+          SELECT 
+            t.id_trayecto, 
+            t.poblacion_estudiantil, 
+            t.valor_trayecto, 
+            p.nombre_pnf 
+          FROM trayectos t
+          JOIN pnfs p ON t.id_pnf = p.id_pnf
+        `));
       }
+
+      return FormatResponseModel.respuestaPostgres(rows, "Trayectos obtenidos correctamente.");
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.mostrarTrayecto",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
-      );
+      error.details = { path: "CurricularModel.mostrarTrayectos" };
+      throw FormatResponseModel.respuestaError(error, "Error al obtener los trayectos");
     }
   }
 
@@ -208,38 +174,31 @@ export default class CurricularModel {
    * @static
    * @async
    * @method mostrarSecciones
-   * @description Obtiene todos las secciones del trayecto al que pertenecen
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @property {Array} data - Lista de todos los PNFs registrados
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla la consulta
+   * @description Obtiene las secciones pertenecientes a un trayecto
+   * @param {number} trayecto - ID del trayecto
+   * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarSecciones(trayecto) {
     try {
       const { rows } = await db.raw(
-        `	SELECT 
-              s.id_seccion,
-              s.valor_seccion,
-              s.cupos_disponibles,
-              t.nombre_turno
-          FROM 
-              secciones s
-          JOIN 
-				      turnos t ON s.id_turno = t.id_turno
-          WHERE 
-              s.id_trayecto = ?
-			    ORDER BY s.id_seccion ASC;`,
+        `
+        SELECT 
+          s.id_seccion,
+          s.valor_seccion,
+          s.cupos_disponibles,
+          t.nombre_turno
+        FROM secciones s
+        JOIN turnos t ON s.id_turno = t.id_turno
+        WHERE s.id_trayecto = ?
+        ORDER BY s.id_seccion ASC;
+        `,
         [trayecto]
       );
-      return FormatResponseModel.respuestaPostgres(rows, "Estos son Los PNFs");
+
+      return FormatResponseModel.respuestaPostgres(rows, "Secciones obtenidas correctamente.");
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.mostrarTrayecto",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
-      );
+      error.details = { path: "CurricularModel.mostrarSecciones" };
+      throw FormatResponseModel.respuestaError(error, "Error al obtener las secciones");
     }
   }
 
@@ -247,69 +206,66 @@ export default class CurricularModel {
    * @static
    * @async
    * @method mostrarUnidadesCurriculares
-   * @description Obtiene todos las secciones del trayecto al que pertenecen
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @property {Array} data - Lista de todos los PNFs registrados
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla la consulta
+   * @description Obtiene las unidades curriculares asociadas a un trayecto
+   * @param {number} trayecto - ID del trayecto
+   * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarUnidadesCurriculares(trayecto) {
     try {
       const { rows } = await db.raw(
-        `	SELECT 
-              id_unidad_curricular,
-              horas_clase,
-              nombre_unidad_curricular, 
-              descripcion_unidad_curricular,
-              codigo_unidad
-          FROM 
-              unidades_curriculares
-          WHERE
-              id_trayecto = ?
-			    ORDER BY id_unidad_curricular ASC;`,
+        `
+        SELECT 
+          id_unidad_curricular,
+          horas_clase,
+          nombre_unidad_curricular, 
+          descripcion_unidad_curricular,
+          codigo_unidad
+        FROM unidades_curriculares
+        WHERE id_trayecto = ?
+        ORDER BY id_unidad_curricular ASC;
+        `,
         [trayecto]
       );
-      return FormatResponseModel.respuestaPostgres(rows, "Estos son Los PNFs");
-    } catch (error) {
-      error.details = {
-        path: "CurricularModel.mostrarTrayecto",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Unidades curriculares obtenidas correctamente."
       );
+    } catch (error) {
+      error.details = { path: "CurricularModel.mostrarUnidadesCurriculares" };
+      throw FormatResponseModel.respuestaError(error, "Error al obtener las unidades curriculares");
     }
   }
+
+  // ===========================================================
+  // MÉTODOS DE ASIGNACIÓN Y GESTIÓN
+  // ===========================================================
 
   /**
    * @static
    * @async
    * @method CrearSecciones
-   * @description Crear las secciones para un trayecto de forma automatica
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @property {Array} data - Lista de todos los PNFs registrados
-   * @property {boolean} success - Indica si la operación fue exitosa
-   * @throws {string} Error si falla la consulta
+   * @description Crea automáticamente las secciones de un trayecto según la población estudiantil
+   * @param {Object} datos - Datos para la creación
+   * @param {number} datos.idTrayecto - ID del trayecto
+   * @param {number} datos.poblacionEstudiantil - Cantidad de estudiantes
+   * @returns {Promise<Object>} Resultado de la creación
    */
   static async CrearSecciones(datos) {
-    const { idTrayecto, poblacionEstudiantil } = datos;
     try {
+      const { idTrayecto, poblacionEstudiantil } = datos;
       const { rows } = await db.raw(
-        `CALL public.distribuir_estudiantes_secciones(?, ?,NULL)`,
+        `CALL public.distribuir_estudiantes_secciones(?, ?, NULL)`,
         [idTrayecto, poblacionEstudiantil]
       );
+
       return FormatResponseModel.respuestaPostgres(
         rows,
-        `Estos es el resultado de la creacion de las secciones para el trayecto: ${idTrayecto}`
+        `Secciones creadas correctamente para el trayecto ${idTrayecto}.`
       );
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.CrearSecciones",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
-      );
+      error.details = { path: "CurricularModel.CrearSecciones" };
+      throw FormatResponseModel.respuestaError(error, "Error al crear las secciones");
     }
   }
 
@@ -317,31 +273,28 @@ export default class CurricularModel {
    * @static
    * @async
    * @method asignacionTurnoSeccion
-   * @description Crear las secciones para un trayecto de forma automatica
-   * @param {object} usuario_accion Objeto que contiene los datos del usuario
-   * @param {object} datos Objeto que contiene los datos para hacer la asignacion
-   * @returns {Promise<Object>} Objeto con el resultado de la consulta
-   * @throws {string} Error si falla la consulta
+   * @description Asigna un turno a una sección específica
+   * @param {Object} usuario_accion - Usuario que ejecuta la acción
+   * @param {Object} datos - Datos de asignación
+   * @param {number} datos.idSeccion - ID de la sección
+   * @param {number} datos.idTurno - ID del turno
+   * @returns {Promise<Object>} Resultado de la asignación
    */
   static async asignacionTurnoSeccion(usuario_accion, datos) {
-    const { idSeccion, idTurno } = datos;
     try {
+      const { idSeccion, idTurno } = datos;
       const { rows } = await db.raw(
-        `CALL public.asignar_turno_seccion(?, ?, ?,NULL)`,
+        `CALL public.asignar_turno_seccion(?, ?, ?, NULL)`,
         [usuario_accion.id, idSeccion, idTurno]
       );
+
       return FormatResponseModel.respuestaPostgres(
         rows,
-        `Se asigno correctamente el turno a la sección.`
+        "Turno asignado correctamente a la sección."
       );
     } catch (error) {
-      error.details = {
-        path: "CurricularModel.asignacionTurnoSeccion",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los PNFs"
-      );
+      error.details = { path: "CurricularModel.asignacionTurnoSeccion" };
+      throw FormatResponseModel.respuestaError(error, "Error al asignar el turno a la sección");
     }
   }
 }

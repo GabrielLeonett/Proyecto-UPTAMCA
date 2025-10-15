@@ -1,113 +1,48 @@
+import pg from "../database/pg.js";
+
 /**
- * Módulo para el manejo de operaciones con profesores en la base de datos
- * @module ProfesorModel
- * @description Contiene métodos para registrar, mostrar y buscar profesores
+ * @class ProfesorModel
+ * @description Modelo para operaciones de base de datos relacionadas con profesores
  */
-
-// Importación de librería para encriptación de contraseñas
-import { hashPassword, generarPassword } from "../utils/encrypted.js";
-
-// Importación de librería para envío de correos electrónicos
-import { enviarEmail } from "../utils/EnviarCorreos.js";
-
-// Importación de la conexión a la base de datos
-import db from "../database/db.js";
-
-// Importación de clase para formateo de respuestas
-import FormatResponseModel from "../utils/FormatResponseModel.js";
-
-//Importacion de para manejar la imagenes
-import imagenProcessingServices from "../services/imagen.service.js";
-
-//Importacion de Funcion para parsear datos a json
-import { parseJSONField, loadEnv } from "../utils/utilis.js";
-import NotificationService from "../services/notification.service.js";
-
 export default class ProfesorModel {
   /**
-   * Registra un nuevo profesor en el sistema
-   * @method RegisterProfesor
-   * @static
-   * @async
-   * @param {Object} params - Parámetros de entrada
-   * @param {Object} params.datos - Datos del profesor a registrar
-   * @param {Object} params.usuario_accion - Información del usuario que realiza el registro
-   * @returns {Promise<Object>} Objeto con el resultado de la operación
-   * @throws {Error} Si ocurre un error durante el registro
-   *
-   * @example
-   * const resultado = await ProfesorModel.RegisterProfesor({
-   *   datos: {
-   *     cedula: "12345678",
-   *     nombres: "Juan",
-   *     // ...otros campos
-   *   },
-   *   usuario_accion: { id: 1 }
-   * });
+   * @name crear
+   * @description Crear un nuevo profesor en la base de datos
+   * @param {Object} datos - Datos del profesor
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
    */
-  static async RegisterProfesor({ datos, imagen, usuario_accion }) {
-    let imagenResult = null;
-    const procesardorImagen = new imagenProcessingServices("profesores/");
-    const notificationService = new NotificationService(); // 🔥 NUEVO: Servicio de notificaciones
+  static async crear(datos, usuarioId) {
+    const {
+      cedula,
+      nombres,
+      apellidos,
+      email,
+      direccion,
+      telefono_movil,
+      telefono_local,
+      fecha_nacimiento,
+      genero,
+      fecha_ingreso,
+      dedicacion,
+      categoria,
+      municipio,
+      area_de_conocimiento,
+      pre_grado,
+      pos_grado,
+      imagen
+    } = datos;
 
-    try {
-      // 1. Validaciones iniciales
-      const {
+    const { rows } = await pg.query(
+      "CALL registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL)",
+      [
+        usuarioId,
         cedula,
         nombres,
         apellidos,
         email,
         direccion,
-        telefono_movil,
-        telefono_local,
-        fecha_nacimiento,
-        genero,
-        fecha_ingreso,
-        dedicacion,
-        categoria,
-        municipio,
-      } = datos;
-
-      // Validar campos obligatorios
-      if (!cedula || !nombres || !apellidos || !email) {
-        throw new Error("Datos obligatorios faltantes");
-      }
-
-      // 2. Parsear JSON fields
-      const area_de_conocimiento = parseJSONField(
-        datos.area_de_conocimiento,
-        "áreas de conocimiento"
-      );
-      const pre_grado = parseJSONField(datos.pre_grado, "pregrados");
-      const pos_grado = parseJSONField(datos.pos_grado, "posgrados");
-
-      // 3. Generar contraseña primero
-      const password = await generarPassword();
-      const passwordHash = await hashPassword(password);
-
-      // 4. Procesar imagen SOLO si pasa validaciones anteriores
-      const options = {
-        maxSize: 5 * 1024 * 1024,
-        maxWidth: 1080,
-        maxHeight: 1080,
-      };
-
-      imagenResult = await procesardorImagen.processAndSaveImage(
-        imagen.originalname,
-        options
-      );
-
-      // 5. Llamar procedimiento almacenado (sintaxis corregida)
-      const query = `CALL registrar_profesor_completo(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`;
-
-      const params = [
-        usuario_accion.id,
-        cedula,
-        nombres,
-        apellidos,
-        email,
-        direccion,
-        passwordHash,
+        datos.passwordHash,
         telefono_movil,
         telefono_local || null,
         fecha_nacimiento,
@@ -117,734 +52,218 @@ export default class ProfesorModel {
         pre_grado,
         pos_grado,
         area_de_conocimiento,
-        imagenResult.fileName,
+        imagen,
         municipio,
         fecha_ingreso,
-      ];
-
-      const { rows } = await db.raw(query, params);
-
-      // 6. Verificar respuesta del procedimiento
-      const resultado = FormatResponseModel.respuestaPostgres(
-        rows,
-        "Profesor registrado con éxito"
-      );
-
-      // 🔥 NUEVO: NOTIFICACIONES EN TIEMPO REAL
-
-      // 7.1 Notificación para coordinadores (por roles)
-      try {
-        await notificationService.crearNotificacionMasiva({
-          titulo: "Nuevo Profesor Registrado",
-          tipo: "sistema",
-          contenido: `Se ha registrado al profesor ${nombres} ${apellidos} en el sistema. Cédula: ${cedula}`,
-          metadatos: {
-            accion: "registro_profesor",
-            profesor_id: resultado.data?.id || null,
-            profesor_nombre: `${nombres} ${apellidos}`,
-            profesor_cedula: cedula,
-            registrado_por: usuario_accion.id,
-            fecha_registro: new Date().toISOString(),
-          },
-          roles_ids: [2, 3, 4], // 🔥 IDs de roles de coordinadores (ajusta según tu DB)
-          // Ejemplo: 2=Coordinador Académico, 3=Director, 4=Vicerreptor
-        });
-        console.log("✅ Notificación enviada a coordinadores");
-      } catch (notifError) {
-        console.warn(
-          "⚠️ Error enviando notificación a coordinadores:",
-          notifError.message
-        );
-      }
-
-      // 7.2 Notificación 100% masiva (para todos los usuarios)
-      try {
-        await notificationService.crearNotificacionMasiva({
-          titulo: "Nuevo Miembro del Personal",
-          tipo: "general",
-          contenido: `Damos la bienvenida al profesor ${nombres} ${apellidos} quien se ha unido a nuestra institución.`,
-          metadatos: {
-            accion: "bienvenida_profesor",
-            tipo_notificacion: "informacion_general",
-            profesor_nombre: `${nombres} ${apellidos}`,
-            area_conocimiento: area_de_conocimiento,
-          },
-          roles_ids: [], // 🔥 Vacío para que sea realmente masiva
-          users_ids: [], // 🔥 Vacío para que sea realmente masiva
-        });
-        console.log("✅ Notificación masiva enviada a todos los usuarios");
-      } catch (masivaError) {
-        console.warn(
-          "⚠️ Error enviando notificación masiva:",
-          masivaError.message
-        );
-      }
-
-      // 7.3 Notificación individual para el usuario que registró (opcional)
-      try {
-        await notificationService.crearNotificacionIndividual({
-          titulo: "Registro Exitoso",
-          tipo: "confirmacion",
-          user_id: usuario_accion.id,
-          contenido: `Has registrado exitosamente al profesor ${nombres} ${apellidos}. Se han enviado las credenciales al correo ${email}.`,
-          metadatos: {
-            accion: "registro_exitoso",
-            profesor_id: resultado.data?.id || null,
-            profesor_nombre: `${nombres} ${apellidos}`,
-            email_enviado: email,
-            fecha_accion: new Date().toISOString(),
-          },
-        });
-        console.log("✅ Notificación de confirmación enviada al usuario");
-      } catch (individualError) {
-        console.warn(
-          "⚠️ Error enviando notificación individual:",
-          individualError.message
-        );
-      }
-
-      // 8. Cargar variables de entorno para el correo
-      loadEnv();
-
-      // 9. Enviar correo (manejar error específico)
-      try {
-        // Configuración del correo de bienvenida
-        const Correo = {
-          asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
-          html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">¡Bienvenido/a, ${nombres}!</h2>
-        <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
-        <p>Sus credenciales de acceso son:</p>
-        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-          <p><strong>Usuario:</strong> ${email}</p>
-          <p><strong>Contraseña temporal:</strong> ${password}</p>
-        </div>
-        <p><strong>Instrucciones importantes:</strong></p>
-        <ul>
-          <li>Cambie su contraseña después del primer acceso</li>
-          <li>Esta contraseña es temporal y de uso personal</li>
-          <li>Guarde esta información en un lugar seguro</li>
-        </ul>
-        <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
-      </div>
-      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-            <a href="${process.env.ORIGIN_FRONTEND}/Inicio-session" style="display: inline-block; background-color: #1C75BA; color: white; 
-                      padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-                Acceder a la plataforma
-            </a>
-        </div>
-      `,
-        };
-
-        await enviarEmail({ Destinatario: email, Correo: Correo });
-        console.log("✅ Correo de bienvenida enviado al profesor");
-      } catch (emailError) {
-        console.warn("⚠️ Correo no enviado:", emailError.message);
-        // No romper el flujo principal por error de correo
-      }
-
-      return resultado;
-    } catch (error) {
-      // 10. Limpiar imagen SI se subió y hay error de BD
-      if (
-        imagenResult?.fileName &&
-        (error.message === "El usuario ya está registrado" ||
-          error.message === "El usuario ya está registrado como profesor")
-      ) {
-        try {
-          await procesardorImagen.deleteImage(imagenResult.fileName);
-        } catch (deleteError) {
-          console.error(deleteError);
-        }
-      }
-
-      // 11. Relanzar error formateado
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registrar profesor"
-      );
-    }
+      ]
+    );
+    
+    return rows;
   }
 
   /**
-   * Obtiene listado de profesores con filtros para consumo API
-   * @method mostrarProfesorAPI
-   * @static
-   * @async
-   * @param {Object} params - Parámetros de filtrado
-   * @param {string} [params.dedicacion] - Filtro por dedicación
-   * @param {string} [params.categoria] - Filtro por categoría
-   * @param {string} [params.ubicacion] - Filtro por ubicación
-   * @param {string} [params.area] - Filtro por área de conocimiento
-   * @param {string} [params.fecha] - Filtro por fecha
-   * @param {string} [params.genero] - Filtro por género
-   * @returns {Promise<Array>} Listado de profesores filtrados
-   * @throws {Error} Si ocurre un error en la consulta
+   * @name obtenerTodos
+   * @description Obtener todos los profesores de la base de datos
+   * @returns {Array} Lista de profesores
    */
-  static async mostrarProfesorAPI({ datos }) {
-    try {
-      const { dedicacion, categoria, ubicacion, area, fecha, genero } = datos;
-
-      // Consulta a función PostgreSQL con filtros opcionales
-      const result = await db.raw(
-        `SELECT * FROM mostrar_profesor(?, ?, ?, ?, ?, ?) `,
-        [
-          dedicacion || null,
-          categoria || null,
-          ubicacion || null,
-          area || null,
-          fecha || null,
-          genero || null,
-        ]
-      );
-
-      return result.rows;
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.RegisterProfesor",
-      };
-      throw error;
-    }
+  static async obtenerTodos() {
+    const { rows } = await pg.query("SELECT * FROM profesores_informacion_completa");
+    return rows;
   }
 
   /**
-   * Obtiene la imagen de un profesor para consumo API
-   * @method getImageProfesor
-   * @static
-   * @async
-   * @param {number|string} id_profesor - Cédula del profesor
-   * @param {Object} [options] - Opciones para el procesamiento de la imagen
-   * @param {number} [options.width] - Ancho deseado de la imagen
-   * @param {number} [options.height] - Alto deseado de la imagen
-   * @param {number} [options.quality=80] - Calidad de la imagen (1-100)
-   * @param {string} [options.format] - Formato de salida (jpeg, png, webp)
-   * @returns {Promise<Object>} Objeto con la imagen procesada
-   * @throws {Error} Si ocurre un error en la consulta o procesamiento
+   * @name obtenerConFiltros
+   * @description Obtener profesores con filtros específicos
+   * @param {Object} filtros - Filtros de búsqueda
+   * @returns {Array} Lista de profesores filtrados
    */
-  static async getImageProfesorBuffer(id_profesor, options = {}) {
-    try {
-      if (!id_profesor) {
-        throw new Error("El ID del profesor es requerido");
-      }
+  static async obtenerConFiltros(filtros) {
+    const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
 
-      // Consulta a la base de datos para obtener el nombre de la imagen
-      const result = await db.raw(`SELECT imagen FROM users WHERE cedula = ?`, [
-        id_profesor,
-      ]);
-
-      if (!result.rows || result.rows.length === 0) {
-        return FormatResponseModel.respuestaError(
-          {
-            status: "error",
-            status_code: 404,
-            message: `No se encontró el profesor con cédula: ${id_profesor}`,
-          },
-          "Profesor no encontrado"
-        );
-      }
-
-      const profesor = result.rows[0];
-
-      if (!profesor.imagen) {
-        return FormatResponseModel.respuestaSuccess(
-          {
-            message: "El profesor no tiene imagen asignada",
-            data: { id_profesor: id_profesor, tiene_imagen: false },
-          },
-          "Sin imagen"
-        );
-      }
-
-      // Crear instancia del servicio de procesamiento de imágenes
-      const imageProcessing = new imagenProcessingServices("profesores");
-
-      // Obtener la imagen como buffer
-      const imageResult = await imageProcessing.getImage(
-        profesor.imagen,
-        options
-      );
-
-      if (!imageResult.success) {
-        return FormatResponseModel.respuestaError(
-          {
-            status: "error",
-            status_code: 500,
-            message: `Error al obtener la imagen: ${imageResult.error}`,
-          },
-          "Error al procesar imagen"
-        );
-      }
-
-      return FormatResponseModel.respuestaSuccess(
-        {
-          message: "Imagen obtenida exitosamente",
-          data: {
-            buffer: imageResult.buffer,
-            fileName: imageResult.fileName,
-            format: imageResult.format,
-            dimensions: imageResult.dimensions,
-            fileSize: imageResult.fileSize,
-            id_profesor: id_profesor,
-            tiene_imagen: true,
-          },
-        },
-        "Imagen obtenida"
-      );
-    } catch (error) {
-      // Para errores inesperados, usar respuestaError con el objeto de error
-      return FormatResponseModel.respuestaError(
-        {
-          status: "error",
-          status_code: 500,
-          message: error.message,
-          details: {
-            path: "ProfesorModel.getImageProfesorBuffer",
-            id_profesor: id_profesor,
-          },
-        },
-        "Error interno"
-      );
-    }
+    const { rows } = await pg.query(
+      "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)",
+      [dedicacion, categoria, ubicacion, area, fecha, genero]
+    );
+    
+    return rows;
   }
 
   /**
-   * Obtiene listado completo de profesores para visualización
-   * @method mostrarProfesor
-   * @static
-   * @async
-   * @returns {Promise<Object>} Objeto con listado de profesores y metadatos
-   * @throws {Error} Si ocurre un error en la consulta
+   * @name buscar
+   * @description Buscar profesores por nombre, apellido o cédula
+   * @param {string} busqueda - Término de búsqueda
+   * @returns {Array} Resultados de la búsqueda
    */
-  static async mostrarProfesor() {
-    try {
-      // Consulta a vista de profesores
-      const { rows } = await db.raw(
-        `SELECT * FROM profesores_informacion_completa;`
-      );
-
-      // Formateo de la respuesta
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Profesor registrado con exito"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.RegisterProfesor",
-      };
-      error.details = {
-        path: "ProfesorModel.mostrarProfesor",
-      };
-      // Manejo de errores
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los datos del Profesores"
-      );
-    }
+  static async buscar(busqueda) {
+    const { rows } = await pg.query(
+      "SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3",
+      [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]
+    );
+    
+    return rows;
   }
 
   /**
-   * Busca profesores por nombre, apellido o cédula
-   * @method buscarProfesor
-   * @static
-   * @async
-   * @param {Object} params - Parámetros de búsqueda
-   * @param {string} params.busqueda - Término de búsqueda
-   * @returns {Promise<Object>} Resultados de la búsqueda formateados
-   * @throws {Error} Si el término de búsqueda está vacío o ocurre un error
+   * @name obtenerImagen
+   * @description Obtener información de la imagen de un profesor
+   * @param {number} idProfesor - ID del profesor
+   * @returns {Array} Información de la imagen
    */
-  static async buscarProfesor({ datos }) {
-    try {
-      const { busqueda } = datos;
-
-      // Validación de término de búsqueda
-      if (busqueda === undefined || busqueda === null || busqueda === "") {
-        throw {
-          status: 404,
-          state: "error",
-          title: "Error al hacer la busqueda.",
-          message: "La busqueda esta vacía.",
-        };
-      }
-
-      // Consulta con búsqueda insensible a mayúsculas/minúsculas
-      const { rows } = await db.raw(
-        `SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE ? OR apellidos ILIKE ? OR cedula ILIKE ?`,
-        [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]
-      );
-
-      // Formateo de la respuesta
-      const resultado = FormatResponseModel.respuestaPostgres(
-        rows,
-        "Profesor encontrado con exito"
-      );
-
-      return resultado;
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.buscarProfesor",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los datos del Profesores"
-      );
-    }
+  static async obtenerImagen(idProfesor) {
+    const { rows } = await pg.query(
+      "SELECT imagen FROM users WHERE cedula = $1",
+      [idProfesor]
+    );
+    
+    return rows;
   }
 
   /**
-   * Mostrar los pre-grados existentes
-   *
-   * @static
-   * @async
-   * @method mostrarPreGrados
-   * @param {Object} req - Objeto de solicitud de Express
-   * @param {string} req.param.tipo - el tipo de pre-grado que desea buscar
-   * @param {Object} res - Objeto de respuesta de Express
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/pre-grado?tipo=TSU
+   * @name obtenerPregrados
+   * @description Obtener todos los pregrados
+   * @returns {Array} Lista de pregrados
    */
-  static async mostrarPreGrados() {
-    try {
-      const { rows } = await db.raw(
-        "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
-      );
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Todos los Pre-Grados"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.mostrarPreGrados",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los Pre-Grados"
-      );
-    }
+  static async obtenerPregrados() {
+    const { rows } = await pg.query(
+      "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
+    );
+    
+    return rows;
   }
 
   /**
-   * Mostrar los pos-grados existentes
-   *
-   * @static
-   * @async
-   * @method mostrarPosGrados
-   * @param {Object} req - Objeto de solicitud de Express
-   * @param {string} req.param.tipo - el tipo de pos-grado que desea buscar
-   * @param {Object} res - Objeto de respuesta de Express
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/pos-grado?tipo=Maestría
+   * @name obtenerPosgrados
+   * @description Obtener todos los posgrados
+   * @returns {Array} Lista de posgrados
    */
-  static async mostrarPosGrados() {
-    try {
-      const { rows } = await db.raw(
-        "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
-      );
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Todos los Pos-Grados"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.mostrarPosGrados",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los Pos-Grados"
-      );
-    }
+  static async obtenerPosgrados() {
+    const { rows } = await pg.query(
+      "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
+    );
+    
+    return rows;
   }
 
   /**
-   * Buscar las areas de conocimiento existentes
-   *
-   * @static
-   * @async
-   * @method mostrarAreasConocimiento
-   * @param {Object} req - Objeto de solicitud de Express
-   * @param {Object} res - Objeto de respuesta de Express
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/areas-conocimiento
+   * @name obtenerAreasConocimiento
+   * @description Obtener todas las áreas de conocimiento
+   * @returns {Array} Lista de áreas de conocimiento
    */
-  static async mostrarAreasConocimiento() {
-    try {
-      const { rows } = await db.raw(
-        "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
-      );
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Todas las areas de conocimiento"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.mostrarAreasConocimiento",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener las areas de conocimiento"
-      );
-    }
+  static async obtenerAreasConocimiento() {
+    const { rows } = await pg.query(
+      "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
+    );
+    
+    return rows;
   }
 
   /**
-   * Registrar un Pre-Grado
-   *
-   * @static
-   * @async
-   * @method registerPreGrado
-   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar el registro del Pre-Grado
-   * @param {Object} datos.tipo - Tipo de Pre-Grado para el registro.
-   * @param {Object} datos.Nombre - Nombre del Pre-Grado para el registro.
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/search?busqueda=3124460
+   * @name crearPregrado
+   * @description Crear un nuevo pregrado
+   * @param {Object} datos - Datos del pregrado
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
    */
-  static async registerPreGrado({ usuario_accion, datos }) {
-    try {
-      const { tipo, nombre } = datos;
+  static async crearPregrado(datos, usuarioId) {
+    const { nombre, tipo } = datos;
 
-      // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_pre_grado(?, ?, ?, NULL)`;
-
-      // Parámetros para la consulta
-      const params = [usuario_accion.id, nombre, tipo];
-
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
-
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Pre-grado registrado Exitosamente"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.registerPreGrado",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registra pre-grado"
-      );
-    }
+    const { rows } = await pg.query(
+      "CALL registrar_pre_grado($1, $2, $3, NULL)",
+      [usuarioId, nombre, tipo]
+    );
+    
+    return rows;
   }
 
   /**
-   * Registrar un Pos-Grado
-   *
-   * @static
-   * @async
-   * @method registerPosGrado
-   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar el registro del Pos-Grado
-   * @param {Object} datos.tipo - Tipo de Pos-Grado para el registro.
-   * @param {Object} datos.Nombre - Nombre del Pos-Grado para el registro.
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/search?busqueda=3124460
+   * @name crearPosgrado
+   * @description Crear un nuevo posgrado
+   * @param {Object} datos - Datos del posgrado
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
    */
-  static async registerPosGrado({ usuario_accion, datos }) {
-    try {
-      const { tipo, nombre } = datos;
+  static async crearPosgrado(datos, usuarioId) {
+    const { nombre, tipo } = datos;
 
-      // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_pos_grado(?, ?, ?, NULL)`;
-
-      // Parámetros para la consulta
-      const params = [usuario_accion.id, nombre, tipo];
-
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
-
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Pos-grado registrado Exitosamente"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.registerPosGrado",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registra pos-grado"
-      );
-    }
-  }
-  /**
-   * Registrar una area de conocimiento de docentes
-   *
-   * @static
-   * @async
-   * @method registerAreaConocimiento
-   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar el registro del Area de conocimiento
-   * @param {Object} datos.area_conocimiento - Area de conocimiento para el registro.
-   * @returns {Promise<Object>} Resultados de la búsqueda
-   *
-   * @throws {500} Si ocurre un error en la búsqueda
-   *
-   * @example
-   * // Ejemplo de query params:
-   * /Profesor/search?busqueda=3124460
-   */
-  static async registerAreaConocimiento({ usuario_accion, datos }) {
-    try {
-      const { area_conocimiento } = datos;
-
-      // Consulta SQL para registrar profesor usando procedimiento almacenado
-      const query = `CALL public.registrar_area_conocimiento(?, ?, NULL)`;
-
-      // Parámetros para la consulta
-      const params = [usuario_accion.id, area_conocimiento];
-
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
-
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Area de Conocimiento Registrada Exitosamente"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.registerAreaConocimiento",
-      };
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registra area de conocimiento"
-      );
-    }
+    const { rows } = await pg.query(
+      "CALL registrar_pos_grado($1, $2, $3, NULL)",
+      [usuarioId, nombre, tipo]
+    );
+    
+    return rows;
   }
 
   /**
-   * Registrar disponibilidad docente
-   *
-   * @static
-   * @async
-   * @method registrarDisponibilidad
-   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar el registro de disponibilidad
-   * @param {number} datos.id_profesor - ID del profesor
-   * @param {string} datos.dia_semana - Día de la semana (Lunes, Martes, etc.)
-   * @param {string} datos.hora_inicio - Hora de inicio (HH:MM)
-   * @param {string} datos.hora_fin - Hora de fin (HH:MM)
-   * @returns {Promise<Object>} Resultados del registro
-   *
-   * @throws {500} Si ocurre un error en el registro
-   *
-   * @example
-   * // Ejemplo de datos:
-   * {
-   *   id_profesor: 1,
-   *   dia_semana: "Lunes",
-   *   hora_inicio: "08:00",
-   *   hora_fin: "10:00"
-   * }
+   * @name crearAreaConocimiento
+   * @description Crear una nueva área de conocimiento
+   * @param {Object} datos - Datos del área de conocimiento
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
    */
-  static async registrarDisponibilidad({ usuario_accion, datos }) {
-    try {
-      const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+  static async crearAreaConocimiento(datos, usuarioId) {
+    const { area_conocimiento } = datos;
 
-      // Consulta SQL para registrar disponibilidad usando procedimiento almacenado
-      const query = `CALL public.registrar_disponibilidad_docente_completo(?, ?, ?, ?, ?, NULL)`;
-
-      // Parámetros para la consulta (coinciden con el procedimiento)
-      const params = [
-        usuario_accion.id, // p_usuario_accion
-        id_profesor, // p_id_profesor
-        dia_semana, // p_dia_semana
-        hora_inicio, // p_hora_inicio (formato HH:MM:SS)
-        hora_fin, // p_hora_fin (formato HH:MM:SS)
-      ];
-
-      console.log("Datos de disponibilidad recibidos:", params);
-      console.log("Query:", query);
-
-      // Ejecución de la consulta - usar parámetros posicionales ($1, $2, etc.)
-      const result = await db.raw(query, params);
-      console.log("Resultado de la consulta de disponibilidad:", result);
-
-      return FormatResponseModel.respuestaPostgres(
-        result,
-        "Disponibilidad registrada exitosamente"
-      );
-    } catch (error) {
-      error.path = "ProfesorModel.registrarDisponibilidad";
-      console.log("Error al registrar disponibilidad:", error);
-
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registrar disponibilidad docente"
-      );
-    }
+    const { rows } = await pg.query(
+      "CALL registrar_area_conocimiento($1, $2, NULL)",
+      [usuarioId, area_conocimiento]
+    );
+    
+    return rows;
   }
 
   /**
-   * Actualizar información de profesor
-   *
-   * @static
-   * @async
-   * @method actualizarProfesor
-   * @param {number} usuario_accion - Id del usuario que desea realizar la acción
-   * @param {Object} datos - Datos para realizar la actualización del profesor
-   * @param {number} datos.id_profesor - ID del profesor (cédula)
-   * @param {string} [datos.nombres] - Nombres del profesor
-   * @param {string} [datos.apellidos] - Apellidos del profesor
-   * @param {string} [datos.email] - Email del profesor
-   * @param {string} [datos.direccion] - Dirección del profesor
-   * @param {string} [datos.password] - Password del profesor
-   * @param {string} [datos.telefono_movil] - Teléfono móvil
-   * @param {string} [datos.telefono_local] - Teléfono local
-   * @param {Date} [datos.fecha_nacimiento] - Fecha de nacimiento
-   * @param {string} [datos.genero] - Género (masculino/femenino)
-   * @param {string} [datos.nombre_categoria] - Nombre de la categoría
-   * @param {string} [datos.nombre_dedicacion] - Nombre de la dedicación
-   * @param {Array} [datos.pre_grado] - Array de pre-grados
-   * @param {Array} [datos.pos_grado] - Array de pos-grados
-   * @param {Array} [datos.area_de_conocimiento] - Array de áreas de conocimiento
-   * @param {string} [datos.imagen] - URL de la imagen
-   * @param {string} [datos.municipio] - Municipio
-   * @param {Date} [datos.fecha_ingreso] - Fecha de ingreso
-   * @returns {Promise<Object>} Resultados de la actualización
-   *
-   * @throws {500} Si ocurre un error en la actualización
-   *
-   * @example
-   * // Ejemplo de datos:
-   * {
-   *   id_profesor: 31264460,
-   *   nombres: "Juan",
-   *   apellidos: "Pérez",
-   *   email: "juan.perez@email.com",
-   *   genero: "masculino",
-   *   nombre_categoria: "Instructor",
-   *   nombre_dedicacion: "Tiempo Completo"
-   * }
+   * @name crearDisponibilidad
+   * @description Crear disponibilidad docente
+   * @param {Object} datos - Datos de la disponibilidad
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la inserción
    */
-  static async actualizarProfesor({ usuario_accion, datos }) {
-    try {
-      const {
+  static async crearDisponibilidad(datos, usuarioId) {
+    const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+
+    const { rows } = await pg.query(
+      "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)",
+      [usuarioId, id_profesor, dia_semana, hora_inicio, hora_fin]
+    );
+    
+    return rows;
+  }
+
+  /**
+   * @name actualizar
+   * @description Actualizar un profesor existente
+   * @param {Object} datos - Datos actualizados
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la actualización
+   */
+  static async actualizar(datos, usuarioId) {
+    const {
+      id_profesor,
+      nombres,
+      apellidos,
+      email,
+      direccion,
+      password,
+      telefono_movil,
+      telefono_local,
+      fecha_nacimiento,
+      genero,
+      nombre_categoria,
+      nombre_dedicacion,
+      pre_grado,
+      pos_grado,
+      area_de_conocimiento,
+      imagen,
+      municipio,
+      fecha_ingreso,
+    } = datos;
+
+    const { rows } = await pg.query(
+      `CALL actualizar_profesor_completo_o_parcial(
+        NULL, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+      )`,
+      [
+        usuarioId,
         id_profesor,
         nombres,
         apellidos,
@@ -863,113 +282,27 @@ export default class ProfesorModel {
         imagen,
         municipio,
         fecha_ingreso,
-      } = datos;
-
-      // Consulta SQL para actualizar profesor usando procedimiento almacenado
-      const query = `
-      CALL public.actualizar_profesor_completo_o_parcial(
-        NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-      )
-    `;
-
-      // Parámetros para la consulta
-      const params = [
-        usuario_accion.id, // p_usuario_accion
-        id_profesor, // p_id
-        nombres || null, // p_nombres
-        apellidos || null, // p_apellidos
-        email || null, // p_email
-        direccion || null, // p_direccion
-        password || null, // p_password
-        telefono_movil || null, // p_telefono_movil
-        telefono_local || null, // p_telefono_local
-        fecha_nacimiento || null, // p_fecha_nacimiento
-        genero || null, // p_genero
-        nombre_categoria || null, // p_nombre_categoria
-        nombre_dedicacion || null, // p_nombre_dedicacion
-        pre_grado ? JSON.stringify(pre_grado) : null, // p_pre_grado
-        pos_grado ? JSON.stringify(pos_grado) : null, // p_pos_grado
-        area_de_conocimiento ? JSON.stringify(area_de_conocimiento) : null, // p_area_de_conocimiento
-        imagen || null, // p_imagen
-        municipio || null, // p_municipio
-        fecha_ingreso || null, // p_fecha_ingreso
-      ];
-
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
-
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Se actualizo exitosamente al profesor"
-      );
-    } catch (error) {
-      error.details = {
-        path: "ProfesorModel.actualizarProfesor",
-        originalError: error.message,
-      };
-
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al actualizar profesor"
-      );
-    }
+      ]
+    );
+    
+    return rows;
   }
 
   /**
-   * Destituir/eliminar un profesor
-   *
-   * @static
-   * @async
-   * @method destituirProfesor
-   * @param {number} usuario_accion - ID del usuario que realiza la acción
-   * @param {Object} datos - Datos para la destitución
-   * @param {number} datos.id_profesor - ID del profesor (cédula)
-   * @param {string} datos.tipo_accion - Tipo de acción: DESTITUCION, ELIMINACION, RENUNCIA, RETIRO
-   * @param {string} datos.razon - Razón de la destitución
-   * @param {string} [datos.observaciones] - Observaciones adicionales
-   * @param {Date} [datos.fecha_efectiva] - Fecha efectiva de la destitución
-   * @returns {Promise<Object>} Resultado de la operación
-   *
-   * @throws {500} Si ocurre un error en el proceso
+   * @name eliminar
+   * @description Eliminar/destituir un profesor
+   * @param {Object} datos - Datos de la eliminación
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Array} Resultado de la eliminación
    */
-  static async destituirProfesor({ usuario_accion, datos }) {
-    try {
-      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
-        datos;
+  static async eliminar(datos, usuarioId) {
+    const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } = datos;
 
-      // Consulta SQL para llamar al procedimiento almacenado
-      const query = `
-        CALL public.eliminar_destituir_profesor(
-          NULL, ?, ?, ?, ?, ?, ?
-        )
-      `;
-
-      // Parámetros para la consulta
-      const params = [
-        usuario_accion.id, // p_usuario_accion
-        id_profesor, // p_id_profesor
-        tipo_accion, // p_tipo_accion
-        razon, // p_razon
-        observaciones || null, // p_observaciones
-        fecha_efectiva || null, // p_fecha_efectiva
-      ];
-
-      console.log("Ejecutando destitución con parámetros:", params);
-
-      // Ejecución de la consulta
-      const { rows } = await db.raw(query, params);
-
-      return FormatResponseModel.respuestaPostgres(
-        rows,
-        "Destitucion del profesor exitosa."
-      );
-    } catch (error) {
-      console.error("Error en DestitucionModel.destituirProfesor:", error);
-
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al destituir al profesor"
-      );
-    }
+    const { rows } = await pg.query(
+      "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)",
+      [usuarioId, id_profesor, tipo_accion, razon, observaciones, fecha_efectiva]
+    );
+    
+    return rows;
   }
 }

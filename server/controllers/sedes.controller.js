@@ -1,50 +1,103 @@
-
-// Importación de clase para formateo de respuestas
 import FormatResponseController from "../utils/FormatResponseController.js";
-import validationErrors from "../utils/validationsErrors.js";
-import SedeModel from "../models/sedes.model.js";
-import { validationSede, validationPartialSede } from "../schemas/SedeSchema.js";
+import SedeService from "../services/sede.service.js";
 
 /**
  * @class SedeController
- * @description Contiene los metodos para todo lo que tiene que ver con sedes
+ * @description Controlador para gestionar las operaciones relacionadas con sedes
  */
-
 export default class SedeController {
-    static async registerSede(req, res) {
-        try {
-            // Validación de datos del profesor usando el esquema definido
-            let validaciones = validationErrors(validationSede({ input: req.body }));
-
-            if (validaciones !== true) {
-                FormatResponseController.respuestaError(res, {
-                    status: 401,
-                    title: "Datos Erroneos",
-                    message: "Los datos estan errados",
-                    error: validaciones,
-                });
-                return
-            }
-            const usuarioAccion = req.user.id;
-
-            const responseModel = await SedeModel.registerSede({ usuarioAccion, data: req.body });
-
-            console.log(responseModel);
-
-            FormatResponseController.respuestaExito(res, responseModel);
-        } catch (error) {
-            error.path = "SedesModel.registerSede";
-            FormatResponseController.respuestaError(res, error);
-        }
+  /**
+   * @name registerSede
+   * @description Registrar una nueva sede
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async registerSede(req, res) {
+    try {
+      const respuesta = await SedeService.registrarSede(
+        req.body,
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
     }
-    static async mostrarSedes(req, res) {
-        try {
-            const responseModel = await SedeModel.mostrarSedes();
+  }
 
-            FormatResponseController.respuestaExito(res, responseModel);
-        } catch (error) {
-            error.path = "SedesModel.mostrarSedes";
-            FormatResponseController.respuestaError(res, error);
-        }
+  /**
+   * @name mostrarSedes
+   * @description Obtener todas las sedes registradas
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarSedes(req, res) {
+    try {
+      const respuesta = await SedeService.mostrarSedes();
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
     }
+  }
+
+  /**
+   * @name obtenerSedePorId
+   * @description Obtener una sede específica por ID
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerSedePorId(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await SedeService.obtenerSedePorId(
+        parseInt(id)
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name actualizarSede
+   * @description Actualizar una sede existente
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarSede(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await SedeService.actualizarSede(
+        parseInt(id),
+        req.body,
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name eliminarSede
+   * @description Eliminar una sede específica
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async eliminarSede(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await SedeService.eliminarSede(
+        parseInt(id),
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
 }

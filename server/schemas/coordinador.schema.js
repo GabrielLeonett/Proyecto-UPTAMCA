@@ -10,13 +10,3 @@ export const CoordinadorSchema = ProfesorSchema.extend({
     })
     .positive("El ID del Pos-Grado debe ser un número positivo"),
 });
-
-// Función para validar un coordinador completo
-export const validationCoordinador = (input) => {
-  return CoordinadorSchema.safeParse(input);
-};
-
-// Función para validar un coordinador parcial (actualizaciones)
-export const validationPartialCoordinador = (input) => {
-  return CoordinadorSchema.partial().safeParse(input);
-};
