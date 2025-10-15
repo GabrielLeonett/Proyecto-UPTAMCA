@@ -8,25 +8,39 @@ loadEnv();
  * Configuración CORS para la aplicación
  * Define los orígenes permitidos, métodos HTTP y credenciales
  */
+import cors from "cors";
+import { loadEnv } from "../utils/utilis.js";
+
+loadEnv();
+
+/**
+ * Configuración CORS corregida
+ */
 const corsOptions = {
   origin: function (origin, callback) {
-    // Lista de orígenes permitidos
-    const allowedOrigins = ["*"];
+    // Lista de orígenes permitidos - REEMPLAZA CON TUS URLs REALES
+    const allowedOrigins = [
+      "https://proyecto-uptamca-frontend.onrender.com",
+      "http://localhost:3000", // para desarrollo local
+      "http://localhost:5173"  // si usas Vite
+    ];
 
-    // En desarrollo, permitir cualquier origen (útil para testing)
+    // En desarrollo, permitir cualquier origen
     if (process.env.NODE_ENV === "development") {
       return callback(null, true);
     }
 
-    // En producción, verificar contra la lista de orígenes permitidos
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // En producción, verificar contra la lista
+    // Permitir requests sin origin (como mobile apps o postman)
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`Origen bloqueado por CORS: ${origin}`);
       callback(new Error("Origen no permitido por CORS"));
     }
   },
-  credentials: true, // Permitir envío de cookies y credenciales
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"], // Métodos HTTP permitidos
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
@@ -35,9 +49,15 @@ const corsOptions = {
     "Origin",
     "Access-Control-Request-Method",
     "Access-Control-Request-Headers",
-  ], // Headers permitidos
+    "X-CSRF-Token"
+  ],
+  exposedHeaders: [
+    "Authorization",
+    "X-CSRF-Token"
+  ],
   preflightContinue: false,
   optionsSuccessStatus: 204,
+  maxAge: 86400, // Cache preflight por 24 horas
 };
 
 /**
