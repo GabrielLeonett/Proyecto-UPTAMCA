@@ -15,7 +15,7 @@ import DeletableChips from "../../components/ui/customChip";
 import { Autocomplete, TextField } from "@mui/material";
 import ModalRegisterAreaConocimiento from "../../components/ModalRegisterAreaConocimiento";
 import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
-import ModalRegisterPosGrado from "../../components/ModalRegisterPosGrado";
+import ModalRegisterPosGrado from "../../components/ModalRegisterPosgrado";
 import useApi from "../../hook/useApi";
 
 export default function FormRegister() {
