@@ -26,6 +26,7 @@ import {
 } from "@mui/material";
 import { ExpandMore, FilterList } from "@mui/icons-material";
 import NavBar from "../../components/navbar";
+import useApi from "../../hook/useApi";
 
 // Función para formatear la fecha
 const formatDate = (timestamp) => {
@@ -67,6 +68,111 @@ const getStatusColor = (status) => {
   return "default";
 };
 
+// Componente individual de Acordeón de Log
+const LogAccordion = ({ log }) => (
+  <Accordion defaultExpanded sx={{ mb: 1 }}>
+    <AccordionSummary expandIcon={<ExpandMore />}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          width: "100%",
+        }}
+      >
+        <Chip
+          label={log.state}
+          color={getStateColor(log.state)}
+          size="small"
+        />
+        <Typography variant="body2" sx={{ flex: 1 }}>
+          {formatDate(log.timestamp)}
+        </Typography>
+        <Typography
+          variant="body2"
+          fontWeight="medium"
+          sx={{ flex: 2 }}
+        >
+          {log.title}
+        </Typography>
+        <Typography
+          variant="body2"
+          noWrap
+          sx={{ flex: 3, color: "text.secondary" }}
+        >
+          {log.message}
+        </Typography>
+      </Box>
+    </AccordionSummary>
+    <AccordionDetails>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Typography variant="subtitle2" gutterBottom>
+            Información General
+          </Typography>
+          <Box sx={{ pl: 1 }}>
+            <Typography variant="body2">
+              <strong>Timestamp:</strong> {formatDate(log.timestamp)}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Estado:</strong> {log.state}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Status HTTP:</strong> {log.status}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Título:</strong> {log.title}
+            </Typography>
+            {log.code && (
+              <Typography variant="body2">
+                <strong>Código:</strong> {log.code}
+              </Typography>
+            )}
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Typography variant="subtitle2" gutterBottom>
+            Detalles
+          </Typography>
+          <Box sx={{ pl: 1 }}>
+            <Typography variant="body2">
+              <strong>Mensaje:</strong> {log.message}
+            </Typography>
+            {log.details && (
+              <Typography variant="body2">
+                <strong>Ruta:</strong> {log.details.path || "N/A"}
+              </Typography>
+            )}
+          </Box>
+        </Grid>
+
+        {log.stack && (
+          <Grid item xs={12}>
+            <Typography variant="subtitle2" gutterBottom>
+              Stack Trace
+            </Typography>
+            <Paper
+              variant="outlined"
+              sx={{
+                p: 1,
+                backgroundColor: "grey.50",
+                fontFamily: "monospace",
+                fontSize: "0.75rem",
+                whiteSpace: "pre-wrap",
+                overflow: "auto",
+                maxHeight: 200,
+              }}
+            >
+              {log.stack}
+            </Paper>
+          </Grid>
+        )}
+      </Grid>
+    </AccordionDetails>
+  </Accordion>
+);
+
 export default function PaginaReportes() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +182,7 @@ export default function PaginaReportes() {
     status: "",
     search: "",
   });
+  const axios = useApi();
 
   useEffect(() => {
     fetchLogs();
@@ -84,13 +191,9 @@ export default function PaginaReportes() {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/report");
+      const response = await axios("/report");
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
+      const data = await response;
       setLogs(data);
       setError(null);
     } catch (err) {
@@ -122,6 +225,7 @@ export default function PaginaReportes() {
       [filterType]: value,
     }));
   };
+
 
   if (loading) {
     return (
@@ -374,110 +478,10 @@ export default function PaginaReportes() {
           </TableContainer>
         )}
 
-        {/* Detalles expandibles para cada log */}
+        {/* Detalles expandibles para cada log - TODOS DESPLEGADOS */}
         <Box sx={{ mt: 3 }}>
           {filteredLogs.map((log, index) => (
-            <Accordion key={index} sx={{ mb: 1 }}>
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    width: "100%",
-                  }}
-                >
-                  <Chip
-                    label={log.state}
-                    color={getStateColor(log.state)}
-                    size="small"
-                  />
-                  <Typography variant="body2" sx={{ flex: 1 }}>
-                    {formatDate(log.timestamp)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight="medium"
-                    sx={{ flex: 2 }}
-                  >
-                    {log.title}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    noWrap
-                    sx={{ flex: 3, color: "text.secondary" }}
-                  >
-                    {log.message}
-                  </Typography>
-                </Box>
-              </AccordionSummary>
-              <AccordionDetails>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Información General
-                    </Typography>
-                    <Box sx={{ pl: 1 }}>
-                      <Typography variant="body2">
-                        <strong>Timestamp:</strong> {formatDate(log.timestamp)}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Estado:</strong> {log.state}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Status HTTP:</strong> {log.status}
-                      </Typography>
-                      <Typography variant="body2">
-                        <strong>Título:</strong> {log.title}
-                      </Typography>
-                      {log.code && (
-                        <Typography variant="body2">
-                          <strong>Código:</strong> {log.code}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Grid>
-
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Detalles
-                    </Typography>
-                    <Box sx={{ pl: 1 }}>
-                      <Typography variant="body2">
-                        <strong>Mensaje:</strong> {log.message}
-                      </Typography>
-                      {log.details && (
-                        <Typography variant="body2">
-                          <strong>Ruta:</strong> {log.details.path || "N/A"}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Grid>
-
-                  {log.stack && (
-                    <Grid item xs={12}>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Stack Trace
-                      </Typography>
-                      <Paper
-                        variant="outlined"
-                        sx={{
-                          p: 1,
-                          backgroundColor: "grey.50",
-                          fontFamily: "monospace",
-                          fontSize: "0.75rem",
-                          whiteSpace: "pre-wrap",
-                          overflow: "auto",
-                          maxHeight: 200,
-                        }}
-                      >
-                        {log.stack}
-                      </Paper>
-                    </Grid>
-                  )}
-                </Grid>
-              </AccordionDetails>
-            </Accordion>
+            <LogAccordion key={index} log={log} index={index} />
           ))}
         </Box>
       </Box>
