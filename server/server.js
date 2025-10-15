@@ -16,13 +16,13 @@ import { createServer } from "node:http";
 import SocketServices from "./services/socket.services.js";
 
 // Importaciones de Rutas
-import { profesorRouter } from "./routes/profesor.routes.js";
-import { CurricularRouter } from "./routes/curricular.routes.js";
-import { UserRouter } from "./routes/user.routes.js";
-import { HorarioRouter } from "./routes/horario.routes.js";
-import { SedesRouter } from "./routes/sedes.routes.js";
+import { profesorRouter } from "./routes/Profesor.routes.js";
+import { CurricularRouter } from "./routes/Curricular.routes.js";
+import { UserRouter } from "./routes/User.routes.js";
+import { HorarioRouter } from "./routes/Horario.routes.js";
+import { SedesRouter } from "./routes/Sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
-import { coordinadorRouter } from "./routes/coordinador.routes.js";
+import { coordinadorRouter } from "./routes/Coordinador.routes.js";
 
 // Creación del servidor
 const app = express();
