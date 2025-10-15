@@ -16,9 +16,9 @@ import { createServer } from "node:http";
 import SocketServices from "./services/socket.services.js";
 
 // Importaciones de Rutas
-import { profesorRouter } from "./routes/profesor.routes.js";
+import { profesorRouter } from "./routes/Profesor.routes.js";
 import { CurricularRouter } from "./routes/curricular.routes.js";
-import { UserRouter } from "./routes/user.routes.js";
+import { UserRouter } from "./routes/User.routes.js";
 import { HorarioRouter } from "./routes/horario.routes.js";
 import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
