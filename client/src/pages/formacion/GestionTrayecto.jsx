@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useApi from "../../hook/useApi";
 import { useSweetAlert } from "../../hook/useSweetAlert";
 import ModalRegistroSeccion from "../../components/ModalRegistroSeccion";
-import CustomButton from "../../components/CustomButton";
+import CustomButton from "../../components/customButton";
 
 export default function GestionTrayecto() {
   // Hooks y estados
