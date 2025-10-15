@@ -14,8 +14,8 @@ import dayjs from "dayjs";
 import DeletableChips from "../../components/ui/customChip";
 import { Autocomplete, TextField } from "@mui/material";
 import ModalRegisterAreaConocimiento from "../../components/modalRegisterAreaConocimiento";
-import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
-import ModalRegisterPosGrado from "../../components/ModalRegisterPosGrado";
+import ModalRegisterPreGrado from "../../components/modalRegisterPreGrado";
+import ModalRegisterPosGrado from "../../components/modalRegisterPosGrado";
 import useApi from "../../hook/useApi";
 
 export default function FormRegister() {
