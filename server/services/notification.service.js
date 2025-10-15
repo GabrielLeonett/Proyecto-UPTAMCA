@@ -1,5 +1,5 @@
 import pool from "../database/pg.js";
-import SocketServices from "../services/socket.services.js";
+import SocketServices from "./socket.service.js";
 
 export default class NotificationService {
   constructor() {

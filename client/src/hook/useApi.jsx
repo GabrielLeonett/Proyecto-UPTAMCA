@@ -2,6 +2,7 @@
 import { useSweetAlert } from "./useSweetAlert";
 import axios from "axios";
 import { useMemo, useCallback } from "react";
+import env from "../config/env";
 
 export const useApi = (colocarAlertas = false) => {
   const alert = useSweetAlert();
@@ -184,7 +185,7 @@ export const useApi = (colocarAlertas = false) => {
   // Crear instancia de axios con useMemo
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
-      baseURL: "http://localhost:3000",
+      baseURL: env.serverUrl,
       timeout: 30000,
       withCredentials: true,
     });

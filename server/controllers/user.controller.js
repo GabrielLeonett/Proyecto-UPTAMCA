@@ -6,7 +6,7 @@ import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
-import NotificationService from "../services/Notification.services.js";
+import NotificationService from "../services/notification.service.js";
 
 /**
  * @class UserController

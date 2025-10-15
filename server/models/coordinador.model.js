@@ -15,7 +15,7 @@ import FormatResponseModel from "../utils/FormatResponseModel.js";
 
 // Importación de función para parsear datos a json
 import { loadEnv } from "../utils/utilis.js";
-import NotificationService from "../services/Notification.services.js";
+import NotificationService from "../services/notification.service.js";
 
 export default class CoordinadorModel {
   /**
