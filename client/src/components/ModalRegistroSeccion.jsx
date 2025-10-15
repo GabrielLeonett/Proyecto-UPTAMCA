@@ -7,7 +7,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
-import CustomButton from "./CustomButton";
+import CustomButton from "./customButton";
 import useApi from "../hook/useApi";
 
 export default function ModalRegistroSeccion({
