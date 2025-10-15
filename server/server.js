@@ -48,20 +48,7 @@ const servicioSocket = new SocketServices();
 const io = servicioSocket.initializeService();
 
 io.on("connection", (socket) => {
-  console.log(
-    "✅ Usuario conectado:",
-    socket.user.id,
-    "Roles:",
-    socket.user.roles
-  );
 
-  socket.on("disconnect", (reason) => {
-    console.log(`❌ Usuario ${socket.user.id} desconectado. Razón:`, reason);
-  });
-
-  socket.on("error", (error) => {
-    console.error(`💥 Error en socket ${socket.user.id}:`, error);
-  });
 });
 
 // Encendido del servidor
