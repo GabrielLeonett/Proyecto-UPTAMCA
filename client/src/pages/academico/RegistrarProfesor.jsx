@@ -13,9 +13,9 @@ import { ProfesorSchema } from "../../schemas/ProfesorSchema";
 import dayjs from "dayjs";
 import DeletableChips from "../../components/ui/customChip";
 import { Autocomplete, TextField } from "@mui/material";
-import ModalRegisterAreaConocimiento from "../../components/modalRegisterAreaConocimiento";
-import ModalRegisterPreGrado from "../../components/modalRegisterPreGrado";
-import ModalRegisterPosGrado from "../../components/modalRegisterPosGrado";
+import ModalRegisterAreaConocimiento from "../../components/ModalRegisterAreaConocimiento";
+import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
+import ModalRegisterPosGrado from "../../components/ModalRegisterPosGrado";
 import useApi from "../../hook/useApi";
 
 export default function FormRegister() {
@@ -53,7 +53,7 @@ export default function FormRegister() {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Agregamos los estados independientes para cada modal
+  // Agregamos los estados independientes para cada Modal
   const [openModalArea, setOpenModalArea] = useState(false);
   const [openModalPregrado, setOpenModalPregrado] = useState(false);
   const [openModalPosgrado, setOpenModalPosgrado] = useState(false);
