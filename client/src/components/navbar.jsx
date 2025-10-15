@@ -183,26 +183,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-        {
-          name: "Unidades Curriculares",
-          url: "/curricular/unidades/registrar", // Actualizado
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar Unidad",
-          url: "/curricular/unidades/registrar",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
       ],
     },
     {

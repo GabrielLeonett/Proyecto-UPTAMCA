@@ -3,39 +3,37 @@ import {
   Avatar,
   Typography,
   Box,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  AccordionActions,
+  Button,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { ProfesorSchema } from "../schemas/ProfesorSchema.js";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useEffect, useRef } from "react"; // ✅ Agregar useRef
+import dayjs from "dayjs";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { useState, useEffect, useRef } from "react";
 import useApi from "../hook/useApi";
+import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
 
 export default function CardProfesor({ profesor }) {
-  const axios = useApi();
+  const axios = useApi(false);
   const theme = useTheme();
   const [avatarUrl, setAvatarUrl] = useState(null);
-  const [imageError, setImageError] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
-  
-  // ✅ Agregar useRef para controlar si ya se hizo la petición
+  const [openModal, setOpenModal] = useState(false);
+
   const hasFetched = useRef(false);
 
-  // Cargar la imagen del profesor
+  // Cargar la imagen del profesor - SIMPLIFICADO
   useEffect(() => {
-    // ✅ Prevenir múltiples ejecuciones
     if (hasFetched.current || !profesor?.cedula) {
       return;
     }
 
     const loadProfessorImage = async () => {
-      try {
-        console.log("🔄 Iniciando carga de imagen para:", profesor.cedula);
-        
-        setImageLoading(true);
-        setImageError(false);
-        hasFetched.current = true; // ✅ Marcar como ya ejecutado
+      hasFetched.current = true;
 
+      try {
         const response = await axios.get(
           `http://localhost:3000/profesor/img/${profesor.cedula}`,
           {
@@ -43,32 +41,18 @@ export default function CardProfesor({ profesor }) {
           }
         );
 
-        console.log("✅ Respuesta recibida:", {
-          status: response.status,
-          dataSize: response.data.size,
-        });
-
         if (response.status === 200 && response.data.size > 0) {
           const imageUrl = URL.createObjectURL(response.data);
-          console.log("📷 URL creada:", imageUrl);
           setAvatarUrl(imageUrl);
-        } else {
-          console.log("❌ Respuesta vacía o inválida");
-          setImageError(true);
         }
       } catch (error) {
-        console.error("❌ Error cargando imagen del profesor:", {
-          message: error.message,
-          status: error.response?.status,
-        });
-        setImageError(true);
-      } finally {
-        setImageLoading(false);
+        console.error("Error cargando imagen:", error);
+        // Si hay error, avatarUrl se mantiene null y se muestran iniciales
       }
     };
 
     loadProfessorImage();
-  }, [profesor?.cedula, axios]); // ✅ Dependencias mínimas
+  }, [profesor?.cedula, axios]);
 
   // Limpiar la URL cuando el componente se desmonte
   useEffect(() => {
@@ -79,122 +63,211 @@ export default function CardProfesor({ profesor }) {
     };
   }, [avatarUrl]);
 
-  // ✅ Resetear el flag cuando cambia el profesor
-  useEffect(() => {
-    hasFetched.current = false;
-    setAvatarUrl(null);
-    setImageError(false);
-    setImageLoading(true);
-  }, [profesor?.cedula]);
+  // Funciones para manejar el modal
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm({
-    resolver: zodResolver(ProfesorSchema),
-  });
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  // Obtener iniciales para el avatar por defecto
+  const getInitials = () => {
+    const firstname = profesor?.nombres?.charAt(0) || "N";
+    const lastname = profesor?.apellidos?.charAt(0) || "E";
+    return `${firstname}${lastname}`;
+  };
+
   return (
     <Box
       sx={{
         background: theme.palette.background.paper,
-        padding: "30px",
-        borderRadius: "25px",
-        alignItems: "flex-start",
-        width: { xs: "100%", sm: 500, md: 600 },
-        minWidth: 300,
-        maxWidth: 500,
+        borderRadius: "15px",
+        width: "100%",
+        maxWidth: "400px",
         margin: "0 auto",
+        boxShadow: 2,
+        overflow: "hidden", // ✅ Para que la imagen también tenga bordes redondeados
       }}
-      spacing={3}
     >
-      {/* Imagen de profesor */}
-      <Grid item xs={12} md={6}>
-        <Box
+      {/* Imagen de profesor - DENTRO del mismo contenedor */}
+      <Box
+        sx={{
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+          height: "300px",
+        }}
+      >
+        <Avatar
+          variant="square"
+          src={avatarUrl || undefined} // ✅ Solo usa avatarUrl si existe
+          alt={`${profesor?.nombres} ${profesor?.apellidos}`}
           sx={{
-            position: "relative",
-            display: "flex",
-            overflow: "hidden",
+            width: "100%",
+            height: "100%",
+            backgroundColor: avatarUrl
+              ? theme.palette.grey[300]
+              : theme.palette.primary.main,
+            fontSize: "3rem",
+            color: "white",
+          }}
+          onError={(e) => {
+            console.log("Error cargando imagen, mostrando iniciales");
+            setAvatarUrl(null); // ✅ Si hay error, forzar a mostrar iniciales
+            e.target.style.display = "none"; // Ocultar el elemento con error
           }}
         >
-          <Avatar
-            variant="square"
-            src={imageError || !avatarUrl ? fallbackAvatarUrl : avatarUrl}
-            alt={`${profesor?.nombres} ${profesor?.apellidos}`}
-            sx={{
-              width: "100%",
-              height: 500,
-              minHeight: 200,
-              backgroundColor: theme.palette.grey[300],
-              transition: "all 0.3s ease",
-              filter: imageLoading ? "blur(5px)" : "none",
-            }}
-            onError={() => {
-              console.log("🖼️ Error cargando imagen, usando fallback");
-              setImageError(true);
-              setImageLoading(false);
-            }}
-            onLoad={() => {
-              console.log("🖼️ Imagen cargada exitosamente");
-              setImageLoading(false);
-            }}
-          />
+          {!avatarUrl && getInitials()}{" "}
+          {/* ✅ Mostrar iniciales solo si no hay avatarUrl */}
+        </Avatar>
 
-          {/* Overlay de carga */}
-          {imageLoading && (
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "rgba(0,0,0,0.1)",
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Cargando imagen...
+        {/* Gradiente overlay */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)",
+          }}
+        />
+
+        {/* Nombre del profesor */}
+        <Typography
+          variant="h5"
+          sx={{
+            position: "absolute",
+            left: 15,
+            bottom: 15,
+            color: "white",
+            fontWeight: "bold",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+            zIndex: 1,
+          }}
+        >
+          {profesor?.nombres?.split(" ")[0] || "No"}{" "}
+          {profesor?.apellidos?.split(" ")[0] || "Especificado"}
+        </Typography>
+      </Box>
+
+      {/* Contenido de la tarjeta */}
+      <Box
+        sx={{
+          padding: "20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        {/* Acordeones */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Accordion sx={{ "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle1">Información Personal</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography variant="body2">
+                  <strong>Cédula:</strong>{" "}
+                  {profesor?.cedula || "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Género:</strong>{" "}
+                  {profesor?.genero || "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Fecha Nac.:</strong>{" "}
+                  {profesor?.fecha_nacimiento
+                    ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
+                    : "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Email:</strong> {profesor?.email || "No especificado"}
+                </Typography>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion sx={{ "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle1">Información Educativa</Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography variant="body2">
+                  <strong>Áreas:</strong>{" "}
+                  {profesor?.areas_de_conocimiento || "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Pre-Grado:</strong>{" "}
+                  {profesor?.pre_grados || "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Pos-Grado:</strong>{" "}
+                  {profesor?.pos_grados || "No especificado"}
+                </Typography>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
+          <Accordion sx={{ "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle1">
+                Información Profesional
               </Typography>
-            </Box>
-          )}
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Typography variant="body2">
+                  <strong>Fecha Ingreso:</strong>{" "}
+                  {profesor?.fecha_ingreso
+                    ? dayjs(profesor.fecha_ingreso).format("DD/MM/YYYY")
+                    : "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Categoría:</strong>{" "}
+                  {profesor?.categoria || "No especificado"}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Dedicación:</strong>{" "}
+                  {profesor?.dedicacion || "No especificado"}
+                </Typography>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
 
-          {/* Gradiente overlay */}
-          <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background:
-                "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)",
-            }}
-          />
-
-          {/* Nombre del profesor */}
-          <Typography
-            variant="h3"
-            sx={{
-              position: "absolute",
-              left: 20,
-              bottom: 20,
-              color: "white",
-              fontWeight: "bold",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-              zIndex: 1,
-              fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
-            }}
-          >
-            {profesor?.nombres?.split(" ")[0] || "No"}{" "}
-            {profesor?.apellidos?.split(" ")[0] || "Especificado"}
-          </Typography>
+          {/* Eliminar profesor */}
+          <Accordion sx={{ "&:before": { display: "none" } }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="subtitle1" color="error">
+                Eliminar Profesor
+              </Typography>
+            </AccordionSummary>
+            <AccordionActions>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={handleOpenModal}
+                fullWidth
+                size="small"
+              >
+                Eliminar
+              </Button>
+            </AccordionActions>
+          </Accordion>
         </Box>
-      </Grid>
+      </Box>
 
-      {/* Resto del componente... */}
+      {/* Modal de eliminación */}
+      <ModalEliminarProfe
+        profesor={profesor}
+        open={openModal}
+        onClose={handleCloseModal}
+      />
     </Box>
   );
 }

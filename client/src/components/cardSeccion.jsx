@@ -1,10 +1,11 @@
 import { Typography, Box } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import Brightness5Icon from "@mui/icons-material/Brightness5"; // Sol
-import WbTwilightIcon from "@mui/icons-material/WbTwilight";   // Tarde
-import NightsStayIcon from "@mui/icons-material/NightsStay";   // Noche
+import WbTwilightIcon from "@mui/icons-material/WbTwilight"; // Tarde
+import NightsStayIcon from "@mui/icons-material/NightsStay"; // Noche
 import AlertTurno from "./alertTurno";
 import { useState } from "react";
+import { useEffect } from "react";
 
 export default function CardSeccion({ seccion }) {
   const theme = useTheme();
@@ -13,35 +14,54 @@ export default function CardSeccion({ seccion }) {
 
   // Determinar el icono según el turno
   let IconoTurno = null;
-  if (turno === "Matutino") IconoTurno = <Brightness5Icon sx={{
-    color: "#FFD700", position: "absolute",
-    top: -50,
-    left: 250,
-    fontSize: "8rem",
-    opacity: 0.6,
-    zIndex: 0,
-  }} />;
-  else if (turno === "Vespertino") IconoTurno = <WbTwilightIcon sx={{
-    color: "#FF8C00", position: "absolute",
-    top: 0,
-    left: 250,
-    fontSize: "8rem",
-    opacity: 0.6,
-    zIndex: 0,
-  }} />;
-  else if (turno === "Nocturno") IconoTurno = <NightsStayIcon sx={{
-    color: "#1E90FF", position: "absolute",
-    top: 50,
-    left: 250,
-    fontSize: "8rem",
-    opacity: 0.6,
-    zIndex: 0,
-  }} />;
+  if (turno === "Matutino")
+    IconoTurno = (
+      <Brightness5Icon
+        sx={{
+          color: "#FFD700",
+          position: "absolute",
+          top: -50,
+          left: 250,
+          fontSize: "8rem",
+          opacity: 0.6,
+          zIndex: 0,
+        }}
+      />
+    );
+  else if (turno === "Vespertino")
+    IconoTurno = (
+      <WbTwilightIcon
+        sx={{
+          color: "#FF8C00",
+          position: "absolute",
+          top: 0,
+          left: 250,
+          fontSize: "8rem",
+          opacity: 0.6,
+          zIndex: 0,
+        }}
+      />
+    );
+  else if (turno === "Nocturno")
+    IconoTurno = (
+      <NightsStayIcon
+        sx={{
+          color: "#1E90FF",
+          position: "absolute",
+          top: 50,
+          left: 250,
+          fontSize: "8rem",
+          opacity: 0.6,
+          zIndex: 0,
+        }}
+      />
+    );
+
 
   // Función al seleccionar un turno
   const handleSelectTurno = (nuevoTurno) => {
     setTurno(nuevoTurno); // actualiza el estado para cambiar el icono
-    setOpenAlert(false);   // cierra el dialog
+    setOpenAlert(false); // cierra el dialog
   };
 
   return (
@@ -97,8 +117,8 @@ export default function CardSeccion({ seccion }) {
         </Typography>
       </Box>
 
-      <AlertTurno 
-        idSeccion={seccion.id_seccion} 
+      <AlertTurno
+        idSeccion={seccion.id_seccion}
         isOpen={openAlert}
         onClose={() => setOpenAlert(false)}
         onSelect={handleSelectTurno}

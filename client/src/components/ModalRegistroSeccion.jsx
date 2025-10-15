@@ -8,32 +8,25 @@ import {
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CustomButton from "./CustomButton";
-import Swal from "sweetalert2";
-import axios from "../apis/axios";
+import useApi from "../hook/useApi";
 
-export default function ModalRegistroSeccion({ open, handleClose, idTrayecto }) {
+export default function ModalRegistroSeccion({
+  open,
+  handleClose,
+  idTrayecto,
+}) {
   const { register, handleSubmit, reset } = useForm();
+  const axios = useApi(true);
 
   const onSubmit = async (data) => {
     try {
       await axios.post(`/Trayecto/${idTrayecto}/create-secciones`, {
-        poblacion_estudiantil: data.poblacion_estudiantil,
+        poblacionEstudiantil: parseInt(data.poblacion_estudiantil)
+,
       });
-
-      Swal.fire({
-        icon: "success",
-        title: "Sección registrada",
-        text: "La sección se ha creado exitosamente.",
-      });
+    } finally {
       reset();
       handleClose();
-    } catch (error) {
-      console.error("Error registrando sección:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo registrar la sección.",
-      });
     }
   };
 

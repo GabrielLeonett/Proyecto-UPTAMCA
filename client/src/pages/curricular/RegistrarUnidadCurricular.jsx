@@ -6,12 +6,14 @@ import CustomButton from "../../components/customButton";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
 import { UnidadCurricularSchema } from "../../schemas/UnidadCurricularSchema";
-import useApi from "../../hook/useApi"; // Added import for axios
-import Swal from "sweetalert2";
+import useApi from "../../hook/useApi";
+import { useLocation } from "react-router-dom";
 
 export default function RegistrarUnidadCurricular() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const axios = useApi();
+  const location = useLocation();
+  const { idTrayecto } = location.state;
+  const axios = useApi(true);
 
   const {
     register,
@@ -21,30 +23,16 @@ export default function RegistrarUnidadCurricular() {
   } = useForm({
     resolver: zodResolver(UnidadCurricularSchema),
     mode: "onChange",
+    defaultValues: {
+      idTrayecto: parseInt(idTrayecto),
+    },
   });
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await axios.post("/unidadCurricular/registrar", data);
-
-      Swal.fire({
-        icon: "success",
-        title: "¡Registro exitoso!",
-        text: "La Unidad Curricular se guardó correctamente.",
-        confirmButtonColor: "#3085d6",
-      });
-
+      await axios.post("/Unidad_Curricular/create", data);
       reset();
-    } catch (error) {
-      console.error("❌ Error al guardar la Unidad Curricular:", error);
-
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo guardar la Unidad Curricular. Intenta nuevamente.",
-        confirmButtonColor: "#d33",
-      });
     } finally {
       setIsSubmitting(false);
     }
@@ -128,10 +116,19 @@ export default function RegistrarUnidadCurricular() {
                   label="Carga Horas Académicas"
                   variant="outlined"
                   type="number"
-                  {...register("cargaHorasAcademicas")}
+                  {...register("cargaHorasAcademicas", {
+                    valueAsNumber: true,
+                    required: "Este campo es requerido",
+                    min: {
+                      value: 0,
+                      message: "La carga horaria no puede ser negativa",
+                    },
+                  })}
                   error={!!errors.cargaHorasAcademicas}
                   helperText={errors.cargaHorasAcademicas?.message}
-                  inputProps={{ "aria-required": "true" }}
+                  inputProps={{
+                    "aria-required": "true",
+                  }}
                 />
               </Stack>
 
@@ -139,7 +136,10 @@ export default function RegistrarUnidadCurricular() {
               <Stack direction="row" spacing={3} justifyContent="flex-end">
                 <CustomButton
                   tipo="secondary"
-                  onClick={() => reset()}
+                  onClick={() => {
+                    console.log("🔄 Reseteando formulario");
+                    reset();
+                  }}
                   disabled={isSubmitting}
                 >
                   Limpiar

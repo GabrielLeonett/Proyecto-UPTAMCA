@@ -31,6 +31,7 @@ import AsignarCoordinador from "./pages/coordinacion/AsignarCoordinador";
 import ProgramasFormacion from "./pages/formacion/ProgramasFormacion";
 import RegistrarPrograma from "./pages/formacion/RegistrarPrograma";
 import GestionTrayectos from "./pages/formacion/GestionTrayectos";
+import GestionTrayecto from "./pages/formacion/GestionTrayecto";
 
 // Gestión Curricular
 import RegistrarUnidadCurricular from "./pages/curricular/RegistrarUnidadCurricular";
@@ -183,10 +184,18 @@ export default function App() {
                 }
               />
               <Route
-                path="/formacion/programas/:codigo/trayectos/:trayecto"
+                path="/formacion/programas/:codigo"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionTrayectos />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/formacion/programas/:codigo/trayecto/:idTrayecto"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionTrayecto />
                   </ProtectedViews>
                 }
               />

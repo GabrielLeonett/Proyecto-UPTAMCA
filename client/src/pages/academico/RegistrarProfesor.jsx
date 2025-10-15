@@ -16,9 +16,10 @@ import { Autocomplete, TextField } from "@mui/material";
 import ModalRegisterAreaConocimiento from "../../components/modalRegisterAreaConocimiento";
 import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
 import ModalRegisterPosGrado from "../../components/ModalRegisterPosGrado";
+import useApi from "../../hook/useApi";
 
 export default function FormRegister() {
-  const axios = useApi();
+  const axios = useApi(true);
   const theme = useTheme();
   const {
     register,
@@ -56,7 +57,6 @@ export default function FormRegister() {
   const [openModalArea, setOpenModalArea] = useState(false);
   const [openModalPregrado, setOpenModalPregrado] = useState(false);
   const [openModalPosgrado, setOpenModalPosgrado] = useState(false);
-
 
   // Fetch data on component mount
   useEffect(() => {
@@ -439,10 +439,15 @@ export default function FormRegister() {
                 onChange={(_, newValue) => {
                   const uniqueValues = newValue.filter(
                     (item, index, self) =>
-                      index === self.findIndex((t) => t.id_pre_grado === item.id_pre_grado)
+                      index ===
+                      self.findIndex(
+                        (t) => t.id_pre_grado === item.id_pre_grado
+                      )
                   );
 
-                  if (uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")) {
+                  if (
+                    uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")
+                  ) {
                     setOpenModalPregrado(true);
 
                     const filteredValues = uniqueValues.filter(
@@ -459,7 +464,10 @@ export default function FormRegister() {
                     label="Pregrado"
                     variant="outlined"
                     error={!!errors.pre_grado}
-                    helperText={errors.pre_grado?.message || "Seleccione al menos un pregrado"}
+                    helperText={
+                      errors.pre_grado?.message ||
+                      "Seleccione al menos un pregrado"
+                    }
                   />
                 )}
               />
@@ -500,10 +508,15 @@ export default function FormRegister() {
                 onChange={async (_, newValue) => {
                   const uniqueValues = newValue.filter(
                     (item, index, self) =>
-                      index === self.findIndex((t) => t.id_pos_grado === item.id_pos_grado)
+                      index ===
+                      self.findIndex(
+                        (t) => t.id_pos_grado === item.id_pos_grado
+                      )
                   );
 
-                  if (uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")) {
+                  if (
+                    uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")
+                  ) {
                     setOpenModalPosgrado(true);
 
                     const filteredValues = uniqueValues.filter(
@@ -533,7 +546,6 @@ export default function FormRegister() {
             </>
           )}
         />
-
       </Box>
     </>
   );

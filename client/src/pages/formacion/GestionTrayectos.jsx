@@ -16,7 +16,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 export default function PNF() {
   const axios = useApi();
 
-  const { codigoPNF } = useParams();
+  const { codigo } = useParams();
   const navigate = useNavigate(); // ← Agregar useNavigate
   const [trayectos, setTrayectos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ export default function PNF() {
       try {
         setLoading(true);
         setError(null);
-        const res = await axios.get(`/Trayectos?PNF=${codigoPNF}`);
+        const res = await axios.get(`/Trayectos?PNF=${codigo}`);
         setTrayectos(res);
       } finally {
         setLoading(false);
@@ -35,7 +35,7 @@ export default function PNF() {
     };
 
     pedirTrayectos();
-  }, [codigoPNF]);
+  }, [codigo]);
 
   return (
     <>
@@ -58,7 +58,7 @@ export default function PNF() {
             </Link>
 
             <Link component="button" underline="hover" color="inherit" disabled>
-              {codigoPNF}
+              {codigo}
             </Link>
           </Breadcrumbs>
         </Box>
@@ -79,18 +79,12 @@ export default function PNF() {
           <Grid container spacing={3}>
             {trayectos.map((trayecto) => (
               <Grid item xs={12} sm={6} md={4} key={trayecto.id}>
-                <CardTrayecto Trayecto={trayecto} codigoPNF={codigoPNF} />
+                <CardTrayecto Trayecto={trayecto} codigoPNF={codigo} />
               </Grid>
             ))}
           </Grid>
         )}
 
-        {/* Modal de Registro de Sección */}
-        <ModalRegistroSeccion
-          open={openModalSeccion}
-          handleClose={() => setOpenModalSeccion(false)}
-          idTrayecto={Trayecto}
-        />
       </Box>
     </>
   );

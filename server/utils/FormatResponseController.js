@@ -35,6 +35,7 @@ export default class FormatResponseController {
         response.metadata = respuestaDatos.metadata;
       }
 
+      console.log(response)
       return res.status(response.status).json(response);
     } catch (error) {
       return this.respuestaError(res, {

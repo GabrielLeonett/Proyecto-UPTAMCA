@@ -5,56 +5,107 @@ import CardSeccion from "../../components/cardSeccion";
 import ResponsiveAppBar from "../../components/navbar";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useApi from "../../hook/useApi"; // Added import for axios
-import Swal from "sweetalert2";
+import useApi from "../../hook/useApi";
+import { useSweetAlert } from "../../hook/useSweetAlert";
+import ModalRegistroSeccion from "../../components/ModalRegistroSeccion";
+import CustomButton from "../../components/CustomButton";
 
 export default function GestionTrayecto() {
-  const { codigoPNF, Trayecto } = useParams();
+  // Hooks y estados
+  const { codigo, idTrayecto } = useParams();
   const [unidades, setUnidades] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const navigate = useNavigate();
   const axios = useApi();
+  const alert = useSweetAlert();
 
+  // Validación del trayecto
   useEffect(() => {
-    if (!Trayecto) {
-      Swal.fire({
+    if (!idTrayecto) {
+      alert.show({
         title: "Trayecto No Seleccionado",
         text: "No se ha seleccionado ningún trayecto. Por favor, regresa a la página anterior y selecciona un trayecto válido.",
         icon: "warning",
       });
     }
-  }, [Trayecto]);
+  }, [idTrayecto]);
 
+  // Funciones para obtener datos
+  const fetchUnidadesCurriculares = async () => {
+    const response = await axios.get(
+      `/Trayecto/Unidades-Curriculares?Trayecto=${idTrayecto}`
+    );
+    setUnidades(response || []);
+  };
+
+  const fetchSecciones = async () => {
+    const response = await axios.get(`/Secciones/?Trayecto=${idTrayecto}`);
+    console.log(response);
+    setSecciones(response || []);
+  };
+
+  // Carga inicial de datos
   useEffect(() => {
-    const fetchUnidades = async () => {
-      try {
-        const response = await axios.get(
-          `/Trayecto/Unidades-Curriculares?Trayecto=${Trayecto}`
-        );
-        setUnidades(response || []);
-      } catch (err) {
-        console.error("Error cargando unidades curriculares:", err);
-      }
-    };
-
-    const fetchSecciones = async () => {
-      try {
-        const response = await axios.get(`/Secciones/?Trayecto=${Trayecto}`);
-        setSecciones(response || []);
-      } catch (err) {
-        console.error("Error cargando secciones:", err);
-      }
-    };
-
     const loadData = async () => {
+      if (!idTrayecto) return;
+
       setLoading(true);
-      await Promise.all([fetchUnidades(), fetchSecciones()]);
-      setLoading(false);
+      try {
+        await Promise.all([fetchUnidadesCurriculares(), fetchSecciones()]);
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadData();
-  }, [Trayecto]);
+  }, [idTrayecto]);
+
+  // Handlers de navegación
+  const handleGoToProgramas = () => navigate("/formacion/programas");
+
+  const handleGoToPrograma = () => navigate(`/formacion/programas/${codigo}`);
+
+  // Handlers del modal
+  const handleOpenModal = () => setModalOpen(true);
+
+  const handleCloseModal = () => setModalOpen(false);
+
+  const handleSeccionCreada = () => {
+    // Recargar las secciones después de crear una nueva
+    fetchSecciones();
+    handleCloseModal();
+  };
+
+  // Componentes reutilizables
+  const BreadcrumbNavigation = () => (
+    <Breadcrumbs
+      aria-label="ruta de navegación"
+      separator={<NavigateNextIcon fontSize="small" />}
+      sx={{ mb: 3 }}
+    >
+      <Link
+        component="button"
+        underline="hover"
+        color="inherit"
+        onClick={handleGoToProgramas}
+      >
+        PNFS
+      </Link>
+      <Link
+        component="button"
+        underline="hover"
+        color="inherit"
+        onClick={handleGoToPrograma}
+      >
+        {codigo}
+      </Link>
+      <Link component="button" underline="hover" color="inherit" disabled>
+        Trayecto {idTrayecto}
+      </Link>
+    </Breadcrumbs>
+  );
 
   return (
     <>
@@ -62,103 +113,132 @@ export default function GestionTrayecto() {
 
       <Box sx={{ mt: 18, px: 4, pb: 10 }}>
         <Box sx={{ mt: 5 }}>
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 3 }}
-          >
-            <Link
-              component="button"
-              underline="hover"
-              color="inherit"
-              onClick={() => navigate("/formacion/programas")} // ← Agregar onClick
-            >
-              PNFS
-            </Link>
-
-            <Link
-              component="button"
-              underline="hover"
-              color="inherit"
-              onClick={() => {
-                navigate(`/formacion/programas/${codigoPNF}`);
-              }}
-            >
-              {codigoPNF}
-            </Link>
-
-            <Link component="button" underline="hover" color="inherit" disabled>
-              {Trayecto}
-            </Link>
-          </Breadcrumbs>
+          <BreadcrumbNavigation />
         </Box>
+
         {/* Sección de Secciones */}
-        <Typography
-          variant="h5"
-          sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
         >
-          Secciones del Trayecto
-        </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+          >
+            Secciones
+          </Typography>
+
+          {secciones.length < 0 && (
+            <CustomButton
+              tipo="primary"
+              onClick={handleOpenModal}
+              sx={{ minWidth: 200 }}
+            >
+              + Iniciar Sección
+            </CustomButton>
+          )}
+        </Box>
 
         {loading ? (
           <Typography color="text.secondary" textAlign="center">
             Cargando...
           </Typography>
         ) : secciones.length > 0 ? (
-          <Grid container spacing={2} justifyContent="center" sx={{ mb: 6 }}>
+          <Grid container spacing={3} justifyContent="center">
             {secciones.map((seccion) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={seccion.id}
-                display="flex"
-                justifyContent="center"
-              >
-                <CardSeccion seccion={seccion} />
-              </Grid>
+              <CardSeccion seccion={seccion} />
             ))}
           </Grid>
         ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay secciones registradas.
-          </Typography>
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography
+              color="text.secondary"
+              fontStyle="italic"
+              sx={{ mb: 2 }}
+            >
+              No existen secciones registradas para este trayecto
+            </Typography>
+          </Box>
         )}
 
         {/* Sección de Unidades Curriculares */}
-        <Typography
-          variant="h5"
-          sx={{ mb: 3, fontWeight: "bold", textAlign: "center" }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
         >
-          Unidades Curriculares
-        </Typography>
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              color: "primary.main",
+            }}
+          >
+            Unidades Curriculares
+          </Typography>
+
+          <CustomButton
+            tipo="primary"
+            onClick={() => {
+              navigate("/curricular/unidades/registrar", {
+                state: { idTrayecto: idTrayecto },
+              });
+            }}
+            sx={{ minWidth: 200 }}
+          >
+            + Unidad Curricular
+          </CustomButton>
+
+          {secciones.length < 0 && (
+            <CustomButton
+              tipo="primary"
+              onClick={handleOpenModal}
+              sx={{ minWidth: 200 }}
+            >
+              + Iniciar Sección
+            </CustomButton>
+          )}
+        </Box>
 
         {loading ? (
           <Typography color="text.secondary" textAlign="center">
             Cargando...
           </Typography>
         ) : unidades.length > 0 ? (
-          <Grid container spacing={2} justifyContent="center">
-            {unidades.map((uc) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={uc.id_unidad_curricular}
-                display="flex"
-                justifyContent="center"
-              >
-                <CardUnidadCurricular unidadCurricular={uc} />
-              </Grid>
+          <Grid container spacing={3} justifyContent="center">
+            {unidades.map((unidad) => (
+              <CardUnidadCurricular unidadCurricular={unidad} />
             ))}
           </Grid>
         ) : (
-          <Typography color="text.secondary" textAlign="center">
-            No hay unidades curriculares registradas.
-          </Typography>
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography
+              color="text.secondary"
+              fontStyle="italic"
+              sx={{ mb: 2 }}
+            >
+              No hay unidades curriculares registradas para este trayecto
+            </Typography>
+          </Box>
         )}
+
+        {/* Modal de Registro de Sección */}
+        <ModalRegistroSeccion
+          open={modalOpen}
+          handleClose={handleCloseModal}
+          idTrayecto={idTrayecto}
+          onSeccionCreada={handleSeccionCreada}
+        />
       </Box>
     </>
   );

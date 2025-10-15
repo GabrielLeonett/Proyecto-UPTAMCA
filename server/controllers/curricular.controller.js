@@ -249,7 +249,7 @@ export default class CurricularController {
    */
   static async CrearSecciones(req, res) {
     try {
-      const idTrayecto = Number(req.params.idTrayecto) || null;
+      const idTrayecto = parseInt(req.params.idTrayecto) || null;
       const poblacionEstudiantil = req.body.poblacionEstudiantil || null;
       const Datos = {
         idTrayecto: idTrayecto,

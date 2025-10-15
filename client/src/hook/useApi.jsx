@@ -3,7 +3,7 @@ import { useSweetAlert } from "./useSweetAlert";
 import axios from "axios";
 import { useMemo, useCallback } from "react";
 
-export const useApi = () => {
+export const useApi = (colocarAlertas = false) => {
   const alert = useSweetAlert();
 
   // Tipos de respuesta esperados según tu backend
@@ -18,6 +18,11 @@ export const useApi = () => {
   // Mover showAutoAlert a useCallback para que sea estable
   const showAutoAlert = useCallback(
     (response) => {
+      if (!colocarAlertas) {
+        console.log("Alertas automáticas desactivadas");
+        return;
+      }
+
       console.log("showAutoAlert recibió:", response); // Para debug
       
       const config = {
@@ -80,10 +85,72 @@ export const useApi = () => {
         alert.show({ title: title, text: message, ...config });
       }
     },
-    [alert, RESPONSE_TYPES.VALIDATION_ERROR] // Corregir dependencia
+    [alert, RESPONSE_TYPES.VALIDATION_ERROR, colocarAlertas] // Agregar colocarAlertas a dependencias
   );
 
-  // Funciones auxiliares (mantener igual...)
+  // Función para mostrar alertas manualmente
+  const showAlert = useCallback((type, title, message, customConfig = {}) => {
+    const config = {
+      success: {
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      },
+      error: {
+        icon: "error", 
+        confirmButtonColor: "#ef4444",
+      },
+      warning: {
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+      },
+      info: {
+        icon: "info",
+        confirmButtonColor: "#3b82f6",
+      },
+    }[type] || { icon: "info" };
+
+    alert.show({ 
+      title, 
+      text: message, 
+      ...config,
+      ...customConfig 
+    });
+  }, [alert]);
+
+  // Función para mostrar toasts manualmente
+  const showToast = useCallback((type, title, message, customConfig = {}) => {
+    const config = {
+      success: {
+        icon: "success",
+        confirmButtonColor: "#10b981",
+      },
+      error: {
+        icon: "error", 
+        confirmButtonColor: "#ef4444",
+      },
+      warning: {
+        icon: "warning",
+        confirmButtonColor: "#f59e0b",
+      },
+      info: {
+        icon: "info",
+        confirmButtonColor: "#3b82f6",
+      },
+    }[type] || { icon: "info" };
+
+    alert.toast({ 
+      title, 
+      message, 
+      config: {
+        position: "bottom-end",
+        timer: 3000,
+        ...config,
+        ...customConfig 
+      }
+    });
+  }, [alert]);
+
+  // Funciones auxiliares
   const getHttpErrorMessage = (status) => {
     const messages = {
       400: "Solicitud incorrecta",
@@ -136,13 +203,12 @@ export const useApi = () => {
             return successResponse.data;
           }
 
-          // Caso 2: Respuesta de error - ¡CORREGIR AQUÍ!
+          // Caso 2: Respuesta de error
           if (backendResponse.success === false) {
-            // ⭐ DETECTAR EL TIPO QUE VIENE DEL BACKEND
             const errorType = backendResponse.type || RESPONSE_TYPES.ERROR;
             
             const errorResponse = {
-              type: errorType, // Usar el tipo del backend
+              type: errorType,
               status: backendResponse.status || response.status,
               title: backendResponse.title || "Error",
               message: backendResponse.message || "Error en la operación", 
@@ -151,9 +217,9 @@ export const useApi = () => {
               originalResponse: response,
             };
 
-            console.log("Error del backend:", errorResponse); // Debug
+            console.log("Error del backend:", errorResponse);
             
-            // Llamar showAutoAlert
+            // Llamar showAutoAlert (respetará colocarAlertas)
             showAutoAlert(errorResponse);
 
             return Promise.reject(errorResponse);
@@ -189,7 +255,6 @@ export const useApi = () => {
             typeof backendError === "object" &&
             backendError.success === false
           ) {
-            // ⭐ USAR EL TIPO DEL BACKEND
             formattedError.type = backendError.type || RESPONSE_TYPES.ERROR;
             formattedError.status = backendError.status;
             formattedError.title = backendError.title || "Error";
@@ -198,7 +263,7 @@ export const useApi = () => {
           }
           // Si el error es de validación (tus validationErrors)
           else if (backendError && Array.isArray(backendError)) {
-            formattedError.type = RESPONSE_TYPES.VALIDATION_ERROR; // ⭐ CORREGIR AQUÍ
+            formattedError.type = RESPONSE_TYPES.VALIDATION_ERROR;
             formattedError.title = "Error de Validación";
             formattedError.message = "Los datos enviados no son válidos";
             formattedError.error = backendError;
@@ -214,9 +279,9 @@ export const useApi = () => {
           formattedError.title = "Error de Conexión";
         }
         
-        console.log("Error formateado:", formattedError); // Debug
+        console.log("Error formateado:", formattedError);
         
-        // Mostrar alerta de error automáticamente
+        // Mostrar alerta de error automáticamente (respetará colocarAlertas)
         showAutoAlert(formattedError);
 
         return Promise.reject(formattedError);
@@ -230,7 +295,7 @@ export const useApi = () => {
       response && response.type === RESPONSE_TYPES.SUCCESS;
 
     instance.isValidationError = (error) =>
-      error.type === RESPONSE_TYPES.VALIDATION_ERROR; // ⭐ CORREGIR AQUÍ
+      error.type === RESPONSE_TYPES.VALIDATION_ERROR;
 
     instance.getValidationMessages = (error) => {
       if (error.error && Array.isArray(error.error)) {
@@ -241,12 +306,15 @@ export const useApi = () => {
       return error.message;
     };
 
-    instance.showAlert = (type, title, message) => {
-      showAutoAlert({ type, title, message });
-    };
+    // Métodos para mostrar alertas manualmente (siempre disponibles)
+    instance.showAlert = showAlert;
+    instance.showToast = showToast;
+
+    // Método para verificar si las alertas automáticas están activas
+    instance.areAlertsEnabled = () => colocarAlertas;
 
     return instance;
-  }, [alert, showAutoAlert, RESPONSE_TYPES]);
+  }, [alert, showAutoAlert, showAlert, showToast, RESPONSE_TYPES, colocarAlertas]);
 
   return axiosInstance;
 };

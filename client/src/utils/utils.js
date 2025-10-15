@@ -38,30 +38,30 @@ export const UTILS = {
     return resultado.toString().padStart(4, "0");
   },
 
-sumar45MinutosHHMM: (horaMilitar, multiplicar) => {
+  sumar45MinutosHHMM: (horaMilitar, multiplicar) => {
     const tiempo = parseInt(horaMilitar, 10);
     const horas = Math.floor(tiempo / 100);
     const minutos = tiempo % 100;
     const totalMinutos = horas * 60 + minutos;
     const nuevoTotalMinutos = totalMinutos + 45 * multiplicar;
-    
+
     let nuevasHoras = Math.floor(nuevoTotalMinutos / 60);
     const nuevosMinutos = nuevoTotalMinutos % 60;
 
     // Manejar overflow de horas (más de 24 horas)
     if (nuevasHoras >= 24) {
-        nuevasHoras = nuevasHoras % 24;
+      nuevasHoras = nuevasHoras % 24;
     }
 
     // Formatear correctamente a HH:MM
-    const horasFormateadas = nuevasHoras.toString().padStart(2, '0');
-    const minutosFormateados = nuevosMinutos.toString().padStart(2, '0');
-    
+    const horasFormateadas = nuevasHoras.toString().padStart(2, "0");
+    const minutosFormateados = nuevosMinutos.toString().padStart(2, "0");
+
     const resultado = `${horasFormateadas}:${minutosFormateados}:00`;
-    
+
     console.log("Resultado formateado:", resultado);
     return resultado;
-},
+  },
 
   formatearHora: (horaMilitar) => {
     const horas = Math.floor(horaMilitar / 100);
@@ -82,5 +82,26 @@ sumar45MinutosHHMM: (horaMilitar, multiplicar) => {
     const h = Math.floor(minutos / 60);
     const m = minutos % 60;
     return h * 100 + m;
+  },
+  initialHours: {
+    700: null,
+    745: null,
+    830: null,
+    915: null,
+    1000: null,
+    1045: null,
+    1130: null,
+    1215: null,
+    1300: null,
+    1345: null,
+    1430: null,
+    1515: null,
+    1600: null,
+    1645: null,
+    1730: null,
+    1815: null,
+    1900: null,
+    1945: null,
+    2030: null,
   },
 };

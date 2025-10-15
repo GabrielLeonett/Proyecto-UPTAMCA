@@ -11,17 +11,22 @@ import { useState } from "react";
 import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
-import Swal from "sweetalert2";
 
 const TIPOS_POSGRADO = [
-  'Especialización', 'Maestría', 'Doctorado', 'Diplomado', 
-  'Posdoctorado', 'Certificación', 'Curso Avanzado', 
-  'Residencia Médica', 'Fellowship'
+  "Especialización",
+  "Maestría",
+  "Doctorado",
+  "Diplomado",
+  "Posdoctorado",
+  "Certificación",
+  "Curso Avanzado",
+  "Residencia Médica",
+  "Fellowship",
 ];
 
 export default function ModalRegisterPosgrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
-  const axios = useApi();
+  const axios = useApi(true);
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -40,29 +45,10 @@ export default function ModalRegisterPosgrado({ open, onClose, setState }) {
       };
 
       await axios.post("/Profesor/pos-grado", payload);
-
-      Swal.fire({
-        icon: "success",
-        title: "Registro exitoso",
-        text: "El posgrado fue registrado correctamente.",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-
-      // Actualizar lista de posgrados
-      const res = await axios.get("/Profesor/pos-grado");
-      setState(res.data.data.data || res.data.data);
-
+      
       reset();
+    }  finally {
       onClose();
-    } catch (error) {
-      console.error("Error al registrar posgrado:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "No se pudo registrar el posgrado. Intenta nuevamente.",
-      });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -121,7 +107,9 @@ export default function ModalRegisterPosgrado({ open, onClose, setState }) {
             {...register("nombre", { required: true })}
           />
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
+          <Box
+            sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}
+          >
             <CustomButton onClick={onClose} tipo="secondary">
               Cancelar
             </CustomButton>
