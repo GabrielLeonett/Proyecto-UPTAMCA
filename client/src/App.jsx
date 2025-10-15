@@ -51,6 +51,7 @@ import PanelAdministracion from "./pages/administracion/PanelAdministracion";
 
 // Desarrollo y Pruebas
 import PaginaPruebas from "./pages/desarrollo/PaginaPruebas";
+import PaginaReportes from "./pages/desarrollo/PaginaReportes";
 
 //Importacion para la pagina 404 o notFound
 import PaginaNoEncontrada from "./pages/PaginaNoEncontrada";
@@ -273,6 +274,8 @@ export default function App() {
 
               {/* === RUTAS DE DESARROLLO === */}
               <Route path="/desarrollo/pruebas" element={<PaginaPruebas />} />
+              {/* === RUTAS DE DESARROLLO === */}
+              <Route path="/desarrollo/reportes" element={<PaginaReportes />} />
 
               {/* === RUTA PARA PÁGINA NO ENCONTRADA === */}
               <Route path="*" element={<PaginaNoEncontrada />} />

@@ -184,7 +184,7 @@ export const useApi = (colocarAlertas = false) => {
   // Crear instancia de axios con useMemo
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
-      baseURL: "https://proyecto-uptamca.onrender.com",
+      baseURL: "http://localhost:3000",
       timeout: 30000,
       withCredentials: true,
     });
