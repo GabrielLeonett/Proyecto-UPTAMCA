@@ -11,7 +11,7 @@ loadEnv();
 const corsOptions = {
   origin: function (origin, callback) {
     // Lista de orígenes permitidos
-    const allowedOrigins = [process.env.ORIGIN_FRONTEND];
+    const allowedOrigins = ["*"];
 
     // En desarrollo, permitir cualquier origen (útil para testing)
     if (process.env.NODE_ENV === "development") {
