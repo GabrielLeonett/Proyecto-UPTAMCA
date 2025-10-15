@@ -43,7 +43,7 @@ UserRouter.put(
 );
 
 UserRouter.get("/report", middlewareAuth("SuperAdmin"), (req, res) => {
-  fs.readFile("./report.json", (err, date) => {
+  fs.readFile("./report/report.json", (err, date) => {
     try {
       res.json(JSON.parse(date));
     } catch (err) {
