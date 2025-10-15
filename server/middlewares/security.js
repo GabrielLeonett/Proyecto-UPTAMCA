@@ -8,8 +8,6 @@ loadEnv();
  * Configuración CORS para la aplicación
  * Define los orígenes permitidos, métodos HTTP y credenciales
  */
-import cors from "cors";
-import { loadEnv } from "../utils/utilis.js";
 
 loadEnv();
 
