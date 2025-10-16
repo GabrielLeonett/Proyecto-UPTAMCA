@@ -68,6 +68,9 @@ import BotonCambiarTema from "./components/BotonCambiarTema";
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
 
+import ProfesoresEliminados from "./pages/academico/eliminarProfesor";
+
+
 // Roles comunes para reutilización
 const ROLES = {
   TODOS_AUTENTICADOS: [
@@ -148,6 +151,15 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
+              <Route
+                path="/academico/profesores/eliminados"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                    <ProfesoresEliminados />
+                  </ProtectedViews>
+                }
+              />
+
 
               {/* === GESTIÓN DE COORDINACIÓN === */}
               <Route

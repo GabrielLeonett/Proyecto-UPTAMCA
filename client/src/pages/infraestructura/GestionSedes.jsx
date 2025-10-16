@@ -1,25 +1,38 @@
 // src/pages/ViewSede.jsx
 import { useEffect, useState } from "react";
-import { Box, Typography, Grid, CircularProgress, Card, CardContent, CardActions, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Card,
+  CardContent,
+  CardActions,
+  IconButton,
+  Button,
+} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import ResponsiveAppBar from "../../components/navbar";
-import useApi from "../../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi";
 import { MapPin, Trash2 } from "lucide-react";
+import AddIcon from "@mui/icons-material/Add";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 export default function GestionSedes() {
   const theme = useTheme();
   const axios = useApi();
+  const navigate = useNavigate();
 
   const [sedes, setSedes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 👉 Cargar las sedes al montar
+  // 👉 Cargar sedes
   useEffect(() => {
     const fetchSedes = async () => {
       try {
-        const response = await axios.get("/Sedes"); // 👈 endpoint que lista las sedes
+        const response = await axios.get("/Sedes");
         setSedes(response);
       } catch (err) {
         console.error("Error al obtener las sedes:", err);
@@ -56,6 +69,11 @@ export default function GestionSedes() {
     });
   };
 
+  // 👉 Redirigir a registrar sede
+  const handleAddSede = () => {
+    navigate("/infraestructura/sedes/registrar");
+  };
+
   return (
     <>
       <ResponsiveAppBar backgroundColor />
@@ -67,14 +85,25 @@ export default function GestionSedes() {
           backgroundColor: theme.palette.background.default,
         }}
       >
-        <Typography
-          variant="h2"
-          component="h1"
-          gutterBottom
-          sx={{ mb: 4, textAlign: "center" }}
+        {/* Encabezado */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
         >
-          Lista de Sedes
-        </Typography>
+          <Typography
+            variant="h3"
+            component="h1"
+            sx={{
+              fontWeight: "bold",
+            }}
+          >
+            Lista de Sedes
+          </Typography>
+        </Box>
 
         {/* 👉 Loading */}
         {loading && (
@@ -90,49 +119,98 @@ export default function GestionSedes() {
           </Typography>
         )}
 
-        {/* 👉 Grid de Sedes */}
+        {/* 👉 Grid de sedes */}
         {!loading && !error && (
           <Grid container spacing={4}>
             {sedes.length > 0 ? (
               sedes.map((sede) => (
-                <Grid key={sede.id || sede.id_sede} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Card
+                <Grid
+                  key={sede.id || sede.id_sede}
+                  item
+                  xs={12}
+                  sm={6}
+                  md={6}
+                  lg={5}
+                >
+                  {/* Contenedor card + botón */}
+                  <Box
                     sx={{
-                      borderRadius: "20px",
-                      boxShadow: theme.shadows[6],
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      flexWrap: "wrap",
                     }}
                   >
-                    <CardContent>
-                      <Typography variant="h5" fontWeight="bold">
-                        {sede.nombre_sede}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary">
-                        📍 {sede.ubicacion_sede}
-                      </Typography>
-                      {sede.google_sede && (
-                        <a
-                          href={sede.google_sede}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center text-blue-600 mt-2"
+                    {/* Card de sede */}
+                    <Card
+                      sx={{
+                        borderRadius: "20px",
+                        boxShadow: theme.shadows[6],
+                        backgroundColor: "#1e1e1e",
+                        color: "white",
+                        flex: 1,
+                        p: 2,
+                      }}
+                    >
+                      <CardContent>
+                        <Typography variant="h5" fontWeight="bold">
+                          {sede.nombre_sede}
+                        </Typography>
+                        <Typography variant="body1" sx={{ mt: 1 }}>
+                          📍 {sede.ubicacion_sede}
+                        </Typography>
+                        {sede.google_sede && (
+                          <a
+                            href={sede.google_sede}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center text-blue-500 mt-2"
+                          >
+                            <MapPin size={18} className="mr-1" /> Ver en Google
+                            Maps
+                          </a>
+                        )}
+                      </CardContent>
+                      <CardActions className="flex justify-end">
+                        <IconButton
+                          color="error"
+                          onClick={() =>
+                            handleDelete(sede.id || sede.id_sede)
+                          }
                         >
-                          <MapPin size={18} className="mr-1" /> Ver en Google Maps
-                        </a>
-                      )}
-                    </CardContent>
-                    <CardActions className="flex justify-end">
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDelete(sede.id || sede.id_sede)}
-                      >
-                        <Trash2 />
-                      </IconButton>
-                    </CardActions>
-                  </Card>
+                          <Trash2 />
+                        </IconButton>
+                      </CardActions>
+                    </Card>
+
+                    {/* Botón al lado */}
+                    <Button
+                      variant="contained"
+                      startIcon={<AddIcon />}
+                      onClick={handleAddSede}
+                      sx={{
+                        backgroundColor: "#1976d2",
+                        color: "white",
+                        fontWeight: "bold",
+                        textTransform: "none",
+                        borderRadius: 2,
+                        px: 3,
+                        py: 1.2,
+                        "&:hover": { backgroundColor: "#1565c0" },
+                        height: "fit-content",
+                      }}
+                    >
+                      Registrar Sede
+                    </Button>
+                  </Box>
                 </Grid>
               ))
             ) : (
-              <Typography variant="h6" align="center" sx={{ width: "100%", mt: 4 }}>
+              <Typography
+                variant="h6"
+                align="center"
+                sx={{ width: "100%", mt: 4 }}
+              >
                 No hay sedes registradas todavía.
               </Typography>
             )}

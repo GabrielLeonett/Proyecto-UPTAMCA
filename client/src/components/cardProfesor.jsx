@@ -8,11 +8,14 @@ import {
   AccordionDetails,
   AccordionActions,
   Button,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi";
 import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
 
@@ -21,58 +24,50 @@ export default function CardProfesor({ profesor }) {
   const theme = useTheme();
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-
+  const [mensaje, setMensaje] = useState(null);
+  const navigate = useNavigate();
   const hasFetched = useRef(false);
 
-  // Cargar la imagen del profesor - SIMPLIFICADO
+  // Cargar imagen
   useEffect(() => {
-    if (hasFetched.current || !profesor?.cedula) {
-      return;
-    }
-
+    if (hasFetched.current || !profesor?.cedula) return;
     const loadProfessorImage = async () => {
       hasFetched.current = true;
-
       try {
         const response = await axios.get(
           `http://localhost:3000/profesor/img/${profesor.cedula}`,
-          {
-            responseType: "blob",
-          }
+          { responseType: "blob" }
         );
-
         if (response.status === 200 && response.data.size > 0) {
           const imageUrl = URL.createObjectURL(response.data);
           setAvatarUrl(imageUrl);
         }
       } catch (error) {
         console.error("Error cargando imagen:", error);
-        // Si hay error, avatarUrl se mantiene null y se muestran iniciales
       }
     };
-
     loadProfessorImage();
   }, [profesor?.cedula, axios]);
 
-  // Limpiar la URL cuando el componente se desmonte
   useEffect(() => {
     return () => {
-      if (avatarUrl) {
-        URL.revokeObjectURL(avatarUrl);
-      }
+      if (avatarUrl) URL.revokeObjectURL(avatarUrl);
     };
   }, [avatarUrl]);
 
-  // Funciones para manejar el modal
-  const handleOpenModal = () => {
-    setOpenModal(true);
+  // Modal eliminar
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
+
+  // Cuando se elimina correctamente → redirige a Profesores Eliminados
+  const handleProfesorEliminado = () => {
+    setMensaje("Profesor eliminado correctamente");
+    setTimeout(() => {
+      navigate("/profesores/eliminados");
+    }, 1200);
   };
 
-  const handleCloseModal = () => {
-    setOpenModal(false);
-  };
-
-  // Obtener iniciales para el avatar por defecto
+  // Iniciales del avatar
   const getInitials = () => {
     const firstname = profesor?.nombres?.charAt(0) || "N";
     const lastname = profesor?.apellidos?.charAt(0) || "E";
@@ -88,10 +83,10 @@ export default function CardProfesor({ profesor }) {
         maxWidth: "400px",
         margin: "0 auto",
         boxShadow: 2,
-        overflow: "hidden", // ✅ Para que la imagen también tenga bordes redondeados
+        overflow: "hidden",
       }}
     >
-      {/* Imagen de profesor - DENTRO del mismo contenedor */}
+      {/* Imagen */}
       <Box
         sx={{
           position: "relative",
@@ -102,7 +97,7 @@ export default function CardProfesor({ profesor }) {
       >
         <Avatar
           variant="square"
-          src={avatarUrl || undefined} // ✅ Solo usa avatarUrl si existe
+          src={avatarUrl || undefined}
           alt={`${profesor?.nombres} ${profesor?.apellidos}`}
           sx={{
             width: "100%",
@@ -115,15 +110,13 @@ export default function CardProfesor({ profesor }) {
           }}
           onError={(e) => {
             console.log("Error cargando imagen, mostrando iniciales");
-            setAvatarUrl(null); // ✅ Si hay error, forzar a mostrar iniciales
-            e.target.style.display = "none"; // Ocultar el elemento con error
+            setAvatarUrl(null);
+            e.target.style.display = "none";
           }}
         >
-          {!avatarUrl && getInitials()}{" "}
-          {/* ✅ Mostrar iniciales solo si no hay avatarUrl */}
+          {!avatarUrl && getInitials()}
         </Avatar>
 
-        {/* Gradiente overlay */}
         <Box
           sx={{
             position: "absolute",
@@ -135,8 +128,6 @@ export default function CardProfesor({ profesor }) {
               "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)",
           }}
         />
-
-        {/* Nombre del profesor */}
         <Typography
           variant="h5"
           sx={{
@@ -154,7 +145,7 @@ export default function CardProfesor({ profesor }) {
         </Typography>
       </Box>
 
-      {/* Contenido de la tarjeta */}
+      {/* Contenido */}
       <Box
         sx={{
           padding: "20px",
@@ -170,25 +161,21 @@ export default function CardProfesor({ profesor }) {
               <Typography variant="subtitle1">Información Personal</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Typography variant="body2">
-                  <strong>Cédula:</strong>{" "}
-                  {profesor?.cedula || "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Género:</strong>{" "}
-                  {profesor?.genero || "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Fecha Nac.:</strong>{" "}
-                  {profesor?.fecha_nacimiento
-                    ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
-                    : "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Email:</strong> {profesor?.email || "No especificado"}
-                </Typography>
-              </Box>
+              <Typography variant="body2">
+                <strong>Cédula:</strong> {profesor?.cedula || "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Género:</strong> {profesor?.genero || "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Fecha Nac.:</strong>{" "}
+                {profesor?.fecha_nacimiento
+                  ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
+                  : "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Email:</strong> {profesor?.email || "No especificado"}
+              </Typography>
             </AccordionDetails>
           </Accordion>
 
@@ -197,20 +184,18 @@ export default function CardProfesor({ profesor }) {
               <Typography variant="subtitle1">Información Educativa</Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Typography variant="body2">
-                  <strong>Áreas:</strong>{" "}
-                  {profesor?.areas_de_conocimiento || "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Pre-Grado:</strong>{" "}
-                  {profesor?.pre_grados || "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Pos-Grado:</strong>{" "}
-                  {profesor?.pos_grados || "No especificado"}
-                </Typography>
-              </Box>
+              <Typography variant="body2">
+                <strong>Áreas:</strong>{" "}
+                {profesor?.areas_de_conocimiento || "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Pre-Grado:</strong>{" "}
+                {profesor?.pre_grados || "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Pos-Grado:</strong>{" "}
+                {profesor?.pos_grados || "No especificado"}
+              </Typography>
             </AccordionDetails>
           </Accordion>
 
@@ -221,22 +206,20 @@ export default function CardProfesor({ profesor }) {
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Typography variant="body2">
-                  <strong>Fecha Ingreso:</strong>{" "}
-                  {profesor?.fecha_ingreso
-                    ? dayjs(profesor.fecha_ingreso).format("DD/MM/YYYY")
-                    : "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Categoría:</strong>{" "}
-                  {profesor?.categoria || "No especificado"}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Dedicación:</strong>{" "}
-                  {profesor?.dedicacion || "No especificado"}
-                </Typography>
-              </Box>
+              <Typography variant="body2">
+                <strong>Fecha Ingreso:</strong>{" "}
+                {profesor?.fecha_ingreso
+                  ? dayjs(profesor.fecha_ingreso).format("DD/MM/YYYY")
+                  : "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Categoría:</strong>{" "}
+                {profesor?.categoria || "No especificado"}
+              </Typography>
+              <Typography variant="body2">
+                <strong>Dedicación:</strong>{" "}
+                {profesor?.dedicacion || "No especificado"}
+              </Typography>
             </AccordionDetails>
           </Accordion>
 
@@ -262,12 +245,25 @@ export default function CardProfesor({ profesor }) {
         </Box>
       </Box>
 
-      {/* Modal de eliminación */}
+      {/* Modal eliminar */}
       <ModalEliminarProfe
         profesor={profesor}
         open={openModal}
         onClose={handleCloseModal}
+        onEliminado={handleProfesorEliminado} // 🔹 Nuevo callback
       />
+
+      {/* Snackbar */}
+      <Snackbar
+        open={!!mensaje}
+        autoHideDuration={2000}
+        onClose={() => setMensaje(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
+          {mensaje}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
