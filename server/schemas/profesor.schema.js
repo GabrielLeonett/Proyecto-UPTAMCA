@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { UserSchema } from "./UserSchema.js";
+import userSchema from "./user.schema.js";
 
 // Esquema para Pre-Grados
-const preGradoSchema = z.object({
+export const preGradoSchema = z.object({
   id_pre_grado: z
     .number({
       invalid_type_error: "El ID del Pre-Grado debe ser un número",
@@ -22,7 +22,7 @@ const preGradoSchema = z.object({
 });
 
 // Esquema para Pos-Grados
-const posGradoSchema = z.object({
+export const posGradoSchema = z.object({
   id_pos_grado: z
     .number({
       invalid_type_error: "El ID del Pos-Grado debe ser un número",
@@ -42,7 +42,7 @@ const posGradoSchema = z.object({
 });
 
 // Esquema principal para Profesores
-export const ProfesorSchema = UserSchema.extend({
+export const profesorSchema = userSchema.extend({
   fecha_ingreso: z
     .string({
       required_error: "La fecha de ingreso es obligatoria",
@@ -85,12 +85,4 @@ export const ProfesorSchema = UserSchema.extend({
 
   pos_grado: z.array(posGradoSchema).optional(),
 });
-// Función para validar un profesor completo
-export const validationProfesor = (input) => {
-  return ProfesorSchema.safeParse(input);
-};
 
-// Función para validar un profesor parcial (actualizaciones)
-export const validationPartialProfesor = (input) => {
-  return ProfesorSchema.partial().safeParse(input);
-};

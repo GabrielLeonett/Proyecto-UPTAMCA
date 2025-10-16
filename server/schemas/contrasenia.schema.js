@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const ContraseñaSchema = z.object({
+const contraseniaSchema = z.object({
   password: z
     .string({
       required_error: "La contraseña es requerida",
@@ -24,10 +24,4 @@ export const ContraseñaSchema = z.object({
   message: "Las contraseñas no coinciden",
   path: ["repetirPassword"],
 });
-
-// Validación completa
-export const validationContraseña = ({input}) => {
-  const validationResult = ContraseñaSchema.safeParse(input);
-  return validationResult;
-};
-
+export default contraseniaSchema;

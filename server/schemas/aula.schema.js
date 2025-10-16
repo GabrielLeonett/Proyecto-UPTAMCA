@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AulaSchema = z.object({
+const aulaSchema = z.object({
   codigo: z
     .string()
     .min(3, { message: "El código debe tener al menos 3 caracteres" })
@@ -36,14 +36,4 @@ export const AulaSchema = z.object({
     .positive({ message: "La capacidad debe ser un número positivo" }),
 });
 
-// Validación completa
-export const validationAula = ({ input }) => {
-  const validationResult = AulaSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialAula = ({ input }) => {
-  const PartialAulaSchema = AulaSchema.partial().safeParse(input);
-  return PartialAulaSchema;
-};
+export default aulaSchema;

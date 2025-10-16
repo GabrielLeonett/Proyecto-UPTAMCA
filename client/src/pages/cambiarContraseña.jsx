@@ -34,7 +34,7 @@ export default function CambiarContraseña() {
     try {
       setProcessing(true);
 
-      await axios.put("/cambiar-contrasena", formData);
+      await axios.put("/auth/password", formData);
     } finally {
       setProcessing(false);
     }

@@ -5,14 +5,14 @@ import { existsSync, unlinkSync } from "fs";
 import { access, stat } from "fs/promises";
 import fs from "fs";
 
-class ImageProcessingService {
+export default class ImagenService {
   constructor(storage) {
     this.storageImage = "uploads/" + storage;
   }
 
-  static async validateImage(filePath, originalName, options = {}) {
+  async validateImage( originalName, options = {}) {
     try {
-      const fullPath = join(filePath, originalName);
+      const fullPath = join(this.storageImage, originalName);
 
       try {
         await access(fullPath);
@@ -380,5 +380,3 @@ class ImageProcessingService {
     }
   }
 }
-
-export default ImageProcessingService;

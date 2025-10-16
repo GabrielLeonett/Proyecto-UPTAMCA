@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-export const profesorRouter = Router();
+export const adminRouter = Router();
 
 //Rutas de autenticacion
-profesorRouter.get("/Perfil", MostrarPer)
+//adminRouter.get("/Perfil", )

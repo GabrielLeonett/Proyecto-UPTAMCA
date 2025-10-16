@@ -42,7 +42,6 @@ export default function GestionTrayecto() {
 
   const fetchSecciones = async () => {
     const response = await axios.get(`/Secciones/?Trayecto=${idTrayecto}`);
-    console.log(response);
     setSecciones(response || []);
   };
 
@@ -135,7 +134,7 @@ export default function GestionTrayecto() {
             Secciones
           </Typography>
 
-          {secciones.length < 0 && (
+          {secciones.length === 0 && (
             <CustomButton
               tipo="primary"
               onClick={handleOpenModal}

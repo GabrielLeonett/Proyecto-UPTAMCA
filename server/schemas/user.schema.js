@@ -1,6 +1,7 @@
+import e from "cors";
 import z from "zod";
 
-export const UserSchema = z.object({
+const userSchema = z.object({
   cedula: z
     .number()
     .int("La cédula debe ser un número entero")
@@ -60,11 +61,4 @@ export const UserSchema = z.object({
   }),
 });
 
-
-export const validationUser = ({input}) => {
-  return UserSchema.safeParse(input);
-};
-
-export const validationPartialUser = ({input}) => {
-  return UserSchema.partial().safeParse(input);
-};
+export default userSchema

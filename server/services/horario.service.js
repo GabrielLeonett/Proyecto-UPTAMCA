@@ -1,11 +1,16 @@
 import HorarioModel from "../models/horario.model.js";
-import FormatResponseModel from "../utils/FormatResponseModel.js";
+import validationService from "./validation.service.js";
+import FormatterResponseService from "../utils/FormatterResponseService.js";
+import DocumentServices from "./document.service.js";
 
 /**
  * @class HorarioService
  * @description Contiene la lógica de negocio relacionada con los horarios académicos
  */
 export default class HorarioService {
+  /**
+   * Mostrar todos los horarios organizados por PNF, Trayecto y Sección
+   */
   static async mostrarHorarios() {
     const rows = await HorarioModel.obtenerHorarios();
 
@@ -62,8 +67,14 @@ export default class HorarioService {
     );
   }
 
+  /**
+   * Mostrar los horarios de un profesor en específico
+   * @param {number} idProfesor
+   */
   static async mostrarHorariosProfesores(idProfesor) {
-    const rows = await HorarioModel.obtenerHorariosProfesores(idProfesor);
+    validationService.validarIdNumerico(idProfesor, "ID de profesor");
+
+    const rows = await HorarioModel.obtenerPorProfesor(idProfesor);
     const horariosOrganizados = [];
 
     rows.forEach((clase) => {
@@ -101,7 +112,13 @@ export default class HorarioService {
     );
   }
 
+  /**
+   * Mostrar profesores disponibles según horas necesarias
+   * @param {number} horasNecesarias
+   */
   static async mostrarProfesoresParaHorario(horasNecesarias) {
+    validationService.validarIdNumerico(horasNecesarias, "Horas necesarias");
+
     const rows = await HorarioModel.obtenerProfesoresParaHorario(
       horasNecesarias
     );
@@ -111,7 +128,13 @@ export default class HorarioService {
     );
   }
 
+  /**
+   * Mostrar aulas disponibles para un PNF
+   * @param {string} nombrePNF
+   */
   static async mostrarAulasParaHorario(nombrePNF) {
+    validationService.validarTexto(nombrePNF, "Nombre del PNF");
+
     const rows = await HorarioModel.obtenerAulasParaHorario(nombrePNF);
     return FormatResponseModel.respuestaPostgres(
       rows,
@@ -119,19 +142,36 @@ export default class HorarioService {
     );
   }
 
+  /**
+   * Registrar un nuevo horario
+   * @param {object} datos
+   * @param {object} usuario_accion
+   */
   static async registrarHorario(datos, usuario_accion) {
-    const resultado = await HorarioModel.insertarHorario(datos, usuario_accion);
+    validationService.validarIdNumerico(
+      usuario_accion.id,
+      "ID del usuario en sesión"
+    );
+    validationService.validateHorario(datos);
+
+    const resultado = HorarioModel.crear(datos, usuario_accion);
+
     return FormatResponseModel.respuestaPostgres(
       resultado,
       "Horario registrado exitosamente"
     );
   }
 
+  /**
+   * Generar documento PDF del horario de una sección
+   * @param {number} idSeccion
+   */
   static async generarDocumentoHorario(idSeccion) {
     try {
+      validationService.validarIdNumerico(idSeccion, "ID de la sección");
       console.log("📥 Generando documento para la sección:", idSeccion);
 
-      // 1️⃣ Obtener datos desde el modelo (vista)
+      // 1️⃣ Obtener datos desde el modelo
       const datos = await HorarioModel.obtenerHorarioPorSeccion(idSeccion);
       if (!datos || datos.length === 0) {
         throw new Error("No se encontraron datos para esta sección");
@@ -166,16 +206,18 @@ export default class HorarioService {
         Horario,
       };
 
-      // 4️⃣ Llamar a DocumentServices
+      // 4️⃣ Generar documento
       const buffer = await DocumentServices.generarDocumentoHorario(
         configuracion
       );
 
-      // 5️⃣ Devolver el buffer
       return buffer;
     } catch (error) {
       console.error("❌ Error en HorarioService:", error);
-      throw error;
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al generar el documento del horario"
+      );
     }
   }
 }

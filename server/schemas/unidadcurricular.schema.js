@@ -1,6 +1,6 @@
 import z from "zod";
 
-const UnidadCurricularSchema = z.object({
+const unidadcurricularSchema = z.object({
   idTrayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que se un numero",
@@ -53,15 +53,4 @@ const UnidadCurricularSchema = z.object({
     .toUpperCase(),
 });
 
-// Validación completa
-export const validationUnidadCurricular = ({ input }) => {
-  const validationResult = UnidadCurricularSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialUnidadCurricular = ({ input }) => {
-  const PartialUnidadCurricularSchema =
-    UnidadCurricularSchema.partial().safeParse(input);
-  return PartialUnidadCurricularSchema;
-};
+export default unidadcurricularSchema;

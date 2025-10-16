@@ -1,50 +1,135 @@
-// Importación de clase para formateo de respuestas
-import FormatResponseController from "../utils/FormatResponseController.js";
-import validationErrors from "../utils/validationsErrors.js";
-import AulaModel from "../models/aulas.model.js";
-import {
-  validationAula,
-  validationPartialAula,
-} from "../schemas/AulaSchema.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 
 /**
  * @class AulaController
- * @description Contiene los metodos para todo lo que tiene que ver con sedes
+ * @description Controlador para gestionar las operaciones relacionadas con aulas
  */
-
 export default class AulaController {
+  /**
+   * @name registerAula
+   * @description Registrar una nueva aula
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
   static async registerAula(req, res) {
     try {
-      // Validación de datos del profesor usando el esquema definido
-      let validaciones = validationErrors(validationAula({ input: req.body }));
-
-      if (validaciones !== true) {
-        FormatResponseController.respuestaError(res, {
-          status: 401,
-          title: "Datos Erroneos",
-          message: "Los datos estan errados",
-          error: validaciones,
-        });
-        return;
-      }
-      const usuarioAccion = req.user;
-
-      const responseModel = await AulaModel.registerAula(usuarioAccion, {...req.body});
-
-      console.log(responseModel)
-      FormatResponseController.respuestaExito(res, responseModel);
+      const respuesta = await AulaService.registrarAula(
+        req.body,
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
     } catch (error) {
-      error.path = "AulasModel.registerAula";
       FormatResponseController.respuestaError(res, error);
     }
   }
+
+  /**
+   * @name mostrarAulas
+   * @description Obtener todas las aulas registradas
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
   static async mostrarAulas(req, res) {
     try {
-      const responseModel = await AulaModel.mostrarAulas();
-
-      FormatResponseController.respuestaExito(res, responseModel);
+      const respuesta = await AulaService.mostrarAulas();
+      FormatResponseController.respuestaExito(res, respuesta);
     } catch (error) {
-      error.path = "AulasModel.mostrarAulas";
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name obtenerAulaPorId
+   * @description Obtener una aula específica por ID
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerAulaPorId(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await AulaService.obtenerAulaPorId(
+        parseInt(id)
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name actualizarAula
+   * @description Actualizar una aula existente
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarAula(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await AulaService.actualizarAula(
+        parseInt(id),
+        req.body,
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name eliminarAula
+   * @description Eliminar una aula específica
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async eliminarAula(req, res) {
+    try {
+      const { id } = req.params;
+      const respuesta = await AulaService.eliminarAula(
+        parseInt(id),
+        req.user
+      );
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name obtenerAulasPorTipo
+   * @description Obtener aulas filtradas por tipo
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerAulasPorTipo(req, res) {
+    try {
+      const { tipo } = req.params;
+      const respuesta = await AulaService.obtenerAulasPorTipo(tipo);
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
+      FormatResponseController.respuestaError(res, error);
+    }
+  }
+
+  /**
+   * @name obtenerAulasPorSede
+   * @description Obtener aulas filtradas por sede
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerAulasPorSede(req, res) {
+    try {
+      const { sede } = req.params;
+      const respuesta = await AulaService.obtenerAulasPorSede(sede);
+      FormatResponseController.respuestaExito(res, respuesta);
+    } catch (error) {
       FormatResponseController.respuestaError(res, error);
     }
   }

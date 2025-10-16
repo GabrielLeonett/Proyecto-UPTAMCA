@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // Schema corregido
-const DestitucionSchema = z.object({
+const destitucionSchema = z.object({
   id_profesor: z.number({
     required_error: "El ID del profesor es requerido",
     invalid_type_error: "El ID del profesor debe ser un número"
@@ -30,6 +30,4 @@ const DestitucionSchema = z.object({
     .default(null)
 });
 
-export const validationDestitucion = (input) => {
-  return DestitucionSchema.safeParse(input);
-};
+export default destitucionSchema;

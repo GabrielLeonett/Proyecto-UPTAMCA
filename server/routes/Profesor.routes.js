@@ -27,171 +27,46 @@ export const profesorRouter = Router();
 
 /**
  * =============================================
- * SECCIÓN DE RUTAS GET
+ * CONFIGURACIÓN MULTER PARA SUBIDA DE ARCHIVOS
  * =============================================
  */
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/profesores/");
   },
   filename: (req, file, cb) => {
-    // Generar 12 caracteres hexadecimales únicos
     const uniqueName = Array.from({ length: 12 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join("");
-
-    // Obtener la extensión original del archivo
     const fileExtension = path.extname(file.originalname);
-
-    // Nuevo nombre del archivo
     const newFileName = uniqueName + fileExtension;
-
-    // ✅ Actualizar el originalname para que tenga el nuevo valor
     file.originalname = newFileName;
-
     cb(null, newFileName);
   },
 });
+
 const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
 
 /**
- * @name GET /api/Profesor
- * @description Obtiene listado de profesores con filtros avanzados (API format)
- * @query {string} [dedicacion] - Filtro por dedicación (1: Convencional, etc.)
- * @query {string} [categoria] - Filtro por categoría (ej: "Instructor")
- * @query {string} [ubicacion] - Filtro por ubicación (1: Núcleo Salud, etc.)
- * @query {string} [genero] - Filtro por género ("masculino"/"femenino")
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de cURL:
- * curl -X GET 'http://localhost:3000/api/Profesor?dedicacion=1&categoria=Instructor'
+ * =============================================
+ * RUTAS DE PROFESORES (CRUD PRINCIPAL)
+ * =============================================
  */
-profesorRouter.get(
-  "/api/Profesor",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  mostrarProfesorAPI
-);
 
 /**
- * @name GET /api/Profesor
- * @description Obtiene listado de profesores con filtros avanzados (API format)
- * @query {string} [dedicacion] - Filtro por dedicación (1: Convencional, etc.)
- * @query {string} [categoria] - Filtro por categoría (ej: "Instructor")
- * @query {string} [ubicacion] - Filtro por ubicación (1: Núcleo Salud, etc.)
- * @query {string} [genero] - Filtro por género ("masculino"/"femenino")
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de cURL:
- * curl -X GET 'http://localhost:3000/api/Profesor?dedicacion=1&categoria=Instructor'
+ * @name GET /profesores
+ * @description Obtener listado de profesores con filtros avanzados
+ * @query {string} [dedicacion] - Filtro por dedicación
+ * @query {string} [categoria] - Filtro por categoría
+ * @query {string} [ubicacion] - Filtro por ubicación
+ * @query {string} [genero] - Filtro por género
+ * @middleware Requiere autenticación y rol autorizado
  */
 profesorRouter.get(
-  "/profesor/img/:id_profesor",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  getImageProfesorDirect
-);
-
-/**
- * @name GET /Profesor/pre-grado
- * @description Obtener un listado de los pre-grado de los profesores existentes
- * @query {string} [tipo] - Filtro por tipo (1: TSU, Tecnico Medio, Licenciado, etc.)
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de URL:
- * curl -X GET 'http://localhost:3000/Profesor/pre-grado?tipo=TSU'
- */
-profesorRouter.get(
-  "/Profesor/pre-grado",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  mostrarPreGrados
-);
-
-/**
- * @name GET /Profesor/post-grado
- * @description Obtener un listado de los pos-grado de los profesores existentes
- * @query {string} [tipo] - Filtro por tipo (Maestria, Doctorado, etc.)
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de URL:
- * curl -X GET 'http://localhost:3000/Profesor/pos-grado?tipo=Maestria'
- */
-profesorRouter.get(
-  "/Profesor/post-grado",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  mostrarPosGrados
-);
-
-/**
- * @name GET /Profesor/areas-conocimiento
- * @description Obtener un listado de las areas de conocimiento de los profesores existentes
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de URL:
- * curl -X GET 'http://localhost:3000/Profesor/Areas-conocimiento'
- */
-profesorRouter.get(
-  "/Profesor/areas-conocimiento",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  mostrarAreasConocimiento
-);
-
-/**
- * @name GET /Profesor
- * @description Muestra la vista HTML del listado de profesores
- * @middleware Mismos requisitos de rol que /api/Profesor
- * @example
- * curl -X GET 'http://localhost:3000/Profesor'
- */
-profesorRouter.get(
-  "/Profesor",
+  "/profesores",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -202,43 +77,33 @@ profesorRouter.get(
 );
 
 /**
- * =============================================
- * SECCIÓN DE RUTAS POST
- * =============================================
+ * @name GET /api/profesores
+ * @description Obtener listado de profesores en formato API
+ * @query {string} [dedicacion] - Filtro por dedicación
+ * @query {string} [categoria] - Filtro por categoría
+ * @query {string} [ubicacion] - Filtro por ubicación
+ * @query {string} [genero] - Filtro por género
+ * @middleware Requiere autenticación y rol autorizado
  */
+profesorRouter.get(
+  "/api/profesores",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  mostrarProfesorAPI
+);
 
 /**
- * @name POST /Profesor/register
- * @description Registra un nuevo profesor en el sistema
- * @body {Object} Datos del profesor - Ver estructura completa abajo
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- * @example
- * // Ejemplo de body JSON:
- * {
- *   "nombres": "Gabriel Dayer",
- *   "apellidos": "Leonett Armas",
- *   "email": "gabrielleonett@uptamca.edu.ve",
- *   "id": 31264460,
- *   "password": "12345678",
- *   "direccion": "Av. Bermudez, Los teques",
- *   "telefono_movil": "04142245310",
- *   "telefono_local": "02122641697",
- *   "genero": "masculino",
- *   "fecha_nacimiento": "27-11-2004",
- *   "fecha_ingreso": "22-03-2021",
- *   "dedicacion": "Convencional",
- *   "categoria": "Instructor",
- *   "area_de_conocimiento": "Inteligencia Artificial",
- *   "pre_grado": "Ingeniería en Sistemas",
- *   "pos_grado": "Doctorado en Ciencias de la Computación",
- *   "ubicacion": "Núcleo de Tegnología y Ciencias Administrativas"
- * }
+ * @name POST /profesores
+ * @description Registrar un nuevo profesor en el sistema
+ * @body {Object} Datos del profesor
+ * @middleware Requiere roles administrativos superiores
  */
 profesorRouter.post(
-  "/Profesor/register",
+  "/profesores",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -249,22 +114,54 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/search
- * @description Busca profesores por cédula, nombre o apellido
- * @query {string} busqueda - Término de búsqueda (cédula o nombre)
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de body JSON:
- * {
- *   "busqueda": "3124460"
- * }
+ * @name PUT /profesores/:id
+ * @description Actualizar los datos de un profesor existente
+ * @param {number} id - ID del profesor a actualizar
+ * @body {Object} Datos actualizados del profesor
+ * @middleware Requiere autenticación y rol autorizado
  */
-profesorRouter.post(
-  "/Profesor/search",
+profesorRouter.put(
+  "/profesores/:id",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  actualizarProfesor
+);
+
+/**
+ * @name DELETE /profesores/:id
+ * @description Destituir/eliminar un profesor del sistema
+ * @param {number} id - ID del profesor a destituir
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.delete(
+  "/profesores/:id",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  destituirProfesor
+);
+
+/**
+ * =============================================
+ * RUTAS DE BÚSQUEDA Y RECURSOS ESPECÍFICOS
+ * =============================================
+ */
+
+/**
+ * @name GET /profesores/search
+ * @description Buscar profesores por cédula, nombre o apellido
+ * @query {string} busqueda - Término de búsqueda
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/profesores/search",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -275,10 +172,37 @@ profesorRouter.post(
 );
 
 /**
- *
+ * @name GET /profesores/:id/imagen
+ * @description Obtener la imagen de un profesor específico
+ * @param {number} id - ID del profesor
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/profesores/:id/imagen",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  getImageProfesorDirect
+);
+
+/**
+ * =============================================
+ * RUTAS DE DISPONIBILIDAD
+ * =============================================
+ */
+
+/**
+ * @name POST /profesores/:id/disponibilidad
+ * @description Registrar disponibilidad horaria de un profesor
+ * @param {number} id - ID del profesor
+ * @body {Object} Datos de disponibilidad
+ * @middleware Requiere autenticación y rol autorizado
  */
 profesorRouter.post(
-  "/Profesor/Register/Disponibilidad",
+  "/profesores/:id/disponibilidad",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -289,24 +213,36 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/pre-grado
- * @description Registrar el pre-grado de un profesor
- * @body {Object} pre_grado.tipo tipo de pre-grado TSU, Licenciatura, etc
- * @body {Object} pre_grado.nombre Nombre de pre-grado Informatica, Ciencias Administrativas, etc.
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de body JSON:
- * {
- *    tipo: "TSU",
- *    nombre: "En informática"
- * }
+ * =============================================
+ * RUTAS DE CATÁLOGOS (PREGRADOS, POSGRADOS, ÁREAS)
+ * =============================================
+ */
+
+/**
+ * @name GET /catalogos/pregrados
+ * @description Obtener listado de pregrados disponibles
+ * @query {string} [tipo] - Filtro por tipo de pregrado
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/catalogos/pregrados",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  mostrarPreGrados
+);
+
+/**
+ * @name POST /catalogos/pregrados
+ * @description Registrar un nuevo pregrado en el catálogo
+ * @body {Object} Datos del pregrado
+ * @middleware Requiere autenticación y rol autorizado
  */
 profesorRouter.post(
-  "/Profesor/pre-grado",
+  "/catalogos/pregrados",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -317,24 +253,30 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/pos-grado
- * @description Registrar el pos-grado de un profesor
- * @body {Object} pos_grado.tipo tipo de pos-grado Maestria, Doctorado, especializacion, etc.
- * @body {Object} pos_grado.nombre Nombre de pos-grado IA, TIC, etc.
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de body JSON:
- * pos_grado :{
- *    tipo: "Maestria",
- *    nombre: "En IA"
- * }
+ * @name GET /catalogos/posgrados
+ * @description Obtener listado de posgrados disponibles
+ * @query {string} [tipo] - Filtro por tipo de posgrado
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/catalogos/posgrados",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  mostrarPosGrados
+);
+
+/**
+ * @name POST /catalogos/posgrados
+ * @description Registrar un nuevo posgrado en el catálogo
+ * @body {Object} Datos del posgrado
+ * @middleware Requiere autenticación y rol autorizado
  */
 profesorRouter.post(
-  "/Profesor/pos-grado",
+  "/catalogos/posgrados",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -345,21 +287,29 @@ profesorRouter.post(
 );
 
 /**
- * @name POST /Profesor/areas-conocimiento
- * @description Registrar el areas conocimiento de un profesor
- * @body {Object} area_conocimiento Area conocimiento Matematicas, Contabilidad, etc.
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- * @example
- * // Ejemplo de body JSON:
- * area_conocimiento : "Matematicas"
+ * @name GET /catalogos/areas-conocimiento
+ * @description Obtener listado de áreas de conocimiento disponibles
+ * @middleware Requiere autenticación y rol autorizado
  */
+profesorRouter.get(
+  "/catalogos/areas-conocimiento",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  mostrarAreasConocimiento
+);
 
+/**
+ * @name POST /catalogos/areas-conocimiento
+ * @description Registrar una nueva área de conocimiento en el catálogo
+ * @body {Object} Datos del área de conocimiento
+ * @middleware Requiere autenticación y rol autorizado
+ */
 profesorRouter.post(
-  "/Profesor/areas-conocimiento",
+  "/catalogos/areas-conocimiento",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -367,37 +317,4 @@ profesorRouter.post(
     "Coordinador",
   ]),
   registerAreaConocimiento
-);
-
-/**
- * =============================================
- * SECCIÓN DE RUTAS PUT
- * =============================================
- */
-
-profesorRouter.put(
-  "/profesores/actualizar",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  actualizarProfesor
-);
-/**
- * =============================================
- * SECCIÓN DE RUTAS DELETE
- * =============================================
- */
-
-profesorRouter.delete(
-  "/Profesores/Delete",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
-  destituirProfesor
 );

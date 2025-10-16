@@ -1,6 +1,6 @@
 import z from "zod";
 
-const PNFSchema = z.object({
+const pnfSchema = z.object({
   nombrePNF: z
     .string({
       invalid_type_error: "El nombre del PNF debe ser un texto",
@@ -53,14 +53,4 @@ const PNFSchema = z.object({
     .positive("Debe ser un numero positivo"),
 });
 
-// Validación completa
-export const validationPNF = ({ input }) => {
-  const validationResult = PNFSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialPNF = ({ input }) => {
-  const PartialPNFSchema = PNFSchema.partial().safeParse(input);
-  return PartialPNFSchema;
-};
+export default pnfSchema;

@@ -1,5 +1,5 @@
 import z from "zod";
-export const loginSchema = z.object({
+const loginSchema = z.object({
   email: z
     .string({
       required_error: "El email es requerido",
@@ -24,3 +24,5 @@ export const loginSchema = z.object({
     )
     .nonempty("La contraseña no puede estar vacía"),
 });
+
+export default loginSchema;
