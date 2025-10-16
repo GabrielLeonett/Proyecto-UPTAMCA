@@ -13,6 +13,7 @@ import { useEffect, useState } from "react"; // ✅ Agregar useRef
 import CloseIcon from "@mui/icons-material/Close";
 import io from "socket.io-client";
 import useApi from "../../hook/useApi";
+import env from '../../config/env.js'
 
 export default function Notification({ userRoles, userID }) {
   const theme = useTheme();
@@ -72,7 +73,7 @@ export default function Notification({ userRoles, userID }) {
       return;
     }
 
-    const newSocket = io("https://proyecto-uptamca.onrender.com", {
+    const newSocket = io(env.serverUrl, {
       transports: ["websocket"], // Permitir ambos
       withCredentials: true,
       auth: {

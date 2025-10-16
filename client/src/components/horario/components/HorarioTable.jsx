@@ -17,7 +17,7 @@ import {
   Schedule as ScheduleIcon,
   Class as ClassIcon,
 } from "@mui/icons-material";
-import Clase from "./Clase";
+import Clase from "./clase";
 import { UTILS } from "../../../utils/utils";
 
 // Solo la tabla del horario

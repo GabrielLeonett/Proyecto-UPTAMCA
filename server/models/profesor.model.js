@@ -17,11 +17,11 @@ import db from "../database/db.js";
 import FormatResponseModel from "../utils/FormatResponseModel.js";
 
 //Importacion de para manejar la imagenes
-import imagenProcessingServices from "../services/imagenProcessing.services.js";
+import imagenProcessingServices from "../services/imagen.service.js";
 
 //Importacion de Funcion para parsear datos a json
 import { parseJSONField, loadEnv } from "../utils/utilis.js";
-import NotificationService from "../services/Notification.services.js";
+import NotificationService from "../services/notification.service.js";
 
 export default class ProfesorModel {
   /**

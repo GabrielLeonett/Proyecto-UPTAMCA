@@ -215,7 +215,7 @@ class DocumentServices {
 
     // Procesar el horario
     const procesarHorario = () => {
-      const diasSemana = ["lunes", "martes", "miercoles", "jueves", "viernes"];
+      const diasSemana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
       const horasDisponibles = this.generarHorasDisponibles(Turno);
 
       const matrizHorario = diasSemana.map((dia) => ({
@@ -308,7 +308,7 @@ class DocumentServices {
     const crearFilasTabla = (matrizHorario, horasDisponibles) => {
       const filas = [];
 
-      // Fila de información (PNF, Trayecto, Sección)
+      // Fila de información
       const totalColumnas = 1 + matrizHorario.length;
       const filaInfo = crearFilaInformacion(totalColumnas);
       filas.push(filaInfo);
@@ -349,6 +349,12 @@ class DocumentServices {
       });
       filas.push(filaEncabezado);
 
+      // Array para trackear rowSpans activos por día
+      const rowSpansActivos = matrizHorario.map(() => ({
+        activo: false,
+        filasRestantes: 0,
+      }));
+
       // Filas con horarios y clases
       horasDisponibles.forEach((hora) => {
         const celdas = [
@@ -365,15 +371,26 @@ class DocumentServices {
           ),
         ];
 
-        const celdasPorDia = [];
-
+        // Procesar cada día
         matrizHorario.forEach((dia, diaIndex) => {
-          const celda = dia.horas[hora];
+          const celdaInfo = dia.horas[hora];
+          const rowSpanInfo = rowSpansActivos[diaIndex];
 
-          if (celda?.esContinuacion) {
-            celdasPorDia.push({ tipo: "omitir", dia: dia.dia });
-          } else if (celda?.ocupado && celda.bloque === 0) {
-            const clase = celda.datosClase;
+          // Si hay un rowSpan activo, decrementar y saltar esta celda
+          if (rowSpanInfo.activo) {
+            rowSpanInfo.filasRestantes--;
+            if (rowSpanInfo.filasRestantes === 0) {
+              rowSpanInfo.activo = false;
+            }
+            return; // No agregar celda para este día
+          }
+
+          if (celdaInfo?.esContinuacion) {
+            // No hacer nada - la celda ya está cubierta por rowSpan
+            return;
+          } else if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
+            // Nueva clase que ocupa múltiples filas
+            const clase = celdaInfo.datosClase;
             const contenido = [
               DocumentServices.crearParrafoEstilizado(
                 DocumentServices.crearTextoEstilizado(
@@ -394,47 +411,50 @@ class DocumentServices {
               ...(clase.aula
                 ? [
                     DocumentServices.crearParrafoEstilizado(
-                      DocumentServices.crearTextoEstilizado(`Aula: ${clase.aula}`, {
-                        size: ESTILOS.tamanos.detalle,
-                      })
+                      DocumentServices.crearTextoEstilizado(
+                        `Aula: ${clase.aula}`,
+                        {
+                          size: ESTILOS.tamanos.detalle,
+                        }
+                      )
                     ),
                   ]
                 : []),
               DocumentServices.crearParrafoEstilizado(
-                DocumentServices.crearTextoEstilizado(`${clase.horaInicio} - ${clase.horaFin}`, {
-                  size: ESTILOS.tamanos.detalle,
-                  color: ESTILOS.colores.textoGris,
-                })
+                DocumentServices.crearTextoEstilizado(
+                  `${clase.horaInicio} - ${clase.horaFin}`,
+                  {
+                    size: ESTILOS.tamanos.detalle,
+                    color: ESTILOS.colores.textoGris,
+                  }
+                )
               ),
             ];
 
-            celdasPorDia.push({
-              tipo: "clase",
-              dia: dia.dia,
-              celda: DocumentServices.crearCeldaEstilizada(contenido, {
-                rowSpan: celda.bloquesTotales,
+            celdas.push(
+              DocumentServices.crearCeldaEstilizada(contenido, {
+                rowSpan: celdaInfo.bloquesTotales,
                 shading: { fill: ESTILOS.colores.fondoClase },
-              }),
-            });
+              })
+            );
+
+            // Activar el tracking de rowSpan
+            rowSpansActivos[diaIndex] = {
+              activo: true,
+              filasRestantes: celdaInfo.bloquesTotales - 1,
+            };
           } else {
-            celdasPorDia.push({
-              tipo: "vacia",
-              dia: dia.dia,
-              celda: DocumentServices.crearCeldaEstilizada([DocumentServices.crearParrafoEstilizado("")]),
-            });
+            // Celda vacía
+            celdas.push(
+              DocumentServices.crearCeldaEstilizada([
+                DocumentServices.crearParrafoEstilizado(""),
+              ])
+            );
           }
         });
 
-        celdasPorDia.forEach((item) => {
-          if (item.tipo !== "omitir") {
-            celdas.push(item.celda);
-          }
-        });
-
-        const celdasEsperadas =
-          1 + celdasPorDia.filter((item) => item.tipo !== "omitir").length;
-
-        if (celdas.length === celdasEsperadas) {
+        // Solo agregar la fila si tiene el número correcto de celdas
+        if (celdas.length === 1 + matrizHorario.length) {
           filas.push(
             new TableRow({
               children: celdas,

@@ -6,7 +6,7 @@ import { validationPartialUnidadCurricular } from "../schemas/UnidadCurricularSc
 import { validationPartialPNF } from "../schemas/PnfSchema.js";
 import validationErrors from "../utils/validationsErrors.js";
 import FormatResponseController from "../utils/FormatResponseController.js";
-import HorarioService from "../services/HorarioService.js";
+import HorarioService from "../services/horario.service.js";
 
 /**
  * @class HorarioController

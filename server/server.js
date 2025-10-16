@@ -13,7 +13,7 @@ import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
 
-import SocketServices from "./services/socket.services.js";
+import SocketServices from "./services/socket.service.js";
 
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/Profesor.routes.js";
@@ -48,20 +48,7 @@ const servicioSocket = new SocketServices();
 const io = servicioSocket.initializeService();
 
 io.on("connection", (socket) => {
-  console.log(
-    "✅ Usuario conectado:",
-    socket.user.id,
-    "Roles:",
-    socket.user.roles
-  );
 
-  socket.on("disconnect", (reason) => {
-    console.log(`❌ Usuario ${socket.user.id} desconectado. Razón:`, reason);
-  });
-
-  socket.on("error", (error) => {
-    console.error(`💥 Error en socket ${socket.user.id}:`, error);
-  });
 });
 
 // Encendido del servidor
