@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const DisponibilidadDocenteSchema = z.object({
+const disponibilidaddocenteSchema = z.object({
   id_profesor: z
     .number({
       invalid_type_error: "El ID del profesor debe ser un número",
@@ -33,3 +33,4 @@ export const DisponibilidadDocenteSchema = z.object({
     })
     .nonempty({ message: "La hora de fin es obligatoria" }),
 });
+export default disponibilidaddocenteSchema;

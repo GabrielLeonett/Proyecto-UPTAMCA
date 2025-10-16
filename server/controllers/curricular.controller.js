@@ -1,5 +1,4 @@
-import FormatResponseController from "../utils/FormatResponseController.js";
-import CurricularService from "../services/curricular.service.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 
 /**
  * @class CurricularController

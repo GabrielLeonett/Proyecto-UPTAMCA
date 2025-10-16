@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const SedeSchema = z.object({
+const sedeSchema = z.object({
   nombreSede: z
     .string({
       invalid_type_error: "El nombre de la sede debe ser un texto",
@@ -23,3 +23,5 @@ export const SedeSchema = z.object({
     .url({ message: "El enlace de Google Maps debe ser una URL válida" })
     .max(300, { message: "El enlace de Google Maps debe tener como máximo 300 caracteres" }),
 });
+
+export default sedeSchema;

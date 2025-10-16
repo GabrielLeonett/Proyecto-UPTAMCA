@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { UserSchema } from "./UserSchema.js";
+import userSchema from "./user.schema.js";
 
 // Esquema para Pre-Grados
 export const preGradoSchema = z.object({
@@ -42,7 +42,7 @@ export const posGradoSchema = z.object({
 });
 
 // Esquema principal para Profesores
-export const ProfesorSchema = UserSchema.extend({
+export const profesorSchema = userSchema.extend({
   fecha_ingreso: z
     .string({
       required_error: "La fecha de ingreso es obligatoria",

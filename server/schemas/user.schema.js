@@ -1,6 +1,7 @@
+import e from "cors";
 import z from "zod";
 
-export const UserSchema = z.object({
+const userSchema = z.object({
   cedula: z
     .number()
     .int("La cédula debe ser un número entero")
@@ -59,3 +60,5 @@ export const UserSchema = z.object({
     error_map: () => ({ message: "Genero tiene que ser masculino o femenino" }),
   }),
 });
+
+export default userSchema

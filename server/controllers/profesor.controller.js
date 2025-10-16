@@ -1,4 +1,4 @@
-import FormatResponseController from "../utils/FormatResponseController.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 import ProfesorService from "../services/profesor.service.js";
 
 /**

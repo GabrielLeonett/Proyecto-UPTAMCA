@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const PNFSchema = z.object({
+const pnfSchema = z.object({
   nombrePNF: z
     .string({
       invalid_type_error: "El nombre del PNF debe ser un texto",
@@ -52,3 +52,5 @@ export const PNFSchema = z.object({
     })
     .positive("Debe ser un numero positivo"),
 });
+
+export default pnfSchema;

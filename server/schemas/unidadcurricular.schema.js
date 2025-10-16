@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const UnidadCurricularSchema = z.object({
+const unidadcurricularSchema = z.object({
   idTrayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que se un numero",
@@ -52,3 +52,5 @@ export const UnidadCurricularSchema = z.object({
     .trim()
     .toUpperCase(),
 });
+
+export default unidadcurricularSchema;

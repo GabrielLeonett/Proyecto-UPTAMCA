@@ -2,106 +2,129 @@
 Importación de la clase para el formateo de los datos que se reciben de la BD y
 su procesamiento para devolver al controlador un resultado estandarizado.
 */
-import FormatResponseModel from "../utils/FormatResponseModel.js";
-
-// Importación de librería para encriptación de contraseñas
-import { hashPassword, generarPassword } from "../utils/encrypted.js";
+import FormatResponseModel from "../utils/FormatterResponseModel.js";
 
 // Importación de la conexión con la base de datos
 import client from "../database/pg.js";
 
 /**
  * @class UserModel
- * @description Esta clase se encarga de interactuar con la base de datos para las operaciones relacionadas con usuarios,
- * proporcionando una capa de abstracción entre el controlador y la base de datos.
- * Maneja el formato de las respuestas para mantener consistencia en la API.
+ * @description Esta clase se encarga exclusivamente de interactuar con la base de datos.
+ * Solo contiene operaciones CRUD y consultas directas a la BD.
  */
-
 export default class UserModel {
   /**
    * @static
    * @async
    * @method loginUser
-   * @description Busca un usuario en la base de datos por su email y devuelve sus datos formateados.
-   * Utiliza una función almacenada en la BD (MOSTRAR_USUARIO) para obtener la información.
-   * @param {Object} params - Objeto que contiene los parámetros de búsqueda
-   * @param {string} params.email - Email del usuario a buscar
-   * @returns {Promise<Object>} Objeto formateado con el resultado de la consulta:
-   *   - Si es exitoso: { state: "success", data: { usuario }, message: "Usuario Obtenido" }
-   *   - Si falla: { state: "error", message: "Error al obtener el usuario", error: detalles }
-   * @throws {Error} Cuando ocurre un error en la consulta a la base de datos
+   * @description Busca un usuario en la base de datos por su email
+   * @param {string} email - Email del usuario a buscar
+   * @returns {Promise<Object>} Resultado de la consulta a la base de datos
    */
-  static async loginUser({ email }) {
+  static async loginUser(email) {
     try {
-      // Consulta SQL que llama a la función almacenada MOSTRAR_USUARIO
-      const query = "SELECT iniciar_session(?) AS p_resultado";
-      // Valores para la consulta preparada (email del usuario)
-      const values = [email];
+      // Opción 1: Si usas parámetros nombrados con :
+      const query = "SELECT iniciar_session($1) AS p_resultado";
 
-      // Ejecución de la consulta en la base de datos
-      const { rows } = await db.raw(query, values);
+      const { rows } = await client.query(query, [email]);
 
-      // Formateo de la respuesta utilizando el modelo estándar
-      const resultado = FormatResponseModel.respuestaPostgres(
-        rows,
-        "Usuario Obtenido"
-      );
-
-      return resultado;
+      return FormatResponseModel.respuestaPostgres(rows, "Usuario Obtenido");
     } catch (error) {
       error.details = {
         path: "UserModel.loginUser",
       };
-      // Formateo del error utilizando el modelo estándar
       throw FormatResponseModel.respuestaError(
         error,
         "Error al obtener el usuario"
       );
     }
   }
+
   /**
    * @static
    * @async
    * @method cambiarContraseña
-   * @description Actualiza la contraseña de un usuario en la base de datos.
-   * Utiliza una función almacenada en la BD (actualizar_contrasena_usuario) para realizar la actualización.
-   * @param {Object} params - Objeto que contiene los parámetros para el cambio de contraseña
-   * @param {Object} params.usuario - Objeto del usuario con su ID
-   * @param {string} params.contraseña - Nueva contraseña a establecer
-   * @returns {Promise<Object>} Objeto formateado con el resultado de la operación:
-   *   - Si es exitoso: { state: "success", data: { resultado }, message: "Contraseña actualizada exitosamente" }
-   *   - Si falla: { state: "error", message: "Error al cambiar la contraseña", error: detalles }
-   * @throws {Error} Cuando ocurre un error en la consulta a la base de datos
+   * @description Actualiza la contraseña de un usuario en la base de datos
+   * @param {number} usuarioId - ID del usuario
+   * @param {string} passwordHash - Contraseña hasheada
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
-  static async cambiarContraseña({ usuario, contraseña }) {
+  static async cambiarContraseña(usuarioId, passwordHash) {
     try {
-      console.log(usuario.id, contraseña);
-      // Consulta SQL que llama al procedimiento almacenado actualizar_contrasena_usuario
       const query = "CALL actualizar_contrasena_usuario(?, ?, NULL)";
-      // Valores para la consulta preparada (id_usuario, nueva_contraseña)
-      const passwordHash = await hashPassword(contraseña);
-      const values = [usuario.id, passwordHash];
+      const values = [usuarioId, passwordHash];
 
-      // Ejecución de la consulta en la base de datos
-      const result = await db.raw(query, values);
+      const result = await client.raw(query, values);
 
-      // Si tu procedimiento devuelve resultados en rows, usa esta línea:
-      const resultado = FormatResponseModel.respuestaPostgres(
+      return FormatResponseModel.respuestaPostgres(
         result.rows,
         "Contraseña actualizada exitosamente"
       );
-
-      return resultado;
     } catch (error) {
       error.details = {
         path: "UserModel.cambiarContraseña",
-        usuario_id: usuario.id,
+        usuario_id: usuarioId,
       };
-
-      // Formateo del error utilizando el modelo estándar
       throw FormatResponseModel.respuestaError(
         error,
         "Error al cambiar la contraseña"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerUsuarioPorId
+   * @description Obtiene un usuario por su ID
+   * @param {number} id - ID del usuario
+   * @returns {Promise<Object>} Datos del usuario
+   */
+  static async obtenerUsuarioPorId(id) {
+    try {
+      const query = "SELECT * FROM users WHERE id = ?";
+      const values = [id];
+
+      const { rows } = await client.raw(query, values);
+
+      return FormatResponseModel.respuestaPostgres(rows, "Usuario obtenido");
+    } catch (error) {
+      error.details = {
+        path: "UserModel.obtenerUsuarioPorId",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener el usuario"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarUltimoLogin
+   * @description Actualiza la fecha del último login del usuario
+   * @param {number} usuarioId - ID del usuario
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async actualizarUltimoLogin(usuarioId) {
+    try {
+      const query = "UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?";
+      const values = [usuarioId];
+
+      const result = await client.raw(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        result.rows,
+        "Último login actualizado"
+      );
+    } catch (error) {
+      error.details = {
+        path: "UserModel.actualizarUltimoLogin",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al actualizar último login"
       );
     }
   }

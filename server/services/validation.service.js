@@ -3,10 +3,10 @@ import aulaSchema from "../schemas/aula.schema.js";
 import contraseniaSchema from "../schemas/contrasenia.schema.js";
 import coordinadorSchema from "../schemas/coordinador.schema.js";
 import destitucionSchema from "../schemas/destitucion.schema.js";
-import disponibilidadDocenteSchema from "../schemas/disponibildaddocente.schema.js";
+import disponibilidadDocenteSchema from "../schemas/disponiblidaddocente.schema.js";
 import loginSchema from "../schemas/login.schema.js";
 import pnfSchema from "../schemas/pnf.schema.js";
-import profesorSchema from "../schemas/professor.schema.js";
+import { profesorSchema } from "../schemas/profesor.schema.js";
 import seccionSchema from "../schemas/seccion.schema.js";
 import sedeSchema from "../schemas/sede.schema.js";
 import unidadCurricularSchema from "../schemas/unidadcurricular.schema.js";
@@ -325,7 +325,9 @@ export default class ValidationService {
    * @returns {Object} Resultado de la validación
    */
   static validatePartialDisponibilidadDocente(data, options = {}) {
-    const validationResult = disponibilidadDocenteSchema.partial().safeParse(data);
+    const validationResult = disponibilidadDocenteSchema
+      .partial()
+      .safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

@@ -8,7 +8,6 @@ const {
   verificarUsers,
   closeSession,
   cambiarContraseña,
-  enviarNotificacion,
 } = UserController;
 
 export const UserRouter = Router();
@@ -69,19 +68,6 @@ UserRouter.put(
   ]),
   cambiarContraseña
 );
-
-/**
- * =============================================
- * RUTAS DE NOTIFICACIONES
- * =============================================
- */
-
-/**
- * @name GET /notifications
- * @description Obtener notificaciones del usuario
- * @middleware Requiere autenticación (cualquier rol)
- */
-UserRouter.get("/notifications", middlewareAuth(null), enviarNotificacion);
 
 /**
  * =============================================

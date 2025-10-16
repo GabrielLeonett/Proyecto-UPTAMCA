@@ -8,7 +8,6 @@ const {
   listarCoordinadores,
   actualizarCoordinador,
   eliminarCoordinador,
-  obtenerCoordinadorPorId 
 } = CoordinadorController;
 
 // Creación del router para las rutas de Coordinador
@@ -70,7 +69,7 @@ coordinadorRouter.get(
     "Director General de Gestión Curricular",
     "Coordinador",
   ]),
-  obtenerCoordinadorPorId
+  //obtenerCoordinadorPorId
 );
 
 /**

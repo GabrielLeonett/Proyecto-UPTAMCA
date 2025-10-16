@@ -1,475 +1,835 @@
+import ValidationService from "./validation.service.js";
+import NotificationService from "./notification.service.js";
+import ImagenService from "./imagen.service.js";
+import EmailService from "./email.service.js";
+//Modelo
 import ProfesorModel from "../models/profesor.model.js";
-import validationService from "./validation.service.js";
-import FormatResponseModel from "../utils/FormatResponseModel.js";
 
+import { loadEnv } from "../utils/utilis.js";
+
+loadEnv();
 /**
  * @class ProfesorService
- * @description Contiene la lógica de negocio relacionada con los profesores
+ * @description Servicio para operaciones de negocio relacionadas con profesores
  */
 export default class ProfesorService {
-  /**
-   * Registrar un nuevo profesor
-   * @param {object} datos - Datos del profesor
-   * @param {object} usuario_accion - Usuario que realiza la acción
-   */
-  static async registrarProfesor(datos, usuario_accion) {
-    try {
-      // Validar usuario
-      validationService.(usuario_accion.id, "ID del usuario en sesión");
-      validationService.validarObjeto(usuario_accion, "usuario en sesión");
+  constructor() {
+    this.validationService = ValidationService;
+    this.notificationService = new NotificationService();
+    this.imagenService = new ImagenService("Profesores");
+    this.emailService = new EmailService();
+  }
 
-      // Validar datos del profesor usando el método específico
-      const validacion = validationService.validateProfesor(datos);
-      
-      if (!validacion.isValid) {
-        throw new Error(`Datos del profesor inválidos: ${validacion.errors.join(', ')}`);
+  async registrarProfesor(datos, imagen, user_action) {
+    try {
+      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+
+      if (process.env.NODE_ENV === "development") {
+        console.log("📝 Datos recibidos:", {
+          datos: JSON.stringify(datos, null, 2),
+          imagen: imagen
+            ? {
+                originalName: imagen.originalName,
+                size: imagen.size,
+                mimetype: imagen.mimetype,
+              }
+            : "No image provided",
+          user_action: user_action,
+        });
       }
 
-      // Validar que no haya conflicto con datos existentes (puedes agregar más validaciones aquí)
-      await this.validarProfesorUnico(datos.cedula, datos.email);
+      // 1. Validar datos del profesor
+      console.log("✅ Validando datos del profesor...");
+      const validation = this.validationService.validateProfesor(datos);
 
-      // Registrar en el modelo
-      const resultado = await ProfesorModel.crear(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Profesor registrado exitosamente"
-      );
-    } catch (error) {
-      console.error("Error en registrarProfesor:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registrar el profesor"
-      );
-    }
-  }
-
-  /**
-   * Obtener todos los profesores
-   */
-  static async obtenerTodosLosProfesores() {
-    try {
-      const profesores = await ProfesorModel.obtenerTodos();
-      
-      // Validar que hay datos
-      validationService.validarArray(profesores, "profesores");
-
-      return FormatResponseModel.respuestaPostgres(
-        profesores,
-        "Profesores obtenidos exitosamente"
-      );
-    } catch (error) {
-      console.error("Error en obtenerTodosLosProfesores:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los profesores"
-      );
-    }
-  }
-
-  /**
-   * Obtener profesores con filtros
-   * @param {object} filtros - Filtros de búsqueda
-   */
-  static async obtenerProfesoresConFiltros(filtros) {
-    try {
-      validationService.validarObjeto(filtros, "filtros");
-
-      // Validar que al menos un filtro esté presente
-      const filtrosDisponibles = ['dedicacion', 'categoria', 'ubicacion', 'area', 'fecha', 'genero'];
-      const hayFiltros = filtrosDisponibles.some(filtro => 
-        filtros[filtro] !== undefined && filtros[filtro] !== null && filtros[filtro] !== ''
-      );
-
-      if (!hayFiltros) {
-        throw new Error("Se debe proporcionar al menos un filtro válido");
+      if (!validation.isValid) {
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            validation.errors
+          ),
+        };
       }
 
-      const profesores = await ProfesorModel.obtenerConFiltros(filtros);
-      
-      validationService.validarArray(profesores, "profesores filtrados");
-
-      return FormatResponseModel.respuestaPostgres(
-        profesores,
-        "Profesores filtrados obtenidos exitosamente"
+      // 2. Validar ID de usuario
+      console.log("✅ Validando ID de usuario...");
+      const idValidation = this.validationService.validateId(
+        user_action.id,
+        "usuario"
       );
-    } catch (error) {
-      console.error("Error en obtenerProfesoresConFiltros:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener profesores con filtros"
-      );
-    }
-  }
 
-  /**
-   * Buscar profesores por término
-   * @param {string} busqueda - Término de búsqueda
-   */
-  static async buscarProfesores(busqueda) {
-    try {
-      validationService.validarTexto(busqueda, "término de búsqueda");
-      validationService.validarTextoNoVacio(busqueda, "término de búsqueda");
-
-      // Validar longitud mínima de búsqueda
-      if (busqueda.length < 2) {
-        throw new Error("El término de búsqueda debe tener al menos 2 caracteres");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            idValidation.errors
+          ),
+        };
       }
 
-      const resultados = await ProfesorModel.buscar(busqueda);
-      
-      validationService.validarArray(resultados, "resultados de búsqueda");
+      // 3. Validar imagen (solo si se proporciona)
+      let imagenPath = null;
+      if (imagen && imagen.originalName) {
+        console.log("🖼️ Validando imagen...");
+        const validationImage = await this.imagenService.validateImage(
+          imagen.originalName,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            maxSize: 5 * 1024 * 1024,
+            quality: 85,
+            format: "webp",
+          }
+        );
 
-      return FormatResponseModel.respuestaPostgres(
-        resultados,
-        "Búsqueda de profesores realizada exitosamente"
-      );
-    } catch (error) {
-      console.error("Error en buscarProfesores:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al buscar profesores"
-      );
-    }
-  }
+        if (!validationImage.isValid) {
+          console.error(
+            "❌ Validación de imagen fallida:",
+            validationImage.error
+          );
+          throw new Error(
+            `Error de validación de imagen: ${validationImage.error}`
+          );
+        }
 
-  /**
-   * Obtener imagen de un profesor
-   * @param {number} idProfesor - ID del profesor
-   */
-  static async obtenerImagenProfesor(idProfesor) {
-    try {
-      validationService.validarIdNumerico(idProfesor, "ID del profesor");
+        console.log("✅ Imagen válida:", validationImage.message);
 
-      const imagen = await ProfesorModel.obtenerImagen(idProfesor);
-      
-      validationService.validarArray(imagen, "información de imagen");
+        // Guardar imagen y obtener la ruta
+        console.log("💾 Procesando y guardando imagen...");
+        imagenPath = await this.imagenService.processAndSaveImage(
+          imagen.originalName,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            quality: 85,
+            format: "webp",
+          }
+        );
 
-      if (imagen.length === 0) {
-        throw new Error("No se encontró imagen para el profesor");
+        if (process.env.NODE_ENV === "development") {
+          console.log("📁 Ruta de imagen guardada:", imagenPath);
+        }
+      } else {
+        console.log("ℹ️ No se proporcionó imagen, continuando sin ella...");
       }
 
-      return FormatResponseModel.respuestaPostgres(
-        imagen[0],
-        "Imagen del profesor obtenida exitosamente"
+      // 4. Validar email (CORREGIDO: falta await)
+      console.log("📧 Validando email...");
+      const validationEmail = await this.emailService.verificarEmailConAPI(
+        datos.email
+      ); // Agregado await
+
+      if (!validationEmail.existe) {
+        console.error("❌ Validación de email fallida:", validationEmail);
+        return {
+          success: false,
+          error: {
+            state: "invalid_email",
+            status: 400,
+            title: "Email Inválido",
+            message: "El email proporcionado no es válido o no existe",
+            details: validationEmail,
+          },
+        };
+      }
+
+      console.log("✅ Email válido");
+
+      // 5. Crear profesor en el modelo (CORREGIDO: falta await)
+      console.log("👨‍🏫 Creando profesor en base de datos...");
+      const respuestaModel = await ProfesorModel.crear(
+        // Agregado await
+        {
+          ...datos,
+          imagen: imagenPath, // Agregar ruta de imagen si existe
+        },
+        user_action
       );
-    } catch (error) {
-      console.error("Error en obtenerImagenProfesor:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener la imagen del profesor"
-      );
-    }
-  }
 
-  /**
-   * Obtener catálogos de pregrados, posgrados y áreas
-   */
-  static async obtenerCatalogos() {
-    try {
-      const [pregrados, posgrados, areas] = await Promise.all([
-        ProfesorModel.obtenerPregrados(),
-        ProfesorModel.obtenerPosgrados(),
-        ProfesorModel.obtenerAreasConocimiento()
-      ]);
+      if (process.env.NODE_ENV === "development") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
 
-      validationService.validarArray(pregrados, "pregrados");
-      validationService.validarArray(posgrados, "posgrados");
-      validationService.validarArray(areas, "áreas de conocimiento");
+      // 6. Enviar notificación (CORREGIDO: variables inconsistentes)
+      console.log("🔔 Enviando notificaciones...");
+      await this.notificationService.crearNotificacionMasiva({
+        titulo: "Nuevo Profesor Registrado",
+        tipo: "profesor_creado",
+        contenido: `Se ha registrado al profesor ${datos.nombres} ${datos.apellidos} en el sistema`,
+        metadatos: {
+          profesor_cedula: datos.cedula,
+          profesor_nombre: `${datos.nombres} ${datos.apellidos}`,
+          usuario_creador: user_action.id, // CORREGIDO: usar user_action.id en lugar de usuarioId
+          fecha_registro: new Date().toISOString(),
+        },
+        roles_ids: ["admin", "coordinador"],
+        users_ids: [user_action.id], // CORREGIDO: usar user_action.id
+      });
 
-      const catalogos = {
-        pregrados,
-        posgrados,
-        areasConocimiento: areas
+      console.log("🎉 Profesor registrado exitosamente");
+
+      return {
+        success: true,
+        data: {
+          message: "Profesor creado exitosamente",
+          profesor: {
+            cedula: datos.cedula,
+            nombres: datos.nombres,
+            apellidos: datos.apellidos,
+            email: datos.email,
+            imagen: imagenPath,
+          },
+        },
       };
-
-      return FormatResponseModel.respuestaPostgres(
-        catalogos,
-        "Catálogos obtenidos exitosamente"
-      );
     } catch (error) {
-      console.error("Error en obtenerCatalogos:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al obtener los catálogos"
-      );
-    }
-  }
+      console.error("💥 Error en servicio crear profesor:", error);
 
-  /**
-   * Registrar disponibilidad docente
-   * @param {object} datos - Datos de disponibilidad
-   * @param {object} usuario_accion - Usuario que realiza la acción
-   */
-  static async registrarDisponibilidad(datos, usuario_accion) {
-    try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      
-      // Validar datos de disponibilidad
-      this.validarDatosDisponibilidad(datos);
-
-      const resultado = await ProfesorModel.crearDisponibilidad(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Disponibilidad docente registrada exitosamente"
-      );
-    } catch (error) {
-      console.error("Error en registrarDisponibilidad:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al registrar la disponibilidad docente"
-      );
-    }
-  }
-
-  /**
-   * Actualizar información de un profesor
-   * @param {object} datos - Datos actualizados
-   * @param {object} usuario_accion - Usuario que realiza la acción
-   */
-  static async actualizarProfesor(datos, usuario_accion) {
-    try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      validationService.validarIdNumerico(datos.id_profesor, "ID del profesor");
-
-      // Validar datos parciales usando el método específico
-      const validacion = validationService.validatePartialProfesor(datos);
-      
-      if (!validacion.isValid) {
-        throw new Error(`Datos de actualización inválidos: ${validacion.errors.join(', ')}`);
+      // Debugging detallado en desarrollo
+      if (process.env.NODE_ENV === "development") {
+        console.error("🔍 Debug Info:", {
+          errorName: error.name,
+          errorMessage: error.message,
+          errorStack: error.stack,
+          datos: datos
+            ? {
+                cedula: datos.cedula,
+                nombres: datos.nombres,
+                email: datos.email,
+              }
+            : "No data",
+          user_action: user_action,
+        });
       }
 
-      // Validar que haya al menos un campo para actualizar
-      const camposActualizables = [
-        'nombres', 'apellidos', 'email', 'direccion', 'password',
-        'telefono_movil', 'telefono_local', 'fecha_nacimiento', 'genero',
-        'nombre_categoria', 'nombre_dedicacion', 'pre_grado', 'pos_grado',
-        'area_de_conocimiento', 'imagen', 'municipio', 'fecha_ingreso'
-      ];
-
-      const hayCamposParaActualizar = camposActualizables.some(
-        campo => datos[campo] !== undefined && datos[campo] !== null
-      );
-
-      if (!hayCamposParaActualizar) {
-        throw new Error("Se debe proporcionar al menos un campo para actualizar");
-      }
-
-      const resultado = await ProfesorModel.actualizar(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Profesor actualizado exitosamente"
-      );
-    } catch (error) {
-      console.error("Error en actualizarProfesor:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al actualizar el profesor"
-      );
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al crear el profesor en la base de datos",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+          // Agregar más detalles en desarrollo
+          ...(process.env.NODE_ENV === "development" && {
+            stack: error.stack,
+            details: {
+              datos: datos,
+              user_action: user_action,
+            },
+          }),
+        },
+      };
     }
   }
 
   /**
-   * Eliminar/destituir un profesor
-   * @param {object} datos - Datos de eliminación
-   * @param {object} usuario_accion - Usuario que realiza la acción
+   * @name obtenerTodos
+   * @description Obtener todos los profesores con validación de parámetros
+   * @param {Object} queryParams - Parámetros de consulta
+   * @returns {Object} Resultado de la operación
    */
-  static async eliminarProfesor(datos, usuario_accion) {
+  async obtenerTodos(queryParams = {}) {
     try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      validationService.validarIdNumerico(datos.id_profesor, "ID del profesor");
+      // Validar parámetros de consulta
+      const allowedParams = ["page", "limit", "sort", "order"];
+      const queryValidation = this.validationService.validateQueryParams(
+        queryParams,
+        allowedParams
+      );
 
+      if (!queryValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            queryValidation.errors
+          ),
+        };
+      }
+
+      const { rows } = await pg.query(
+        "SELECT * FROM profesores_informacion_completa"
+      );
+
+      return {
+        success: true,
+        data: {
+          profesores: rows,
+          total: rows.length,
+          page: parseInt(queryParams.page) || 1,
+          limit: parseInt(queryParams.limit) || rows.length,
+        },
+      };
+    } catch (error) {
+      console.error("Error en servicio obtener todos los profesores:", error);
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al obtener los profesores",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
+    }
+  }
+
+  /**
+   * @name obtenerConFiltros
+   * @description Obtener profesores con filtros validados
+   * @param {Object} filtros - Filtros de búsqueda
+   * @returns {Object} Resultado de la operación
+   */
+  async obtenerConFiltros(filtros = {}) {
+    try {
+      // Validar estructura de filtros
+      const filterValidation = this.validationService.validateQueryParams(
+        filtros,
+        ["dedicacion", "categoria", "ubicacion", "area", "fecha", "genero"]
+      );
+
+      if (!filterValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            filterValidation.errors
+          ),
+        };
+      }
+
+      const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
+
+      const { rows } = await pg.query(
+        "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)",
+        [dedicacion, categoria, ubicacion, area, fecha, genero]
+      );
+
+      return {
+        success: true,
+        data: {
+          profesores: rows,
+          total: rows.length,
+          filtros_aplicados: filtros,
+        },
+      };
+    } catch (error) {
+      console.error("Error en servicio obtener profesores con filtros:", error);
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al filtrar los profesores",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
+    }
+  }
+
+  /**
+   * @name buscar
+   * @description Buscar profesores con validación de término de búsqueda
+   * @param {string} busqueda - Término de búsqueda
+   * @returns {Object} Resultado de la operación
+   */
+  async buscar(busqueda) {
+    try {
+      // Validar término de búsqueda
+      if (
+        !busqueda ||
+        typeof busqueda !== "string" ||
+        busqueda.trim().length === 0
+      ) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse([
+            {
+              path: "busqueda",
+              message:
+                "El término de búsqueda es requerido y debe ser una cadena no vacía",
+            },
+          ]),
+        };
+      }
+
+      const termino = busqueda.trim();
+
+      if (termino.length < 2) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse([
+            {
+              path: "busqueda",
+              message:
+                "El término de búsqueda debe tener al menos 2 caracteres",
+            },
+          ]),
+        };
+      }
+
+      const { rows } = await pg.query(
+        "SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3",
+        [`%${termino}%`, `%${termino}%`, `%${termino}%`]
+      );
+
+      return {
+        success: true,
+        data: {
+          profesores: rows,
+          total: rows.length,
+          termino_busqueda: termino,
+        },
+      };
+    } catch (error) {
+      console.error("Error en servicio buscar profesores:", error);
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al buscar profesores",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
+    }
+  }
+
+  /**
+   * @name actualizar
+   * @description Actualizar un profesor existente con validación y notificación
+   * @param {Object} datos - Datos actualizados del profesor
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  async actualizar(datos, usuarioId) {
+    try {
+      // Validar datos parciales del profesor
+      const validation = this.validationService.validatePartialProfesor(datos);
+
+      if (!validation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            validation.errors
+          ),
+        };
+      }
+
+      // Validar que tenga ID de profesor
+      const requiredValidation = this.validationService.validateRequiredFields(
+        datos,
+        ["id_profesor"]
+      );
+
+      if (!requiredValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            requiredValidation.errors
+          ),
+        };
+      }
+
+      // Validar ID de usuario
+      const idValidation = this.validationService.validateId(
+        usuarioId,
+        "usuario"
+      );
+      if (!idValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            idValidation.errors
+          ),
+        };
+      }
+
+      // Obtener datos actuales del profesor para comparar
+      const profesorActual = await pg.query(
+        "SELECT * FROM profesores_informacion_completa WHERE id_profesor = $1",
+        [datos.id_profesor]
+      );
+
+      if (profesorActual.rows.length === 0) {
+        return {
+          success: false,
+          error: {
+            state: "not_found",
+            status: 404,
+            title: "Profesor No Encontrado",
+            message: `No se encontró el profesor con ID ${datos.id_profesor}`,
+          },
+        };
+      }
+
+      const { rows } = await pg.query(
+        `CALL actualizar_profesor_completo_o_parcial(
+          NULL, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+        )`,
+        [
+          usuarioId,
+          datos.id_profesor,
+          datos.nombres,
+          datos.apellidos,
+          datos.email,
+          datos.direccion,
+          datos.password,
+          datos.telefono_movil,
+          datos.telefono_local,
+          datos.fecha_nacimiento,
+          datos.genero,
+          datos.nombre_categoria,
+          datos.nombre_dedicacion,
+          datos.pre_grado,
+          datos.pos_grado,
+          datos.area_de_conocimiento,
+          datos.imagen,
+          datos.municipio,
+          datos.fecha_ingreso,
+        ]
+      );
+
+      // Enviar notificación de actualización
+      await this.notificationService.crearNotificacionMasiva({
+        titulo: "Profesor Actualizado",
+        tipo: "profesor_actualizado",
+        contenido: `Se han actualizado los datos del profesor ${
+          datos.nombres || profesorActual.rows[0].nombres
+        } ${datos.apellidos || profesorActual.rows[0].apellidos}`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          profesor_cedula: profesorActual.rows[0].cedula,
+          campos_actualizados: Object.keys(datos).filter(
+            (key) => key !== "id_profesor"
+          ),
+          usuario_actualizador: usuarioId,
+          fecha_actualizacion: new Date().toISOString(),
+        },
+        roles_ids: ["admin", "coordinador"],
+        users_ids: [usuarioId],
+      });
+
+      return {
+        success: true,
+        data: {
+          message: "Profesor actualizado exitosamente",
+          profesor_id: datos.id_profesor,
+        },
+      };
+    } catch (error) {
+      console.error("Error en servicio actualizar profesor:", error);
+
+      await this.notificationService.crearNotificacionIndividual({
+        titulo: "Error al Actualizar Profesor",
+        tipo: "error_sistema",
+        user_id: usuarioId,
+        contenido: `Error al intentar actualizar al profesor con ID ${datos.id_profesor}`,
+        metadatos: {
+          error: error.message,
+          profesor_id: datos.id_profesor,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al actualizar el profesor",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
+    }
+  }
+
+  /**
+   * @name eliminar
+   * @description Eliminar/destituir un profesor con validación y notificación
+   * @param {Object} datos - Datos de la eliminación
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  async eliminar(datos, usuarioId) {
+    try {
       // Validar datos de eliminación
-      this.validarDatosEliminacion(datos);
-
-      const resultado = await ProfesorModel.eliminar(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Profesor eliminado/destituido exitosamente"
+      const requiredValidation = this.validationService.validateRequiredFields(
+        datos,
+        ["id_profesor", "tipo_accion", "razon"]
       );
+
+      if (!requiredValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            requiredValidation.errors
+          ),
+        };
+      }
+
+      // Validar ID de usuario
+      const idValidation = this.validationService.validateId(
+        usuarioId,
+        "usuario"
+      );
+      if (!idValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            idValidation.errors
+          ),
+        };
+      }
+
+      // Validar ID de profesor
+      const profesorIdValidation = this.validationService.validateId(
+        datos.id_profesor,
+        "profesor"
+      );
+      if (!profesorIdValidation.isValid) {
+        return {
+          success: false,
+          error: this.validationService.createValidationResponse(
+            profesorIdValidation.errors
+          ),
+        };
+      }
+
+      // Obtener información del profesor antes de eliminar
+      const profesorInfo = await pg.query(
+        "SELECT cedula, nombres, apellidos FROM profesores_informacion_completa WHERE id_profesor = $1",
+        [datos.id_profesor]
+      );
+
+      if (profesorInfo.rows.length === 0) {
+        return {
+          success: false,
+          error: {
+            state: "not_found",
+            status: 404,
+            title: "Profesor No Encontrado",
+            message: `No se encontró el profesor con ID ${datos.id_profesor}`,
+          },
+        };
+      }
+
+      const profesor = profesorInfo.rows[0];
+
+      const { rows } = await pg.query(
+        "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)",
+        [
+          usuarioId,
+          datos.id_profesor,
+          datos.tipo_accion,
+          datos.razon,
+          datos.observaciones || null,
+          datos.fecha_efectiva || new Date(),
+        ]
+      );
+
+      // Enviar notificación de eliminación/destitución
+      await this.notificationService.crearNotificacionMasiva({
+        titulo: `Profesor ${
+          datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
+        }`,
+        tipo: `profesor_${datos.tipo_accion}`,
+        contenido: `Se ha ${
+          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+        } al profesor ${profesor.nombres} ${profesor.apellidos} (${
+          profesor.cedula
+        })`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          profesor_cedula: profesor.cedula,
+          profesor_nombre: `${profesor.nombres} ${profesor.apellidos}`,
+          tipo_accion: datos.tipo_accion,
+          razon: datos.razon,
+          observaciones: datos.observaciones,
+          fecha_efectiva: datos.fecha_efectiva,
+          usuario_ejecutor: usuarioId,
+          fecha_ejecucion: new Date().toISOString(),
+        },
+        roles_ids: ["admin", "coordinador"],
+        users_ids: [usuarioId],
+      });
+
+      return {
+        success: true,
+        data: {
+          message: `Profesor ${
+            datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+          } exitosamente`,
+          profesor: {
+            id: datos.id_profesor,
+            cedula: profesor.cedula,
+            nombre: `${profesor.nombres} ${profesor.apellidos}`,
+            accion: datos.tipo_accion,
+          },
+        },
+      };
     } catch (error) {
-      console.error("Error en eliminarProfesor:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al eliminar/destituir el profesor"
-      );
+      console.error("Error en servicio eliminar profesor:", error);
+
+      await this.notificationService.crearNotificacionIndividual({
+        titulo: "Error al Eliminar/Destituir Profesor",
+        tipo: "error_sistema",
+        user_id: usuarioId,
+        contenido: `Error al intentar ${datos.tipo_accion} al profesor con ID ${datos.id_profesor}`,
+        metadatos: {
+          error: error.message,
+          profesor_id: datos.id_profesor,
+          tipo_accion: datos.tipo_accion,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: `Error al ${datos.tipo_accion} el profesor`,
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
     }
   }
 
   /**
-   * Crear nuevo pregrado
-   * @param {object} datos - Datos del pregrado
-   * @param {object} usuario_accion - Usuario que realiza la acción
+   * @name obtenerPregrados
+   * @description Obtener todos los pregrados con validación
+   * @returns {Object} Resultado de la operación
    */
-  static async crearPregrado(datos, usuario_accion) {
+  async obtenerPregrados() {
     try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      
-      // Validar datos del pregrado
-      validationService.validarObjeto(datos, "datos del pregrado");
-      validationService.validarTexto(datos.nombre, "Nombre del pregrado");
-      validationService.validarTexto(datos.tipo, "Tipo de pregrado");
-
-      const resultado = await ProfesorModel.crearPregrado(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Pregrado creado exitosamente"
+      const { rows } = await pg.query(
+        "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
       );
+
+      return {
+        success: true,
+        data: {
+          pregrados: rows,
+          total: rows.length,
+        },
+      };
     } catch (error) {
-      console.error("Error en crearPregrado:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al crear el pregrado"
-      );
+      console.error("Error en servicio obtener pregrados:", error);
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al obtener los pregrados",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
     }
   }
 
   /**
-   * Crear nuevo posgrado
-   * @param {object} datos - Datos del posgrado
-   * @param {object} usuario_accion - Usuario que realiza la acción
+   * @name obtenerPosgrados
+   * @description Obtener todos los posgrados con validación
+   * @returns {Object} Resultado de la operación
    */
-  static async crearPosgrado(datos, usuario_accion) {
+  async obtenerPosgrados() {
     try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      
-      // Validar datos del posgrado
-      validationService.validarObjeto(datos, "datos del posgrado");
-      validationService.validarTexto(datos.nombre, "Nombre del posgrado");
-      validationService.validarTexto(datos.tipo, "Tipo de posgrado");
-
-      const resultado = await ProfesorModel.crearPosgrado(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Posgrado creado exitosamente"
+      const { rows } = await pg.query(
+        "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
       );
+
+      return {
+        success: true,
+        data: {
+          posgrados: rows,
+          total: rows.length,
+        },
+      };
     } catch (error) {
-      console.error("Error en crearPosgrado:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al crear el posgrado"
-      );
+      console.error("Error en servicio obtener posgrados:", error);
+
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al obtener los posgrados",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
     }
   }
 
   /**
-   * Crear nueva área de conocimiento
-   * @param {object} datos - Datos del área de conocimiento
-   * @param {object} usuario_accion - Usuario que realiza la acción
+   * @name obtenerAreasConocimiento
+   * @description Obtener todas las áreas de conocimiento con validación
+   * @returns {Object} Resultado de la operación
    */
-  static async crearAreaConocimiento(datos, usuario_accion) {
+  async obtenerAreasConocimiento() {
     try {
-      validationService.validarIdNumerico(usuario_accion.id, "ID del usuario en sesión");
-      
-      // Validar datos del área de conocimiento
-      validationService.validarObjeto(datos, "datos del área de conocimiento");
-      validationService.validarTexto(datos.area_conocimiento, "Nombre del área de conocimiento");
-
-      const resultado = await ProfesorModel.crearAreaConocimiento(datos, usuario_accion.id);
-
-      return FormatResponseModel.respuestaPostgres(
-        resultado,
-        "Área de conocimiento creada exitosamente"
+      const { rows } = await pg.query(
+        "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
       );
+
+      return {
+        success: true,
+        data: {
+          areas_conocimiento: rows,
+          total: rows.length,
+        },
+      };
     } catch (error) {
-      console.error("Error en crearAreaConocimiento:", error);
-      throw FormatResponseModel.respuestaError(
-        error,
-        "Error al crear el área de conocimiento"
-      );
-    }
-  }
+      console.error("Error en servicio obtener áreas de conocimiento:", error);
 
-  // =============================================
-  // MÉTODOS PRIVADOS DE VALIDACIÓN
-  // =============================================
-
-  /**
-   * Validar que el profesor sea único (por cédula y email)
-   * @param {string} cedula 
-   * @param {string} email 
-   */
-  static async validarProfesorUnico(cedula, email) {
-    try {
-      // Buscar por cédula
-      const porCedula = await ProfesorModel.buscar(cedula);
-      if (porCedula.length > 0) {
-        throw new Error("Ya existe un profesor con esta cédula");
-      }
-
-      // Buscar por email
-      const porEmail = await ProfesorModel.buscar(email);
-      if (porEmail.length > 0) {
-        throw new Error("Ya existe un profesor con este email");
-      }
-    } catch (error) {
-      // Si el error es por no encontrar resultados, está bien
-      if (!error.message.includes("Ya existe")) {
-        // Si es otro tipo de error, lo relanzamos
-        throw error;
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Validar datos de disponibilidad
-   * @param {object} datos 
-   */
-  static validarDatosDisponibilidad(datos) {
-    validationService.validarObjeto(datos, "datos de disponibilidad");
-
-    const camposRequeridos = ['id_profesor', 'dia_semana', 'hora_inicio', 'hora_fin'];
-    
-    camposRequeridos.forEach(campo => {
-      if (datos[campo] === undefined || datos[campo] === null) {
-        throw new Error(`El campo ${campo} es requerido para la disponibilidad`);
-      }
-    });
-
-    validationService.validarIdNumerico(datos.id_profesor, "ID profesor para disponibilidad");
-    validationService.validarTexto(datos.dia_semana, "Día de la semana");
-    validationService.validarHora(datos.hora_inicio, "Hora de inicio de disponibilidad");
-    validationService.validarHora(datos.hora_fin, "Hora de fin de disponibilidad");
-
-    // Validar que hora fin sea mayor que hora inicio
-    const horaInicio = new Date(`2000-01-01T${datos.hora_inicio}`);
-    const horaFin = new Date(`2000-01-01T${datos.hora_fin}`);
-    
-    if (horaFin <= horaInicio) {
-      throw new Error("La hora de fin debe ser mayor a la hora de inicio en la disponibilidad");
-    }
-  }
-
-  /**
-   * Validar datos de eliminación
-   * @param {object} datos 
-   */
-  static validarDatosEliminacion(datos) {
-    validationService.validarObjeto(datos, "datos de eliminación");
-
-    const camposRequeridos = ['tipo_accion', 'razon', 'fecha_efectiva'];
-    
-    camposRequeridos.forEach(campo => {
-      if (datos[campo] === undefined || datos[campo] === null) {
-        throw new Error(`El campo ${campo} es requerido para la eliminación`);
-      }
-    });
-
-    validationService.validarTexto(datos.tipo_accion, "Tipo de acción");
-    validationService.validarTexto(datos.razon, "Razón de eliminación");
-    validationService.validarFecha(datos.fecha_efectiva, "Fecha efectiva de eliminación");
-
-    // Validar que la fecha efectiva no sea en el pasado
-    const fechaEfectiva = new Date(datos.fecha_efectiva);
-    const hoy = new Date();
-    if (fechaEfectiva < hoy) {
-      throw new Error("La fecha efectiva no puede ser en el pasado");
+      return {
+        success: false,
+        error: {
+          state: "database_error",
+          status: 500,
+          title: "Error del Sistema",
+          message: "Error al obtener las áreas de conocimiento",
+          error:
+            process.env.NODE_ENV === "development"
+              ? error.message
+              : "Error interno del servidor",
+        },
+      };
     }
   }
 }

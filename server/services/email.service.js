@@ -7,7 +7,7 @@
 
 import nodemailer from "nodemailer";
 import fs from "fs";
-import loadEnv from "../utils/utilis.js";
+import { loadEnv } from "../utils/utilis.js";
 loadEnv();
 
 export default class EmailService {
@@ -120,13 +120,16 @@ export default class EmailService {
    * @returns {Object} Resultado de la validación
    */
   validarFormatoEmail(email) {
-    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-    
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
     const esValido = emailRegex.test(email);
-    
+
     return {
       valido: esValido,
-      mensaje: esValido ? "Formato de email válido" : "Formato de email inválido"
+      mensaje: esValido
+        ? "Formato de email válido"
+        : "Formato de email inválido",
     };
   }
 
@@ -140,17 +143,17 @@ export default class EmailService {
   async verificarEmailConAPI(email) {
     try {
       const API_KEY = process.env.EMAIL_VERIFICATION_API_KEY;
-      
+
       if (!API_KEY) {
         // Si no hay API key, solo validamos el formato
         const validacionFormato = this.validarFormatoEmail(email);
         return {
           existe: validacionFormato.valido,
           valido: validacionFormato.valido,
-          mensaje: validacionFormato.valido ? 
-            "Email con formato válido (verificación limitada)" : 
-            validacionFormato.mensaje,
-          verificadoCon: "validacion_formato"
+          mensaje: validacionFormato.valido
+            ? "Email con formato válido (verificación limitada)"
+            : validacionFormato.mensaje,
+          verificadoCon: "validacion_formato",
         };
       }
 
@@ -166,7 +169,7 @@ export default class EmailService {
         calidad: data.quality_score,
         mensaje: data.deliverability,
         datos: data,
-        verificadoCon: "api_externa"
+        verificadoCon: "api_externa",
       };
     } catch (error) {
       // Fallback a validación de formato si la API falla
@@ -175,7 +178,7 @@ export default class EmailService {
         existe: validacionFormato.valido,
         valido: validacionFormato.valido,
         mensaje: `Error en API: ${error.message}. ${validacionFormato.mensaje}`,
-        verificadoCon: "validacion_formato_fallback"
+        verificadoCon: "validacion_formato_fallback",
       };
     }
   }
@@ -205,32 +208,34 @@ export default class EmailService {
    * @returns {Promise<Object>} Resultado de la verificación
    */
   async verificarYValidarEmails(destinatarios) {
-    const emails = Array.isArray(destinatarios) ? destinatarios : [destinatarios];
+    const emails = Array.isArray(destinatarios)
+      ? destinatarios
+      : [destinatarios];
     const errores = [];
     const emailsValidos = [];
 
     for (const email of emails) {
       // Validación básica de formato primero
       const validacionFormato = this.validarFormatoEmail(email);
-      
+
       if (!validacionFormato.valido) {
         errores.push({
           email: email,
           mensaje: validacionFormato.mensaje,
-          tipo: "formato_invalido"
+          tipo: "formato_invalido",
         });
         continue;
       }
 
       // Verificación con API
       const verificacion = await this.verificarEmailConAPI(email);
-      
+
       if (!verificacion.existe || !verificacion.valido) {
         errores.push({
           email: email,
           mensaje: verificacion.mensaje,
           tipo: "email_no_verificado",
-          detalles: verificacion
+          detalles: verificacion,
         });
       } else {
         emailsValidos.push(email);
@@ -243,7 +248,7 @@ export default class EmailService {
       errores: errores,
       totalVerificados: emails.length,
       totalValidos: emailsValidos.length,
-      totalErrores: errores.length
+      totalErrores: errores.length,
     };
   }
 
@@ -265,7 +270,7 @@ export default class EmailService {
       // Verificar email antes del envío
       if (verificarEmail) {
         const verificacion = await this.verificarYValidarEmails(Destinatario);
-        
+
         if (!verificacion.todosValidos) {
           return this.crearRespuestaErrorEmail(verificacion.errores);
         }
@@ -273,7 +278,7 @@ export default class EmailService {
 
       const mailOptions = this.createMailOptions({ Destinatario, Correo });
       await this.transporter.sendMail(mailOptions);
-      
+
       return {
         state: "success",
         status: 200,
@@ -281,8 +286,8 @@ export default class EmailService {
         message: "El correo electrónico fue enviado exitosamente",
         data: {
           destinatario: Destinatario,
-          asunto: Correo.asunto
-        }
+          asunto: Correo.asunto,
+        },
       };
     } catch (error) {
       throw {
@@ -311,7 +316,7 @@ export default class EmailService {
       // Verificar emails antes del envío
       if (verificarEmails) {
         const verificacion = await this.verificarYValidarEmails(Destinatarios);
-        
+
         if (!verificacion.todosValidos) {
           return this.crearRespuestaErrorEmail(verificacion.errores);
         }
@@ -332,7 +337,7 @@ export default class EmailService {
       };
 
       await this.transporter.sendMail(mailOptions);
-      
+
       return {
         state: "success",
         status: 200,
@@ -340,12 +345,13 @@ export default class EmailService {
         message: `El correo electrónico fue enviado exitosamente a ${Destinatarios.length} destinatarios`,
         data: {
           totalDestinatarios: Destinatarios.length,
-          asunto: Correo.asunto
-        }
+          asunto: Correo.asunto,
+        },
       };
     } catch (error) {
       throw {
-        message: "Error al enviar el correo electrónico a múltiples destinatarios",
+        message:
+          "Error al enviar el correo electrónico a múltiples destinatarios",
         tipo: "Correo",
         error: error.message,
       };

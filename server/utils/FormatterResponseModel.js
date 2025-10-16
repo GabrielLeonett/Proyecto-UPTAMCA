@@ -2,11 +2,11 @@
 import generateReport from './generateReport.js';
 
 /**
- * @class FormatResponseModel
+ * @class FormatterResponseModel
  * @description Clase utilitaria para estandarizar las respuestas de la API y el manejo de datos desde PostgreSQL.
  * Proporciona métodos para formatear respuestas exitosas, errores y conjuntos de datos de manera consistente.
  */
-export default class FormatResponseModel {
+export default class FormatterResponseModel {
   /**
    * @static
    * @method validacionesComunes

@@ -1,5 +1,4 @@
-import FormatResponseController from "../utils/FormatResponseController.js";
-import AulaService from "../services/aula.service.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 
 /**
  * @class AulaController

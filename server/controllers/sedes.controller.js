@@ -1,5 +1,4 @@
-import FormatResponseController from "../utils/FormatResponseController.js";
-import SedeService from "../services/sede.service.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 
 /**
  * @class SedeController

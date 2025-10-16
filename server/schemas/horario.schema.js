@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const HorarioSchema = z.object({
+const horarioSchema = z.object({
   idSeccion: z
     .number({
       invalid_type_error: "El id de sección debe ser un número",
@@ -41,3 +41,5 @@ const HorarioSchema = z.object({
     })
     .positive("El id del aula debe ser positivo"),
 });
+
+export default horarioSchema;

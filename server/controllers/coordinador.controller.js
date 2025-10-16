@@ -1,5 +1,4 @@
-import FormatResponseController from "../utils/FormatResponseController.js";
-import CoordinadorService from "../services/coordinador.service.js";
+import FormatResponseController from "../utils/FormatterResponseController.js";
 
 /**
  * @class CoordinadorController

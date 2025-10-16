@@ -1,6 +1,6 @@
 import HorarioModel from "../models/horario.model.js";
 import validationService from "./validation.service.js";
-import FormatResponseModel from "../utils/FormatResponseModel.js";
+import FormatterResponseService from "../utils/FormatterResponseService.js";
 import DocumentServices from "./document.service.js";
 
 /**

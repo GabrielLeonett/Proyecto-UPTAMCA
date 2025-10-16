@@ -17,7 +17,7 @@ import {
   Header,
 } from "docx";
 import sharp from "sharp";
-import { UTILS } from "../utils/utilis";
+import { UTILS } from "../utils/utilis.js";
 
 // Estilos globales
 const ESTILOS = {

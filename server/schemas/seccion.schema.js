@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const SeccionSchema = z.object({
+const seccionSchema = z.object({
     idTrayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que ser un numero",
@@ -24,3 +24,5 @@ export const SeccionSchema = z.object({
     .positive("La poblacion tiene que ser positiva"),
 });
 
+
+export default seccionSchema;

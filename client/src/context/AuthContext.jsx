@@ -15,14 +15,14 @@ export function AuthProvider({ children }) {
   const login = useCallback(
     async (userData) => {
       try {
-        const { data } = await axios.post("/login", userData);
-        if (data) {
-          setUser(data);
+        const { user } = await axios.post("/auth/login", userData);
+        if (user) {
+          setUser(user);
           setIsAuthenticated(true);
 
           // Redirección con React Router
           setTimeout(() => {
-            if (data.primera_vez) {
+            if (user.primera_vez) {
               navigate("/cambiar-contraseña");
             } else {
               navigate("/");
@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
     try {
       // Hacer petición de logout al backend
       await axios.get(
-        "/logout",
+        "/auth/logout",
         {},
         {
           withCredentials: true, // Importante para enviar las cookies
@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
   const verifyAuth = useCallback(async () => {
     setIsLoading(true);
     try {
-      const verifiedData = await axios.get("/verification");
+      const verifiedData = await axios.get("/auth/verify");
       if (verifiedData) {
         setUser(verifiedData);
         setIsAuthenticated(true);
