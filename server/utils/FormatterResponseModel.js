@@ -1,129 +1,224 @@
-// Funcion para generar reportes en caso de errores internos
-import generateReport from './generateReport.js';
+import pg from "../database/pg.js";
+import FormatterResponseModel from "../utils/FormatterResponseModel.js";
+import generateReport from "../utils/generateReport.js";
 
 /**
- * @class FormatterResponseModel
- * @description Clase utilitaria para estandarizar las respuestas de la API y el manejo de datos desde PostgreSQL.
- * Proporciona métodos para formatear respuestas exitosas, errores y conjuntos de datos de manera consistente.
+ * @class ProfesorModel
+ * @description Modelo para operaciones de base de datos relacionadas con profesores
  */
-export default class FormatterResponseModel {
+export default class ProfesorModel {
   /**
-   * @static
-   * @method validacionesComunes
-   * @description Realiza validaciones básicas a la respuesta de la base de datos
-   * @param {Object|Array} rows - Respuesta cruda de PostgreSQL
-   * @returns {Object} Datos validados y normalizados
-   * @throws {Error} Si no hay datos o la respuesta es inválida
+   * @private
+   * @method ejecutarQuery
+   * @description Método genérico para ejecutar consultas con manejo uniforme de errores y formato de respuesta.
    */
-  static validacionesComunes(rows) {
+  static async ejecutarQuery(query, params = [], titulo = "Operación completada") {
     try {
-      if (!rows || (Array.isArray(rows) && rows.length === 0)) {
-        return rows;
-      }
-
-      // Maneja tanto arrays como objetos individuales
-      const firstRow = Array.isArray(rows) ? rows[0] : rows;
-
-      // Determina si es respuesta de procedimiento/función o consulta directa
-      return firstRow?.p_resultado !== undefined ? firstRow.p_resultado : rows;
+      console.debug("🔍 [DEBUG] Ejecutando query:", query, " | Parámetros:", params);
+      const { rows } = await pg.query(query, params);
+      return FormatterResponseModel.respuestaPostgres(rows, titulo);
     } catch (error) {
-      throw error;
-    }
-  }
+      console.error("💥 [ERROR ProfesorModel]:", error);
 
-  /**
-   * @static
-   * @method respuestaError
-   * @description Formatea una respuesta de error estándar
-   * @param {Object|Array|null} [rows=null] - Datos de error de la BD
-   * @param {string} [title='Error'] - Título descriptivo del error
-   * @returns {Object} Respuesta de error formateada
-   */
-  static respuestaError(rows = null, title = "Error") {
-    try {
-      const resultado = rows ? this.validacionesComunes(rows) : {};
-      
-      if(resultado.status === undefined || resultado.status_code === undefined ){
-        throw resultado;
-      }
-      
-      return {
-        status: resultado.status_code || 400,
-        state: "error",
-        title: title,
-        message: resultado.message || "Error en la operación",
-      };
-    } catch (error) {
       generateReport({
         status: 500,
         state: "error",
-        title: "Error en el modelo",
+        title: "Error en ProfesorModel",
         message: error.message,
-        ...(error?.code && {code: error.code}),
-        ...(error?.details && {details: error.details})
+        query,
+        params,
+        ...(error?.code && { code: error.code }),
+        ...(error?.detail && { detail: error.detail }),
+        ...(error?.stack && { stack: error.stack }),
       });
-      return {
-        status: 500,
-        state: "error",
-        title: "Error interno en el servidor.",
-        message: "Lo sentimos, Intente de nuevo mas tarde.",
-      }
+
+      return FormatterResponseModel.respuestaError(
+        null,
+        "Error al ejecutar la consulta del modelo"
+      );
     }
   }
 
-  /**
-   * @static
-   * @method respuestaSuccess
-   * @description Formatea una respuesta con datos para el controlador
-   * @param {Object|Array} [rows={}] - Conjunto de datos de la BD
-   * @param {string} [title='Datos obtenidos'] - Título descriptivo
-   * @returns {Object} Respuesta con datos formateados
-   * @throws {Error} Si ocurre un error en el procesamiento
-   */
-  static respuestaSuccess(rows = {}, title = "Datos obtenidos") {
-    try {
-      return {
-        status: rows.metadata?.status_code || 200,
-        state: "success",
-        title: title,
-        message: rows.message,
-        ...(rows?.data && { data: rows.data }),
-        ...(rows?.metadata && { metadata: rows.metadata }),
-      };
-    } catch (error) {
-      throw error;
-    }
+  // ======================================================
+  // 🔹 CREACIÓN
+  // ======================================================
+  static async crear(datos, usuarioId) {
+    const {
+      cedula,
+      nombres,
+      apellidos,
+      email,
+      direccion,
+      telefono_movil,
+      telefono_local,
+      fecha_nacimiento,
+      genero,
+      fecha_ingreso,
+      dedicacion,
+      categoria,
+      municipio,
+      area_de_conocimiento,
+      pre_grado,
+      pos_grado,
+      imagen,
+      passwordHash
+    } = datos;
+
+    const query = `
+      CALL registrar_profesor_completo(
+        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
+        $13,$14,$15,$16,$17,$18,$19,NULL
+      )
+    `;
+    const params = [
+      usuarioId, cedula, nombres, apellidos, email, direccion,
+      passwordHash, telefono_movil, telefono_local || null, fecha_nacimiento,
+      genero, categoria, dedicacion, pre_grado, pos_grado,
+      area_de_conocimiento, imagen, municipio, fecha_ingreso
+    ];
+
+    return this.ejecutarQuery(query, params, "Profesor registrado correctamente");
   }
 
-  /**
-   * @static
-   * @method respuestaPostgres
-   * @description Método inteligente que determina automáticamente el tipo de respuesta a formatear
-   * @param {Object|Array} rows - Respuesta cruda de PostgreSQL
-   * @param {string} [titleSuccess='Completado'] - Título para respuestas exitosas
-   * @param {string} [titleError='Error'] - Título para respuestas de error
-   * @returns {Object} Respuesta formateada según el tipo de resultado
-   * @throws {Error} Si la respuesta indica un error explícito
-   */
-  static respuestaPostgres(rows, titleSuccess = "Completado", ) {
-    try {
-      const resultado = this.validacionesComunes(rows);
+  // ======================================================
+  // 🔹 CONSULTAS
+  // ======================================================
+  static async obtenerTodos() {
+    return this.ejecutarQuery("SELECT * FROM profesores_informacion_completa", [], "Lista de profesores obtenida");
+  }
 
-      if (resultado.status === "success") {
-        return this.respuestaSuccess(resultado, titleSuccess);
-      } else if (resultado.status === "error") {
-        throw resultado;
-      }
+  static async obtenerConFiltros(filtros) {
+    const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
+    const query = "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)";
+    const params = [dedicacion, categoria, ubicacion, area, fecha, genero];
+    return this.ejecutarQuery(query, params, "Profesores filtrados correctamente");
+  }
 
-      return {
-        status: resultado.status_code || 200,
-        state: "success",
-        title: titleSuccess,
-        message: resultado.message || "Se obtuvieron los datos",
-        data: resultado 
-      };
-    } catch (error) {
-      throw error;
-    }
+  static async buscar(busqueda) {
+    const query = `
+      SELECT * FROM PROFESORES_INFORMACION_COMPLETA 
+      WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3
+    `;
+    const params = [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`];
+    return this.ejecutarQuery(query, params, "Búsqueda de profesores realizada");
+  }
+
+  static async obtenerImagen(cedula) {
+    return this.ejecutarQuery(
+      "SELECT imagen FROM users WHERE cedula = $1",
+      [cedula],
+      "Imagen del profesor obtenida"
+    );
+  }
+
+  static async obtenerPregrados() {
+    return this.ejecutarQuery(
+      "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado",
+      [],
+      "Pregrados obtenidos"
+    );
+  }
+
+  static async obtenerPosgrados() {
+    return this.ejecutarQuery(
+      "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado",
+      [],
+      "Posgrados obtenidos"
+    );
+  }
+
+  static async obtenerAreasConocimiento() {
+    return this.ejecutarQuery(
+      "SELECT id_area_conocimiento, nombre_area_conocimiento FROM areas_de_conocimiento",
+      [],
+      "Áreas de conocimiento obtenidas"
+    );
+  }
+
+  // ======================================================
+  // 🔹 INSERCIÓN DE CATÁLOGOS
+  // ======================================================
+  static async crearPregrado(datos, usuarioId) {
+    const { nombre, tipo } = datos;
+    return this.ejecutarQuery(
+      "CALL registrar_pre_grado($1, $2, $3, NULL)",
+      [usuarioId, nombre, tipo],
+      "Pregrado creado exitosamente"
+    );
+  }
+
+  static async crearPosgrado(datos, usuarioId) {
+    const { nombre, tipo } = datos;
+    return this.ejecutarQuery(
+      "CALL registrar_pos_grado($1, $2, $3, NULL)",
+      [usuarioId, nombre, tipo],
+      "Posgrado creado exitosamente"
+    );
+  }
+
+  static async crearAreaConocimiento(datos, usuarioId) {
+    const { area_conocimiento } = datos;
+    return this.ejecutarQuery(
+      "CALL registrar_area_conocimiento($1, $2, NULL)",
+      [usuarioId, area_conocimiento],
+      "Área de conocimiento creada"
+    );
+  }
+
+  static async crearDisponibilidad(datos, usuarioId) {
+    const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+    return this.ejecutarQuery(
+      "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)",
+      [usuarioId, id_profesor, dia_semana, hora_inicio, hora_fin],
+      "Disponibilidad registrada"
+    );
+  }
+
+  // ======================================================
+  // 🔹 ACTUALIZACIÓN Y ELIMINACIÓN
+  // ======================================================
+  static async actualizar(datos, usuarioId) {
+    const {
+      id_profesor,
+      nombres,
+      apellidos,
+      email,
+      direccion,
+      password,
+      telefono_movil,
+      telefono_local,
+      fecha_nacimiento,
+      genero,
+      nombre_categoria,
+      nombre_dedicacion,
+      pre_grado,
+      pos_grado,
+      area_de_conocimiento,
+      imagen,
+      municipio,
+      fecha_ingreso,
+    } = datos;
+
+    const query = `
+      CALL actualizar_profesor_completo_o_parcial(
+        NULL, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
+        $11,$12,$13,$14,$15,$16,$17,$18,$19
+      )
+    `;
+    const params = [
+      usuarioId, id_profesor, nombres, apellidos, email, direccion,
+      password, telefono_movil, telefono_local, fecha_nacimiento,
+      genero, nombre_categoria, nombre_dedicacion, pre_grado, pos_grado,
+      area_de_conocimiento, imagen, municipio, fecha_ingreso
+    ];
+
+    return this.ejecutarQuery(query, params, "Profesor actualizado correctamente");
+  }
+
+  static async eliminar(datos, usuarioId) {
+    const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } = datos;
+    const query = "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
+    const params = [usuarioId, id_profesor, tipo_accion, razon, observaciones, fecha_efectiva];
+    return this.ejecutarQuery(query, params, "Profesor eliminado o destituido");
   }
 }

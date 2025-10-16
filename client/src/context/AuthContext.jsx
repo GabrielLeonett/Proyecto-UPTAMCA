@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
-import Swal from "sweetalert2";
 
 export const AuthContext = createContext();
 

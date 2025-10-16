@@ -22,7 +22,7 @@ export default class ProfesorService {
 
   async registrarProfesor(datos, imagen, user_action) {
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...", datos, imagen, user_action);
 
       if (process.env.NODE_ENV === "development") {
         console.log("📝 Datos recibidos:", {
@@ -251,7 +251,7 @@ export default class ProfesorService {
         };
       }
 
-      const { rows } = await pg.query(
+      const { rows } = await d.query(
         "SELECT * FROM profesores_informacion_completa"
       );
 
@@ -308,10 +308,6 @@ export default class ProfesorService {
 
       const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
 
-      const { rows } = await pg.query(
-        "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)",
-        [dedicacion, categoria, ubicacion, area, fecha, genero]
-      );
 
       return {
         success: true,
@@ -381,10 +377,6 @@ export default class ProfesorService {
         };
       }
 
-      const { rows } = await pg.query(
-        "SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3",
-        [`%${termino}%`, `%${termino}%`, `%${termino}%`]
-      );
 
       return {
         success: true,
@@ -464,10 +456,7 @@ export default class ProfesorService {
       }
 
       // Obtener datos actuales del profesor para comparar
-      const profesorActual = await pg.query(
-        "SELECT * FROM profesores_informacion_completa WHERE id_profesor = $1",
-        [datos.id_profesor]
-      );
+
 
       if (profesorActual.rows.length === 0) {
         return {
@@ -480,33 +469,6 @@ export default class ProfesorService {
           },
         };
       }
-
-      const { rows } = await pg.query(
-        `CALL actualizar_profesor_completo_o_parcial(
-          NULL, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
-        )`,
-        [
-          usuarioId,
-          datos.id_profesor,
-          datos.nombres,
-          datos.apellidos,
-          datos.email,
-          datos.direccion,
-          datos.password,
-          datos.telefono_movil,
-          datos.telefono_local,
-          datos.fecha_nacimiento,
-          datos.genero,
-          datos.nombre_categoria,
-          datos.nombre_dedicacion,
-          datos.pre_grado,
-          datos.pos_grado,
-          datos.area_de_conocimiento,
-          datos.imagen,
-          datos.municipio,
-          datos.fecha_ingreso,
-        ]
-      );
 
       // Enviar notificación de actualización
       await this.notificationService.crearNotificacionMasiva({
@@ -619,7 +581,7 @@ export default class ProfesorService {
       }
 
       // Obtener información del profesor antes de eliminar
-      const profesorInfo = await pg.query(
+      const profesorInfo = await d.query(
         "SELECT cedula, nombres, apellidos FROM profesores_informacion_completa WHERE id_profesor = $1",
         [datos.id_profesor]
       );
@@ -638,7 +600,7 @@ export default class ProfesorService {
 
       const profesor = profesorInfo.rows[0];
 
-      const { rows } = await pg.query(
+      const { rows } = await d.query(
         "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)",
         [
           usuarioId,
@@ -729,7 +691,7 @@ export default class ProfesorService {
    */
   async obtenerPregrados() {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await d.query(
         "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
       );
 
@@ -766,7 +728,7 @@ export default class ProfesorService {
    */
   async obtenerPosgrados() {
     try {
-      const { rows } = await pg.query(
+      const { rows } = await d.query(
         "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
       );
 
@@ -803,10 +765,7 @@ export default class ProfesorService {
    */
   async obtenerAreasConocimiento() {
     try {
-      const { rows } = await pg.query(
-        "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
-      );
-
+      const respuestaModel = await ProfesorModel.obtenerAreasConocimiento();
       return {
         success: true,
         data: {
@@ -832,4 +791,5 @@ export default class ProfesorService {
       };
     }
   }
+
 }

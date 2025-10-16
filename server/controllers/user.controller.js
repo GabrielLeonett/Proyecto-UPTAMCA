@@ -10,7 +10,6 @@ export default class UserController {
             if (!resultado.success) {
                 return FormatterResponseController.respuestaServicio(res, resultado);
             }
-
             // Configurar cookie y enviar respuesta exitosa
             res.cookie("autorization", resultado.data.token, {
                 maxAge: 1000 * 60 * 60 * 24,
@@ -35,6 +34,7 @@ export default class UserController {
 
     static async verificarUsers(req, res) {
         try {
+            console.log("Usuario en req:", req.user);
             const resultado = await UserService.verificarSesion(req.user);
             
             // Usar respuestaServicio para manejar automáticamente éxito/error

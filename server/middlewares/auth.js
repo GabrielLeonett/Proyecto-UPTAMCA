@@ -22,29 +22,32 @@ import jwt from "jsonwebtoken";
 export const middlewareAuth = (requiredRoles, options = {}) => {
   return (req, res, next) => {
     // 1. Verificación de token presente
+    //console.log("Cookies recibido en middlewareAuth:", req.cookies);
     const token = req.cookies?.autorization;
-
+    //console.log("Token recibido en middlewareAuth:", token);
+    
     if (!token) {
       return res
-        .status(401)
-        .json({ error: "Acceso denegado: Se requiere autenticación" });
+      .status(401)
+      .json({ error: "Acceso denegado: Se requiere autenticación" });
     }
-
+    
     // 2. Verificación de validez del token
     jwt.verify(token, process.env.AUTH_SECRET_KEY, (error, decoded) => {
       if (error) {
         // Manejo específico de errores de token
         return res.status(403).json({
           error:
-            error.name === "TokenExpiredError"
-              ? "Token expirado, por favor inicie sesión nuevamente"
-              : "Token inválido",
+          error.name === "TokenExpiredError"
+          ? "Token expirado, por favor inicie sesión nuevamente"
+          : "Token inválido",
         });
       }
-
+      
       // Adjunta la información del usuario decodificada a la solicitud
       req.user = decoded;
-
+      //console.log("Datos extraidos del middleware:", decoded);
+      
       // 3. Verificación de roles (si se especificaron roles requeridos)
       if (requiredRoles) {
         // Lógica corregida: SuperAdmin tiene acceso completo O el usuario tiene alguno de los roles requeridos

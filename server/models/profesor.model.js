@@ -147,6 +147,7 @@ export default class ProfesorModel {
   /**
    * @name obtenerAreasConocimiento
    * @description Obtener todas las áreas de conocimiento
+   * @async
    * @returns {Array} Lista de áreas de conocimiento
    */
   static async obtenerAreasConocimiento() {
