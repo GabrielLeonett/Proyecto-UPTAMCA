@@ -1,0 +1,482 @@
+import ValidationService from "./validation.service.js";
+import SedeModel from "../models/sedes.model.js";
+import FormatterResponseService from "../utils/FormatterResponseService.js";
+import NotificationService from "./notification.service.js";
+
+/**
+ * @class SedeService
+ * @description Servicio para operaciones de negocio relacionadas con sedes
+ */
+export default class SedeService {
+  /**
+   * @static
+   * @async
+   * @method registrarSede
+   * @description Registrar una nueva sede
+   * @param {Object} datos - Datos de la sede
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async registrarSede(datos, user_action) {
+    try {
+      console.log("🔍 [registrarSede] Iniciando registro de sede...");
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          datos: JSON.stringify(datos, null, 2),
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar datos de la sede
+      console.log("✅ Validando datos de la sede...");
+      const validation = ValidationService.validateSede(datos);
+
+      if (!validation.isValid) {
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en registro de sede"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      console.log("✅ Validando ID de usuario...");
+      const idValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Crear sede en el modelo
+      console.log("🏢 Creando sede en base de datos...");
+      const respuestaModel = await SedeModel.crearSede(datos, user_action.id);
+
+      // Verificar si la respuesta del modelo indica error
+      if (respuestaModel.state === "error" || respuestaModel.status >= 400) {
+        console.error("❌ Error en modelo crear sede:", respuestaModel);
+
+        // Convertir la respuesta del modelo al formato del servicio
+        return FormatterResponseService.error(
+          respuestaModel.title || "Error en base de datos",
+          respuestaModel.message || "Error al crear la sede",
+          respuestaModel.status || 500,
+          respuestaModel.code || "DB_ERROR",
+          {
+            originalError:
+              process.env.MODE === "DEVELOPMENT" ? respuestaModel : undefined,
+          }
+        );
+      }
+
+      // 4. Enviar notificación
+      console.log("🔔 Enviando notificaciones...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Nueva Sede Registrada",
+        tipo: "sede_creada",
+        contenido: `Se ha registrado la sede ${datos.nombreSede} en el sistema`,
+        metadatos: {
+          sede_nombre: datos.nombreSede,
+          sede_direccion: datos.UbicacionSede,
+          usuario_creador: user_action.id,
+          fecha_registro: new Date().toISOString(),
+        },
+        roles_ids: [3, 4, 20], // Administradores y coordinadores
+        users_ids: [user_action.id],
+      });
+
+      console.log("🎉 Sede registrada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Sede creada exitosamente",
+          sede: {
+            id: respuestaModel.data?.id_sede || respuestaModel.data?.id,
+            nombre: datos.nombreSede,
+            direccion: datos.UbicacionSede,
+            google_maps: datos.GoogleSede,
+            estado: "activa",
+          },
+        },
+        "Sede registrada exitosamente",
+        {
+          status: 201,
+          title: "Sede Creada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio registrar sede:", error);
+
+      // Si es un error conocido del modelo, convertirlo a respuesta del servicio
+      if (error.state === "error" || error.status >= 400) {
+        return FormatterResponseService.error(
+          error.title || "Error en base de datos",
+          error.message || "Error al crear la sede",
+          error.status || 500,
+          error.code || "DB_ERROR",
+          {
+            originalError:
+              process.env.MODE === "DEVELOPMENT" ? error : undefined,
+          }
+        );
+      }
+
+      // Para errores inesperados, propagar la excepción
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarSedes
+   * @description Obtener todas las sedes registradas
+   * @returns {Object} Resultado de la operación
+   */
+  static async mostrarSedes() {
+    try {
+      console.log("🔍 [mostrarSedes] Obteniendo listado de sedes...");
+
+      const respuestaModel = await SedeModel.mostrarSedes();
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo mostrar sedes:", respuestaModel);
+        return respuestaModel;
+      }
+
+      console.log(`✅ Se obtuvieron ${respuestaModel.data?.length || 0} sedes`);
+
+      return FormatterResponseService.success(
+        {
+          sedes: respuestaModel.data,
+          total: respuestaModel.data?.length || 0,
+        },
+        "Sedes obtenidas exitosamente",
+        {
+          status: 200,
+          title: "Lista de Sedes",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio mostrar sedes:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerSedePorId
+   * @description Obtener una sede específica por ID
+   * @param {number} id - ID de la sede
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerSedePorId(id) {
+    try {
+      console.log("🔍 [obtenerSedePorId] Buscando sede ID:", id);
+
+      // Validar ID de la sede
+      const idValidation = ValidationService.validateId(id, "sede");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de sede inválido"
+        );
+      }
+
+      const respuestaModel = await SedeModel.obtenerSedePorId(id);
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error(
+          "❌ Error en modelo obtener sede por ID:",
+          respuestaModel
+        );
+        return respuestaModel;
+      }
+
+      if (!respuestaModel.data || respuestaModel.data.length === 0) {
+        console.error("❌ Sede no encontrada:", id);
+        return FormatterResponseService.notFound("Sede", id);
+      }
+
+      const sede = respuestaModel.data[0];
+      console.log("✅ Sede encontrada:", sede.nombre);
+
+      return FormatterResponseService.success(
+        sede,
+        "Sede obtenida exitosamente",
+        {
+          status: 200,
+          title: "Sede Encontrada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio obtener sede por ID:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarSede
+   * @description Actualizar una sede existente
+   * @param {number} id - ID de la sede
+   * @param {Object} datos - Datos actualizados
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarSede(id, datos, user_action) {
+    try {
+      console.log("🔍 [actualizarSede] Actualizando sede ID:", id);
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log(
+          "📝 Datos de actualización:",
+          JSON.stringify(datos, null, 2)
+        );
+      }
+
+      // 1. Validar ID de la sede
+      const idValidation = ValidationService.validateId(id, "sede");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de sede inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de usuario fallida:",
+          usuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Validar datos parciales de la sede
+      const validation = ValidationService.validatePartialSede(datos);
+      if (!validation.isValid) {
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en actualización de sede"
+        );
+      }
+
+      // 4. Verificar que la sede existe
+      const sedeExistente = await SedeModel.obtenerSedePorId(id);
+      if (
+        FormatterResponseService.isError(sedeExistente) ||
+        !sedeExistente.data ||
+        sedeExistente.data.length === 0
+      ) {
+        console.error("❌ Sede no encontrada para actualizar:", id);
+        return FormatterResponseService.notFound("Sede", id);
+      }
+
+      // 5. Actualizar sede en el modelo
+      console.log("💾 Actualizando sede en base de datos...");
+      const respuestaModel = await SedeModel.actualizarSede(
+        id,
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo actualizar sede:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 6. Enviar notificación
+      console.log("🔔 Enviando notificación de actualización...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Sede Actualizada",
+        tipo: "sede_actualizada",
+        contenido: `Se han actualizado los datos de la sede ${sedeExistente.data[0].nombre}`,
+        metadatos: {
+          sede_id: id,
+          sede_nombre: sedeExistente.data[0].nombre,
+          campos_actualizados: Object.keys(datos),
+          usuario_actualizador: user_action.id,
+          fecha_actualizacion: new Date().toISOString(),
+        },
+        roles_ids: [3, 4, 20],
+        users_ids: [user_action.id],
+      });
+
+      console.log("✅ Sede actualizada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Sede actualizada exitosamente",
+          sede_id: id,
+          cambios: datos,
+        },
+        "Sede actualizada exitosamente",
+        {
+          status: 200,
+          title: "Sede Actualizada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio actualizar sede:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method eliminarSede
+   * @description Eliminar una sede específica
+   * @param {number} id - ID de la sede
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async eliminarSede(id, user_action) {
+    try {
+      console.log("🔍 [eliminarSede] Eliminando sede ID:", id);
+
+      // 1. Validar ID de la sede
+      const idValidation = ValidationService.validateId(id, "sede");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de sede inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        console.error(
+          "❌ Validación de usuario fallida:",
+          usuarioValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Verificar que la sede existe
+      const sedeExistente = await SedeModel.obtenerSedePorId(id);
+      if (
+        FormatterResponseService.isError(sedeExistente) ||
+        !sedeExistente.data ||
+        sedeExistente.data.length === 0
+      ) {
+        console.error("❌ Sede no encontrada para eliminar:", id);
+        return FormatterResponseService.notFound("Sede", id);
+      }
+
+      const sede = sedeExistente.data[0];
+
+      // 4. Verificar que la sede no tenga dependencias (aulas, etc.)
+      console.log("🔍 Verificando dependencias de la sede...");
+      const tieneDependencias = await this.verificarDependenciasSede(id);
+      if (tieneDependencias) {
+        console.error("❌ La sede tiene dependencias activas:", id);
+        return FormatterResponseService.error(
+          "No se puede eliminar la sede",
+          "La sede tiene aulas u otras dependencias asociadas. Elimine primero las dependencias.",
+          409,
+          "SEDE_CON_DEPENDENCIAS",
+          { sede_id: id, sede_nombre: sede.nombre }
+        );
+      }
+
+      // 5. Eliminar sede en el modelo
+      console.log("🗑️ Eliminando sede de base de datos...");
+      const respuestaModel = await SedeModel.eliminarSede(id, user_action.id);
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo eliminar sede:", respuestaModel);
+        return respuestaModel;
+      }
+
+      // 6. Enviar notificación
+      console.log("🔔 Enviando notificación de eliminación...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Sede Eliminada",
+        tipo: "sede_eliminada",
+        contenido: `Se ha eliminado la sede ${sede.nombre} del sistema`,
+        metadatos: {
+          sede_id: id,
+          sede_nombre: sede.nombre,
+          sede_direccion: sede.direccion,
+          usuario_eliminador: user_action.id,
+          fecha_eliminacion: new Date().toISOString(),
+        },
+        roles_ids: [3, 4, 20],
+        users_ids: [user_action.id],
+      });
+
+      console.log("✅ Sede eliminada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Sede eliminada exitosamente",
+          sede: {
+            id: id,
+            nombre: sede.nombre,
+          },
+        },
+        "Sede eliminada exitosamente",
+        {
+          status: 200,
+          title: "Sede Eliminada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio eliminar sede:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method verificarDependenciasSede
+   * @description Verificar si una sede tiene dependencias activas
+   * @param {number} sedeId - ID de la sede
+   * @returns {boolean} True si tiene dependencias, false si no
+   */
+  static async verificarDependenciasSede(sedeId) {
+    try {
+      // Aquí implementarías la lógica para verificar dependencias
+      // Por ejemplo: aulas, horarios, profesores asociados a esta sede
+      // Por ahora retornamos false como placeholder
+      return false;
+    } catch (error) {
+      console.error("Error verificando dependencias de sede:", error);
+      // En caso de error, asumimos que tiene dependencias por seguridad
+      return true;
+    }
+  }
+}
