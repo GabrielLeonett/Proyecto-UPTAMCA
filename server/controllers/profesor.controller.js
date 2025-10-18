@@ -14,16 +14,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async registrarProfesor(req, res) {
-    try {
-      const respuesta = await ProfesorService.registrarProfesor(
-        req.body,
-        req.file,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.registrarProfesor(req.body, req.file, req.user)
+    );
   }
 
   /**
@@ -34,12 +28,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async mostrarProfesorAPI(req, res) {
-    try {
-      const respuesta = await ProfesorService.mostrarProfesorAPI(req.query);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.obtenerConFiltros(req.query)
+    );
   }
 
   /**
@@ -51,9 +43,9 @@ export default class ProfesorController {
    */
   static async getImageProfesorDirect(req, res) {
     try {
-      const { id_profesor } = req.params;
+      const { id } = req.params;
       const respuesta = await ProfesorService.obtenerImagenProfesor(
-        parseInt(id_profesor),
+        id,
         req.query
       );
 
@@ -81,12 +73,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async mostrarProfesor(req, res) {
-    try {
-      const respuesta = await ProfesorService.mostrarProfesor(req.query);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.obtenerTodos(req.query)
+    );
   }
 
   /**
@@ -97,12 +87,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async buscarProfesor(req, res) {
-    try {
-      const respuesta = await ProfesorService.buscarProfesor(req.body);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.buscar(req.body)
+    );
   }
 
   /**
@@ -113,12 +101,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async mostrarPreGrados(req, res) {
-    try {
-      const respuesta = await ProfesorService.mostrarPreGrados();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.obtenerPregrados()
+    );
   }
 
   /**
@@ -129,12 +115,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async mostrarPosGrados(req, res) {
-    try {
-      const respuesta = await ProfesorService.mostrarPosGrados();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.obtenerPosgrados()
+    );
   }
 
   /**
@@ -145,12 +129,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async mostrarAreasConocimiento(req, res) {
-    try {
-      const respuesta = await ProfesorService.mostrarAreasConocimiento();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.obtenerAreasConocimiento()
+    );
   }
 
   /**
@@ -161,15 +143,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async registerPreGrado(req, res) {
-    try {
-      const respuesta = await ProfesorService.registrarPreGrado(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.crearPregrado(req.body, req.user)
+    );
   }
 
   /**
@@ -180,15 +157,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async registerPosGrado(req, res) {
-    try {
-      const respuesta = await ProfesorService.registrarPosGrado(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.crearPosgrado(req.body, req.user)
+    );
   }
 
   /**
@@ -199,15 +171,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async registerAreaConocimiento(req, res) {
-    try {
-      const respuesta = await ProfesorService.registrarAreaConocimiento(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.crearAreaConocimiento(req.body, req.user)
+    );
   }
 
   /**
@@ -218,15 +185,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async registrarDisponibilidad(req, res) {
-    try {
-      const respuesta = await ProfesorService.registrarDisponibilidad(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.registrarDisponibilidad(req.body, req.user)
+    );
   }
 
   /**
@@ -237,15 +199,10 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async actualizarProfesor(req, res) {
-    try {
-      const respuesta = await ProfesorService.actualizarProfesor(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.actualizarProfesor(req.body, req.user)
+    );
   }
 
   /**
@@ -256,14 +213,9 @@ export default class ProfesorController {
    * @returns {void}
    */
   static async destituirProfesor(req, res) {
-    try {
-      const respuesta = await ProfesorService.destituirProfesor(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.destituirProfesor(req.body, req.user)
+    );
   }
 }

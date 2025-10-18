@@ -14,12 +14,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async mostrarHorarios(req, res) {
-    try {
-      const respuesta = await HorarioService.mostrarHorarios();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarHorarios()
+    );
   }
 
   /**
@@ -30,15 +28,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async obtenerHorariosPorSeccion(req, res) {
-    try {
-      const { id_seccion } = req.params;
-      const respuesta = await HorarioService.obtenerHorariosPorSeccion(
-        parseInt(id_seccion)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.obtenerHorariosPorSeccion(parseInt(req.params.id_seccion))
+    );
   }
 
   /**
@@ -49,15 +42,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async obtenerHorariosPorProfesor(req, res) {
-    try {
-      const { id_profesor } = req.params;
-      const respuesta = await HorarioService.obtenerHorariosPorProfesor(
-        parseInt(id_profesor)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.obtenerHorariosPorProfesor(parseInt(req.params.id_profesor))
+    );
   }
 
   /**
@@ -68,15 +56,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async obtenerHorariosPorAula(req, res) {
-    try {
-      const { id_aula } = req.params;
-      const respuesta = await HorarioService.obtenerHorariosPorAula(
-        parseInt(id_aula)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.obtenerHorariosPorAula(parseInt(req.params.id_aula))
+    );
   }
 
   /**
@@ -87,15 +70,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async mostrarHorariosProfesores(req, res) {
-    try {
-      const idProfesor = req.query.Profesor;
-      const respuesta = await HorarioService.mostrarHorariosProfesores(
-        idProfesor
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarHorariosProfesores(req.query.Profesor)
+    );
   }
 
   /**
@@ -106,13 +84,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async mostrarAulasParaHorario(req, res) {
-    try {
-      const nombrePNF = req.query.pnf;
-      const respuesta = await HorarioService.mostrarAulasParaHorario(nombrePNF);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarAulasParaHorario(req.query.pnf)
+    );
   }
 
   /**
@@ -123,15 +98,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async mostrarProfesoresParaHorario(req, res) {
-    try {
-      const horasNecesarias = req.query.horasNecesarias;
-      const respuesta = await HorarioService.mostrarProfesoresParaHorario(
-        horasNecesarias
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarProfesoresParaHorario(req.query.horasNecesarias)
+    );
   }
 
   /**
@@ -142,15 +112,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async registrarHorario(req, res) {
-    try {
-      const respuesta = await HorarioService.registrarHorario(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.registrarHorario(req.body, req.user)
+    );
   }
 
   /**
@@ -161,17 +126,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async actualizarHorario(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await HorarioService.actualizarHorario(
-        id,
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.actualizarHorario(req.params.id, req.body, req.user)
+    );
   }
 
   /**
@@ -182,16 +140,10 @@ export default class HorarioController {
    * @returns {void}
    */
   static async eliminarHorario(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await HorarioService.eliminarHorario(
-        parseInt(id),
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.eliminarHorario(parseInt(req.params.id), req.user)
+    );
   }
 
   /**
@@ -208,14 +160,14 @@ export default class HorarioController {
         parseInt(id_seccion)
       );
 
-      res
-        .setHeader(
-          "Content-Type",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "Content-Disposition",
-          `attachment; filename=horario_seccion_${id_seccion}.docx`
-        )
-        .send(buffer);
+      // Configurar headers para descarga de Word
+      res.set({
+        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": `attachment; filename=horario_seccion_${id_seccion}.docx`,
+        "Content-Length": buffer.length
+      });
+
+      res.send(buffer);
     } catch (error) {
       console.error("❌ Error en exportarHorarioWord:", error);
       FormatResponseController.respuestaError(res, {

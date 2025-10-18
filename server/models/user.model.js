@@ -51,10 +51,10 @@ export default class UserModel {
    */
   static async cambiarContraseña(usuarioId, passwordHash) {
     try {
-      const query = "CALL actualizar_contrasena_usuario(?, ?, NULL)";
+      const query = "CALL actualizar_contrasena_usuario($1, $2, NULL)";
       const values = [usuarioId, passwordHash];
 
-      const result = await client.raw(query, values);
+      const result = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         result.rows,
@@ -82,10 +82,10 @@ export default class UserModel {
    */
   static async obtenerUsuarioPorId(id) {
     try {
-      const query = "SELECT * FROM users WHERE id = ?";
+      const query = "SELECT * FROM users WHERE cedula = $1";
       const values = [id];
 
-      const { rows } = await client.raw(query, values);
+      const { rows } = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(rows, "Usuario obtenido");
     } catch (error) {
@@ -112,7 +112,7 @@ export default class UserModel {
       const query = "UPDATE usuarios SET ultimo_login = NOW() WHERE id = ?";
       const values = [usuarioId];
 
-      const result = await client.raw(query, values);
+      const result = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
         result.rows,

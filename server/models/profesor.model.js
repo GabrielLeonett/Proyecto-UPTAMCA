@@ -1,48 +1,60 @@
-import pg from "../database/pg.js";
+/*
+Importación de la clase para el formateo de los datos que se reciben de la BD y
+su procesamiento para devolver al controlador un resultado estandarizado.
+*/
+import FormatResponseModel from "../utils/FormatterResponseModel.js";
+
+// Importación de la conexión con la base de datos
+import client from "../database/pg.js";
 
 /**
  * @class ProfesorModel
- * @description Modelo para operaciones de base de datos relacionadas con profesores
+ * @description Esta clase se encarga exclusivamente de interactuar con la base de datos.
+ * Solo contiene operaciones CRUD y consultas directas a la BD.
  */
 export default class ProfesorModel {
   /**
-   * @name crear
+   * @static
+   * @async
+   * @method crear
    * @description Crear un nuevo profesor en la base de datos
    * @param {Object} datos - Datos del profesor
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async crear(datos, usuarioId) {
-    const {
-      cedula,
-      nombres,
-      apellidos,
-      email,
-      direccion,
-      telefono_movil,
-      telefono_local,
-      fecha_nacimiento,
-      genero,
-      fecha_ingreso,
-      dedicacion,
-      categoria,
-      municipio,
-      area_de_conocimiento,
-      pre_grado,
-      pos_grado,
-      imagen
-    } = datos;
+    try {
+      const {
+        cedula,
+        nombres,
+        apellidos,
+        email,
+        direccion,
+        telefono_movil,
+        telefono_local,
+        fecha_nacimiento,
+        genero,
+        fecha_ingreso,
+        dedicacion,
+        categoria,
+        municipio,
+        area_de_conocimiento,
+        pre_grado,
+        pos_grado,
+        password,
+        imagen = null,
+      } = datos;
 
-    const { rows } = await pg.query(
-      "CALL registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL)",
-      [
+      const query =
+        "CALL registrar_profesor_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, NULL)";
+      const values = [
         usuarioId,
         cedula,
         nombres,
         apellidos,
         email,
         direccion,
-        datos.passwordHash,
+        password,
         telefono_movil,
         telefono_local || null,
         fecha_nacimiento,
@@ -55,214 +67,412 @@ export default class ProfesorModel {
         imagen,
         municipio,
         fecha_ingreso,
-      ]
-    );
-    
-    return rows;
+      ];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesor creado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.crear",
+        usuario_id: usuarioId,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al crear el profesor"
+      );
+    }
   }
 
   /**
-   * @name obtenerTodos
+   * @static
+   * @async
+   * @method obtenerTodos
    * @description Obtener todos los profesores de la base de datos
-   * @returns {Array} Lista de profesores
+   * @returns {Promise<Object>} Lista de profesores formateada
    */
   static async obtenerTodos() {
-    const { rows } = await pg.query("SELECT * FROM profesores_informacion_completa");
-    return rows;
+    try {
+      const query = "SELECT * FROM profesores_informacion_completa";
+      const { rows } = await client.query(query);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerTodos",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los profesores"
+      );
+    }
   }
 
   /**
-   * @name obtenerConFiltros
+   * @static
+   * @async
+   * @method obtenerConFiltros
    * @description Obtener profesores con filtros específicos
    * @param {Object} filtros - Filtros de búsqueda
-   * @returns {Array} Lista de profesores filtrados
+   * @returns {Promise<Object>} Lista de profesores filtrados formateada
    */
   static async obtenerConFiltros(filtros) {
-    const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
+    try {
+      const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
 
-    const { rows } = await pg.query(
-      "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)",
-      [dedicacion, categoria, ubicacion, area, fecha, genero]
-    );
-    
-    return rows;
+      const query = "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)";
+      const values = [dedicacion, categoria, ubicacion, area, fecha, genero];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores filtrados obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerConFiltros",
+        filtros: filtros,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener profesores con filtros"
+      );
+    }
   }
 
   /**
-   * @name buscar
+   * @static
+   * @async
+   * @method buscar
    * @description Buscar profesores por nombre, apellido o cédula
    * @param {string} busqueda - Término de búsqueda
-   * @returns {Array} Resultados de la búsqueda
+   * @returns {Promise<Object>} Resultados de la búsqueda formateados
    */
   static async buscar(busqueda) {
-    const { rows } = await pg.query(
-      "SELECT * FROM PROFESORES_INFORMACION_COMPLETA WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3",
-      [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`]
-    );
-    
-    return rows;
+    try {
+      const query =
+        "SELECT * FROM public.profesores_informacion_completa WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3";
+      const values = [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Búsqueda de profesores completada"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.buscar",
+        busqueda: busqueda,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al buscar profesores"
+      );
+    }
   }
 
   /**
-   * @name obtenerImagen
+   * @static
+   * @async
+   * @method obtenerImagen
    * @description Obtener información de la imagen de un profesor
    * @param {number} idProfesor - ID del profesor
-   * @returns {Array} Información de la imagen
+   * @returns {Promise<Object>} Información de la imagen formateada
    */
   static async obtenerImagen(idProfesor) {
-    const { rows } = await pg.query(
-      "SELECT imagen FROM users WHERE cedula = $1",
-      [idProfesor]
-    );
-    
-    return rows;
+    try {
+      const query = "SELECT imagen FROM users WHERE cedula = $1";
+      const values = [idProfesor];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Imagen del profesor obtenida"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerImagen",
+        id_profesor: idProfesor,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener la imagen del profesor"
+      );
+    }
   }
 
   /**
-   * @name obtenerPregrados
+   * @static
+   * @async
+   * @method obtenerPregrados
    * @description Obtener todos los pregrados
-   * @returns {Array} Lista de pregrados
+   * @returns {Promise<Object>} Lista de pregrados formateada
    */
   static async obtenerPregrados() {
-    const { rows } = await pg.query(
-      "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado"
-    );
-    
-    return rows;
+    try {
+      const query =
+        "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado";
+      const { rows } = await client.query(query);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Pregrados obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerPregrados",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los pregrados"
+      );
+    }
   }
 
   /**
-   * @name obtenerPosgrados
+   * @static
+   * @async
+   * @method obtenerPosgrados
    * @description Obtener todos los posgrados
-   * @returns {Array} Lista de posgrados
+   * @returns {Promise<Object>} Lista de posgrados formateada
    */
   static async obtenerPosgrados() {
-    const { rows } = await pg.query(
-      "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado"
-    );
-    
-    return rows;
+    try {
+      const query =
+        "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado";
+      const { rows } = await client.query(query);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Posgrados obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerPosgrados",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los posgrados"
+      );
+    }
   }
 
   /**
-   * @name obtenerAreasConocimiento
+   * @static
+   * @async
+   * @method obtenerAreasConocimiento
    * @description Obtener todas las áreas de conocimiento
-   * @returns {Array} Lista de áreas de conocimiento
+   * @returns {Promise<Object>} Lista de áreas de conocimiento formateada
    */
   static async obtenerAreasConocimiento() {
-    const { rows } = await pg.query(
-      "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO"
-    );
-    
-    return rows;
+    try {
+      const query =
+        "SELECT id_area_conocimiento, nombre_area_conocimiento FROM AREAS_DE_CONOCIMIENTO";
+      const { rows } = await client.query(query);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Áreas de conocimiento obtenidas exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerAreasConocimiento",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener las áreas de conocimiento"
+      );
+    }
   }
 
   /**
-   * @name crearPregrado
+   * @static
+   * @async
+   * @method crearPregrado
    * @description Crear un nuevo pregrado
    * @param {Object} datos - Datos del pregrado
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async crearPregrado(datos, usuarioId) {
-    const { nombre, tipo } = datos;
+    try {
+      const { nombre, tipo } = datos;
 
-    const { rows } = await pg.query(
-      "CALL registrar_pre_grado($1, $2, $3, NULL)",
-      [usuarioId, nombre, tipo]
-    );
-    
-    return rows;
+      const query = "CALL registrar_pre_grado($1, $2, $3, NULL)";
+      const values = [usuarioId, nombre, tipo];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Pregrado creado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.crearPregrado",
+        usuario_id: usuarioId,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al crear el pregrado"
+      );
+    }
   }
 
   /**
-   * @name crearPosgrado
+   * @static
+   * @async
+   * @method crearPosgrado
    * @description Crear un nuevo posgrado
    * @param {Object} datos - Datos del posgrado
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async crearPosgrado(datos, usuarioId) {
-    const { nombre, tipo } = datos;
+    try {
+      const { nombre, tipo } = datos;
 
-    const { rows } = await pg.query(
-      "CALL registrar_pos_grado($1, $2, $3, NULL)",
-      [usuarioId, nombre, tipo]
-    );
-    
-    return rows;
+      const query = "CALL registrar_pos_grado($1, $2, $3, NULL)";
+      const values = [usuarioId, nombre, tipo];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Posgrado creado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.crearPosgrado",
+        usuario_id: usuarioId,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al crear el posgrado"
+      );
+    }
   }
 
   /**
-   * @name crearAreaConocimiento
+   * @static
+   * @async
+   * @method crearAreaConocimiento
    * @description Crear una nueva área de conocimiento
    * @param {Object} datos - Datos del área de conocimiento
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async crearAreaConocimiento(datos, usuarioId) {
-    const { area_conocimiento } = datos;
+    try {
+      const { area_conocimiento } = datos;
 
-    const { rows } = await pg.query(
-      "CALL registrar_area_conocimiento($1, $2, NULL)",
-      [usuarioId, area_conocimiento]
-    );
-    
-    return rows;
+      const query = "CALL registrar_area_conocimiento($1, $2, NULL)";
+      const values = [usuarioId, area_conocimiento];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Área de conocimiento creada exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.crearAreaConocimiento",
+        usuario_id: usuarioId,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al crear el área de conocimiento"
+      );
+    }
   }
 
   /**
-   * @name crearDisponibilidad
+   * @static
+   * @async
+   * @method crearDisponibilidad
    * @description Crear disponibilidad docente
    * @param {Object} datos - Datos de la disponibilidad
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async crearDisponibilidad(datos, usuarioId) {
-    const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+    try {
+      const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
 
-    const { rows } = await pg.query(
-      "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)",
-      [usuarioId, id_profesor, dia_semana, hora_inicio, hora_fin]
-    );
-    
-    return rows;
+      const query =
+        "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)";
+      const values = [
+        usuarioId,
+        id_profesor,
+        dia_semana,
+        hora_inicio,
+        hora_fin,
+      ];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Disponibilidad creada exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.crearDisponibilidad",
+        usuario_id: usuarioId,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al crear la disponibilidad"
+      );
+    }
   }
 
   /**
-   * @name actualizar
+   * @static
+   * @async
+   * @method actualizar
    * @description Actualizar un profesor existente
    * @param {Object} datos - Datos actualizados
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la actualización
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async actualizar(datos, usuarioId) {
-    const {
-      id_profesor,
-      nombres,
-      apellidos,
-      email,
-      direccion,
-      password,
-      telefono_movil,
-      telefono_local,
-      fecha_nacimiento,
-      genero,
-      nombre_categoria,
-      nombre_dedicacion,
-      pre_grado,
-      pos_grado,
-      area_de_conocimiento,
-      imagen,
-      municipio,
-      fecha_ingreso,
-    } = datos;
+    try {
+      const {
+        id_profesor,
+        nombres,
+        apellidos,
+        email,
+        direccion,
+        password,
+        telefono_movil,
+        telefono_local,
+        fecha_nacimiento,
+        genero,
+        nombre_categoria,
+        nombre_dedicacion,
+        pre_grado,
+        pos_grado,
+        area_de_conocimiento,
+        imagen,
+        municipio,
+        fecha_ingreso,
+      } = datos;
 
-    const { rows } = await pg.query(
-      `CALL actualizar_profesor_completo_o_parcial(
+      const query = `CALL actualizar_profesor_completo_o_parcial(
         NULL, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
-      )`,
-      [
+      )`;
+      const values = [
         usuarioId,
         id_profesor,
         nombres,
@@ -282,27 +492,68 @@ export default class ProfesorModel {
         imagen,
         municipio,
         fecha_ingreso,
-      ]
-    );
-    
-    return rows;
+      ];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesor actualizado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.actualizar",
+        usuario_id: usuarioId,
+        id_profesor: datos.id_profesor,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al actualizar el profesor"
+      );
+    }
   }
 
   /**
-   * @name eliminar
+   * @static
+   * @async
+   * @method eliminar
    * @description Eliminar/destituir un profesor
    * @param {Object} datos - Datos de la eliminación
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la eliminación
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
   static async eliminar(datos, usuarioId) {
-    const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } = datos;
+    try {
+      const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } =
+        datos;
 
-    const { rows } = await pg.query(
-      "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)",
-      [usuarioId, id_profesor, tipo_accion, razon, observaciones, fecha_efectiva]
-    );
-    
-    return rows;
+      const query =
+        "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
+      const values = [
+        usuarioId,
+        id_profesor,
+        tipo_accion,
+        razon,
+        observaciones,
+        fecha_efectiva,
+      ];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesor eliminado/destituido exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.eliminar",
+        usuario_id: usuarioId,
+        id_profesor: datos.id_profesor,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al eliminar/destituir el profesor"
+      );
+    }
   }
 }

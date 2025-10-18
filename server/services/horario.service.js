@@ -172,7 +172,7 @@ export default class HorarioService {
       console.log("📥 Generando documento para la sección:", idSeccion);
 
       // 1️⃣ Obtener datos desde el modelo
-      const datos = await HorarioModel.obtenerHorarioPorSeccion(idSeccion);
+      const datos = await HorarioModel.obtenerPorSeccion(idSeccion);
       if (!datos || datos.length === 0) {
         throw new Error("No se encontraron datos para esta sección");
       }

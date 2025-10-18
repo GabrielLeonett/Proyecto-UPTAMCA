@@ -1,5 +1,5 @@
 // Funcion para generar reportes en caso de errores internos
-import generateReport from './generateReport.js';
+import generateReport from "./generateReport.js";
 
 /**
  * @class FormatterResponseModel
@@ -34,40 +34,100 @@ export default class FormatterResponseModel {
   /**
    * @static
    * @method respuestaError
-   * @description Formatea una respuesta de error estándar
+   * @description Formatea y LANZA una respuesta de error estándar
    * @param {Object|Array|null} [rows=null] - Datos de error de la BD
    * @param {string} [title='Error'] - Título descriptivo del error
-   * @returns {Object} Respuesta de error formateada
+   * @throws {Object} Error formateado para propagación automática
    */
   static respuestaError(rows = null, title = "Error") {
     try {
       const resultado = rows ? this.validacionesComunes(rows) : {};
-      
-      if(resultado.status === undefined || resultado.status_code === undefined ){
-        throw resultado;
+
+      // Si el resultado ya tiene estructura de error, lanzarlo directamente
+      if (resultado.status === "error" || resultado.state === "error") {
+        throw {
+          status: resultado.status_code || resultado.status || 400,
+          state: "error",
+          title: resultado.title || title,
+          message: resultado.message || "Error en la operación",
+          error: {
+            code:
+              resultado.error?.code ||
+              resultado.codigo_error ||
+              "UNKNOWN_ERROR",
+            details: resultado.error?.details || resultado.details || {},
+            timestamp: new Date().toISOString(),
+          },
+        };
       }
-      
-      return {
+
+      // Si no tiene estructura esperada, podría ser un error de PostgreSQL
+      if (
+        resultado.status === undefined &&
+        resultado.status_code === undefined
+      ) {
+        // Es probablemente un error crudo de PostgreSQL
+        throw {
+          status: 500,
+          state: "error",
+          title: "Error de Base de Datos",
+          message: "Error en la operación de base de datos",
+          error: {
+            code: "DATABASE_ERROR",
+            details: {
+              originalError: resultado,
+              postgresCode: resultado.code,
+              postgresMessage: resultado.message,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        };
+      }
+
+      // Caso por defecto - lanzar error formateado
+      throw {
         status: resultado.status_code || 400,
         state: "error",
         title: title,
         message: resultado.message || "Error en la operación",
+        error: {
+          code: resultado.codigo_error || "OPERATION_ERROR",
+          details: resultado.details || {},
+          timestamp: new Date().toISOString(),
+        },
       };
     } catch (error) {
+      console.error("💥 Error crítico en respuestaError:", error);
+
+      // Generar reporte del error interno
       generateReport({
         status: 500,
-        state: "error",
-        title: "Error en el modelo",
+        state: "critical",
+        title: "Error en el formateador de errores del modelo",
         message: error.message,
-        ...(error?.code && {code: error.code}),
-        ...(error?.details && {details: error.details})
+        stack: error.stack,
+        originalError: error,
+        timestamp: new Date().toISOString(),
+        ...(error?.code && { code: error.code }),
+        ...(error?.details && { details: error.details }),
       });
-      return {
+
+      // Lanzar error interno formateado
+      throw {
         status: 500,
         state: "error",
-        title: "Error interno en el servidor.",
-        message: "Lo sentimos, Intente de nuevo mas tarde.",
-      }
+        title: "Error interno en el servidor",
+        message:
+          "Lo sentimos, ha ocurrido un error interno. Por favor, intente más tarde.",
+        error: {
+          code: "INTERNAL_FORMATTER_ERROR",
+          details: {
+            originalError:
+              process.env.MODE === "DEVELOPMENT" ? error.message : undefined,
+          },
+          timestamp: new Date().toISOString(),
+        },
+      };
     }
   }
 
@@ -105,7 +165,7 @@ export default class FormatterResponseModel {
    * @returns {Object} Respuesta formateada según el tipo de resultado
    * @throws {Error} Si la respuesta indica un error explícito
    */
-  static respuestaPostgres(rows, titleSuccess = "Completado", ) {
+  static respuestaPostgres(rows, titleSuccess = "Completado") {
     try {
       const resultado = this.validacionesComunes(rows);
 
@@ -120,7 +180,7 @@ export default class FormatterResponseModel {
         state: "success",
         title: titleSuccess,
         message: resultado.message || "Se obtuvieron los datos",
-        data: resultado 
+        data: resultado,
       };
     } catch (error) {
       throw error;

@@ -10,7 +10,7 @@ export default class ImagenService {
     this.storageImage = "uploads/" + storage;
   }
 
-  async validateImage( originalName, options = {}) {
+  async validateImage(originalName, options = {}) {
     try {
       const fullPath = join(this.storageImage, originalName);
 
@@ -272,27 +272,132 @@ export default class ImagenService {
   // Método para obtener/leer una imagen
   async getImage(fileName, options = {}) {
     try {
+      console.log(`🔍 [getImage] Buscando imagen: ${fileName}`);
+
       if (!fileName || typeof fileName !== "string") {
-        throw new Error("El nombre del archivo es requerido");
+        throw {
+          message:
+            "El nombre del archivo es requerido y debe ser una cadena de texto",
+          code: "INVALID_FILENAME",
+          status: 400,
+          details: { fileName },
+        };
       }
 
-      const filePath = join(this.storageImage, fileName);
+      // Limpiar el nombre del archivo (remover path traversal attempts)
+      const cleanFileName = fileName.replace(/\.\.\//g, "").replace(/\\/g, "");
+
+      const filePath = join(this.storageImage, cleanFileName);
 
       // Verificar que el archivo existe
       try {
         await access(filePath);
       } catch (accessError) {
-        throw new Error(`La imagen no existe: ${fileName}`);
+        throw {
+          message: `La imagen no existe: ${cleanFileName}`,
+          code: "IMAGE_NOT_FOUND",
+          status: 404,
+          details: {
+            fileName: cleanFileName,
+            filePath: filePath,
+            storagePath: this.storageImage,
+          },
+        };
       }
 
       // Obtener estadísticas del archivo
       const fileStats = await stat(filePath);
 
+      // Verificar que es un archivo válido
+      if (!fileStats.isFile()) {
+        throw {
+          message: `La ruta especificada no es un archivo válido: ${cleanFileName}`,
+          code: "INVALID_FILE",
+          status: 400,
+          details: { fileName: cleanFileName },
+        };
+      }
+
+      // Verificar tamaño del archivo (máximo 10MB)
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+      if (fileStats.size > MAX_FILE_SIZE) {
+        throw {
+          message: `La imagen es demasiado grande: ${(
+            fileStats.size /
+            1024 /
+            1024
+          ).toFixed(2)}MB (máximo 10MB)`,
+          code: "FILE_TOO_LARGE",
+          status: 400,
+          details: {
+            fileName: cleanFileName,
+            fileSize: fileStats.size,
+            maxSize: MAX_FILE_SIZE,
+          },
+        };
+      }
+
+      if (fileStats.size === 0) {
+        throw {
+          message: `La imagen está vacía: ${cleanFileName}`,
+          code: "EMPTY_FILE",
+          status: 400,
+          details: { fileName: cleanFileName },
+        };
+      }
+
       // Leer el archivo como buffer
       const imageBuffer = await fs.promises.readFile(filePath);
 
-      // Obtener metadata de la imagen
-      const metadata = await sharp(imageBuffer).metadata();
+      // Verificar que el buffer no esté vacío
+      if (!imageBuffer || imageBuffer.length === 0) {
+        throw {
+          message: `No se pudo leer la imagen: ${cleanFileName}`,
+          code: "FILE_READ_ERROR",
+          status: 500,
+          details: { fileName: cleanFileName },
+        };
+      }
+
+      // Validar que sea una imagen válida usando Sharp
+      let metadata;
+      try {
+        metadata = await sharp(imageBuffer).metadata();
+      } catch (sharpError) {
+        throw {
+          message: `El archivo no es una imagen válida: ${cleanFileName}`,
+          code: "INVALID_IMAGE_FORMAT",
+          status: 400,
+          details: {
+            fileName: cleanFileName,
+            originalError: sharpError.message,
+          },
+        };
+      }
+
+      // Validar formatos soportados
+      const supportedFormats = [
+        "jpeg",
+        "jpg",
+        "png",
+        "webp",
+        "gif",
+        "tiff",
+        "avif",
+        "heif",
+      ];
+      if (!supportedFormats.includes(metadata.format)) {
+        throw {
+          message: `Formato de imagen no soportado: ${metadata.format}`,
+          code: "UNSUPPORTED_FORMAT",
+          status: 400,
+          details: {
+            fileName: cleanFileName,
+            format: metadata.format,
+            supportedFormats: supportedFormats,
+          },
+        };
+      }
 
       // Si se solicitan opciones de procesamiento, procesar la imagen
       if (Object.keys(options).length > 0) {
@@ -304,6 +409,34 @@ export default class ImagenService {
           fit = "inside",
           withoutEnlargement = true,
         } = options;
+
+        // Validar opciones de procesamiento
+        if (width && (width < 1 || width > 10000)) {
+          throw {
+            message: "El ancho debe estar entre 1 y 10000 píxeles",
+            code: "INVALID_WIDTH",
+            status: 400,
+            details: { width },
+          };
+        }
+
+        if (height && (height < 1 || height > 10000)) {
+          throw {
+            message: "El alto debe estar entre 1 y 10000 píxeles",
+            code: "INVALID_HEIGHT",
+            status: 400,
+            details: { height },
+          };
+        }
+
+        if (quality < 1 || quality > 100) {
+          throw {
+            message: "La calidad debe estar entre 1 y 100",
+            code: "INVALID_QUALITY",
+            status: 400,
+            details: { quality },
+          };
+        }
 
         let processedImage = sharp(imageBuffer);
 
@@ -319,51 +452,100 @@ export default class ImagenService {
         let outputFormat = format ? format.toLowerCase() : metadata.format;
         if (outputFormat === "jpg") outputFormat = "jpeg";
 
-        switch (outputFormat) {
-          case "jpeg":
-            processedImage = processedImage.jpeg({ quality, mozjpeg: true });
-            break;
-          case "png":
-            processedImage = processedImage.png({
-              compressionLevel: Math.floor(quality / 10),
-            });
-            break;
-          case "webp":
-            processedImage = processedImage.webp({
-              quality,
-              lossless: quality === 100,
-            });
-            break;
-          default:
-            // Mantener formato original si no se especifica o no es soportado
-            outputFormat = metadata.format;
+        // Validar formato de salida
+        if (!supportedFormats.includes(outputFormat)) {
+          throw {
+            message: `Formato de salida no soportado: ${outputFormat}`,
+            code: "UNSUPPORTED_OUTPUT_FORMAT",
+            status: 400,
+            details: {
+              outputFormat,
+              supportedFormats: supportedFormats,
+            },
+          };
         }
 
-        const processedBuffer = await processedImage.toBuffer();
-        const processedMetadata = await sharp(processedBuffer).metadata();
+        try {
+          switch (outputFormat) {
+            case "jpeg":
+              processedImage = processedImage.jpeg({ quality, mozjpeg: true });
+              break;
+            case "png":
+              processedImage = processedImage.png({
+                compressionLevel: Math.floor((100 - quality) / 10),
+              });
+              break;
+            case "webp":
+              processedImage = processedImage.webp({
+                quality,
+                lossless: quality === 100,
+              });
+              break;
+            case "gif":
+              processedImage = processedImage.gif();
+              break;
+            case "tiff":
+              processedImage = processedImage.tiff({ quality });
+              break;
+            case "avif":
+              processedImage = processedImage.avif({ quality });
+              break;
+            case "heif":
+              processedImage = processedImage.heif({ quality });
+              break;
+            default:
+              outputFormat = metadata.format;
+          }
 
-        return {
-          success: true,
-          buffer: processedBuffer,
-          metadata: processedMetadata,
-          fileName: fileName,
-          fileSize: processedBuffer.length,
-          format: outputFormat === "jpeg" ? "jpg" : outputFormat,
-          dimensions: {
-            width: processedMetadata.width,
-            height: processedMetadata.height,
-          },
-          processed: true,
-        };
+          const processedBuffer = await processedImage.toBuffer();
+          const processedMetadata = await sharp(processedBuffer).metadata();
+
+          console.log(`✅ Imagen procesada exitosamente: ${cleanFileName}`);
+
+          return {
+            success: true,
+            buffer: processedBuffer,
+            metadata: processedMetadata,
+            fileName: cleanFileName,
+            fileSize: processedBuffer.length,
+            mimeType: this.getMimeType(
+              outputFormat === "jpeg" ? "jpg" : outputFormat
+            ),
+            format: outputFormat === "jpeg" ? "jpg" : outputFormat,
+            dimensions: {
+              width: processedMetadata.width,
+              height: processedMetadata.height,
+            },
+            processed: true,
+            originalSize: fileStats.size,
+            compressionRatio: `${(
+              (1 - processedBuffer.length / fileStats.size) *
+              100
+            ).toFixed(1)}%`,
+          };
+        } catch (processingError) {
+          throw {
+            message: `Error al procesar la imagen: ${processingError.message}`,
+            code: "IMAGE_PROCESSING_ERROR",
+            status: 500,
+            details: {
+              fileName: cleanFileName,
+              originalError: processingError.message,
+            },
+          };
+        }
       }
 
       // Retornar imagen original sin procesar
+      console.log(`✅ Imagen obtenida exitosamente: ${cleanFileName}`);
+
       return {
         success: true,
         buffer: imageBuffer,
         metadata: metadata,
-        fileName: fileName,
+        fileName: cleanFileName,
         fileSize: fileStats.size,
+        mimeType: this.getMimeType(metadata.format),
         format: metadata.format,
         dimensions: {
           width: metadata.width,
@@ -372,11 +554,38 @@ export default class ImagenService {
         processed: false,
       };
     } catch (error) {
-      return {
-        success: false,
-        error: error.message,
-        fileName: fileName,
+      console.error(`💥 Error en getImage:`, error);
+
+      // Si el error ya está formateado, re-lanzarlo
+      if (error.code && error.status) {
+        throw error;
+      }
+
+      // Si es un error genérico, formatearlo
+      throw {
+        message: error.message || "Error desconocido al obtener la imagen",
+        code: "IMAGE_SERVICE_ERROR",
+        status: 500,
+        details: {
+          fileName: fileName,
+          originalError: error.message,
+        },
       };
     }
+  }
+
+  // Método auxiliar para obtener MIME type
+  getMimeType(format) {
+    const mimeTypes = {
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      webp: "image/webp",
+      gif: "image/gif",
+      tiff: "image/tiff",
+      avif: "image/avif",
+      heif: "image/heif",
+    };
+    return mimeTypes[format.toLowerCase()] || "application/octet-stream";
   }
 }
