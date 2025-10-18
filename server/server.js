@@ -23,6 +23,7 @@ import { HorarioRouter } from "./routes/horario.routes.js";
 import { SedesRouter } from "./routes/sedes.routes.js";
 import { AulaRouter } from "./routes/aula.routes.js";
 import { coordinadorRouter } from "./routes/coordinador.routes.js";
+import { NotificationRouter } from "./routes/notification.routes.js";
 
 // Creación del servidor
 const app = express();
@@ -43,6 +44,7 @@ app.use("", HorarioRouter);
 app.use("", AulaRouter);
 app.use("", SedesRouter);
 app.use("", coordinadorRouter);
+app.use("", NotificationRouter);
 
 const servicioSocket = new SocketServices();
 const io = servicioSocket.initializeService();

@@ -63,9 +63,9 @@ export default function FormRegister() {
     const fetchData = async () => {
       try {
         const [areasRes, pregradoRes, postgradoRes] = await Promise.all([
-          axios.get("/Profesor/areas-conocimiento"),
-          axios.get("/Profesor/pre-grado"),
-          axios.get("/Profesor/post-grado"),
+          axios.get("/catalogos/areas-conocimiento"),
+          axios.get("/catalogos/pregrados"),
+          axios.get("/catalogos/posgrados"),
         ]);
 
         setAreas(areasRes.data);

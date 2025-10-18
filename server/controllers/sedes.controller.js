@@ -1,4 +1,5 @@
 import FormatResponseController from "../utils/FormatterResponseController.js";
+import SedeService from "../services/sedes.service.js";
 
 /**
  * @class SedeController
@@ -13,15 +14,10 @@ export default class SedeController {
    * @returns {void}
    */
   static async registerSede(req, res) {
-    try {
-      const respuesta = await SedeService.registrarSede(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      SedeService.registrarSede(req.body, req.user)
+    );
   }
 
   /**
@@ -32,12 +28,10 @@ export default class SedeController {
    * @returns {void}
    */
   static async mostrarSedes(req, res) {
-    try {
-      const respuesta = await SedeService.mostrarSedes();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      SedeService.mostrarSedes()
+    );
   }
 
   /**
@@ -48,15 +42,10 @@ export default class SedeController {
    * @returns {void}
    */
   static async obtenerSedePorId(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await SedeService.obtenerSedePorId(
-        parseInt(id)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      SedeService.obtenerSedePorId(parseInt(req.params.id))
+    );
   }
 
   /**
@@ -67,17 +56,10 @@ export default class SedeController {
    * @returns {void}
    */
   static async actualizarSede(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await SedeService.actualizarSede(
-        parseInt(id),
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      SedeService.actualizarSede(parseInt(req.params.id), req.body, req.user)
+    );
   }
 
   /**
@@ -88,15 +70,9 @@ export default class SedeController {
    * @returns {void}
    */
   static async eliminarSede(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await SedeService.eliminarSede(
-        parseInt(id),
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      SedeService.eliminarSede(parseInt(req.params.id), req.user)
+    );
   }
 }

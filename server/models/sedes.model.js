@@ -1,4 +1,5 @@
 import pg from "../database/pg.js";
+import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 
 /**
  * @class SedeModel
@@ -6,90 +7,236 @@ import pg from "../database/pg.js";
  */
 export default class SedeModel {
   /**
-   * @name crear
+   * @name crearSede
    * @description Crear una nueva sede en la base de datos
    * @param {Object} datos - Datos de la sede
-   * @param {string} datos.nombreSede - Nombre de la sede
-   * @param {string} datos.UbicacionSede - Ubicación de la sede
-   * @param {string} datos.GoogleSede - Enlace de Google Maps
+   * @param {string} datos.nombre - Nombre de la sede
+   * @param {string} datos.direccion - Dirección de la sede
+   * @param {string} datos.telefono - Teléfono de la sede
+   * @param {string} datos.estado - Estado de la sede
+   * @param {string} datos.google_maps - Enlace de Google Maps
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la inserción
+   * @returns {Object} Resultado de la inserción
    */
-  static async crear(datos, usuarioId) {
-    const { nombreSede, UbicacionSede, GoogleSede } = datos;
+  static async crearSede(datos, usuarioId) {
+    try {
+      console.log("💾 [crearSede] Insertando sede en BD...");
 
-    // Obtener próximo ID
-    const idResult = await pg.query("SELECT COUNT(*) + 1 AS id FROM sedes");
-    const idSede = idResult.rows[0].id;
+      const { nombreSede, UbicacionSede, GoogleSede } = datos;
 
-    // Insertar sede
-    const { rows } = await pg.query(
-      "CALL public.registrar_sede_completo($1, $2, $3, $4, $5, NULL)",
-      [usuarioId, idSede, nombreSede, UbicacionSede, GoogleSede]
-    );
-    
-    return rows;
+      // Insertar sede usando el procedimiento almacenado
+      const { rows } = await pg.query(
+        "CALL public.registrar_sede_completo($1, $2, $3, $4, NULL)",
+        [usuarioId, nombreSede, UbicacionSede, GoogleSede || null]
+      );
+
+      console.log("✅ Sede insertada en BD:", rows);
+
+      // Si respuestaPostgres NO es async, no usar await
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Sede creada en base de datos"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo crear sede:", {...error});
+
+      // Si respuestaError NO es async, no usar await
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "No se pudo crear la sede"
+      );
+    }
   }
 
   /**
-   * @name obtenerTodas
+   * @name mostrarSedes
    * @description Obtener todas las sedes de la base de datos
-   * @returns {Array} Lista de sedes
+   * @returns {Object} Lista de sedes formateada
    */
-  static async obtenerTodas() {
-    const { rows } = await pg.query(
-      "SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes"
-    );
-    return rows;
+  static async mostrarSedes() {
+    try {
+      console.log("💾 [mostrarSedes] Obteniendo sedes de BD...");
+
+      const { rows } = await pg.query(
+        `SELECT 
+          id_sede as id,
+          nombre_sede as nombre, 
+          ubicacion_sede as direccion, 
+          google_sede as google_maps,
+          'activa' as estado
+         FROM sedes 
+         ORDER BY nombre_sede`
+      );
+
+      console.log(`✅ Se obtuvieron ${rows.length} sedes de BD`);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Sedes obtenidas de base de datos"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo mostrar sedes:", error);
+      return FormatterResponseModel.respuestaError(
+        error,
+        "No se pudieron obtener las sedes de la base de datos"
+      );
+    }
   }
 
   /**
-   * @name obtenerPorId
+   * @name obtenerSedePorId
    * @description Obtener una sede específica por ID
    * @param {number} idSede - ID de la sede
-   * @returns {Array} Datos de la sede
+   * @returns {Object} Datos de la sede formateados
    */
-  static async obtenerPorId(idSede) {
-    const { rows } = await pg.query(
-      "SELECT id_sede, nombre_sede, ubicacion_sede, google_sede FROM sedes WHERE id_sede = $1",
-      [idSede]
-    );
-    return rows;
+  static async obtenerSedePorId(idSede) {
+    try {
+      console.log("💾 [obtenerSedePorId] Buscando sede en BD ID:", idSede);
+
+      const { rows } = await pg.query(
+        `SELECT 
+          id_sede as id,
+          nombre_sede as nombre, 
+          ubicacion_sede as direccion, 
+          google_sede as google_maps,
+          'activa' as estado
+         FROM sedes 
+         WHERE id_sede = $1`,
+        [idSede]
+      );
+
+      if (rows.length === 0) {
+        console.log("ℹ️ Sede no encontrada en BD:", idSede);
+        return FormatterResponseModel.respuestaPostgres(
+          [],
+          "Sede no encontrada en base de datos"
+        );
+      }
+
+      console.log("✅ Sede encontrada en BD:", rows[0].nombre);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows[0],
+        "Sede obtenida de base de datos"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo obtener sede por ID:", error);
+      return FormatterResponseModel.respuestaError(
+        error,
+        "No se pudo obtener la sede de la base de datos"
+      );
+    }
   }
 
   /**
-   * @name actualizar
+   * @name actualizarSede
    * @description Actualizar una sede existente
    * @param {number} idSede - ID de la sede a actualizar
    * @param {Object} datos - Datos actualizados
-   * @param {string} datos.nombreSede - Nuevo nombre de la sede
-   * @param {string} datos.ubicacionSede - Nueva ubicación
-   * @param {string} datos.googleSede - Nuevo enlace de Google Maps
+   * @param {string} datos.nombre - Nuevo nombre de la sede
+   * @param {string} datos.direccion - Nueva dirección
+   * @param {string} datos.telefono - Nuevo teléfono
+   * @param {string} datos.estado - Nuevo estado
+   * @param {string} datos.google_maps - Nuevo enlace de Google Maps
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la actualización
+   * @returns {Object} Resultado de la actualización
    */
-  static async actualizar(idSede, datos, usuarioId) {
-    const { nombreSede, ubicacionSede, googleSede } = datos;
-    
-    const { rows } = await pg.query(
-      "CALL public.actualizar_sede($1, $2, $3, $4, $5)",
-      [usuarioId, idSede, nombreSede, ubicacionSede, googleSede]
-    );
-    return rows;
+  static async actualizarSede(idSede, datos, usuarioId) {
+    try {
+      console.log("💾 [actualizarSede] Actualizando sede en BD ID:", idSede);
+
+      const { nombre, direccion, telefono, estado, google_maps } = datos;
+
+      // Usar el procedimiento almacenado para actualizar
+      const { rows } = await pg.query(
+        "CALL public.actualizar_sede($1, $2, $3, $4, $5)",
+        [usuarioId, idSede, nombre, direccion, google_maps || null]
+      );
+
+      console.log("✅ Sede actualizada en BD ID:", idSede);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Sede actualizada en base de datos"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo actualizar sede:", error);
+      return FormatterResponseModel.respuestaError(
+        error,
+        "No se pudo actualizar la sede en la base de datos"
+      );
+    }
   }
 
   /**
-   * @name eliminar
+   * @name eliminarSede
    * @description Eliminar una sede
    * @param {number} idSede - ID de la sede a eliminar
    * @param {number} usuarioId - ID del usuario que realiza la acción
-   * @returns {Array} Resultado de la eliminación
+   * @returns {Object} Resultado de la eliminación
    */
-  static async eliminar(idSede, usuarioId) {
-    const { rows } = await pg.query(
-      "CALL public.eliminar_sede($1, $2)",
-      [usuarioId, idSede]
-    );
-    return rows;
+  static async eliminarSede(idSede, usuarioId) {
+    try {
+      console.log("💾 [eliminarSede] Eliminando sede de BD ID:", idSede);
+
+      // Eliminar sede usando el procedimiento almacenado
+      const { rows } = await pg.query("CALL public.eliminar_sede($1, $2)", [
+        usuarioId,
+        idSede,
+      ]);
+
+      console.log("✅ Sede eliminada de BD ID:", idSede);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Sede eliminada de base de datos"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo eliminar sede:", error);
+      return FormatterResponseModel.respuestaError(
+        error,
+        "No se pudo eliminar la sede de la base de datos"
+      );
+    }
+  }
+
+  /**
+   * @name verificarDependencias
+   * @description Verificar si una sede tiene dependencias (aulas, etc.)
+   * @param {number} idSede - ID de la sede
+   * @returns {Object} Resultado de la verificación
+   */
+  static async verificarDependencias(idSede) {
+    try {
+      console.log(
+        "💾 [verificarDependencias] Verificando dependencias para sede:",
+        idSede
+      );
+
+      // Verificar si hay aulas asociadas a esta sede
+      const aulasResult = await pg.query(
+        "SELECT COUNT(*) as total FROM aulas WHERE id_sede = $1",
+        [idSede]
+      );
+
+      const totalAulas = parseInt(aulasResult.rows[0].total);
+
+      console.log(`ℹ️ Sede ${idSede} tiene ${totalAulas} aulas asociadas`);
+
+      return FormatterResponseModel.respuestaPostgres(
+        {
+          tiene_dependencias: totalAulas > 0,
+          total_aulas: totalAulas,
+          dependencias: totalAulas > 0 ? ["aulas"] : [],
+        },
+        "Dependencias verificadas"
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo verificar dependencias:", error);
+      return FormatterResponseModel.respuestaError(
+        error,
+        "No se pudieron verificar las dependencias de la sede"
+      );
+    }
   }
 }

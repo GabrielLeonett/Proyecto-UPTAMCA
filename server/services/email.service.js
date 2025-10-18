@@ -7,8 +7,14 @@
 
 import nodemailer from "nodemailer";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { loadEnv } from "../utils/utilis.js";
 loadEnv();
+
+// Para manejar rutas en ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default class EmailService {
   /**
@@ -17,11 +23,12 @@ export default class EmailService {
    * @throws {Error} Cuando no se encuentra el archivo logo.png
    */
   constructor() {
-    this.logoPath = "../utils/logo.png";
+    // Corregir la ruta del logo - buscar en varias ubicaciones posibles
+    this.logoPath = this.findLogoPath();
 
-    // Verificación de existencia del logo
-    if (!fs.existsSync(this.logoPath)) {
-      throw new Error(`Archivo logo.png no encontrado en: ${this.logoPath}`);
+    if (!this.logoPath) {
+      console.warn("⚠️ Logo no encontrado. Los correos se enviarán sin logo.");
+      // No lanzar error, permitir que el servicio funcione sin logo
     }
 
     /**
@@ -40,6 +47,36 @@ export default class EmailService {
      * @description Instancia del transporter de nodemailer
      */
     this.transporter = this.createTransporter();
+  }
+  /**
+   * @private
+   * @method findLogoPath
+   * @description Busca el archivo logo.png en varias ubicaciones posibles
+   * @returns {string|null} Ruta del logo o null si no se encuentra
+   */
+  findLogoPath() {
+    const possiblePaths = [
+      // Ruta relativa desde el servicio
+      path.join(__dirname, "../utils/logo.png"),
+      // Ruta desde el directorio raíz del proyecto
+      path.join(process.cwd(), "utils/logo.png"),
+      // Ruta desde el directorio actual
+      path.join(__dirname, "../../utils/logo.png"),
+      // Otras posibles ubicaciones
+      path.join(process.cwd(), "server/utils/logo.png"),
+      path.join(__dirname, "../../../utils/logo.png"),
+    ];
+
+    for (const logoPath of possiblePaths) {
+      if (fs.existsSync(logoPath)) {
+        console.log(`✅ Logo encontrado en: ${logoPath}`);
+        return logoPath;
+      }
+    }
+
+    console.warn("❌ Logo no encontrado en las siguientes ubicaciones:");
+    possiblePaths.forEach((p) => console.log(`   - ${p}`));
+    return null;
   }
 
   /**
@@ -66,10 +103,14 @@ export default class EmailService {
    * @returns {string} Plantilla HTML completa
    */
   generateEmailTemplate(content) {
+    const logoSection = this.logoPath
+      ? `<img src="cid:logo" alt="Logo UPTAMCA" style="width: 100px;">`
+      : `<h1 style="color: white; margin: 0;">UPTAMCA</h1>`;
+
     return `
       <div style="font-family: Poppins, sans-serif; max-width: 600px; margin: 0 auto;">
           <header style="background-color: #1C75BA; padding: 20px; text-align: center;">
-              <img src="cid:logo" alt="Logo UPTAMCA" style="width: 100px;">
+              ${logoSection}
           </header>
 
           <div style="padding: 20px;">
@@ -136,7 +177,7 @@ export default class EmailService {
   /**
    * @async
    * @method verificarEmailConAPI
-   * @description Verifica un email usando una API externa (abstractapi.com)
+   * @description Verifica un email usando AbstractAPI Email Reputation
    * @param {string} email - Dirección de correo a verificar
    * @returns {Promise<Object>} Resultado de la verificación
    */
@@ -145,41 +186,85 @@ export default class EmailService {
       const API_KEY = process.env.EMAIL_VERIFICATION_API_KEY;
 
       if (!API_KEY) {
-        // Si no hay API key, solo validamos el formato
-        const validacionFormato = this.validarFormatoEmail(email);
-        return {
-          existe: validacionFormato.valido,
-          valido: validacionFormato.valido,
-          mensaje: validacionFormato.valido
-            ? "Email con formato válido (verificación limitada)"
-            : validacionFormato.mensaje,
-          verificadoCon: "validacion_formato",
-        };
+        return this.validarEmailLocal(email);
       }
 
       const response = await fetch(
-        `https://emailvalidation.abstractapi.com/v1/?api_key=${API_KEY}&email=${email}`
+        `https://emailreputation.abstractapi.com/v1/?api_key=${API_KEY}&email=${encodeURIComponent(
+          email
+        )}`
       );
+
+      if (!response.ok) {
+        console.warn(
+          `⚠️ API respondió con status: ${response.status}, usando validación local`
+        );
+        return this.validarEmailLocal(email);
+      }
 
       const data = await response.json();
 
+      // Debug: Ver respuesta completa de la API
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "📨 Respuesta completa de AbstractAPI:",
+          JSON.stringify(data, null, 2)
+        );
+      }
+
+      // CORRECCIÓN: Usar los campos correctos de la API de Reputation
+      const esValido = data.email_deliverability?.is_format_valid === true;
+      const esEntregable = data.email_deliverability?.status === "deliverable";
+      const noEsDesechable = data.email_quality?.is_disposable === false;
+
       return {
-        existe: data.deliverability === "DELIVERABLE",
-        valido: data.is_valid_format?.value === true,
-        calidad: data.quality_score,
-        mensaje: data.deliverability,
+        existe: esValido && esEntregable && noEsDesechable, // CORREGIDO
+        valido: esValido, // CORREGIDO
+        calidad: parseFloat(data.email_quality?.score) || 0,
+        mensaje: this.generarMensajeReputacion(data),
         datos: data,
-        verificadoCon: "api_externa",
+        verificadoCon: "api_reputacion_email",
       };
     } catch (error) {
-      // Fallback a validación de formato si la API falla
-      const validacionFormato = this.validarFormatoEmail(email);
-      return {
-        existe: validacionFormato.valido,
-        valido: validacionFormato.valido,
-        mensaje: `Error en API: ${error.message}. ${validacionFormato.mensaje}`,
-        verificadoCon: "validacion_formato_fallback",
-      };
+      console.warn(
+        `⚠️ Error en API de email reputation: ${error.message}, usando validación local`
+      );
+      return this.validarEmailLocal(email);
+    }
+  }
+
+  /**
+   * @private
+   * @method generarMensajeReputacion
+   * @description Genera un mensaje descriptivo basado en la respuesta de Email Reputation API
+   * @param {Object} data - Datos de la API
+   * @returns {string} Mensaje descriptivo
+   */
+  generarMensajeReputacion(data) {
+    const deliverability = data.email_deliverability;
+    const quality = data.email_quality;
+
+    if (!deliverability?.is_format_valid) {
+      return "Formato de email inválido";
+    }
+
+    if (quality?.is_disposable) {
+      return "Email desechable (temporal) detectado";
+    }
+
+    if (deliverability?.status === "deliverable") {
+      const score = parseFloat(quality?.score) || 0;
+      if (score > 0.8) {
+        return "Email válido y de alta calidad";
+      } else if (score > 0.5) {
+        return "Email válido y de calidad media";
+      } else {
+        return "Email válido pero de baja calidad";
+      }
+    } else if (deliverability?.status === "undeliverable") {
+      return "Email no entregable";
+    } else {
+      return "Estado de email desconocido";
     }
   }
 

@@ -1,6 +1,5 @@
-import pg from "../database/pg.js";
-import FormatterResponseModel from "../utils/FormatterResponseModel.js";
-import generateReport from "../utils/generateReport.js";
+// Funcion para generar reportes en caso de errores internos
+import generateReport from "./generateReport.js";
 
 /**
  * @class ProfesorModel
@@ -20,22 +19,103 @@ export default class ProfesorModel {
     } catch (error) {
       console.error("💥 [ERROR ProfesorModel]:", error);
 
+  /**
+   * @static
+   * @method respuestaError
+   * @description Formatea y LANZA una respuesta de error estándar
+   * @param {Object|Array|null} [rows=null] - Datos de error de la BD
+   * @param {string} [title='Error'] - Título descriptivo del error
+   * @throws {Object} Error formateado para propagación automática
+   */
+  static respuestaError(rows = null, title = "Error") {
+    try {
+      const resultado = rows ? this.validacionesComunes(rows) : {};
+
+      // Si el resultado ya tiene estructura de error, lanzarlo directamente
+      if (resultado.status === "error" || resultado.state === "error") {
+        throw {
+          status: resultado.status_code || resultado.status || 400,
+          state: "error",
+          title: resultado.title || title,
+          message: resultado.message || "Error en la operación",
+          error: {
+            code:
+              resultado.error?.code ||
+              resultado.codigo_error ||
+              "UNKNOWN_ERROR",
+            details: resultado.error?.details || resultado.details || {},
+            timestamp: new Date().toISOString(),
+          },
+        };
+      }
+
+      // Si no tiene estructura esperada, podría ser un error de PostgreSQL
+      if (
+        resultado.status === undefined &&
+        resultado.status_code === undefined
+      ) {
+        // Es probablemente un error crudo de PostgreSQL
+        throw {
+          status: 500,
+          state: "error",
+          title: "Error de Base de Datos",
+          message: "Error en la operación de base de datos",
+          error: {
+            code: "DATABASE_ERROR",
+            details: {
+              originalError: resultado,
+              postgresCode: resultado.code,
+              postgresMessage: resultado.message,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        };
+      }
+
+      // Caso por defecto - lanzar error formateado
+      throw {
+        status: resultado.status_code || 400,
+        state: "error",
+        title: title,
+        message: resultado.message || "Error en la operación",
+        error: {
+          code: resultado.codigo_error || "OPERATION_ERROR",
+          details: resultado.details || {},
+          timestamp: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      console.error("💥 Error crítico en respuestaError:", error);
+
+      // Generar reporte del error interno
       generateReport({
         status: 500,
-        state: "error",
-        title: "Error en ProfesorModel",
+        state: "critical",
+        title: "Error en el formateador de errores del modelo",
         message: error.message,
-        query,
-        params,
+        stack: error.stack,
+        originalError: error,
+        timestamp: new Date().toISOString(),
         ...(error?.code && { code: error.code }),
-        ...(error?.detail && { detail: error.detail }),
-        ...(error?.stack && { stack: error.stack }),
+        ...(error?.details && { details: error.details }),
       });
 
-      return FormatterResponseModel.respuestaError(
-        null,
-        "Error al ejecutar la consulta del modelo"
-      );
+      // Lanzar error interno formateado
+      throw {
+        status: 500,
+        state: "error",
+        title: "Error interno en el servidor",
+        message:
+          "Lo sentimos, ha ocurrido un error interno. Por favor, intente más tarde.",
+        error: {
+          code: "INTERNAL_FORMATTER_ERROR",
+          details: {
+            originalError:
+              process.env.MODE === "DEVELOPMENT" ? error.message : undefined,
+          },
+          timestamp: new Date().toISOString(),
+        },
+      };
     }
   }
 
@@ -80,12 +160,19 @@ export default class ProfesorModel {
     return this.ejecutarQuery(query, params, "Profesor registrado correctamente");
   }
 
-  // ======================================================
-  // 🔹 CONSULTAS
-  // ======================================================
-  static async obtenerTodos() {
-    return this.ejecutarQuery("SELECT * FROM profesores_informacion_completa", [], "Lista de profesores obtenida");
-  }
+  /**
+   * @static
+   * @method respuestaPostgres
+   * @description Método inteligente que determina automáticamente el tipo de respuesta a formatear
+   * @param {Object|Array} rows - Respuesta cruda de PostgreSQL
+   * @param {string} [titleSuccess='Completado'] - Título para respuestas exitosas
+   * @param {string} [titleError='Error'] - Título para respuestas de error
+   * @returns {Object} Respuesta formateada según el tipo de resultado
+   * @throws {Error} Si la respuesta indica un error explícito
+   */
+  static respuestaPostgres(rows, titleSuccess = "Completado") {
+    try {
+      const resultado = this.validacionesComunes(rows);
 
   static async obtenerConFiltros(filtros) {
     const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
@@ -94,131 +181,15 @@ export default class ProfesorModel {
     return this.ejecutarQuery(query, params, "Profesores filtrados correctamente");
   }
 
-  static async buscar(busqueda) {
-    const query = `
-      SELECT * FROM PROFESORES_INFORMACION_COMPLETA 
-      WHERE nombres ILIKE $1 OR apellidos ILIKE $2 OR cedula ILIKE $3
-    `;
-    const params = [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`];
-    return this.ejecutarQuery(query, params, "Búsqueda de profesores realizada");
-  }
-
-  static async obtenerImagen(cedula) {
-    return this.ejecutarQuery(
-      "SELECT imagen FROM users WHERE cedula = $1",
-      [cedula],
-      "Imagen del profesor obtenida"
-    );
-  }
-
-  static async obtenerPregrados() {
-    return this.ejecutarQuery(
-      "SELECT id_pre_grado, nombre_pre_grado, tipo_pre_grado FROM pre_grado",
-      [],
-      "Pregrados obtenidos"
-    );
-  }
-
-  static async obtenerPosgrados() {
-    return this.ejecutarQuery(
-      "SELECT id_pos_grado, nombre_pos_grado, tipo_pos_grado FROM pos_grado",
-      [],
-      "Posgrados obtenidos"
-    );
-  }
-
-  static async obtenerAreasConocimiento() {
-    return this.ejecutarQuery(
-      "SELECT id_area_conocimiento, nombre_area_conocimiento FROM areas_de_conocimiento",
-      [],
-      "Áreas de conocimiento obtenidas"
-    );
-  }
-
-  // ======================================================
-  // 🔹 INSERCIÓN DE CATÁLOGOS
-  // ======================================================
-  static async crearPregrado(datos, usuarioId) {
-    const { nombre, tipo } = datos;
-    return this.ejecutarQuery(
-      "CALL registrar_pre_grado($1, $2, $3, NULL)",
-      [usuarioId, nombre, tipo],
-      "Pregrado creado exitosamente"
-    );
-  }
-
-  static async crearPosgrado(datos, usuarioId) {
-    const { nombre, tipo } = datos;
-    return this.ejecutarQuery(
-      "CALL registrar_pos_grado($1, $2, $3, NULL)",
-      [usuarioId, nombre, tipo],
-      "Posgrado creado exitosamente"
-    );
-  }
-
-  static async crearAreaConocimiento(datos, usuarioId) {
-    const { area_conocimiento } = datos;
-    return this.ejecutarQuery(
-      "CALL registrar_area_conocimiento($1, $2, NULL)",
-      [usuarioId, area_conocimiento],
-      "Área de conocimiento creada"
-    );
-  }
-
-  static async crearDisponibilidad(datos, usuarioId) {
-    const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
-    return this.ejecutarQuery(
-      "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)",
-      [usuarioId, id_profesor, dia_semana, hora_inicio, hora_fin],
-      "Disponibilidad registrada"
-    );
-  }
-
-  // ======================================================
-  // 🔹 ACTUALIZACIÓN Y ELIMINACIÓN
-  // ======================================================
-  static async actualizar(datos, usuarioId) {
-    const {
-      id_profesor,
-      nombres,
-      apellidos,
-      email,
-      direccion,
-      password,
-      telefono_movil,
-      telefono_local,
-      fecha_nacimiento,
-      genero,
-      nombre_categoria,
-      nombre_dedicacion,
-      pre_grado,
-      pos_grado,
-      area_de_conocimiento,
-      imagen,
-      municipio,
-      fecha_ingreso,
-    } = datos;
-
-    const query = `
-      CALL actualizar_profesor_completo_o_parcial(
-        NULL, $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
-        $11,$12,$13,$14,$15,$16,$17,$18,$19
-      )
-    `;
-    const params = [
-      usuarioId, id_profesor, nombres, apellidos, email, direccion,
-      password, telefono_movil, telefono_local, fecha_nacimiento,
-      genero, nombre_categoria, nombre_dedicacion, pre_grado, pos_grado,
-      area_de_conocimiento, imagen, municipio, fecha_ingreso
-    ];
-
-    return this.ejecutarQuery(query, params, "Profesor actualizado correctamente");
-  }
-
-  static async eliminar(datos, usuarioId) {
-    const { id_profesor, tipo_accion, razon, observaciones, fecha_efectiva } = datos;
-    const query = "CALL eliminar_destituir_profesor(NULL, $1, $2, $3, $4, $5, $6)";
-    const params = [usuarioId, id_profesor, tipo_accion, razon, observaciones, fecha_efectiva];
-    return this.ejecutarQuery(query, params, "Profesor eliminado o destituido");
+      return {
+        status: resultado.status_code || 200,
+        state: "success",
+        title: titleSuccess,
+        message: resultado.message || "Se obtuvieron los datos",
+        data: resultado,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

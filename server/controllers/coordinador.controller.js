@@ -1,4 +1,5 @@
 import FormatResponseController from "../utils/FormatterResponseController.js";
+import CoordinadorService from "../services/coordinador.service.js";
 
 /**
  * @class CoordinadorController
@@ -13,15 +14,10 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async asignarCoordinador(req, res) {
-    try {
-      const respuesta = await CoordinadorService.asignarCoordinador(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.asignarCoordinador(req.body, req.user)
+    );
   }
 
   /**
@@ -32,12 +28,10 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async listarCoordinadores(req, res) {
-    try {
-      const respuesta = await CoordinadorService.listarCoordinadores(req.query);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.listarCoordinadores(req.query)
+    );
   }
 
   /**
@@ -48,15 +42,10 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async obtenerCoordinador(req, res) {
-    try {
-      const { cedula } = req.params;
-      const respuesta = await CoordinadorService.obtenerCoordinador(
-        parseInt(cedula)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.obtenerCoordinador(parseInt(req.params.cedula))
+    );
   }
 
   /**
@@ -67,17 +56,10 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async actualizarCoordinador(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await CoordinadorService.actualizarCoordinador(
-        parseInt(id),
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.actualizarCoordinador(parseInt(req.params.id), req.body, req.user)
+    );
   }
 
   /**
@@ -88,15 +70,9 @@ export default class CoordinadorController {
    * @returns {void}
    */
   static async eliminarCoordinador(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await CoordinadorService.eliminarCoordinador(
-        parseInt(id),
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CoordinadorService.eliminarCoordinador(parseInt(req.params.id), req.user)
+    );
   }
 }

@@ -1,4 +1,5 @@
 import FormatResponseController from "../utils/FormatterResponseController.js";
+import CurricularService from "../services/curricular.service.js";
 
 /**
  * @class CurricularController
@@ -17,15 +18,10 @@ export default class CurricularController {
    * @returns {void}
    */
   static async regitrarPNF(req, res) {
-    try {
-      const respuesta = await CurricularService.registrarPNF(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.registrarPNF(req.body, req.user)
+    );
   }
 
   /**
@@ -36,15 +32,10 @@ export default class CurricularController {
    * @returns {void}
    */
   static async regitrarUnidadCurricular(req, res) {
-    try {
-      const respuesta = await CurricularService.registrarUnidadCurricular(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.registrarUnidadCurricular(req.body, req.user)
+    );
   }
 
   /**
@@ -55,12 +46,10 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarPNF(req, res) {
-    try {
-      const respuesta = await CurricularService.mostrarPNF();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.mostrarPNF()
+    );
   }
 
   /**
@@ -71,13 +60,10 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarTrayectos(req, res) {
-    try {
-      const { PNF } = req.query;
-      const respuesta = await CurricularService.mostrarTrayectos(PNF);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.mostrarTrayectos(req.query.PNF)
+    );
   }
 
   /**
@@ -88,15 +74,11 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarUnidadesCurriculares(req, res) {
-    try {
-      const { Trayecto } = req.query;
-      const respuesta = await CurricularService.mostrarUnidadesCurriculares(
-        Trayecto ? Number(Trayecto) : null
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    const trayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.mostrarUnidadesCurriculares(trayecto)
+    );
   }
 
   /**
@@ -107,15 +89,11 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarSecciones(req, res) {
-    try {
-      const { Trayecto } = req.query;
-      const respuesta = await CurricularService.mostrarSecciones(
-        Trayecto ? Number(Trayecto) : null
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    const trayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.mostrarSecciones(trayecto)
+    );
   }
 
   /**
@@ -126,17 +104,10 @@ export default class CurricularController {
    * @returns {void}
    */
   static async CrearSecciones(req, res) {
-    try {
-      const { idTrayecto } = req.params;
-      const respuesta = await CurricularService.crearSecciones(
-        parseInt(idTrayecto),
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.crearSecciones(parseInt(req.params.idTrayecto), req.body, req.user)
+    );
   }
 
   /**
@@ -147,14 +118,9 @@ export default class CurricularController {
    * @returns {void}
    */
   static async asignacionTurnoSeccion(req, res) {
-    try {
-      const respuesta = await CurricularService.asignarTurnoSeccion(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.asignarTurnoSeccion(req.body, req.user)
+    );
   }
 }

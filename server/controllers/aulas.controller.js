@@ -1,4 +1,5 @@
 import FormatResponseController from "../utils/FormatterResponseController.js";
+import AulaService from "../services/aulas.service.js";
 
 /**
  * @class AulaController
@@ -13,15 +14,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async registerAula(req, res) {
-    try {
-      const respuesta = await AulaService.registrarAula(
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.registrarAula(req.body, req.user)
+    );
   }
 
   /**
@@ -32,12 +28,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async mostrarAulas(req, res) {
-    try {
-      const respuesta = await AulaService.mostrarAulas();
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.mostrarAulas()
+    );
   }
 
   /**
@@ -48,15 +42,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async obtenerAulaPorId(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await AulaService.obtenerAulaPorId(
-        parseInt(id)
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.obtenerAulaPorId(parseInt(req.params.id))
+    );
   }
 
   /**
@@ -67,17 +56,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async actualizarAula(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await AulaService.actualizarAula(
-        parseInt(id),
-        req.body,
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.actualizarAula(parseInt(req.params.id), req.body, req.user)
+    );
   }
 
   /**
@@ -88,16 +70,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async eliminarAula(req, res) {
-    try {
-      const { id } = req.params;
-      const respuesta = await AulaService.eliminarAula(
-        parseInt(id),
-        req.user
-      );
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.eliminarAula(parseInt(req.params.id), req.user)
+    );
   }
 
   /**
@@ -108,13 +84,10 @@ export default class AulaController {
    * @returns {void}
    */
   static async obtenerAulasPorTipo(req, res) {
-    try {
-      const { tipo } = req.params;
-      const respuesta = await AulaService.obtenerAulasPorTipo(tipo);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.obtenerAulasPorTipo(req.params.tipo)
+    );
   }
 
   /**
@@ -125,12 +98,9 @@ export default class AulaController {
    * @returns {void}
    */
   static async obtenerAulasPorSede(req, res) {
-    try {
-      const { sede } = req.params;
-      const respuesta = await AulaService.obtenerAulasPorSede(sede);
-      FormatResponseController.respuestaExito(res, respuesta);
-    } catch (error) {
-      FormatResponseController.respuestaError(res, error);
-    }
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.obtenerAulasPorSede(req.params.sede)
+    );
   }
 }

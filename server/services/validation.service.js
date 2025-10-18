@@ -6,7 +6,15 @@ import destitucionSchema from "../schemas/destitucion.schema.js";
 import disponibilidadDocenteSchema from "../schemas/disponiblidaddocente.schema.js";
 import loginSchema from "../schemas/login.schema.js";
 import pnfSchema from "../schemas/pnf.schema.js";
-import { profesorSchema } from "../schemas/profesor.schema.js";
+import {
+  profesorSchema,
+  preGradoSchema,
+  posGradoSchema,
+  areaConocimientoSchema,
+  nuevoPregradoSchema,
+  nuevoPosgradoSchema,
+  nuevaAreaConocimientoSchema,
+} from "../schemas/profesor.schema.js";
 import seccionSchema from "../schemas/seccion.schema.js";
 import sedeSchema from "../schemas/sede.schema.js";
 import unidadCurricularSchema from "../schemas/unidadcurricular.schema.js";
@@ -458,6 +466,126 @@ export default class ValidationService {
   }
 
   // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA PREGRADO
+  // =============================================
+
+  /**
+   * @name validatePregrado
+   * @description Valida los datos completos de un pregrado
+   * @param {Object} data - Datos del pregrado a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePregrado(data, options = {}) {
+    const validationResult = preGradoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validatePartialPregrado
+   * @description Valida datos parciales de un pregrado (para updates)
+   * @param {Object} data - Datos parciales del pregrado
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePartialPregrado(data, options = {}) {
+    const validationResult = preGradoSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA POSGRADO
+  // =============================================
+
+  /**
+   * @name validatePosgrado
+   * @description Valida los datos completos de un posgrado
+   * @param {Object} data - Datos del posgrado a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePosgrado(data, options = {}) {
+    const validationResult = posGradoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validatePartialPosgrado
+   * @description Valida datos parciales de un posgrado (para updates)
+   * @param {Object} data - Datos parciales del posgrado
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePartialPosgrado(data, options = {}) {
+    const validationResult = posGradoSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA ÁREA DE CONOCIMIENTO
+  // =============================================
+
+  /**
+   * @name validateAreaConocimiento
+   * @description Valida los datos completos de un área de conocimiento
+   * @param {Object} data - Datos del área de conocimiento a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validateAreaConocimiento(data, options = {}) {
+    const validationResult = areaConocimientoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validatePartialAreaConocimiento
+   * @description Valida datos parciales de un área de conocimiento (para updates)
+   * @param {Object} data - Datos parciales del área de conocimiento
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePartialAreaConocimiento(data, options = {}) {
+    const validationResult = areaConocimientoSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
   // MÉTODOS DE VALIDACIÓN PARA SECCIÓN
   // =============================================
 
@@ -488,6 +616,81 @@ export default class ValidationService {
    */
   static validatePartialSeccion(data, options = {}) {
     const validationResult = seccionSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA NUEVOS PREGRADOS, POSGRADOS Y ÁREAS DE CONOCIMIENTO
+  // =============================================
+
+  /**
+   * @static
+   * @method validateNuevoPregrado
+   * @description Valida los datos completos para la creación de un nuevo pregrado
+   * @param {Object} data - Datos del pregrado a validar
+   * @param {string} data.nombre - Nombre del pregrado (requerido)
+   * @param {string} data.tipo - Tipo del pregrado (requerido)
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   * @returns {boolean} return.isValid - Indica si la validación fue exitosa
+   * @returns {Array} return.errors - Array de errores de validación
+   * @returns {Object|null} return.data - Datos validados o null si hay errores
+   */
+  static validateNuevoPregrado(data, options = {}) {
+    const validationResult = nuevoPregradoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @static
+   * @method validateNuevoPosgrado
+   * @description Valida los datos completos para la creación de un nuevo posgrado
+   * @param {Object} data - Datos del posgrado a validar
+   * @param {string} data.nombre - Nombre del posgrado (requerido)
+   * @param {string} data.tipo - Tipo del posgrado (requerido)
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   * @returns {boolean} return.isValid - Indica si la validación fue exitosa
+   * @returns {Array} return.errors - Array de errores de validación
+   * @returns {Object|null} return.data - Datos validados o null si hay errores
+   */
+  static validateNuevoPosgrado(data, options = {}) {
+    const validationResult = nuevoPosgradoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @static
+   * @method validateNuevaAreaConocimiento
+   * @description Valida los datos completos para la creación de una nueva área de conocimiento
+   * @param {Object} data - Datos del área de conocimiento a validar
+   * @param {string} data.area_conocimiento - Nombre del área de conocimiento (requerido)
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   * @returns {boolean} return.isValid - Indica si la validación fue exitosa
+   * @returns {Array} return.errors - Array de errores de validación
+   * @returns {Object|null} return.data - Datos validados o null si hay errores
+   */
+  static validateNuevaAreaConocimiento(data, options = {}) {
+    const validationResult = nuevaAreaConocimientoSchema.safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

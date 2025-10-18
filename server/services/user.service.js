@@ -1,17 +1,31 @@
-import validationService from "./validation.service.js";
+import ValidationService from "./validation.service.js";
 import UserModel from "../models/user.model.js";
 import { comparePassword, hashPassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
-import { use } from "react";
 
-class UserService {
+/**
+ * @class UserService
+ * @description Servicio para operaciones de negocio relacionadas con usuarios
+ */
+export default class UserService {
+  /**
+   * @static
+   * @async
+   * @method login
+   * @description Iniciar sesión de usuario
+   * @param {Object} datos - Datos de login
+   * @returns {Object} Resultado de la operación
+   */
   static async login(datos) {
     try {
+      console.log("🔍 [login] Iniciando proceso de login...");
+
       // 1. Validar datos de entrada
-      const validacion = validationService.validateLogin(datos);
+      const validacion = ValidationService.validateLogin(datos);
       if (!validacion.isValid) {
+        console.error("❌ Validación de login fallida:", validacion.errors);
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en login"
@@ -20,28 +34,35 @@ class UserService {
 
       // 2. Buscar usuario en la base de datos
       const email = asegurarStringEnMinusculas(datos.email);
+      console.log("📧 Buscando usuario:", email);
+
       const respuestaModel = await UserModel.loginUser(email);
 
       // Si el modelo ya retorna un formato de error, lo propagamos
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo login:", respuestaModel);
         return respuestaModel;
       }
 
       const user = respuestaModel.data;
+      console.log("✅ Usuario encontrado:", user.nombres, user.apellidos);
 
       // 3. Validar contraseña
+      console.log("🔐 Validando contraseña...");
       const validatePassword = await comparePassword(
         datos.password,
         user.password
       );
 
       if (!validatePassword) {
+        console.error("❌ Contraseña inválida para usuario:", email);
         return FormatterResponseService.unauthorized(
           "Correo o contraseña inválida"
         );
       }
 
       // 4. Crear token de sesión
+      console.log("🎫 Creando token de sesión...");
       const token = createSession({
         object: {
           id: user.id,
@@ -51,6 +72,12 @@ class UserService {
           password: user.password,
         },
       });
+
+      console.log(
+        "✅ Login exitoso para usuario:",
+        user.nombres,
+        user.apellidos
+      );
 
       // 5. Preparar respuesta exitosa
       return FormatterResponseService.success(
@@ -71,63 +98,96 @@ class UserService {
         }
       );
     } catch (error) {
-      console.error("Error en UserService.login:", error);
+      console.error("💥 Error en servicio login:", error);
 
-      // Si es un error de validación conocido
-      if (error.name === "ValidationError") {
-        return FormatterResponseService.validationError(
-          error.details || error.errors,
-          error.message
-        );
-      }
-
-      return FormatterResponseService.error(
-        error.message || "Error interno del servidor",
-        500,
-        "LOGIN_ERROR",
-        {
-          originalError:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
-        }
-      );
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
     }
   }
 
+  /**
+   * @static
+   * @async
+   * @method cambiarContraseña
+   * @description Cambiar contraseña del usuario
+   * @param {Object} datos - Datos para cambiar contraseña
+   * @param {Object} usuarioActual - Usuario actual autenticado
+   * @returns {Object} Resultado de la operación
+   */
   static async cambiarContraseña(datos, usuarioActual) {
     try {
-      // 1. Validar datos de entrada
-      const validacion = validationService.validateContrasenia(datos);
-      if (!validacion.isValid) {
-        return FormatterResponseService.validationError(
-          validacion.errors,
-          "Error de validación en login"
-        );
+      console.log("🔍 [cambiarContraseña] Iniciando cambio de contraseña...");
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          datos: datos,
+          usuarioActual: {
+            id: usuarioActual.id,
+            nombres: usuarioActual.nombres,
+            apellidos: usuarioActual.apellidos,
+          },
+        });
       }
 
-      // 2. Validar contraseña actual
-      const validatePassword = await comparePassword(
-        datos.antiguaPassword,
-        usuarioActual.password
+      // 1. Validar datos de entrada
+      const validacion = ValidationService.validateContrasenia(datos);
+
+      if (!validacion.isValid) {
+        console.error(
+          "❌ Validación de contraseña fallida:",
+          validacion.errors
+        );
+        return FormatterResponseService.validationError(
+          validacion.errors,
+          "Error de validación en cambio de contraseña"
+        );
+      }
+      console.log("✅ Validación de datos exitosa.");
+
+      console.log("🔍 Obteniendo datos del usuario para validación...");
+      const respuestaUsuario = await UserModel.obtenerUsuarioPorId(
+        usuarioActual.id
       );
+      console.log(
+        "✅ Datos del usuario obtenidos para validación: ",
+        respuestaUsuario.data[0]
+      );
+      const { password } = respuestaUsuario.data[0];
+
+      // 2. Validar contraseña actual
+      console.log("🔐 Validando contraseña actual...");
+      const validatePassword = await comparePassword(datos.antiguaPassword, password);
 
       if (!validatePassword) {
+        console.error(
+          "❌ Contraseña actual incorrecta para usuario:",
+          usuarioActual.id
+        );
         return FormatterResponseService.unauthorized(
           "La contraseña actual es incorrecta"
         );
       }
 
       // 3. Hashear nueva contraseña
+      console.log("🔒 Hasheando nueva contraseña...");
       const passwordHash = await hashPassword(datos.password);
 
       // 4. Cambiar contraseña en la base de datos
+      console.log("💾 Actualizando contraseña en base de datos...");
       const respuestaModel = await UserModel.cambiarContraseña(
         usuarioActual.id,
         passwordHash
       );
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo cambiar contraseña:", respuestaModel);
         return respuestaModel;
       }
+
+      console.log(
+        "✅ Contraseña cambiada exitosamente para usuario:",
+        usuarioActual.id
+      );
 
       return FormatterResponseService.success(
         null,
@@ -138,7 +198,7 @@ class UserService {
         }
       );
     } catch (error) {
-      console.error("Error en UserService.cambiarContraseña:", error);
+      console.error("💥 Error en servicio cambiar contraseña:", error);
 
       if (error.name === "ValidationError") {
         return FormatterResponseService.validationError(
@@ -147,26 +207,26 @@ class UserService {
         );
       }
 
-      return FormatterResponseService.error(
-        "Error al cambiar la contraseña",
-        500,
-        "PASSWORD_CHANGE_ERROR",
-        {
-          originalError:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
-        }
-      );
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
     }
   }
 
+  /**
+   * @static
+   * @async
+   * @method verificarSesion
+   * @description Verificar la sesión del usuario
+   * @param {Object} user - Usuario autenticado
+   * @returns {Object} Resultado de la operación
+   */
   static async verificarSesion(user) {
     try {
-      //console.log("🟢 [DEBUG] Iniciando verificación de sesión...");
-      //console.debug("👤 Datos del usuario recibido:", user);
+      console.log("🔍 [verificarSesion] Verificando sesión...");
 
-      // Validar que el usuario esté autenticado
+      // Validar que el objeto user existe
       if (!user) {
-        //console.warn("⚠️ Usuario no autenticado.");
+        console.error("❌ Usuario no autenticado");
         return FormatterResponseService.error(
           "Usuario no autenticado",
           401,
@@ -174,7 +234,17 @@ class UserService {
         );
       }
 
-      // Validar estructura y tipos básicos
+      // Verificar que el usuario tenga la estructura básica requerida
+      if (!user.id || !user.roles || !user.nombres || !user.apellidos) {
+        console.error("❌ Información de usuario incompleta:", user);
+        return FormatterResponseService.error(
+          "Información de usuario incompleta",
+          401,
+          "INCOMPLETE_USER_DATA"
+        );
+      }
+
+      // Validar tipos de datos
       if (
         !user?.id ||
         !user?.roles?.length ||
@@ -185,7 +255,7 @@ class UserService {
         typeof user.apellidos !== "string" ||
         !Array.isArray(user.roles)
       ) {
-        //console.warn("⚠️ Estructura de usuario inválida:", user);
+        console.error("❌ Estructura de usuario inválida:", user);
         return FormatterResponseService.error(
           "Información de usuario incompleta o inválida",
           401,
@@ -193,9 +263,27 @@ class UserService {
         );
       }
 
-      console.log("🧩 Estructura del usuario válida. Consultando base de datos...");
+      // Verificar que el usuario aún existe en la base de datos y está activo
+      console.log("🔍 Verificando usuario en base de datos:", user.id);
+      const respuestaModel = await UserModel.obtenerUsuarioPorId(user.id);
 
-      // Verificar usuario en la base de datos
+      if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Usuario no encontrado en BD:", user.id);
+        return FormatterResponseService.error(
+          "Usuario no encontrado en el sistema",
+          404,
+          "USER_NOT_FOUND",
+          { userId: user.id }
+        );
+      }
+
+      console.log(
+        "✅ Sesión verificada exitosamente para:",
+        user.nombres,
+        user.apellidos
+      );
+
+      // Preparar datos del usuario para la respuesta (sin información sensible)
       const userData = {
         id: user.id,
         nombres: user.nombres,
@@ -218,11 +306,7 @@ class UserService {
         }
       );
     } catch (error) {
-      console.error("💥 [ERROR] Error en verificarSesion:", {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      });
+      console.error("💥 Error en servicio verificar sesión:", error);
 
       if (["ECONNREFUSED", "ETIMEDOUT"].includes(error.code)) {
         return FormatterResponseService.error(
@@ -232,29 +316,42 @@ class UserService {
         );
       }
 
-      return FormatterResponseService.error(
-        "Error al verificar la sesión",
-        500,
-        "SESSION_VERIFICATION_ERROR",
-        {
-          originalError:
-            process.env.NODE_ENV === "development" ? error.message : undefined,
-        }
-      );
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
     }
   }
 
-
-  // Método adicional para obtener perfil de usuario
+  /**
+   * @static
+   * @async
+   * @method obtenerPerfil
+   * @description Obtener perfil del usuario
+   * @param {number} userId - ID del usuario
+   * @returns {Object} Resultado de la operación
+   */
   static async obtenerPerfil(userId) {
     try {
+      console.log("🔍 [obtenerPerfil] Obteniendo perfil para usuario:", userId);
+
+      // Validar ID de usuario
+      const idValidation = ValidationService.validateId(userId, "usuario");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
       const respuestaModel = await UserModel.obtenerUsuarioPorId(userId);
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo obtener perfil:", respuestaModel);
         return respuestaModel;
       }
 
       if (!respuestaModel.data) {
+        console.error("❌ Usuario no encontrado:", userId);
         return FormatterResponseService.notFound("Usuario", userId);
       }
 
@@ -262,6 +359,12 @@ class UserService {
 
       // Remover información sensible antes de enviar
       const { password, ...userSafe } = user;
+
+      console.log(
+        "✅ Perfil obtenido exitosamente para:",
+        user.nombres,
+        user.apellidos
+      );
 
       return FormatterResponseService.success(
         userSafe,
@@ -272,22 +375,53 @@ class UserService {
         }
       );
     } catch (error) {
-      console.error("Error en UserService.obtenerPerfil:", error);
-      return FormatterResponseService.error(
-        "Error al obtener el perfil",
-        500,
-        "PROFILE_FETCH_ERROR"
-      );
+      console.error("💥 Error en servicio obtener perfil:", error);
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
     }
   }
 
-  // Método para actualizar perfil
+  /**
+   * @static
+   * @async
+   * @method actualizarPerfil
+   * @description Actualizar perfil del usuario
+   * @param {number} userId - ID del usuario
+   * @param {Object} datosActualizacion - Datos a actualizar
+   * @returns {Object} Resultado de la operación
+   */
   static async actualizarPerfil(userId, datosActualizacion) {
     try {
+      console.log(
+        "🔍 [actualizarPerfil] Actualizando perfil para usuario:",
+        userId
+      );
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log(
+          "📝 Datos de actualización:",
+          JSON.stringify(datosActualizacion, null, 2)
+        );
+      }
+
+      // Validar ID de usuario
+      const idValidation = ValidationService.validateId(userId, "usuario");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
       // Validar datos de actualización
       const validacion =
-        validationService.validateActualizacionPerfil(datosActualizacion);
+        ValidationService.validateActualizacionPerfil(datosActualizacion);
       if (!validacion.isValid) {
+        console.error(
+          "❌ Validación de actualización fallida:",
+          validacion.errors
+        );
         return FormatterResponseService.validationError(
           validacion.errors,
           "Error de validación en actualización de perfil"
@@ -300,8 +434,11 @@ class UserService {
       );
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo actualizar perfil:", respuestaModel);
         return respuestaModel;
       }
+
+      console.log("✅ Perfil actualizado exitosamente para usuario:", userId);
 
       return FormatterResponseService.success(
         respuestaModel.data,
@@ -312,7 +449,7 @@ class UserService {
         }
       );
     } catch (error) {
-      console.error("Error en UserService.actualizarPerfil:", error);
+      console.error("💥 Error en servicio actualizar perfil:", error);
 
       if (error.name === "ValidationError") {
         return FormatterResponseService.validationError(
@@ -321,13 +458,37 @@ class UserService {
         );
       }
 
-      return FormatterResponseService.error(
-        "Error al actualizar el perfil",
-        500,
-        "PROFILE_UPDATE_ERROR"
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method cerrarSesion
+   * @description Cerrar sesión del usuario
+   * @returns {Object} Resultado de la operación
+   */
+  static async cerrarSesion() {
+    try {
+      console.log("🔍 [cerrarSesion] Cerrando sesión...");
+
+      // En un sistema más complejo, aquí podrías invalidar tokens, etc.
+      // Por ahora simplemente retornamos éxito ya que el controlador se encarga de limpiar la cookie
+
+      return FormatterResponseService.success(
+        null,
+        "Sesión cerrada exitosamente",
+        {
+          status: 200,
+          title: "Sesión Cerrada",
+        }
       );
+    } catch (error) {
+      console.error("💥 Error en servicio cerrar sesión:", error);
+      // Re-lanza el error para que el controlador lo maneje
+      throw error;
     }
   }
 }
-
-export default UserService;
