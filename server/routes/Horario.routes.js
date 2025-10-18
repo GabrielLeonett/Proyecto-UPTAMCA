@@ -148,13 +148,6 @@ HorarioRouter.get(
  */
 HorarioRouter.get(
   "/exportar/seccion/:id_seccion",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-    "Profesor",
-  ]),
   exportarHorarioWord
 );
 
