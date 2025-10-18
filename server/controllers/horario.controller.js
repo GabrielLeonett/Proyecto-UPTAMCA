@@ -7,20 +7,6 @@ import HorarioService from "../services/horario.service.js";
  */
 export default class HorarioController {
   /**
-   * @name mostrarHorarios
-   * @description Obtener todos los horarios registrados
-   * @param {Object} req - Objeto de solicitud Express
-   * @param {Object} res - Objeto de respuesta Express
-   * @returns {void}
-   */
-  static async mostrarHorarios(req, res) {
-    return FormatResponseController.manejarServicio(
-      res,
-      HorarioService.mostrarHorarios()
-    );
-  }
-
-  /**
    * @name obtenerHorariosPorSeccion
    * @description Obtener horarios por sección específica
    * @param {Object} req - Objeto de solicitud Express
@@ -30,7 +16,7 @@ export default class HorarioController {
   static async obtenerHorariosPorSeccion(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.obtenerHorariosPorSeccion(parseInt(req.params.id_seccion))
+      HorarioService.mostrarHorariosPorSeccion(parseInt(req.params.id_seccion))
     );
   }
 
@@ -44,7 +30,7 @@ export default class HorarioController {
   static async obtenerHorariosPorProfesor(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.obtenerHorariosPorProfesor(parseInt(req.params.id_profesor))
+      HorarioService.mostrarHorariosProfesores(parseInt(req.params.id_profesor))
     );
   }
 
@@ -58,24 +44,9 @@ export default class HorarioController {
   static async obtenerHorariosPorAula(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.obtenerHorariosPorAula(parseInt(req.params.id_aula))
+      HorarioService.mostrarHorariosPorAula(parseInt(req.params.id_aula))
     );
   }
-
-  /**
-   * @name mostrarHorariosProfesores
-   * @description Ver los horarios asignados a los profesores
-   * @param {Object} req - Objeto de solicitud Express
-   * @param {Object} res - Objeto de respuesta Express
-   * @returns {void}
-   */
-  static async mostrarHorariosProfesores(req, res) {
-    return FormatResponseController.manejarServicio(
-      res,
-      HorarioService.mostrarHorariosProfesores(req.query.Profesor)
-    );
-  }
-
   /**
    * @name mostrarAulasParaHorario
    * @description Obtener información de aulas disponibles para la creación de un nuevo horario
