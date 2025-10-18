@@ -430,7 +430,7 @@ export default class HorarioService {
       return FormatterResponseService.success(
         {
           buffer,
-          fileName: `Horario${data.PNF}-${data.PNF}-${data.Seccion}.pdf`,
+          fileName: `Horario${data.PNF}-${data.Trayecto}-${data.Seccion}.pdf`,
         },
         "Documento de horario generado exitosamente"
       );

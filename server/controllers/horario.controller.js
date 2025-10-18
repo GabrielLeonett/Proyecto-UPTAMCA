@@ -136,6 +136,7 @@ export default class HorarioController {
       const horarioResponse = await HorarioService.generarDocumentoHorario(
         parseInt(id_seccion)
       );
+      
       console.log("✅ Documento generado exitosamente", horarioResponse);
       const { buffer, fileName } = horarioResponse.data;
       res.set({
