@@ -421,6 +421,7 @@ export default class HorarioService {
           },
         ],
       };
+      
       // 4️ Generar documento
       const buffer = await DocumentServices.generarDocumentoHorario(
         configuracionCorrecta

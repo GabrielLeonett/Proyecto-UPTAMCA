@@ -47,6 +47,7 @@ export default class HorarioController {
       HorarioService.mostrarHorariosPorAula(parseInt(req.params.id_aula))
     );
   }
+
   /**
    * @name mostrarAulasParaHorario
    * @description Obtener información de aulas disponibles para la creación de un nuevo horario
@@ -124,23 +125,43 @@ export default class HorarioController {
    * @param {Object} res - Objeto de respuesta Express
    * @returns {void}
    */
+
   static async exportarHorarioWord(req, res) {
     try {
       const { id_seccion } = req.params;
-      const buffer = await HorarioService.generarDocumentoHorario(
+
+      console.log("📥 Exportando horario para sección:", id_seccion);
+
+      // 1. Primero obtener los datos del horario formateados
+      const horarioResponse = await HorarioService.generarDocumentoHorario(
         parseInt(id_seccion)
       );
-
-      // Configurar headers para descarga de Word
+      console.log("✅ Documento generado exitosamente", horarioResponse);
+      const { buffer, fileName } = horarioResponse.data;
       res.set({
-        "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "Content-Disposition": `attachment; filename=horario_seccion_${id_seccion}.docx`,
-        "Content-Length": buffer.length
+        "Content-Type":
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "Content-Disposition": `attachment; filename="${fileName}"`,
+        "Content-Length": buffer.length,
+        "Cache-Control": "no-cache",
+        "X-Content-Type-Options": "nosniff",
       });
 
+      console.log(
+        `📤 Enviando documento: ${fileName} (${buffer.length} bytes)`
+      );
+
+      // 6. Enviar el buffer
       res.send(buffer);
     } catch (error) {
       console.error("❌ Error en exportarHorarioWord:", error);
+
+      // Si ya se enviaron headers, no intentar enviar JSON
+      if (res.headersSent) {
+        console.log("⚠️ Headers ya enviados, cerrando conexión");
+        return res.end();
+      }
+
       FormatResponseController.respuestaError(res, {
         status: 500,
         title: "Error del Servidor",

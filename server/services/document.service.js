@@ -69,17 +69,29 @@ class DocumentServices {
         return null;
       }
 
-      // ... el resto del código igual
+      // Leer el archivo de imagen
       const logoData = fs.readFileSync(logoPath);
+      console.log(
+        "✅ Logo leído correctamente, tamaño:",
+        logoData.length,
+        "bytes"
+      );
 
+      // Procesar la imagen para hacerla semitransparente
       const imagenProcesada = await sharp(logoData)
-        .ensureAlpha()
+        .ensureAlpha() // Asegurar canal alpha
         .png({ transparency: true, compressionLevel: 9 })
         .toBuffer();
 
+      console.log("✅ Logo procesado para marca de agua");
+
+      // Crear el elemento de imagen para docx
       const logoMarcaAgua = new ImageRun({
         data: imagenProcesada,
-        transformation: { width: 400, height: 400 },
+        transformation: {
+          width: 400,
+          height: 400,
+        },
         floating: {
           horizontalPosition: {
             relative: HorizontalPositionRelativeFrom.PAGE,
@@ -89,11 +101,14 @@ class DocumentServices {
             relative: VerticalPositionRelativeFrom.PAGE,
             align: AlignmentType.CENTER,
           },
-          wrap: { type: TextWrappingType.BEHIND },
+          wrap: {
+            type: TextWrappingType.BEHIND,
+          },
           zIndex: -9999,
         },
       });
 
+      console.log("✅ Logo de marca de agua creado exitosamente");
       return logoMarcaAgua;
     } catch (error) {
       console.error("❌ Error procesando logo para marca de agua:", error);
@@ -186,37 +201,127 @@ class DocumentServices {
 
   // Función principal que devuelve el buffer
   static async generarDocumentoHorario(configuracion = {}) {
+    console.log("🔧 INICIANDO generarDocumentoHorario");
+    console.log(
+      "📋 Configuración recibida:",
+      JSON.stringify(configuracion, null, 2)
+    );
+
     try {
-      const doc = await this.testDocumentoMinimo();
+      const doc = await this.crearDocumentoHorario(configuracion);
+      console.log("📦 Generando buffer del documento...");
       const buffer = await Packer.toBuffer(doc);
 
-      // VERIFICACIONES CRÍTICAS:
-      console.log("🔍 Verificando buffer...");
+      // 🔍 VALIDACIONES DEL BUFFER
+      console.log("🔍 Validando buffer...");
       console.log("📏 Tamaño buffer:", buffer.length, "bytes");
       console.log("🔢 Es Buffer?", Buffer.isBuffer(buffer));
-      console.log("📝 Primeros bytes:", buffer.slice(0, 10).toString("hex"));
 
-      // Un buffer DOCX válido debe empezar con PK (zip file)
-      const primerosBytes = buffer.slice(0, 2).toString();
-      console.log("🔍 Primeros 2 bytes:", primerosBytes);
+      const primerosBytes = buffer.slice(0, 4).toString("hex");
+      console.log("📝 Primeros bytes (hex):", primerosBytes);
 
-      if (primerosBytes !== "PK") {
-        throw new Error(
-          "Buffer no es un archivo ZIP válido (DOCX). Bytes: " + primerosBytes
-        );
+      // Verificar que es un archivo ZIP válido (DOCX)
+      const signature = buffer.slice(0, 2).toString();
+      if (signature !== "PK") {
+        throw new Error(`Documento corrupto - firma inválida: ${signature}`);
+      }
+      console.log("✅ Firma ZIP válida:", signature);
+
+      // 💾 GUARDADO LOCAL PARA DIAGNÓSTICO
+      await this.guardarDocumentoLocal(buffer, configuracion);
+
+      console.log("✅ Buffer generado y guardado exitosamente");
+      return buffer;
+    } catch (error) {
+      console.error("❌ Error al generar el documento:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Guarda el documento localmente para diagnóstico
+   */
+  static async guardarDocumentoLocal(buffer, configuracion = {}) {
+    try {
+      // Crear directorio temp si no existe
+      const tempDir = path.join(process.cwd(), "temp");
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+        console.log("📁 Directorio temp creado:", tempDir);
       }
 
-      // CREAR ARCHIVO LOCALMENTE
-      const nombreArchivo = `test_documento_${Date.now()}.docx`;
-      const rutaArchivo = path.join(process.cwd(), nombreArchivo);
+      // Generar nombre de archivo descriptivo
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      const nombreArchivo = `horario_${
+        configuracion.PNF || "unknown"
+      }_seccion_${configuracion.Seccion || "unknown"}_${timestamp}.docx`;
+      const rutaCompleta = path.join(tempDir, nombreArchivo);
 
-      fs.writeFileSync(rutaArchivo, buffer);
-      console.log("💾 Archivo guardado localmente:", rutaArchivo);
-      console.log("✅ Verifica si este archivo se abre en Word");
+      // Guardar archivo
+      fs.writeFileSync(rutaCompleta, buffer);
+
+      console.log("💾 Documento guardado localmente:");
+      console.log("   📄 Ruta:", rutaCompleta);
+      console.log("   📊 Tamaño:", buffer.length, "bytes");
+      console.log("   🔍 Firma:", buffer.slice(0, 2).toString());
+
+      // Verificar que se guardó correctamente
+      const stats = fs.statSync(rutaCompleta);
+      console.log(
+        "   ✅ Verificación:",
+        stats.size === buffer.length ? "OK" : "TAMAÑO INCORRECTO"
+      );
+
+      return rutaCompleta;
+    } catch (error) {
+      console.error("❌ Error al guardar documento local:", error);
+      // No lanzar error para no interrumpir el flujo principal
+    }
+  }
+
+  /**
+   * Método adicional para comparar archivos local vs HTTP
+   */
+  static async generarYCompararDocumento(configuracion = {}) {
+    console.log("🔄 GENERANDO Y COMPARANDO DOCUMENTO");
+
+    try {
+      // Generar documento
+      const buffer = await this.generarDocumentoHorario(configuracion);
+
+      // Guardar una copia adicional con prefijo "http_"
+      const httpDir = path.join(process.cwd(), "temp", "http_diagnostics");
+      if (!fs.existsSync(httpDir)) {
+        fs.mkdirSync(httpDir, { recursive: true });
+      }
+
+      const httpFileName = `http_horario_${Date.now()}.docx`;
+      const httpFilePath = path.join(httpDir, httpFileName);
+      fs.writeFileSync(httpFilePath, buffer);
+
+      console.log("🔬 Archivo para diagnóstico HTTP guardado:", httpFilePath);
+
+      // Comparar archivos
+      const tempDir = path.join(process.cwd(), "temp");
+      const archivos = fs
+        .readdirSync(tempDir)
+        .filter((file) => file.endsWith(".docx"))
+        .sort()
+        .reverse()
+        .slice(0, 2); // Últimos 2 archivos
+
+      if (archivos.length >= 2) {
+        console.log("📊 Comparando últimos archivos generados:");
+        archivos.forEach((archivo, index) => {
+          const filePath = path.join(tempDir, archivo);
+          const stats = fs.statSync(filePath);
+          console.log(`   ${index + 1}. ${archivo} - ${stats.size} bytes`);
+        });
+      }
 
       return buffer;
     } catch (error) {
-      console.error("❌ Error crítico:", error);
+      console.error("❌ Error en generación comparativa:", error);
       throw error;
     }
   }
@@ -510,7 +615,6 @@ class DocumentServices {
     });
 
     // Crear el documento Word
-    /*
     const doc = new Document({
       creator: "Vicerrectorado academico UPTAMCA",
       styles: {
@@ -572,44 +676,7 @@ class DocumentServices {
         },
       ],
     });
-/*    */
-    const doc = new Document({
-      creator: "UPTAMCA",
-      sections: [
-        {
-          properties: {
-            page: {
-              size: { orientation: PageOrientation.LANDSCAPE },
-              margin: { top: 1000, right: 1000, bottom: 1000, left: 1000 },
-            },
-          },
-          // headers: { default: header }, // Temporalmente sin header
-          children: [
-            // Solo tabla básica sin estilos complejos
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              columnWidths: [2000, 2000, 2000],
-              rows: [
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("Lunes")] }),
-                    new TableCell({ children: [new Paragraph("Martes")] }),
-                    new TableCell({ children: [new Paragraph("Miércoles")] }),
-                  ],
-                }),
-                new TableRow({
-                  children: [
-                    new TableCell({ children: [new Paragraph("07:00-08:30")] }),
-                    new TableCell({ children: [new Paragraph("Libre")] }),
-                    new TableCell({ children: [new Paragraph("09:00-10:30")] }),
-                  ],
-                }),
-              ],
-            }),
-          ],
-        },
-      ],
-    });
+
     return doc;
   }
 
@@ -636,29 +703,6 @@ class DocumentServices {
     }
 
     return horas;
-  }
-
-  static async testDocumentoMinimo() {
-    try {
-      const doc = new Document({
-        creator: "Test",
-        sections: [
-          {
-            properties: {},
-            children: [
-              new Paragraph({
-                children: [new TextRun("Test documento simple")],
-              }),
-            ],
-          },
-        ],
-      });
-
-      return doc;
-    } catch (error) {
-      console.error("❌ Error en test simple:", error);
-      throw error;
-    }
   }
 }
 
