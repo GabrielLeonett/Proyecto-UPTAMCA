@@ -2,22 +2,34 @@
 import generateReport from "./generateReport.js";
 
 /**
- * @class ProfesorModel
- * @description Modelo para operaciones de base de datos relacionadas con profesores
+ * @class FormatterResponseModel
+ * @description Clase utilitaria para estandarizar las respuestas de la API y el manejo de datos desde PostgreSQL.
+ * Proporciona métodos para formatear respuestas exitosas, errores y conjuntos de datos de manera consistente.
  */
-export default class ProfesorModel {
+export default class FormatterResponseModel {
   /**
-   * @private
-   * @method ejecutarQuery
-   * @description Método genérico para ejecutar consultas con manejo uniforme de errores y formato de respuesta.
+   * @static
+   * @method validacionesComunes
+   * @description Realiza validaciones básicas a la respuesta de la base de datos
+   * @param {Object|Array} rows - Respuesta cruda de PostgreSQL
+   * @returns {Object} Datos validados y normalizados
+   * @throws {Error} Si no hay datos o la respuesta es inválida
    */
-  static async ejecutarQuery(query, params = [], titulo = "Operación completada") {
+  static validacionesComunes(rows) {
     try {
-      console.debug("🔍 [DEBUG] Ejecutando query:", query, " | Parámetros:", params);
-      const { rows } = await pg.query(query, params);
-      return FormatterResponseModel.respuestaPostgres(rows, titulo);
+      if (!rows || (Array.isArray(rows) && rows.length === 0)) {
+        return rows;
+      }
+
+      // Maneja tanto arrays como objetos individuales
+      const firstRow = Array.isArray(rows) ? rows[0] : rows;
+
+      // Determina si es respuesta de procedimiento/función o consulta directa
+      return firstRow?.p_resultado !== undefined ? firstRow.p_resultado : rows;
     } catch (error) {
-      console.error("💥 [ERROR ProfesorModel]:", error);
+      throw error;
+    }
+  }
 
   /**
    * @static
@@ -119,45 +131,28 @@ export default class ProfesorModel {
     }
   }
 
-  // ======================================================
-  // 🔹 CREACIÓN
-  // ======================================================
-  static async crear(datos, usuarioId) {
-    const {
-      cedula,
-      nombres,
-      apellidos,
-      email,
-      direccion,
-      telefono_movil,
-      telefono_local,
-      fecha_nacimiento,
-      genero,
-      fecha_ingreso,
-      dedicacion,
-      categoria,
-      municipio,
-      area_de_conocimiento,
-      pre_grado,
-      pos_grado,
-      imagen,
-      passwordHash
-    } = datos;
-
-    const query = `
-      CALL registrar_profesor_completo(
-        $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
-        $13,$14,$15,$16,$17,$18,$19,NULL
-      )
-    `;
-    const params = [
-      usuarioId, cedula, nombres, apellidos, email, direccion,
-      passwordHash, telefono_movil, telefono_local || null, fecha_nacimiento,
-      genero, categoria, dedicacion, pre_grado, pos_grado,
-      area_de_conocimiento, imagen, municipio, fecha_ingreso
-    ];
-
-    return this.ejecutarQuery(query, params, "Profesor registrado correctamente");
+  /**
+   * @static
+   * @method respuestaSuccess
+   * @description Formatea una respuesta con datos para el controlador
+   * @param {Object|Array} [rows={}] - Conjunto de datos de la BD
+   * @param {string} [title='Datos obtenidos'] - Título descriptivo
+   * @returns {Object} Respuesta con datos formateados
+   * @throws {Error} Si ocurre un error en el procesamiento
+   */
+  static respuestaSuccess(rows = {}, title = "Datos obtenidos") {
+    try {
+      return {
+        status: rows.metadata?.status_code || 200,
+        state: "success",
+        title: title,
+        message: rows.message,
+        ...(rows?.data && { data: rows.data }),
+        ...(rows?.metadata && { metadata: rows.metadata }),
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -174,12 +169,11 @@ export default class ProfesorModel {
     try {
       const resultado = this.validacionesComunes(rows);
 
-  static async obtenerConFiltros(filtros) {
-    const { dedicacion, categoria, ubicacion, area, fecha, genero } = filtros;
-    const query = "SELECT * FROM mostrar_profesor($1, $2, $3, $4, $5, $6)";
-    const params = [dedicacion, categoria, ubicacion, area, fecha, genero];
-    return this.ejecutarQuery(query, params, "Profesores filtrados correctamente");
-  }
+      if (resultado.status === "success") {
+        return this.respuestaSuccess(resultado, titleSuccess);
+      } else if (resultado.status === "error") {
+        throw resultado;
+      }
 
       return {
         status: resultado.status_code || 200,
