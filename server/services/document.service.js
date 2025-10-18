@@ -18,6 +18,7 @@ import {
 } from "docx";
 import sharp from "sharp";
 import { UTILS } from "../utils/utilis.js";
+import path from "path";
 
 // Estilos globales
 const ESTILOS = {
@@ -57,25 +58,28 @@ const ESTILOS = {
 class DocumentServices {
   static async traerLogoMarcaAgua() {
     try {
-      const logoData = fs.readFileSync("../utils/LogoSimple.png");
+      // Solución más simple: usar el directorio de trabajo actual
+      const logoPath = path.resolve(process.cwd(), "utils/LogoSimple.png");
+
+      console.log("🔍 Buscando logo en:", logoPath);
+
+      // Verificar si el archivo existe
+      if (!fs.existsSync(logoPath)) {
+        console.error("❌ Archivo de logo no encontrado:", logoPath);
+        return null;
+      }
+
+      // ... el resto del código igual
+      const logoData = fs.readFileSync(logoPath);
+
       const imagenProcesada = await sharp(logoData)
-        .png({ transparency: true })
-        .composite([
-          {
-            input: Buffer.from([255, 255, 255, 128]),
-            raw: { width: 1, height: 1, channels: 4 },
-            tile: true,
-            blend: "over",
-          },
-        ])
+        .ensureAlpha()
+        .png({ transparency: true, compressionLevel: 9 })
         .toBuffer();
 
       const logoMarcaAgua = new ImageRun({
         data: imagenProcesada,
-        transformation: {
-          width: 400,
-          height: 400,
-        },
+        transformation: { width: 400, height: 400 },
         floating: {
           horizontalPosition: {
             relative: HorizontalPositionRelativeFrom.PAGE,
@@ -84,18 +88,15 @@ class DocumentServices {
           verticalPosition: {
             relative: VerticalPositionRelativeFrom.PAGE,
             align: AlignmentType.CENTER,
-            offset: 1000000,
           },
-          wrap: {
-            type: TextWrappingType.BEHIND,
-          },
+          wrap: { type: TextWrappingType.BEHIND },
           zIndex: -9999,
         },
       });
 
       return logoMarcaAgua;
     } catch (error) {
-      console.error("Error procesando logo:", error);
+      console.error("❌ Error procesando logo para marca de agua:", error);
       return null;
     }
   }
@@ -185,20 +186,37 @@ class DocumentServices {
 
   // Función principal que devuelve el buffer
   static async generarDocumentoHorario(configuracion = {}) {
-    console.log("🔧 INICIANDO generarDocumentoHorario");
-    console.log(
-      "📋 Configuración recibida:",
-      JSON.stringify(configuracion, null, 2)
-    );
-
     try {
-      const doc = await this.crearDocumentoHorario(configuracion);
-      console.log("📦 Generando buffer del documento...");
+      const doc = await this.testDocumentoMinimo();
       const buffer = await Packer.toBuffer(doc);
-      console.log("✅ Buffer generado exitosamente");
+
+      // VERIFICACIONES CRÍTICAS:
+      console.log("🔍 Verificando buffer...");
+      console.log("📏 Tamaño buffer:", buffer.length, "bytes");
+      console.log("🔢 Es Buffer?", Buffer.isBuffer(buffer));
+      console.log("📝 Primeros bytes:", buffer.slice(0, 10).toString("hex"));
+
+      // Un buffer DOCX válido debe empezar con PK (zip file)
+      const primerosBytes = buffer.slice(0, 2).toString();
+      console.log("🔍 Primeros 2 bytes:", primerosBytes);
+
+      if (primerosBytes !== "PK") {
+        throw new Error(
+          "Buffer no es un archivo ZIP válido (DOCX). Bytes: " + primerosBytes
+        );
+      }
+
+      // CREAR ARCHIVO LOCALMENTE
+      const nombreArchivo = `test_documento_${Date.now()}.docx`;
+      const rutaArchivo = path.join(process.cwd(), nombreArchivo);
+
+      fs.writeFileSync(rutaArchivo, buffer);
+      console.log("💾 Archivo guardado localmente:", rutaArchivo);
+      console.log("✅ Verifica si este archivo se abre en Word");
+
       return buffer;
     } catch (error) {
-      console.error("❌ Error al generar el documento:", error);
+      console.error("❌ Error crítico:", error);
       throw error;
     }
   }
@@ -215,7 +233,14 @@ class DocumentServices {
 
     // Procesar el horario
     const procesarHorario = () => {
-      const diasSemana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+      const diasSemana = [
+        "lunes",
+        "martes",
+        "miercoles",
+        "jueves",
+        "viernes",
+        "sabado",
+      ];
       const horasDisponibles = this.generarHorasDisponibles(Turno);
 
       const matrizHorario = diasSemana.map((dia) => ({
@@ -485,6 +510,7 @@ class DocumentServices {
     });
 
     // Crear el documento Word
+    /*
     const doc = new Document({
       creator: "Vicerrectorado academico UPTAMCA",
       styles: {
@@ -546,7 +572,44 @@ class DocumentServices {
         },
       ],
     });
-
+/*    */
+    const doc = new Document({
+      creator: "UPTAMCA",
+      sections: [
+        {
+          properties: {
+            page: {
+              size: { orientation: PageOrientation.LANDSCAPE },
+              margin: { top: 1000, right: 1000, bottom: 1000, left: 1000 },
+            },
+          },
+          // headers: { default: header }, // Temporalmente sin header
+          children: [
+            // Solo tabla básica sin estilos complejos
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              columnWidths: [2000, 2000, 2000],
+              rows: [
+                new TableRow({
+                  children: [
+                    new TableCell({ children: [new Paragraph("Lunes")] }),
+                    new TableCell({ children: [new Paragraph("Martes")] }),
+                    new TableCell({ children: [new Paragraph("Miércoles")] }),
+                  ],
+                }),
+                new TableRow({
+                  children: [
+                    new TableCell({ children: [new Paragraph("07:00-08:30")] }),
+                    new TableCell({ children: [new Paragraph("Libre")] }),
+                    new TableCell({ children: [new Paragraph("09:00-10:30")] }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
     return doc;
   }
 
@@ -573,6 +636,29 @@ class DocumentServices {
     }
 
     return horas;
+  }
+
+  static async testDocumentoMinimo() {
+    try {
+      const doc = new Document({
+        creator: "Test",
+        sections: [
+          {
+            properties: {},
+            children: [
+              new Paragraph({
+                children: [new TextRun("Test documento simple")],
+              }),
+            ],
+          },
+        ],
+      });
+
+      return doc;
+    } catch (error) {
+      console.error("❌ Error en test simple:", error);
+      throw error;
+    }
   }
 }
 

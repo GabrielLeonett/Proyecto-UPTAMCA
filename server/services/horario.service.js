@@ -90,47 +90,58 @@ export default class HorarioService {
         FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
-      console.log(dbResponse);
+      console.log("📊 Respuesta de la base de datos:", dbResponse);
 
       const rows = dbResponse.data || dbResponse;
-      const {
-        nombre_pnf,
-        valor_trayecto,
-        valor_seccion,
-        turno_nombre,
-        turno_hora_inicio,
-        turno_hora_fin,
-      } = rows[0];
-      const dias = [...new Set(rows.map((d) => d.dia))];
 
-      const Horario = dias.map((dia) => ({
+      // Validar que hay datos
+      if (!rows || rows.length === 0) {
+        FormatterResponseService.notFound("Sección", idSeccion);
+      }
+
+      // Usar los nombres correctos de las columnas según tu consulta SQL
+      const {
+        nombre_pnf, // ← existe en tu SQL
+        valor_trayecto, // ← existe en tu SQL
+        valor_seccion, // ← existe en tu SQL
+        nombre_turno, // ← CORREGIDO: era turno_nombre
+        turno_hora_inicio, // ← existe en tu SQL
+        turno_hora_fin, // ← existe en tu SQL
+      } = rows[0];
+
+      // Procesar los días y clases - usando los nombres correctos de columnas
+      const diasUnicos = [...new Set(rows.map((d) => d.dia_semana))]; // ← CORREGIDO: era dia
+
+      const Horario = diasUnicos.map((dia) => ({
         nombre: dia,
         clases: rows
-          .filter((d) => d.dia === dia)
+          .filter((d) => d.dia_semana === dia) // ← CORREGIDO: era dia
           .map((cl) => ({
-            nombre_unidad_curricular: cl.unidad_curricular,
-            profesor: cl.profesor,
-            aula: cl.aula,
+            nombre_unidad_curricular: cl.nombre_unidad_curricular, // ← CORREGIDO: era unidad_curricular
+            profesor: `${cl.nombres_profesor} ${cl.apellidos_profesor}`, // ← CORREGIDO: combinar nombre y apellido
+            aula: cl.codigo_aula, // ← CORREGIDO: era aula
             horaInicio: cl.hora_inicio,
             horaFin: cl.hora_fin,
           })),
       }));
 
-      // 3️⃣ Crear configuración
-      const Formato = {
+      // Crear configuración con nombres consistentes
+      const configuracion = {
         PNF: nombre_pnf,
         Trayecto: valor_trayecto,
         Seccion: valor_seccion,
         Turno: {
-          nombre: turno_nombre,
+          nombre: nombre_turno, // ← CORREGIDO: era turno_nombre
           horaInicio: turno_hora_inicio || "07:00",
           horaFin: turno_hora_fin || "20:00",
         },
         Horario,
       };
 
+      console.log("✅ Configuración formateada:", configuracion);
+
       return FormatterResponseService.success(
-        Formato,
+        configuracion,
         "Horarios de la sección obtenidos exitosamente"
       );
     } catch (error) {
@@ -330,13 +341,96 @@ export default class HorarioService {
       console.log("📥 Generando documento para la sección:", idSeccion);
 
       // 1️⃣ Obtener datos desde el modelo
-      const { data } = this.mostrarHorariosPorSeccion(idSeccion);
+      const { data } = await this.mostrarHorariosPorSeccion(idSeccion);
 
+      const configuracionCorrecta = {
+        PNF: "Informática",
+        Trayecto: "I",
+        Seccion: "A", // Puede ser string "A" u objeto {seccion: "A"}
+        Turno: {
+          horaInicio: "07:00", // Formato HH:mm (24 horas)
+          horaFin: "16:00", // Formato HH:mm (24 horas)
+        },
+        Horario: [
+          {
+            nombre: "lunes", // Día en minúsculas
+            clases: [
+              {
+                nombre_unidad_curricular: "Programación I",
+                profesor: "María González",
+                aula: "LAB-101",
+                horaInicio: "07:00",
+                horaFin: "08:30",
+              },
+              {
+                nombre_unidad_curricular: "Base de Datos",
+                profesor: "Carlos Rodríguez",
+                aula: "A-201",
+                horaInicio: "09:00",
+                horaFin: "10:30",
+              },
+            ],
+          },
+          {
+            nombre: "martes",
+            clases: [
+              {
+                nombre_unidad_curricular: "Matemáticas Discretas",
+                profesor: "Ana López",
+                aula: "B-105",
+                horaInicio: "07:00",
+                horaFin: "09:30",
+              },
+            ],
+          },
+          {
+            nombre: "miercoles",
+            clases: [
+              {
+                nombre_unidad_curricular: "Programación I",
+                profesor: "María González",
+                aula: "LAB-101",
+                horaInicio: "10:00",
+                horaFin: "11:30",
+              },
+            ],
+          },
+          {
+            nombre: "jueves",
+            clases: [
+              {
+                nombre_unidad_curricular: "Base de Datos",
+                profesor: "Carlos Rodríguez",
+                aula: "A-201",
+                horaInicio: "13:00",
+                horaFin: "14:30",
+              },
+            ],
+          },
+          {
+            nombre: "viernes",
+            clases: [
+              {
+                nombre_unidad_curricular: "Taller de Proyectos",
+                profesor: "Roberto Sánchez",
+                aula: "TALLER-1",
+                horaInicio: "14:00",
+                horaFin: "16:00",
+              },
+            ],
+          },
+        ],
+      };
       // 4️ Generar documento
-      const buffer = await DocumentServices.generarDocumentoHorario(data);
+      const buffer = await DocumentServices.generarDocumentoHorario(
+        configuracionCorrecta
+      );
 
       return FormatterResponseService.success(
-        { buffer, fileName: `horario-seccion-${idSeccion}.pdf` },
+        {
+          buffer,
+          fileName: `Horario${data.PNF}-${data.PNF}-${data.Seccion}.pdf`,
+        },
         "Documento de horario generado exitosamente"
       );
     } catch (error) {
