@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ResponsiveAppBar from "../../components/navbar";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import CardPNF from "../../components/cardPNF";
+import LoadingCharge from "../../components/ui/LoadingCharge";
 import useApi from "../../hook/useApi"; // Added import for axios
 
 export default function ProgramasFormacion() {
@@ -29,9 +30,7 @@ export default function ProgramasFormacion() {
         </Typography>
 
         {loading ? (
-          <Box display="flex" justifyContent="center" mt={4}>
-            <CircularProgress />
-          </Box>
+          <LoadingCharge charge={loading} />
         ) : (
           <Box>
             {PNFS.map((PNF) => (

@@ -1,6 +1,5 @@
 // ProtectedViews.js
-import Box from '@mui/material/Box'
-import LogoSimple from '../components/ui/logoSimple'
+import LoadingCharge from "../components/ui/LoadingCharge";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hook/useAuth";
 
@@ -9,22 +8,12 @@ const ProtectedViews = ({ children, allowedRoles }) => {
 
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          width: "100%",
-          height: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignContent: "center",
-        }}
-      >
-        <LogoSimple animacion={true} ></LogoSimple>
-      </Box>
+      <LoadingCharge charge={isLoading} />
     );
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/Inicio-session" replace />;
+    return <Navigate to="/iniciar-sesion" replace />;
   }
 
   if (!checkUserAccess(allowedRoles)) {

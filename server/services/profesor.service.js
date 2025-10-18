@@ -16,7 +16,7 @@ loadEnv();
 export default class ProfesorService {
   static async registrarProfesor(datos, imagen, user_action) {
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...", datos, imagen, user_action);
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
@@ -972,4 +972,5 @@ export default class ProfesorService {
       throw error;
     }
   }
+
 }

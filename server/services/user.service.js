@@ -246,16 +246,20 @@ export default class UserService {
 
       // Validar tipos de datos
       if (
+        !user?.id ||
+        !user?.roles?.length ||
+        !user?.nombres ||
+        !user?.apellidos ||
         typeof user.id !== "number" ||
-        !Array.isArray(user.roles) ||
         typeof user.nombres !== "string" ||
-        typeof user.apellidos !== "string"
+        typeof user.apellidos !== "string" ||
+        !Array.isArray(user.roles)
       ) {
         console.error("❌ Estructura de usuario inválida:", user);
         return FormatterResponseService.error(
-          "Estructura de usuario inválida",
+          "Información de usuario incompleta o inválida",
           401,
-          "INVALID_USER_STRUCTURE"
+          "INVALID_USER_DATA"
         );
       }
 
@@ -284,10 +288,12 @@ export default class UserService {
         id: user.id,
         nombres: user.nombres,
         apellidos: user.apellidos,
-        email: user.email,
+        email: user.email ?? null,
         roles: user.roles,
-        primera_vez: user.primera_vez,
+        primera_vez: Boolean(user.primera_vez),
       };
+
+      console.log("🟢 Sesión verificada correctamente:", userData);
 
       return FormatterResponseService.success(
         userData,
@@ -295,15 +301,14 @@ export default class UserService {
         {
           status: 200,
           title: "Sesión Activa",
-          timestamp: new Date().toISOString(),
+          verifiedAt: new Date().toISOString(),
           userStatus: "active",
         }
       );
     } catch (error) {
       console.error("💥 Error en servicio verificar sesión:", error);
 
-      // Manejar errores específicos de base de datos
-      if (error.code === "ECONNREFUSED" || error.code === "ETIMEDOUT") {
+      if (["ECONNREFUSED", "ETIMEDOUT"].includes(error.code)) {
         return FormatterResponseService.error(
           "Error de conexión con la base de datos",
           503,
