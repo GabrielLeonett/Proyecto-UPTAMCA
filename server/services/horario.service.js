@@ -138,7 +138,7 @@ export default class HorarioService {
         Horario,
       };
 
-      console.log("✅ Configuración formateada:", configuracion);
+      console.log("✅ Configuración formateada:", configuracion.Horario);
 
       return FormatterResponseService.success(
         configuracion,
@@ -343,94 +343,13 @@ export default class HorarioService {
       // 1️⃣ Obtener datos desde el modelo
       const { data } = await this.mostrarHorariosPorSeccion(idSeccion);
 
-      const configuracionCorrecta = {
-        PNF: "Informática",
-        Trayecto: "I",
-        Seccion: "A", // Puede ser string "A" u objeto {seccion: "A"}
-        Turno: {
-          horaInicio: "07:00", // Formato HH:mm (24 horas)
-          horaFin: "16:00", // Formato HH:mm (24 horas)
-        },
-        Horario: [
-          {
-            nombre: "lunes", // Día en minúsculas
-            clases: [
-              {
-                nombre_unidad_curricular: "Programación I",
-                profesor: "María González",
-                aula: "LAB-101",
-                horaInicio: "07:00",
-                horaFin: "08:30",
-              },
-              {
-                nombre_unidad_curricular: "Base de Datos",
-                profesor: "Carlos Rodríguez",
-                aula: "A-201",
-                horaInicio: "09:00",
-                horaFin: "10:30",
-              },
-            ],
-          },
-          {
-            nombre: "martes",
-            clases: [
-              {
-                nombre_unidad_curricular: "Matemáticas Discretas",
-                profesor: "Ana López",
-                aula: "B-105",
-                horaInicio: "07:00",
-                horaFin: "09:30",
-              },
-            ],
-          },
-          {
-            nombre: "miercoles",
-            clases: [
-              {
-                nombre_unidad_curricular: "Programación I",
-                profesor: "María González",
-                aula: "LAB-101",
-                horaInicio: "10:00",
-                horaFin: "11:30",
-              },
-            ],
-          },
-          {
-            nombre: "jueves",
-            clases: [
-              {
-                nombre_unidad_curricular: "Base de Datos",
-                profesor: "Carlos Rodríguez",
-                aula: "A-201",
-                horaInicio: "13:00",
-                horaFin: "14:30",
-              },
-            ],
-          },
-          {
-            nombre: "viernes",
-            clases: [
-              {
-                nombre_unidad_curricular: "Taller de Proyectos",
-                profesor: "Roberto Sánchez",
-                aula: "TALLER-1",
-                horaInicio: "14:00",
-                horaFin: "16:00",
-              },
-            ],
-          },
-        ],
-      };
-      
       // 4️ Generar documento
-      const buffer = await DocumentServices.generarDocumentoHorario(
-        configuracionCorrecta
-      );
+      const buffer = await DocumentServices.generarDocumentoHorario(data);
 
       return FormatterResponseService.success(
         {
           buffer,
-          fileName: `Horario${data.PNF}-${data.Trayecto}-${data.Seccion}.pdf`,
+          fileName: `Horario${data.PNF}-${data.Trayecto}-${data.Seccion}.docx`,
         },
         "Documento de horario generado exitosamente"
       );

@@ -7,12 +7,10 @@ import env from "../config/env";
 export const useApi = (colocarAlertas = false) => {
   const alert = useSweetAlert();
 
-  // Tipos de respuesta esperados según tu backend
+  // Tipos de respuesta esperados según FormatterResponseController
   const RESPONSE_TYPES = {
     SUCCESS: "success",
     ERROR: "error",
-    WARNING: "warning",
-    INFO: "info",
     VALIDATION_ERROR: "validation_error",
   };
 
@@ -39,14 +37,6 @@ export const useApi = (colocarAlertas = false) => {
           icon: "error",
           confirmButtonColor: "#ef4444",
         },
-        warning: {
-          icon: "warning",
-          confirmButtonColor: "#f59e0b",
-        },
-        info: {
-          icon: "info",
-          confirmButtonColor: "#3b82f6",
-        },
       }[response.type] || { icon: "info" };
 
       let title = response.title;
@@ -56,7 +46,7 @@ export const useApi = (colocarAlertas = false) => {
       if (
         response.type === RESPONSE_TYPES.VALIDATION_ERROR &&
         response.error &&
-        response.error.details && // Cambio aquí para la nueva estructura
+        response.error.details &&
         response.error.details.validationErrors &&
         response.error.details.validationErrors.length > 0
       ) {
@@ -82,51 +72,32 @@ export const useApi = (colocarAlertas = false) => {
                 ...config,
               },
             });
-          }, index * 500); // Reducido a 500ms entre toasts
+          }, index * 300);
         });
+        return; // Salir después de mostrar toasts de validación
       }
-      // Manejar errores de validación del formato anterior (backward compatibility)
-      else if (
-        response.type === RESPONSE_TYPES.VALIDATION_ERROR &&
-        response.error &&
-        Array.isArray(response.error)
-      ) {
-        response.error.forEach((error, index) => {
-          setTimeout(() => {
-            const errorTitle =
-              error.path || error.field
-                ? (error.path || error.field)
-                    .split("_")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(" ")
-                : "Error";
 
-            alert.toast({
-              title: errorTitle,
-              message: error.message || "Error de validación",
-              config: {
-                position: "bottom-end",
-                timer: 3000,
-                ...config,
-              },
-            });
-          }, index * 500);
-        });
-      } else {
-        // Para otros tipos de error
+      // Para otros tipos de error (no validación)
+      if (response.type === RESPONSE_TYPES.ERROR) {
         alert.show({
           title: title || "Error",
           text: message || "Ha ocurrido un error",
           ...config,
         });
       }
+      // Para éxito
+      else if (response.type === RESPONSE_TYPES.SUCCESS) {
+        alert.show({
+          title: title || "Éxito",
+          text: message || "Operación completada",
+          ...config.success,
+        });
+      }
     },
     [alert, colocarAlertas]
   );
 
-  // ... (showAlert y showToast se mantienen igual)
-
-  // Funciones auxiliares mejoradas
+  // Funciones auxiliares para mensajes HTTP
   const getHttpErrorMessage = (status) => {
     const messages = {
       400: "Solicitud incorrecta",
@@ -157,7 +128,7 @@ export const useApi = (colocarAlertas = false) => {
     return titles[status] || "Error";
   };
 
-  // Crear instancia de axios con useMemo - VERSIÓN MEJORADA
+  // Crear instancia de axios con useMemo - ADAPTADA PARA FormatterResponseController
   const axiosInstance = useMemo(() => {
     const instance = axios.create({
       baseURL: env.serverUrl,
@@ -165,53 +136,81 @@ export const useApi = (colocarAlertas = false) => {
       withCredentials: true,
     });
 
-    // Interceptor de respuesta MEJORADO para FormatterResponseController
+    // Interceptor de respuesta ESPECÍFICO para FormatterResponseController
     instance.interceptors.response.use(
       (response) => {
         const backendResponse = response.data;
 
-        if (backendResponse && typeof backendResponse === "object") {
-          // Caso 1: Respuesta de éxito del FormatterResponseController
-          if (backendResponse.success === true) {
+        console.log("🔍 Respuesta del backend:", backendResponse);
 
-            // Devolver los datos directamente para fácil acceso
-            return backendResponse.data || null;
+        // CASO 1: Respuesta exitosa de FormatterResponseController
+        if (backendResponse && backendResponse.success === true) {
+          console.log("✅ Respuesta exitosa detectada");
+
+          // Mostrar alerta de éxito si está activado
+          if (colocarAlertas && backendResponse.message) {
+            showAutoAlert({
+              type: RESPONSE_TYPES.SUCCESS,
+              title: backendResponse.title || "Éxito",
+              message: backendResponse.message,
+            });
           }
 
-          // Caso 2: Respuesta de error del FormatterResponseController
-          if (backendResponse.success === false) {
-            const errorType =
-              backendResponse.error?.code === "VALIDATION_ERROR"
-                ? RESPONSE_TYPES.VALIDATION_ERROR
-                : RESPONSE_TYPES.ERROR;
-
-            const errorResponse = {
-              type: errorType,
-              status: backendResponse.status || response.status,
-              title: backendResponse.title || "Error",
-              message: backendResponse.message || "Error en la operación",
-              data: backendResponse.data || null,
-              error: backendResponse.error || null,
-              originalResponse: response,
-              // Información adicional para debugging
-              _backendStructure: "FormatterResponseController",
-            };
-
-            console.log("❌ Error del backend formateado:", errorResponse);
-
-            // Llamar showAutoAlert
-            showAutoAlert(errorResponse);
-
-            return Promise.reject(errorResponse);
-          }
+          // Devolver los datos para fácil acceso en el frontend
+          return backendResponse.data !== undefined ? backendResponse.data : backendResponse;
         }
 
-        // Caso 3: Respuesta sin formato esperado (fallback)
-        console.warn("⚠️ Respuesta sin formato esperado:", backendResponse);
-        return backendResponse;
+        // CASO 2: Respuesta de error de FormatterResponseController
+        if (backendResponse && backendResponse.success === false) {
+          console.log("❌ Respuesta de error detectada");
+
+          const errorType = 
+            backendResponse.error?.code === "VALIDATION_ERROR" 
+              ? RESPONSE_TYPES.VALIDATION_ERROR 
+              : RESPONSE_TYPES.ERROR;
+
+          const errorResponse = {
+            type: errorType,
+            status: backendResponse.status,
+            title: backendResponse.title,
+            message: backendResponse.message,
+            data: backendResponse.data,
+            error: backendResponse.error,
+            originalResponse: response,
+            _backendStructure: "FormatterResponseController",
+          };
+
+          // Llamar showAutoAlert para mostrar el error
+          showAutoAlert(errorResponse);
+
+          return Promise.reject(errorResponse);
+        }
+
+        // CASO 3: Respuesta sin formato FormatterResponseController (fallback)
+        console.warn("⚠️ Respuesta sin formato FormatterResponseController:", backendResponse);
+        
+        // Si no tiene el formato esperado pero es una respuesta exitosa HTTP
+        if (response.status >= 200 && response.status < 300) {
+          return backendResponse;
+        }
+
+        // Si es una respuesta HTTP de error sin formato
+        const fallbackError = {
+          type: RESPONSE_TYPES.ERROR,
+          status: response.status,
+          title: getHttpErrorTitle(response.status),
+          message: getHttpErrorMessage(response.status),
+          data: backendResponse,
+          _backendStructure: "unknown",
+        };
+
+        showAutoAlert(fallbackError);
+        return Promise.reject(fallbackError);
       },
       (error) => {
         // Manejar errores de red, timeout, o respuestas HTTP de error
+        console.error("💥 Error de axios:", error);
+
         let formattedError = {
           type: RESPONSE_TYPES.ERROR,
           status: error.response?.status || 500,
@@ -220,7 +219,7 @@ export const useApi = (colocarAlertas = false) => {
           data: null,
           error: null,
           originalError: error,
-          _backendStructure: "unknown",
+          _backendStructure: "network_error",
         };
 
         // Clasificar el tipo de error
@@ -231,46 +230,33 @@ export const useApi = (colocarAlertas = false) => {
           // El backend respondió con un error HTTP
           const backendError = error.response.data;
 
-          // Si el error viene de tu FormatterResponseController
-          if (
-            backendError &&
-            typeof backendError === "object" &&
-            backendError.success === false
-          ) {
-            formattedError.type =
-              backendError.error?.code === "VALIDATION_ERROR"
-                ? RESPONSE_TYPES.VALIDATION_ERROR
+          // Si el error viene de FormatterResponseController
+          if (backendError && backendError.success === false) {
+            formattedError.type = 
+              backendError.error?.code === "VALIDATION_ERROR" 
+                ? RESPONSE_TYPES.VALIDATION_ERROR 
                 : RESPONSE_TYPES.ERROR;
             formattedError.status = backendError.status;
-            formattedError.title = backendError.title || "Error";
-            formattedError.message =
-              backendError.message || "Error en el servidor";
+            formattedError.title = backendError.title;
+            formattedError.message = backendError.message;
             formattedError.error = backendError.error;
             formattedError.data = backendError.data;
             formattedError._backendStructure = "FormatterResponseController";
           }
-          // Si el error es de validación en formato array (backward compatibility)
-          else if (backendError && Array.isArray(backendError)) {
-            formattedError.type = RESPONSE_TYPES.VALIDATION_ERROR;
-            formattedError.title = "Error de Validación";
-            formattedError.message = "Los datos enviados no son válidos";
-            formattedError.error = backendError;
-            formattedError._backendStructure = "legacy_array";
-          }
-          // Error HTTP genérico
+          // Error HTTP genérico sin formato específico
           else {
             formattedError.message = getHttpErrorMessage(error.response.status);
             formattedError.title = getHttpErrorTitle(error.response.status);
+            formattedError.data = backendError;
             formattedError._backendStructure = "http_error";
           }
         } else if (error.request) {
           // Error de red (sin respuesta)
           formattedError.message = "No se pudo conectar con el servidor";
           formattedError.title = "Error de Conexión";
-          formattedError._backendStructure = "network_error";
         }
 
-        console.log("Error formateado:", formattedError);
+        console.log("Error formateado para frontend:", formattedError);
 
         // Mostrar alerta de error automáticamente
         showAutoAlert(formattedError);
@@ -279,18 +265,21 @@ export const useApi = (colocarAlertas = false) => {
       }
     );
 
-    // Métodos auxiliares MEJORADOS
+    // 🔧 MÉTODOS AUXILIARES ESPECÍFICOS PARA FormatterResponseController
+
     instance.responseTypes = RESPONSE_TYPES;
 
+    // Verificar si una respuesta es exitosa
     instance.isSuccess = (response) => {
-      // Para respuestas del FormatterResponseController
       return response && response.success === true;
     };
 
+    // Verificar si una respuesta es de error
     instance.isError = (response) => {
       return response && response.success === false;
     };
 
+    // Verificar si es un error de validación
     instance.isValidationError = (error) => {
       return (
         error.type === RESPONSE_TYPES.VALIDATION_ERROR ||
@@ -298,8 +287,8 @@ export const useApi = (colocarAlertas = false) => {
       );
     };
 
+    // Obtener mensajes de validación formateados
     instance.getValidationMessages = (error) => {
-      // Para el nuevo formato FormatterResponseController
       if (
         error.error &&
         error.error.details &&
@@ -309,22 +298,46 @@ export const useApi = (colocarAlertas = false) => {
           .map((err) => `${err.field}: ${err.message}`)
           .join(", ");
       }
-      // Para formato legacy
-      if (error.error && Array.isArray(error.error)) {
-        return error.error
-          .map((err) => `${err.path || err.field}: ${err.message}`)
-          .join(", ");
-      }
       return error.message;
     };
 
-    // Método para extraer datos de respuesta exitosa
+    // Extraer datos de respuesta exitosa
     instance.extractData = (response) => {
-      return response?.data || response;
+      // Si es respuesta de FormatterResponseController, extraer data
+      if (response && typeof response === 'object' && response.success === true) {
+        return response.data;
+      }
+      // Si ya son los datos directos
+      return response;
     };
 
     // Método para verificar si las alertas automáticas están activas
     instance.areAlertsEnabled = () => colocarAlertas;
+
+    // Método para descargar archivos (especial para documentos Word)
+    instance.downloadFile = async (url, filename) => {
+      try {
+        const response = await instance.get(url, {
+          responseType: 'blob'
+        });
+
+        // Crear URL temporal para descarga
+        const blob = new Blob([response]);
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(downloadUrl);
+
+        return true;
+      } catch (error) {
+        console.error('Error descargando archivo:', error);
+        throw error;
+      }
+    };
 
     return instance;
   }, [alert, showAutoAlert, RESPONSE_TYPES, colocarAlertas]);

@@ -156,7 +156,10 @@ export default class UserService {
 
       // 2. Validar contraseña actual
       console.log("🔐 Validando contraseña actual...");
-      const validatePassword = await comparePassword(datos.antiguaPassword, password);
+      const validatePassword = await comparePassword(
+        datos.antiguaPassword,
+        password
+      );
 
       if (!validatePassword) {
         console.error(
@@ -222,81 +225,11 @@ export default class UserService {
    */
   static async verificarSesion(user) {
     try {
-      console.log("🔍 [verificarSesion] Verificando sesión...");
-
-      // Validar que el objeto user existe
-      if (!user) {
-        console.error("❌ Usuario no autenticado");
-        return FormatterResponseService.error(
-          "Usuario no autenticado",
-          401,
-          "USER_NOT_AUTHENTICATED"
-        );
+      if(!user){
+        FormatterResponseService.unauthorized("Usuario no autenticado");
       }
-
-      // Verificar que el usuario tenga la estructura básica requerida
-      if (!user.id || !user.roles || !user.nombres || !user.apellidos) {
-        console.error("❌ Información de usuario incompleta:", user);
-        return FormatterResponseService.error(
-          "Información de usuario incompleta",
-          401,
-          "INCOMPLETE_USER_DATA"
-        );
-      }
-
-      // Validar tipos de datos
-      if (
-        !user?.id ||
-        !user?.roles?.length ||
-        !user?.nombres ||
-        !user?.apellidos ||
-        typeof user.id !== "number" ||
-        typeof user.nombres !== "string" ||
-        typeof user.apellidos !== "string" ||
-        !Array.isArray(user.roles)
-      ) {
-        console.error("❌ Estructura de usuario inválida:", user);
-        return FormatterResponseService.error(
-          "Información de usuario incompleta o inválida",
-          401,
-          "INVALID_USER_DATA"
-        );
-      }
-
-      // Verificar que el usuario aún existe en la base de datos y está activo
-      console.log("🔍 Verificando usuario en base de datos:", user.id);
-      const respuestaModel = await UserModel.obtenerUsuarioPorId(user.id);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        console.error("❌ Usuario no encontrado en BD:", user.id);
-        return FormatterResponseService.error(
-          "Usuario no encontrado en el sistema",
-          404,
-          "USER_NOT_FOUND",
-          { userId: user.id }
-        );
-      }
-
-      console.log(
-        "✅ Sesión verificada exitosamente para:",
-        user.nombres,
-        user.apellidos
-      );
-
-      // Preparar datos del usuario para la respuesta (sin información sensible)
-      const userData = {
-        id: user.id,
-        nombres: user.nombres,
-        apellidos: user.apellidos,
-        email: user.email ?? null,
-        roles: user.roles,
-        primera_vez: Boolean(user.primera_vez),
-      };
-
-      console.log("🟢 Sesión verificada correctamente:", userData);
-
       return FormatterResponseService.success(
-        userData,
+        user,
         "Sesión verificada exitosamente",
         {
           status: 200,

@@ -1,4 +1,4 @@
-import {hashPassword} from '../../utils/encrypted.js'
+import { hashPassword } from "../../utils/encrypted.js";
 
 export async function seed(knex) {
   // Borra todos los datos existentes en el orden correcto (considerando relaciones)
@@ -41,10 +41,7 @@ export async function seed(knex) {
     { id_rol: 20, nombre_rol: "SuperAdmin" },
   ]);
 
-  await knex("usuario_rol").insert([
-    { usuario_id: 999999999, rol_id: 20 },
-  ]);
-
+  await knex("usuario_rol").insert([{ usuario_id: 999999999, rol_id: 20 }]);
 
   await knex("categorias").insert([
     { id_categoria: 1, nombre_categoria: "Instructor" },
@@ -55,39 +52,39 @@ export async function seed(knex) {
   ]);
 
   await knex("turnos").insert([
-    { 
-        id_turno: 0, 
-        nombre_turno: "Por Asignar",
-        inicio_hora: '00:00:00',
-        fin_hora: '23:59:59', 
-        created_at: knex.fn.now(), 
-        updated_at: knex.fn.now()
+    {
+      id_turno: 0,
+      nombre_turno: "Por Asignar",
+      inicio_hora: "07:00:00",
+      fin_hora: "20:00:00",
+      created_at: knex.fn.now(),
+      updated_at: knex.fn.now(),
     },
-    { 
-        id_turno: 1, 
-        nombre_turno: "Matutino",
-        inicio_hora: '07:00:00',
-        fin_hora: '12:15:00', 
-        created_at: knex.fn.now(), 
-        updated_at: knex.fn.now()
+    {
+      id_turno: 1,
+      nombre_turno: "Matutino",
+      inicio_hora: "07:00:00",
+      fin_hora: "12:15:00",
+      created_at: knex.fn.now(),
+      updated_at: knex.fn.now(),
     },
-    { 
-        id_turno: 2, 
-        nombre_turno: "Vespertino",  
-        inicio_hora: '12:30:00',
-        fin_hora: '18:00:00',
-        created_at: knex.fn.now(), 
-        updated_at: knex.fn.now()
+    {
+      id_turno: 2,
+      nombre_turno: "Vespertino",
+      inicio_hora: "12:30:00",
+      fin_hora: "18:00:00",
+      created_at: knex.fn.now(),
+      updated_at: knex.fn.now(),
     },
-    { 
-        id_turno: 3, 
-        nombre_turno: "Nocturno",
-        inicio_hora: '18:00:00',
-        fin_hora: '21:30:00',
-        created_at: knex.fn.now(), 
-        updated_at: knex.fn.now()
-    }
-]);
+    {
+      id_turno: 3,
+      nombre_turno: "Nocturno",
+      inicio_hora: "18:00:00",
+      fin_hora: "21:30:00",
+      created_at: knex.fn.now(),
+      updated_at: knex.fn.now(),
+    },
+  ]);
 
   await knex("dedicaciones").insert([
     {

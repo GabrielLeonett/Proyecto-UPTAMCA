@@ -201,127 +201,13 @@ class DocumentServices {
 
   // Función principal que devuelve el buffer
   static async generarDocumentoHorario(configuracion = {}) {
-    console.log("🔧 INICIANDO generarDocumentoHorario");
-    console.log(
-      "📋 Configuración recibida:",
-      JSON.stringify(configuracion, null, 2)
-    );
-
     try {
       const doc = await this.crearDocumentoHorario(configuracion);
-      console.log("📦 Generando buffer del documento...");
       const buffer = await Packer.toBuffer(doc);
 
-      // 🔍 VALIDACIONES DEL BUFFER
-      console.log("🔍 Validando buffer...");
-      console.log("📏 Tamaño buffer:", buffer.length, "bytes");
-      console.log("🔢 Es Buffer?", Buffer.isBuffer(buffer));
-
-      const primerosBytes = buffer.slice(0, 4).toString("hex");
-      console.log("📝 Primeros bytes (hex):", primerosBytes);
-
-      // Verificar que es un archivo ZIP válido (DOCX)
-      const signature = buffer.slice(0, 2).toString();
-      if (signature !== "PK") {
-        throw new Error(`Documento corrupto - firma inválida: ${signature}`);
-      }
-      console.log("✅ Firma ZIP válida:", signature);
-
-      // 💾 GUARDADO LOCAL PARA DIAGNÓSTICO
-      await this.guardarDocumentoLocal(buffer, configuracion);
-
-      console.log("✅ Buffer generado y guardado exitosamente");
       return buffer;
     } catch (error) {
       console.error("❌ Error al generar el documento:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Guarda el documento localmente para diagnóstico
-   */
-  static async guardarDocumentoLocal(buffer, configuracion = {}) {
-    try {
-      // Crear directorio temp si no existe
-      const tempDir = path.join(process.cwd(), "temp");
-      if (!fs.existsSync(tempDir)) {
-        fs.mkdirSync(tempDir, { recursive: true });
-        console.log("📁 Directorio temp creado:", tempDir);
-      }
-
-      // Generar nombre de archivo descriptivo
-      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-      const nombreArchivo = `horario_${
-        configuracion.PNF || "unknown"
-      }_seccion_${configuracion.Seccion || "unknown"}_${timestamp}.docx`;
-      const rutaCompleta = path.join(tempDir, nombreArchivo);
-
-      // Guardar archivo
-      fs.writeFileSync(rutaCompleta, buffer);
-
-      console.log("💾 Documento guardado localmente:");
-      console.log("   📄 Ruta:", rutaCompleta);
-      console.log("   📊 Tamaño:", buffer.length, "bytes");
-      console.log("   🔍 Firma:", buffer.slice(0, 2).toString());
-
-      // Verificar que se guardó correctamente
-      const stats = fs.statSync(rutaCompleta);
-      console.log(
-        "   ✅ Verificación:",
-        stats.size === buffer.length ? "OK" : "TAMAÑO INCORRECTO"
-      );
-
-      return rutaCompleta;
-    } catch (error) {
-      console.error("❌ Error al guardar documento local:", error);
-      // No lanzar error para no interrumpir el flujo principal
-    }
-  }
-
-  /**
-   * Método adicional para comparar archivos local vs HTTP
-   */
-  static async generarYCompararDocumento(configuracion = {}) {
-    console.log("🔄 GENERANDO Y COMPARANDO DOCUMENTO");
-
-    try {
-      // Generar documento
-      const buffer = await this.generarDocumentoHorario(configuracion);
-
-      // Guardar una copia adicional con prefijo "http_"
-      const httpDir = path.join(process.cwd(), "temp", "http_diagnostics");
-      if (!fs.existsSync(httpDir)) {
-        fs.mkdirSync(httpDir, { recursive: true });
-      }
-
-      const httpFileName = `http_horario_${Date.now()}.docx`;
-      const httpFilePath = path.join(httpDir, httpFileName);
-      fs.writeFileSync(httpFilePath, buffer);
-
-      console.log("🔬 Archivo para diagnóstico HTTP guardado:", httpFilePath);
-
-      // Comparar archivos
-      const tempDir = path.join(process.cwd(), "temp");
-      const archivos = fs
-        .readdirSync(tempDir)
-        .filter((file) => file.endsWith(".docx"))
-        .sort()
-        .reverse()
-        .slice(0, 2); // Últimos 2 archivos
-
-      if (archivos.length >= 2) {
-        console.log("📊 Comparando últimos archivos generados:");
-        archivos.forEach((archivo, index) => {
-          const filePath = path.join(tempDir, archivo);
-          const stats = fs.statSync(filePath);
-          console.log(`   ${index + 1}. ${archivo} - ${stats.size} bytes`);
-        });
-      }
-
-      return buffer;
-    } catch (error) {
-      console.error("❌ Error en generación comparativa:", error);
       throw error;
     }
   }
@@ -331,7 +217,7 @@ class DocumentServices {
     const {
       PNF = "",
       Trayecto = "",
-      Seccion = { seccion: "" },
+      Seccion = "",
       Horario = [],
       Turno = { horaInicio: "07:00", horaFin: "20:00" },
     } = configuracion;
@@ -406,7 +292,7 @@ class DocumentServices {
     // Crear fila de información (PNF, Trayecto, Sección)
     const crearFilaInformacion = (numColumnas) => {
       const textoInformacion = `PNF EN ${PNF.toUpperCase()} TRAVECTO ${Trayecto} SECCIÓN ${
-        Seccion.seccion
+        Seccion
       }`;
 
       return new TableRow({
