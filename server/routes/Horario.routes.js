@@ -4,10 +4,8 @@ import { middlewareAuth } from "../middlewares/auth.js";
 
 const {
   registrarHorario,
-  mostrarHorarios,
   mostrarProfesoresParaHorario,
   mostrarAulasParaHorario,
-  mostrarHorariosProfesores,
   exportarHorarioWord,
   obtenerHorariosPorSeccion,
   obtenerHorariosPorProfesor,
@@ -23,28 +21,6 @@ export const HorarioRouter = Router();
  * SECCIÓN DE RUTAS GET
  * =============================================
  */
-
-/**
- * @name GET /horarios
- * @description Ver todos los horarios registrados.
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- *   - Profesor
- */
-HorarioRouter.get(
-  "/horarios",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-    "Profesor",
-  ]),
-  mostrarHorarios
-);
 
 /**
  * @name GET /horarios/seccion/:id_seccion
@@ -113,28 +89,6 @@ HorarioRouter.get(
     "Profesor",
   ]),
   obtenerHorariosPorAula
-);
-
-/**
- * @name GET /horarios/profesores
- * @description Ver los horarios asignados a los profesores.
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- *   - Profesor
- */
-HorarioRouter.get(
-  "/horarios/profesores",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-    "Profesor",
-  ]),
-  mostrarHorariosProfesores
 );
 
 /**
