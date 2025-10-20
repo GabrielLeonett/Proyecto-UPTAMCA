@@ -362,34 +362,35 @@ export default function FormRegister() {
   );
 
   const Step2EducationalInfo = () => (
-    <>
-      <Typography component="h3" variant="h3" className="self-start">
-        Información Educativa
-      </Typography>
+  <>
+    <Typography component="h3" variant="h3" className="self-start">
+      Información Educativa
+    </Typography>
 
-      <Box className="grid grid-cols-1 gap-8 w-full px-10 py-6">
-        {/* Área de Conocimiento */}
-        <Controller
-          name="area_de_conocimiento"
-          control={control}
-          render={({ field }) => (
-            <>
-              <CustomLabel
-                select
-                label="Área de Conocimiento"
-                fullWidth
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value === "Otro") {
-                    setOpenModalArea(true);
-                  } else if (value && !field.value.includes(value)) {
-                    field.onChange([...field.value, value]);
-                  }
-                }}
-                value=""
-              >
-                <MenuItem value="">Seleccione un área</MenuItem>
-                {areas.map((a) => (
+    <Box className="grid grid-cols-1 gap-8 w-full px-10 py-6">
+      {/* Área de Conocimiento */}
+      <Controller
+        name="area_de_conocimiento"
+        control={control}
+        render={({ field }) => (
+          <>
+            <CustomLabel
+              select
+              label="Área de Conocimiento"
+              fullWidth
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === "Otro") {
+                  setOpenModalArea(true);
+                } else if (value && !field.value.includes(value)) {
+                  field.onChange([...field.value, value]);
+                }
+              }}
+              value=""
+            >
+              <MenuItem value="">Seleccione un área</MenuItem>
+              {Array.isArray(areas) &&
+                areas.map((a) => (
                   <MenuItem
                     key={a.id_area_conocimiento}
                     value={a.nombre_area_conocimiento}
@@ -397,158 +398,146 @@ export default function FormRegister() {
                     {a.nombre_area_conocimiento}
                   </MenuItem>
                 ))}
-                <MenuItem value="Otro">Otro</MenuItem>
-              </CustomLabel>
+              <MenuItem value="Otro">Otro</MenuItem>
+            </CustomLabel>
 
-              <DeletableChips values={field.value} onChange={field.onChange} />
-            </>
-          )}
-        />
+            <DeletableChips values={field.value} onChange={field.onChange} />
+          </>
+        )}
+      />
 
-        {/* Modal Área */}
-        <ModalRegisterAreaConocimiento
-          open={openModalArea}
-          onClose={() => setOpenModalArea(false)}
-          setState={setAreas}
-        />
+      {/* Modal Área */}
+      <ModalRegisterAreaConocimiento
+        open={openModalArea}
+        onClose={() => setOpenModalArea(false)}
+        setState={setAreas}
+      />
 
-        {/* Pregrado */}
-        <Controller
-          name="pre_grado"
-          control={control}
-          render={({ field }) => (
-            <>
-              <Autocomplete
-                multiple
-                options={[
-                  ...pregrados.map((pg) => ({
-                    id_pre_grado: pg.id_pre_grado,
-                    nombre_pre_grado: pg.nombre_pre_grado,
-                    tipo_pre_grado: pg.tipo_pre_grado,
-                  })),
-                  {
-                    id_pre_grado: "otro",
-                    nombre_pre_grado: "Otro",
-                    tipo_pre_grado: "Otros",
-                  },
-                ]}
-                groupBy={(option) => option.tipo_pre_grado}
-                getOptionLabel={(option) => option.nombre_pre_grado}
-                filterSelectedOptions
-                value={field.value || []}
-                onChange={(_, newValue) => {
-                  const uniqueValues = newValue.filter(
-                    (item, index, self) =>
-                      index ===
-                      self.findIndex(
-                        (t) => t.id_pre_grado === item.id_pre_grado
-                      )
+      {/* Pregrado */}
+      <Controller
+        name="pre_grado"
+        control={control}
+        render={({ field }) => (
+          <>
+            <Autocomplete
+              multiple
+              options={[
+                ...(Array.isArray(pregrados) ? pregrados : []).map((pg) => ({
+                  id_pre_grado: pg.id_pre_grado,
+                  nombre_pre_grado: pg.nombre_pre_grado,
+                  tipo_pre_grado: pg.tipo_pre_grado,
+                })),
+                {
+                  id_pre_grado: "otro",
+                  nombre_pre_grado: "Otro",
+                  tipo_pre_grado: "Otros",
+                },
+              ]}
+              groupBy={(option) => option.tipo_pre_grado}
+              getOptionLabel={(option) => option.nombre_pre_grado}
+              filterSelectedOptions
+              value={field.value || []}
+              onChange={(_, newValue) => {
+                const uniqueValues = newValue.filter(
+                  (item, index, self) =>
+                    index === self.findIndex((t) => t.id_pre_grado === item.id_pre_grado)
+                );
+
+                if (uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")) {
+                  setOpenModalPregrado(true);
+                  const filteredValues = uniqueValues.filter(
+                    (v) => v.nombre_pre_grado !== "Otro"
                   );
-
-                  if (
-                    uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")
-                  ) {
-                    setOpenModalPregrado(true);
-
-                    const filteredValues = uniqueValues.filter(
-                      (v) => v.nombre_pre_grado !== "Otro"
-                    );
-                    field.onChange(filteredValues);
-                  } else {
-                    field.onChange(uniqueValues);
+                  field.onChange(filteredValues);
+                } else {
+                  field.onChange(uniqueValues);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Pregrado"
+                  variant="outlined"
+                  error={!!errors.pre_grado}
+                  helperText={
+                    errors.pre_grado?.message || "Seleccione al menos un pregrado"
                   }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Pregrado"
-                    variant="outlined"
-                    error={!!errors.pre_grado}
-                    helperText={
-                      errors.pre_grado?.message ||
-                      "Seleccione al menos un pregrado"
-                    }
-                  />
-                )}
-              />
+                />
+              )}
+            />
 
-              <ModalRegisterPreGrado
-                open={openModalPregrado}
-                onClose={() => setOpenModalPregrado(false)}
-                setState={setPregrados}
-              />
-            </>
-          )}
-        />
+            <ModalRegisterPreGrado
+              open={openModalPregrado}
+              onClose={() => setOpenModalPregrado(false)}
+              setState={setPregrados}
+            />
+          </>
+        )}
+      />
 
-        {/* Posgrado */}
-        <Controller
-          name="pos_grado"
-          control={control}
-          render={({ field }) => (
-            <>
-              <Autocomplete
-                multiple
-                options={[
-                  ...postgrados.map((pg) => ({
-                    id_pos_grado: pg.id_pos_grado,
-                    nombre_pos_grado: pg.nombre_pos_grado,
-                    tipo_pos_grado: pg.tipo_pos_grado,
-                  })),
-                  {
-                    id_pos_grado: "otro",
-                    nombre_pos_grado: "Otro",
-                    tipo_pos_grado: "Otros",
-                  },
-                ]}
-                groupBy={(option) => option.tipo_pos_grado}
-                getOptionLabel={(option) => option.nombre_pos_grado}
-                filterSelectedOptions
-                value={field.value || []}
-                onChange={async (_, newValue) => {
-                  const uniqueValues = newValue.filter(
-                    (item, index, self) =>
-                      index ===
-                      self.findIndex(
-                        (t) => t.id_pos_grado === item.id_pos_grado
-                      )
+      {/* Posgrado */}
+      <Controller
+        name="pos_grado"
+        control={control}
+        render={({ field }) => (
+          <>
+            <Autocomplete
+              multiple
+              options={[
+                ...(Array.isArray(postgrados) ? postgrados : []).map((pg) => ({
+                  id_pos_grado: pg.id_pos_grado,
+                  nombre_pos_grado: pg.nombre_pos_grado,
+                  tipo_pos_grado: pg.tipo_pos_grado,
+                })),
+                {
+                  id_pos_grado: "otro",
+                  nombre_pos_grado: "Otro",
+                  tipo_pos_grado: "Otros",
+                },
+              ]}
+              groupBy={(option) => option.tipo_pos_grado}
+              getOptionLabel={(option) => option.nombre_pos_grado}
+              filterSelectedOptions
+              value={field.value || []}
+              onChange={(_, newValue) => {
+                const uniqueValues = newValue.filter(
+                  (item, index, self) =>
+                    index === self.findIndex((t) => t.id_pos_grado === item.id_pos_grado)
+                );
+
+                if (uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")) {
+                  setOpenModalPosgrado(true);
+                  const filteredValues = uniqueValues.filter(
+                    (v) => v.nombre_pos_grado !== "Otro"
                   );
+                  field.onChange(filteredValues);
+                } else {
+                  field.onChange(uniqueValues);
+                }
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Posgrado"
+                  variant="outlined"
+                  error={!!errors.pos_grado}
+                  helperText={errors.pos_grado?.message || "Opcional"}
+                />
+              )}
+            />
 
-                  if (
-                    uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")
-                  ) {
-                    setOpenModalPosgrado(true);
+            <ModalRegisterPosGrado
+              open={openModalPosgrado}
+              onClose={() => setOpenModalPosgrado(false)}
+              setState={setPostgrados}
+            />
+          </>
+        )}
+      />
+    </Box>
+  </>
+);
 
-                    const filteredValues = uniqueValues.filter(
-                      (v) => v.nombre_pos_grado !== "Otro"
-                    );
-                    field.onChange(filteredValues);
-                  } else {
-                    field.onChange(uniqueValues);
-                  }
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Posgrado"
-                    variant="outlined"
-                    error={!!errors.pos_grado}
-                    helperText={errors.pos_grado?.message || "Opcional"}
-                  />
-                )}
-              />
-
-              <ModalRegisterPosGrado
-                open={openModalPosgrado}
-                onClose={() => setOpenModalPosgrado(false)}
-                setState={setPostgrados}
-              />
-            </>
-          )}
-        />
-      </Box>
-    </>
-  );
 
   const Step3ProfessionalInfo = () => (
     <>
