@@ -151,12 +151,52 @@ export default class SedeService {
         console.error("❌ Error en modelo mostrar sedes:", respuestaModel);
         return respuestaModel;
       }
+      const Sedes = respuestaModel.data || [];
+
+      // Agrupar PNFs por sede
+      const pnfsPorSede = {};
+
+      // Primero: recorrer todos los datos para agrupar los PNFs
+      Sedes.forEach((item) => {
+        // Si el item tiene datos de sede y PNF
+        if (item.id_sede && item.id_pnf) {
+          const sedeId = item.id_sede;
+
+          // Si es la primera vez que vemos esta sede, inicializar el array
+          if (!pnfsPorSede[sedeId]) {
+            pnfsPorSede[sedeId] = {
+              id_sede: item.id_sede,
+              nombre_sede: item.nombre_sede,
+              ubicacion_sede: item.ubicacion_sede,
+              google_sede: item.google_sede,
+              created_at: item.created_at,
+              updated_at: item.updated_at,
+              pnfs: [],
+            };
+          }
+
+          // Agregar el PNF al array de la sede (solo si tiene datos de PNF)
+          if (item.id_pnf) {
+            pnfsPorSede[sedeId].pnfs.push({
+              id_pnf: item.id_pnf,
+              codigo_pnf: item.codigo_pnf,
+              nombre_pnf: item.nombre_pnf,
+              descripcion_pnf: item.descripcion_pnf,
+              poblacion_estudiantil_pnf: item.poblacion_estudiantil_pnf,
+              activo: item.activo,
+            });
+          }
+        }
+      });
+
+      // Convertir el objeto a array
+      const FormatSedes = Object.values(pnfsPorSede);
 
       console.log(`✅ Se obtuvieron ${respuestaModel.data?.length || 0} sedes`);
 
       return FormatterResponseService.success(
         {
-          sedes: respuestaModel.data,
+          sedes: FormatSedes,
           total: respuestaModel.data?.length || 0,
         },
         "Sedes obtenidas exitosamente",
@@ -208,11 +248,37 @@ export default class SedeService {
         return FormatterResponseService.notFound("Sede", id);
       }
 
-      const sede = respuestaModel.data[0];
-      console.log("✅ Sede encontrada:", sede.nombre);
+      const datosSede = respuestaModel.data;
+      console.log("💾 Datos crudos de la sede:", datosSede);
+      // Formatear la sede con sus PNFs
+      const sedeFormateada = {
+        id_sede: datosSede[0].id_sede,
+        nombre_sede: datosSede[0].nombre_sede,
+        ubicacion_sede: datosSede[0].ubicacion_sede,
+        google_sede: datosSede[0].google_sede,
+        created_at: datosSede[0].created_at,
+        updated_at: datosSede[0].updated_at,
+        pnfs: [],
+      };
+
+      // Agregar los PNFs a la sede
+      datosSede.forEach((item) => {
+        if (item.id_pnf) {
+          sedeFormateada.pnfs.push({
+            id_pnf: item.id_pnf,
+            codigo_pnf: item.codigo_pnf,
+            nombre_pnf: item.nombre_pnf,
+            descripcion_pnf: item.descripcion_pnf,
+            poblacion_estudiantil_pnf: item.poblacion_estudiantil_pnf,
+            activo: item.activo,
+          });
+        }
+      });
+
+      console.log("✅ Sede formateada:", sedeFormateada);
 
       return FormatterResponseService.success(
-        sede,
+        sedeFormateada, // ← Enviar el objeto formateado, no el array
         "Sede obtenida exitosamente",
         {
           status: 200,

@@ -50,10 +50,10 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
         nombre: data.nombre,
       };
 
-      await axios.post("/Profesor/pre-grado", payload);
+      await axios.post("/catalogos/pregrados", payload);
 
       // 🔄 Actualiza la lista de pregrados al cerrar
-      const res = await axios.get("/Profesor/pre-grado");
+      const res = await axios.get("/catalogos/pregrados");
       setState(res);
 
       reset();

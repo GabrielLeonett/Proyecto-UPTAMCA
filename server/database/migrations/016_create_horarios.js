@@ -1,4 +1,4 @@
-// migrations/xxxx_create_horarios.js
+// migrations/016_create_horarios.js
 
 /**
  * @param { import("knex").Knex } knex
@@ -19,7 +19,7 @@ export async function up(knex) {
     table
       .smallint("aula_id")
       .notNullable()
-      .comment("Id de la Aula o espacio físico asignado");
+      .comment("ID de la Aula o espacio físico asignado");
     table
       .bigInteger("unidad_curricular_id")
       .notNullable()
@@ -48,6 +48,11 @@ export async function up(knex) {
       .notNullable()
       .defaultTo(true)
       .comment("Indica si el horario está actualmente activo");
+    
+    // Soft delete
+    table.timestamp('deleted_at').nullable().comment('Fecha de eliminación soft delete');
+    
+    // Campos de auditoría básicos
     table
       .timestamp("created_at")
       .notNullable()
@@ -64,6 +69,8 @@ export async function up(knex) {
     table.index("profesor_id", "idx_horarios_profesor");
     table.index("seccion_id", "idx_horarios_seccion");
     table.index("unidad_curricular_id", "idx_horarios_uc");
+    table.index("aula_id", "idx_horarios_aula");
+    table.index("activo", "idx_horarios_activo");
 
     // Relaciones
     table

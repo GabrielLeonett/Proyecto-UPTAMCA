@@ -1,46 +1,45 @@
 import ValidationService from "./validation.service.js";
 import NotificationService from "./notification.service.js";
-import ImagenService from "./imagen.service.js";
-import EmailService from "./email.service.js";
-import ProfesorModel from "../models/profesor.model.js";
+import AulaModel from "../models/aulas.model.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
 import { loadEnv } from "../utils/utilis.js";
-import { generarPassword, hashPassword } from "../utils/encrypted.js";
 
 loadEnv();
 
 /**
- * @class ProfesorService
- * @description Servicio para operaciones de negocio relacionadas con profesores
+ * @class AulaService
+ * @description Servicio para operaciones de negocio relacionadas con aulas
  */
-export default class ProfesorService {
-  static async registrarProfesor(datos, imagen, user_action) {
+export default class AulaService {
+  /**
+   * @static
+   * @async
+   * @method registrarAula
+   * @description Registrar una nueva aula con validación y notificación
+   * @param {Object} datos - Datos del aula a registrar
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async registrarAula(datos, user_action) {
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+      console.log("🔍 [registrarAula] Iniciando registro de aula...");
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
-          imagen: imagen
-            ? {
-                originalName: imagen.originalName,
-                size: imagen.size,
-                mimetype: imagen.mimetype,
-              }
-            : "No image provided",
           user_action: user_action,
         });
       }
 
-      // 1. Validar datos del profesor
-      console.log("✅ Validando datos del profesor...");
-      const validation = ValidationService.validateProfesor(datos);
+      // 1. Validar datos del aula
+      console.log("✅ Validando datos del aula...");
+      const validation = ValidationService.validateAula(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en registro de profesor"
+          "Error de validación en registro de aula"
         );
       }
 
@@ -59,169 +58,88 @@ export default class ProfesorService {
         );
       }
 
-      // 3. Validar imagen (solo si se proporciona)
-      let imagenPath = null;
-      if (imagen && imagen.originalName) {
-        console.log("🖼️ Validando imagen...");
-        const imagenService = new ImagenService("Profesores");
-        const validationImage = await imagenService.validateImage(
-          imagen.originalName,
-          {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            maxSize: 5 * 1024 * 1024,
-            quality: 85,
-            format: "webp",
-          }
-        );
+      // 3. Verificar si el aula ya existe (por código o nombre)
+      console.log("🔎 Verificando duplicados de aula...");
+      const aulasExistentes = await AulaModel.obtenerTodas();
 
-        if (!validationImage.isValid) {
-          console.error(
-            "❌ Validación de imagen fallida:",
-            validationImage.error
-          );
-          FormatterResponseService.validationError(
-            [{ path: "imagen", message: validationImage.error }],
-            "Error de validación de imagen"
-          );
-        }
-
-        console.log("✅ Imagen válida:", validationImage.message);
-
-        // Guardar imagen y obtener la ruta
-        console.log("💾 Procesando y guardando imagen...");
-        imagenPath = await imagenService.processAndSaveImage(
-          imagen.originalName,
-          {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            quality: 85,
-            format: "webp",
-          }
-        );
-
-        if (process.env.MODE === "DEVELOPMENT") {
-          console.log("📁 Ruta de imagen guardada:", imagenPath);
-        }
-      } else {
-        console.log("ℹ️ No se proporcionó imagen, continuando sin ella...");
-      }
-
-      // 4. Validar email
-      console.log("📧 Validando email...");
-      const emailService = new EmailService();
-      const validationEmail = await emailService.verificarEmailConAPI(
-        datos.email
+      const aulaDuplicada = aulasExistentes.data.find(
+        (aula) => aula.codigo === datos.codigo || aula.nombre === datos.nombre
       );
 
-      if (!validationEmail.existe) {
-        console.error("❌ Validación de email fallida:", validationEmail);
+      if (aulaDuplicada) {
+        console.error("❌ Aula duplicada encontrada:", aulaDuplicada);
         FormatterResponseService.error(
-          "El email proporcionado no es válido o no existe",
-          "Lo sentimos, el email proporcionado no es válido o no existe",
-          400,
-          "INVALID_EMAIL",
+          "Aula ya existe",
+          "Ya existe un aula con el mismo código o nombre",
+          409,
+          "AULA_DUPLICADA",
           {
-            email: datos.email,
+            codigo: datos.codigo,
+            nombre: datos.nombre,
+            aula_existente: {
+              id: aulaDuplicada.id_aula,
+              codigo: aulaDuplicada.codigo,
+              nombre: aulaDuplicada.nombre,
+            },
           }
         );
       }
-      const contrania = await generarPassword();
-      const hash = hashPassword(contrania);
 
-      // 5. Crear profesor en el modelo
-      console.log("👨‍🏫 Creando profesor en base de datos...");
-      const respuestaModel = await ProfesorModel.crear(
-        {
-          ...datos,
-          imagen: imagenPath,
-          password: hash,
-        },
-        user_action.id
-      );
+      // 4. Crear aula en el modelo
+      console.log("🏫 Creando aula en base de datos...");
+      const respuestaModel = await AulaModel.crear(datos, user_action.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
-      if (process.MODE === "DEVELOPMENT") {
+      if (process.env.MODE === "DEVELOPMENT") {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      const Correo = {
-        asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
-        html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">¡Bienvenido/a, ${datos.nombres}!</h2>
-        <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
-        <p>Sus credenciales de acceso son:</p>
-        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-          <p><strong>Usuario:</strong> ${datos.email}</p>
-          <p><strong>Contraseña temporal:</strong> ${contrania}</p>
-        </div>
-        <p><strong>Instrucciones importantes:</strong></p>
-        <ul>
-          <li>Cambie su contraseña después del primer acceso</li>
-          <li>Esta contraseña es temporal y de uso personal</li>
-          <li>Guarde esta información en un lugar seguro</li>
-        </ul>
-        <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
-      </div>
-      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-            <a href="${process.env.ORIGIN_FRONTEND}/inicio-sesion" style="display: inline-block; background-color: #1C75BA; color: white; 
-                      padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-                Acceder a la plataforma
-            </a>
-        </div>
-      `,
-      };
-
-      const Resultado = await emailService.enviarEmail({
-        Destinatario: datos.email,
-        Correo: Correo,
-        verificarEmail: false,
-      });
-      console.log("📧 Email enviado:", Resultado);
-
-      // 6. Enviar notificación
+      // 5. Enviar notificación
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Nuevo Profesor Registrado",
-        tipo: "profesor_creado",
-        contenido: `Se ha registrado al profesor ${datos.nombres} ${datos.apellidos} en el sistema`,
+        titulo: "Nueva Aula Registrada",
+        tipo: "aula_creada",
+        contenido: `Se ha registrado el aula ${datos.nombre} (${datos.codigo}) en el sistema`,
         metadatos: {
-          profesor_cedula: datos.cedula,
-          profesor_nombre: `${datos.nombres} ${datos.apellidos}`,
+          aula_codigo: datos.codigo,
+          aula_nombre: datos.nombre,
+          aula_tipo: datos.tipo,
+          aula_capacidad: datos.capacidad,
+          aula_sede: datos.sede,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id, datos.cedula],
+        roles_ids: [3, 4, 20], // IDs de roles administrativos
+        users_ids: [user_action.id],
       });
 
-      console.log("🎉 Profesor registrado exitosamente");
+      console.log("🎉 Aula registrada exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: "Profesor creado exitosamente",
-          profesor: {
-            cedula: datos.cedula,
-            nombres: datos.nombres,
-            apellidos: datos.apellidos,
-            email: datos.email,
-            imagen: imagenPath,
+          message: "Aula creada exitosamente",
+          aula: {
+            id: respuestaModel.data?.id_aula || datos.codigo,
+            codigo: datos.codigo,
+            nombre: datos.nombre,
+            tipo: datos.tipo,
+            capacidad: datos.capacidad,
+            sede: datos.sede,
+            equipamiento: datos.equipamiento,
           },
         },
-        "Profesor registrado exitosamente",
+        "Aula registrada exitosamente",
         {
           status: 201,
-          title: "Profesor Creado",
+          title: "Aula Creada",
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio crear profesor:", error);
-      // Re-lanza el error para que el controlador lo maneje
+      console.error("💥 Error en servicio registrar aula:", error);
       throw error;
     }
   }
@@ -229,15 +147,17 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method obtenerTodos
-   * @description Obtener todos los profesores con validación de parámetros
-   * @param {Object} queryParams - Parámetros de consulta
+   * @method mostrarAulas
+   * @description Obtener todas las aulas con validación de parámetros
+   * @param {Object} queryParams - Parámetros de consulta (opcional)
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerTodos(queryParams = {}) {
+  static async mostrarAulas(queryParams = {}) {
     try {
+      console.log("🔍 [mostrarAulas] Obteniendo todas las aulas...");
+
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order"];
+      const allowedParams = ["page", "limit", "sort", "order", "sede", "tipo"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
@@ -250,7 +170,7 @@ export default class ProfesorService {
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerTodos();
+      const respuestaModel = await AulaModel.obtenerTodas(queryParams);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -258,19 +178,19 @@ export default class ProfesorService {
 
       return FormatterResponseService.success(
         {
-          profesores: respuestaModel.data,
+          aulas: respuestaModel.data,
           total: respuestaModel.data.length,
           page: parseInt(queryParams.page) || 1,
           limit: parseInt(queryParams.limit) || respuestaModel.data.length,
         },
-        "Profesores obtenidos exitosamente",
+        "Aulas obtenidas exitosamente",
         {
           status: 200,
-          title: "Lista de Profesores",
+          title: "Lista de Aulas",
         }
       );
     } catch (error) {
-      console.error("Error en servicio obtener todos los profesores:", error);
+      console.error("💥 Error en servicio mostrar aulas:", error);
       throw error;
     }
   }
@@ -278,188 +198,50 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method obtenerConFiltros
-   * @description Obtener profesores con filtros validados
-   * @param {Object} filtros - Filtros de búsqueda
+   * @method obtenerAulaPorId
+   * @description Obtener una aula específica por ID con validación
+   * @param {number} id_aula - ID del aula a buscar
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerConFiltros(filtros = {}) {
+  static async obtenerAulaPorId(id_aula) {
     try {
-      // Validar estructura de filtros
-      const filterValidation = ValidationService.validateQueryParams(filtros, [
-        "dedicacion",
-        "categoria",
-        "ubicacion",
-        "area",
-        "fecha",
-        "genero",
-      ]);
+      console.log(`🔍 [obtenerAulaPorId] Buscando aula ID: ${id_aula}`);
 
-      if (!filterValidation.isValid) {
-        FormatterResponseService.validationError(
-          filterValidation.errors,
-          "Error de validación en filtros de búsqueda"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.obtenerConFiltros(filtros);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          filtros_aplicados: filtros,
-        },
-        "Profesores filtrados obtenidos exitosamente",
-        {
-          status: 200,
-          title: "Profesores Filtrados",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener profesores con filtros:", error);
-      throw error;
-    }
-  }
-
-  static async obtenerImagenProfesor(id_profesor, queryParams = {}) {
-    try {
-      console.log(
-        `🔍 [obtenerImagenProfesor] Buscando imagen del profesor ID: ${id_profesor}`
-      );
-
-      // Validar ID del profesor
-      const idValidation = ValidationService.validateId(
-        id_profesor,
-        "profesor"
-      );
+      // Validar ID del aula
+      const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
         FormatterResponseService.validationError(
           idValidation.errors,
-          "ID de profesor inválido"
+          "ID de aula inválido"
         );
       }
 
-      // Buscar información del profesor
-      const respuesta = await ProfesorModel.buscar(id_profesor.toString());
-
-      if (FormatterResponseService.isError(respuesta)) {
-        return respuesta;
-      }
-
-      if (!respuesta.data || respuesta.data.length === 0) {
-        FormatterResponseService.notFound("Profesor", id_profesor);
-      }
-
-      const profesor = respuesta.data[0];
-
-      if (!profesor.imagen) {
-        FormatterResponseService.error(
-          "Imagen no encontrada",
-          "El profesor no tiene una imagen registrada en el sistema",
-          404,
-          "IMAGE_NOT_FOUND",
-          { profesor_id: id_profesor }
-        );
-      }
-
-      console.log(
-        `✅ Imagen encontrada para profesor ${profesor.nombres} ${profesor.apellidos}`
-      );
-
-      // Obtener la imagen usando el servicio de imágenes
-      const servicioImagen = new ImagenService("profesores");
-      const imagen = await servicioImagen.getImage(
-        profesor.imagen,
-        queryParams
-      );
-
-      return FormatterResponseService.success(
-        imagen,
-        "Imagen del profesor obtenida exitosamente",
-        {
-          status: 200,
-          title: "Imagen del Profesor",
-          profesor: {
-            id: id_profesor,
-            nombre: `${profesor.nombres} ${profesor.apellidos}`,
-            cedula: profesor.cedula,
-          },
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio obtener imagen del profesor:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method buscar
-   * @description Buscar profesores con validación de término de búsqueda
-   * @param {string} busqueda - Término de búsqueda
-   * @returns {Object} Resultado de la operación
-   */
-  static async buscar(busqueda) {
-    try {
-      // Validar término de búsqueda
-      if (
-        !busqueda ||
-        typeof busqueda !== "string" ||
-        busqueda.trim().length === 0
-      ) {
-        FormatterResponseService.validationError(
-          [
-            {
-              path: "busqueda",
-              message:
-                "El término de búsqueda es requerido y debe ser una cadena no vacía",
-            },
-          ],
-          "Error de validación en búsqueda"
-        );
-      }
-
-      const termino = busqueda.trim();
-
-      if (termino.length < 2) {
-        FormatterResponseService.validationError(
-          [
-            {
-              path: "busqueda",
-              message:
-                "El término de búsqueda debe tener al menos 2 caracteres",
-            },
-          ],
-          "Término de búsqueda demasiado corto"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.buscar(termino);
+      const respuestaModel = await AulaModel.buscarPorId(id_aula);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (!respuestaModel.data || respuestaModel.data.length === 0) {
+        FormatterResponseService.notFound("Aula", id_aula);
+      }
+
+      const aula = respuestaModel.data[0];
+
+      console.log(`✅ Aula encontrada: ${aula.nombre}`);
+
       return FormatterResponseService.success(
         {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          termino_busqueda: termino,
+          aula: aula,
         },
-        "Búsqueda de profesores completada exitosamente",
+        "Aula obtenida exitosamente",
         {
           status: 200,
-          title: "Resultados de Búsqueda",
+          title: "Detalles del Aula",
         }
       );
     } catch (error) {
-      console.error("Error en servicio buscar profesores:", error);
+      console.error("💥 Error en servicio obtener aula por ID:", error);
       throw error;
     }
   }
@@ -467,58 +249,92 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method actualizar
-   * @description Actualizar un profesor existente con validación y notificación
-   * @param {Object} datos - Datos actualizados del profesor
+   * @method actualizarAula
+   * @description Actualizar una aula existente con validación y notificación
+   * @param {number} id_aula - ID del aula a actualizar
+   * @param {Object} datos - Datos actualizados del aula
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async actualizar(datos, usuarioId) {
+  static async actualizarAula(id_aula, datos, user_action) {
     try {
-      // Validar datos parciales del profesor
-      const validation = ValidationService.validatePartialProfesor(datos);
+      console.log(`🔍 [actualizarAula] Actualizando aula ID: ${id_aula}`);
 
-      if (!validation.isValid) {
+      // Validar ID del aula
+      const idValidation = ValidationService.validateId(id_aula, "aula");
+      if (!idValidation.isValid) {
         FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en actualización de profesor"
+          idValidation.errors,
+          "ID de aula inválido"
         );
       }
 
-      // Validar que tenga ID de profesor
-      const requiredValidation = ValidationService.validateRequiredFields(
-        datos,
-        ["id_profesor"]
-      );
-
-      if (!requiredValidation.isValid) {
+      // Validar datos parciales del aula
+      const validation = ValidationService.validatePartialAula(datos);
+      if (!validation.isValid) {
         FormatterResponseService.validationError(
-          requiredValidation.errors,
-          "Campos requeridos faltantes"
+          validation.errors,
+          "Error de validación en actualización de aula"
         );
       }
 
       // Validar ID de usuario
-      const idValidation = ValidationService.validateId(usuarioId, "usuario");
-      if (!idValidation.isValid) {
+      const userValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!userValidation.isValid) {
         FormatterResponseService.validationError(
-          idValidation.errors,
+          userValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesorActual = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
-
-      if (!profesorActual) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
+      // Verificar que el aula existe
+      const aulaExistente = await AulaModel.buscarPorId(id_aula);
+      if (
+        FormatterResponseService.isError(aulaExistente) ||
+        !aulaExistente.data ||
+        aulaExistente.data.length === 0
+      ) {
+        FormatterResponseService.notFound("Aula", id_aula);
       }
 
-      // Actualizar profesor
-      const respuestaModel = await ProfesorModel.actualizar(datos, usuarioId);
+      const aulaActual = aulaExistente.data[0];
+
+      // Verificar duplicados si se está actualizando código o nombre
+      if (datos.codigo || datos.nombre) {
+        const aulasExistentes = await AulaModel.obtenerTodas();
+        const aulaDuplicada = aulasExistentes.data.find(
+          (aula) =>
+            aula.id_aula !== id_aula &&
+            (aula.codigo === (datos.codigo || aulaActual.codigo) ||
+              aula.nombre === (datos.nombre || aulaActual.nombre))
+        );
+
+        if (aulaDuplicada) {
+          FormatterResponseService.error(
+            "Aula ya existe",
+            "Ya existe otro aula con el mismo código o nombre",
+            409,
+            "AULA_DUPLICADA",
+            {
+              aula_existente: {
+                id: aulaDuplicada.id_aula,
+                codigo: aulaDuplicada.codigo,
+                nombre: aulaDuplicada.nombre,
+              },
+            }
+          );
+        }
+      }
+
+      // Actualizar aula
+      const respuestaModel = await AulaModel.actualizar(
+        id_aula,
+        datos,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -527,37 +343,39 @@ export default class ProfesorService {
       // Enviar notificación de actualización
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Profesor Actualizado",
-        tipo: "profesor_actualizado",
-        contenido: `Se han actualizado los datos del profesor ${
-          datos.nombres || profesorActual.nombres
-        } ${datos.apellidos || profesorActual.apellidos}`,
+        titulo: "Aula Actualizada",
+        tipo: "aula_actualizada",
+        contenido: `Se han actualizado los datos del aula ${
+          datos.nombre || aulaActual.nombre
+        } (${datos.codigo || aulaActual.codigo})`,
         metadatos: {
-          profesor_id: datos.id_profesor,
-          profesor_cedula: profesorActual.cedula,
-          campos_actualizados: Object.keys(datos).filter(
-            (key) => key !== "id_profesor"
-          ),
-          usuario_actualizador: usuarioId,
+          aula_id: id_aula,
+          aula_codigo: datos.codigo || aulaActual.codigo,
+          aula_nombre: datos.nombre || aulaActual.nombre,
+          campos_actualizados: Object.keys(datos),
+          usuario_actualizador: user_action.id,
           fecha_actualizacion: new Date().toISOString(),
         },
-        roles_ids: ["admin", "coordinador"],
-        users_ids: [usuarioId],
+        roles_ids: [3, 4, 20],
+        users_ids: [user_action.id],
       });
+
+      console.log("✅ Aula actualizada exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: "Profesor actualizado exitosamente",
-          profesor_id: datos.id_profesor,
+          message: "Aula actualizada exitosamente",
+          aula_id: id_aula,
+          cambios: Object.keys(datos),
         },
-        "Profesor actualizado exitosamente",
+        "Aula actualizada exitosamente",
         {
           status: 200,
-          title: "Profesor Actualizado",
+          title: "Aula Actualizada",
         }
       );
     } catch (error) {
-      console.error("Error en servicio actualizar profesor:", error);
+      console.error("💥 Error en servicio actualizar aula:", error);
       throw error;
     }
   }
@@ -565,116 +383,110 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method eliminar
-   * @description Eliminar/destituir un profesor con validación y notificación
-   * @param {Object} datos - Datos de la eliminación
+   * @method eliminarAula
+   * @description Eliminar una aula con validación y notificación
+   * @param {number} id_aula - ID del aula a eliminar
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async eliminar(datos, usuarioId) {
+  static async eliminarAula(id_aula, user_action) {
     try {
-      // Validar datos de eliminación
-      const requiredValidation = ValidationService.validateRequiredFields(
-        datos,
-        ["id_profesor", "tipo_accion", "razon"]
-      );
+      console.log(`🔍 [eliminarAula] Eliminando aula ID: ${id_aula}`);
 
-      if (!requiredValidation.isValid) {
+      // Validar ID del aula
+      const idValidation = ValidationService.validateId(id_aula, "aula");
+      if (!idValidation.isValid) {
         FormatterResponseService.validationError(
-          requiredValidation.errors,
-          "Campos requeridos faltantes para eliminación"
+          idValidation.errors,
+          "ID de aula inválido"
         );
       }
 
       // Validar ID de usuario
-      const idValidation = ValidationService.validateId(usuarioId, "usuario");
-      if (!idValidation.isValid) {
+      const userValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!userValidation.isValid) {
         FormatterResponseService.validationError(
-          idValidation.errors,
+          userValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // Validar ID de profesor
-      const profesorIdValidation = ValidationService.validateId(
-        datos.id_profesor,
-        "profesor"
+      // Verificar que el aula existe
+      const aulaExistente = await AulaModel.buscarPorId(id_aula);
+      if (
+        FormatterResponseService.isError(aulaExistente) ||
+        !aulaExistente.data ||
+        aulaExistente.data.length === 0
+      ) {
+        FormatterResponseService.notFound("Aula", id_aula);
+      }
+
+      const aula = aulaExistente.data[0];
+
+      // Verificar si el aula está siendo utilizada en horarios futuros
+      const tieneHorariosFuturos = await AulaModel.verificarHorariosFuturos(
+        id_aula
       );
-      if (!profesorIdValidation.isValid) {
-        FormatterResponseService.validationError(
-          profesorIdValidation.errors,
-          "ID de profesor inválido"
+      if (tieneHorariosFuturos) {
+        FormatterResponseService.error(
+          "Aula en uso",
+          "No se puede eliminar el aula porque tiene horarios asignados en el futuro",
+          409,
+          "AULA_EN_USO",
+          {
+            aula_id: id_aula,
+            aula_nombre: aula.nombre,
+            accion_recomendada: "Reasignar o cancelar los horarios primero",
+          }
         );
       }
 
-      // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesor = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
-
-      if (!profesor) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
-      }
-
-      // Eliminar profesor
-      const respuestaModel = await ProfesorModel.eliminar(datos, usuarioId);
+      // Eliminar aula
+      const respuestaModel = await AulaModel.eliminar(id_aula, user_action.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
-      // Enviar notificación de eliminación/destitución
+      // Enviar notificación de eliminación
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: `Profesor ${
-          datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-        }`,
-        tipo: `profesor_${datos.tipo_accion}`,
-        contenido: `Se ha ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-        } al profesor ${profesor.nombres} ${profesor.apellidos} (${
-          profesor.cedula
-        })`,
+        titulo: "Aula Eliminada",
+        tipo: "aula_eliminada",
+        contenido: `Se ha eliminado el aula ${aula.nombre} (${aula.codigo}) del sistema`,
         metadatos: {
-          profesor_id: datos.id_profesor,
-          profesor_cedula: profesor.cedula,
-          profesor_nombre: `${profesor.nombres} ${profesor.apellidos}`,
-          tipo_accion: datos.tipo_accion,
-          razon: datos.razon,
-          observaciones: datos.observaciones,
-          fecha_efectiva: datos.fecha_efectiva,
-          usuario_ejecutor: usuarioId,
-          fecha_ejecucion: new Date().toISOString(),
+          aula_id: id_aula,
+          aula_codigo: aula.codigo,
+          aula_nombre: aula.nombre,
+          usuario_ejecutor: user_action.id,
+          fecha_eliminacion: new Date().toISOString(),
         },
-        roles_ids: ["admin", "coordinador"],
-        users_ids: [usuarioId],
+        roles_ids: [3, 4, 20],
+        users_ids: [user_action.id],
       });
 
+      console.log("✅ Aula eliminada exitosamente");
+
       return FormatterResponseService.success(
         {
-          message: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-          } exitosamente`,
-          profesor: {
-            id: datos.id_profesor,
-            cedula: profesor.cedula,
-            nombre: `${profesor.nombres} ${profesor.apellidos}`,
-            accion: datos.tipo_accion,
+          message: "Aula eliminada exitosamente",
+          aula: {
+            id: id_aula,
+            codigo: aula.codigo,
+            nombre: aula.nombre,
           },
         },
-        `Profesor ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-        } exitosamente`,
+        "Aula eliminada exitosamente",
         {
           status: 200,
-          title: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-          }`,
+          title: "Aula Eliminada",
         }
       );
     } catch (error) {
-      console.error("Error en servicio eliminar profesor:", error);
+      console.error("💥 Error en servicio eliminar aula:", error);
       throw error;
     }
   }
@@ -682,71 +494,54 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method obtenerPregrados
-   * @description Obtener todos los pregrados con validación
+   * @method obtenerAulasPorTipo
+   * @description Obtener aulas filtradas por tipo con validación
+   * @param {string} tipo - Tipo de aula a filtrar
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerPregrados() {
+  static async obtenerAulasPorTipo(tipo) {
     try {
-      const respuestaModel = await ProfesorModel.obtenerPregrados();
+      console.log(`🔍 [obtenerAulasPorTipo] Filtrando aulas por tipo: ${tipo}`);
 
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
+      // Validar tipo de aula
+      if (!tipo || typeof tipo !== "string" || tipo.trim().length === 0) {
+        FormatterResponseService.validationError(
+          [
+            {
+              path: "tipo",
+              message:
+                "El tipo de aula es requerido y debe ser una cadena no vacía",
+            },
+          ],
+          "Error de validación en filtro por tipo"
+        );
       }
 
-      return FormatterResponseService.success(
-        respuestaModel.data,
-        "Pregrados obtenidos exitosamente",
-        {
-          status: 200,
-          title: "Lista de Pregrados",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener pregrados:", error);
-      throw error;
-    }
-  }
+      const tipoLimpio = tipo.trim().toUpperCase();
 
-  /**
-   * @static
-   * @async
-   * @method obtenerPosgrados
-   * @description Obtener todos los posgrados con validación
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerPosgrados() {
-    try {
-      const respuestaModel = await ProfesorModel.obtenerPosgrados();
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
+      // Validar que el tipo sea válido
+      const tiposValidos = [
+        "TEORIA",
+        "LABORATORIO",
+        "MIXTA",
+        "AUDITORIO",
+        "TALLER",
+      ];
+      if (!tiposValidos.includes(tipoLimpio)) {
+        FormatterResponseService.validationError(
+          [
+            {
+              path: "tipo",
+              message: `Tipo de aula inválido. Los tipos válidos son: ${tiposValidos.join(
+                ", "
+              )}`,
+            },
+          ],
+          "Tipo de aula no válido"
+        );
       }
 
-      return FormatterResponseService.success(
-        respuestaModel.data,
-        "Posgrados obtenidos exitosamente",
-        {
-          status: 200,
-          title: "Lista de Posgrados",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener posgrados:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method obtenerAreasConocimiento
-   * @description Obtener todas las áreas de conocimiento con validación
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerAreasConocimiento() {
-    try {
-      const respuestaModel = await ProfesorModel.obtenerAreasConocimiento();
+      const respuestaModel = await AulaModel.filtrarPorTipo(tipoLimpio);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -754,17 +549,18 @@ export default class ProfesorService {
 
       return FormatterResponseService.success(
         {
-          areas_conocimiento: respuestaModel.data,
+          aulas: respuestaModel.data,
           total: respuestaModel.data.length,
+          tipo: tipoLimpio,
         },
-        "Áreas de conocimiento obtenidas exitosamente",
+        `Aulas de tipo ${tipoLimpio} obtenidas exitosamente`,
         {
           status: 200,
-          title: "Lista de Áreas de Conocimiento",
+          title: `Aulas - ${tipoLimpio}`,
         }
       );
     } catch (error) {
-      console.error("Error en servicio obtener áreas de conocimiento:", error);
+      console.error("💥 Error en servicio obtener aulas por tipo:", error);
       throw error;
     }
   }
@@ -772,67 +568,73 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method crearPregrado
-   * @description Crear un nuevo pregrado
-   * @param {Object} datos - Datos del pregrado
-   * @param {string} datos.nombre - Nombre del pregrado
-   * @param {string} datos.tipo - Tipo del pregrado
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
+   * @method obtenerAulasPorSede
+   * @description Obtener aulas filtradas por sede con validación
+   * @param {string} sede - Sede a filtrar
+   * @returns {Object} Resultado de la operación
    */
-  static async crearPregrado(datos, user_action) {
+  static async obtenerAulasPorSede(sede) {
     try {
-      console.log("🔍 [crearPregrado] Iniciando creación de pregrado...");
+      console.log(`🔍 [obtenerAulasPorSede] Filtrando aulas por sede: ${sede}`);
 
-      // Validar datos del pregrado usando el nuevo método
-      const validation = ValidationService.validateNuevoPregrado(datos);
-      if (!validation.isValid) {
+      // Validar sede
+      if (!sede || typeof sede !== "string" || sede.trim().length === 0) {
         FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en creación de pregrado"
+          [
+            {
+              path: "sede",
+              message: "La sede es requerida y debe ser una cadena no vacía",
+            },
+          ],
+          "Error de validación en filtro por sede"
         );
       }
 
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
+      const sedeLimpia = sede.trim().toUpperCase();
+
+      // Validar que la sede sea válida
+      const sedesValidas = [
+        "PRINCIPAL",
+        "NORTE",
+        "SUR",
+        "ESTE",
+        "OESTE",
+        "CENTRO",
+      ];
+      if (!sedesValidas.includes(sedeLimpia)) {
         FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
+          [
+            {
+              path: "sede",
+              message: `Sede inválida. Las sedes válidas son: ${sedesValidas.join(
+                ", "
+              )}`,
+            },
+          ],
+          "Sede no válida"
         );
       }
 
-      const respuestaModel = await ProfesorModel.crearPregrado(
-        datos,
-        user_action.id
-      );
+      const respuestaModel = await AulaModel.filtrarPorSede(sedeLimpia);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
-      console.log("🎉 Pregrado creado exitosamente");
-
       return FormatterResponseService.success(
         {
-          message: "Pregrado creado exitosamente",
-          pregrado: {
-            nombre: datos.nombre,
-            tipo: datos.tipo,
-          },
+          aulas: respuestaModel.data,
+          total: respuestaModel.data.length,
+          sede: sedeLimpia,
         },
-        "Pregrado creado exitosamente",
+        `Aulas de la sede ${sedeLimpia} obtenidas exitosamente`,
         {
-          status: 201,
-          title: "Pregrado Creado",
+          status: 200,
+          title: `Aulas - Sede ${sedeLimpia}`,
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio crear pregrado:", error);
+      console.error("💥 Error en servicio obtener aulas por sede:", error);
       throw error;
     }
   }
@@ -840,135 +642,49 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method crearPosgrado
-   * @description Crear un nuevo posgrado
-   * @param {Object} datos - Datos del posgrado
-   * @param {string} datos.nombre - Nombre del posgrado
-   * @param {string} datos.tipo - Tipo del posgrado
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
+   * @method obtenerAulasDisponibles
+   * @description Obtener aulas disponibles para un horario específico
+   * @param {Object} filtros - Filtros de disponibilidad
+   * @param {string} filtros.fecha - Fecha en formato YYYY-MM-DD
+   * @param {string} filtros.hora_inicio - Hora de inicio en formato HH:MM
+   * @param {string} filtros.hora_fin - Hora de fin en formato HH:MM
+   * @param {string} filtros.tipo - Tipo de aula (opcional)
+   * @param {string} filtros.sede - Sede (opcional)
+   * @returns {Object} Resultado de la operación
    */
-  static async crearPosgrado(datos, user_action) {
+  static async obtenerAulasDisponibles(filtros = {}) {
     try {
-      console.log("🔍 [crearPosgrado] Iniciando creación de posgrado...");
+      console.log("🔍 [obtenerAulasDisponibles] Buscando aulas disponibles...");
 
-      // Validar datos del posgrado usando el nuevo método
-      const validation = ValidationService.validateNuevoPosgrado(datos);
+      // Validar filtros de disponibilidad
+      const validation = ValidationService.validateDisponibilidadAula(filtros);
       if (!validation.isValid) {
         FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en creación de posgrado"
+          "Error de validación en filtros de disponibilidad"
         );
       }
 
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.crearPosgrado(
-        datos,
-        user_action.id
-      );
+      const respuestaModel = await AulaModel.obtenerDisponibles(filtros);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
-      console.log("🎉 Posgrado creado exitosamente");
-
       return FormatterResponseService.success(
         {
-          message: "Posgrado creado exitosamente",
-          posgrado: {
-            nombre: datos.nombre,
-            tipo: datos.tipo,
-          },
+          aulas_disponibles: respuestaModel.data,
+          total: respuestaModel.data.length,
+          filtros: filtros,
         },
-        "Posgrado creado exitosamente",
+        "Aulas disponibles obtenidas exitosamente",
         {
-          status: 201,
-          title: "Posgrado Creado",
+          status: 200,
+          title: "Aulas Disponibles",
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio crear posgrado:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method crearAreaConocimiento
-   * @description Crear una nueva área de conocimiento
-   * @param {Object} datos - Datos del área de conocimiento
-   * @param {string} datos.area_conocimiento - Nombre del área de conocimiento
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
-   */
-  static async crearAreaConocimiento(datos, user_action) {
-    try {
-      console.log(
-        "🔍 [crearAreaConocimiento] Iniciando creación de área de conocimiento..."
-      );
-
-      // Validar datos del área de conocimiento usando el nuevo método
-      const validation = ValidationService.validateNuevaAreaConocimiento(datos);
-      if (!validation.isValid) {
-        FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en creación de área de conocimiento"
-        );
-      }
-
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.crearAreaConocimiento(
-        datos,
-        user_action.id
-      );
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      console.log("🎉 Área de conocimiento creada exitosamente");
-
-      return FormatterResponseService.success(
-        {
-          message: "Área de conocimiento creada exitosamente",
-          area_conocimiento: {
-            nombre: datos.area_conocimiento,
-          },
-        },
-        "Área de conocimiento creada exitosamente",
-        {
-          status: 201,
-          title: "Área de Conocimiento Creada",
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio crear área de conocimiento:", error);
+      console.error("💥 Error en servicio obtener aulas disponibles:", error);
       throw error;
     }
   }

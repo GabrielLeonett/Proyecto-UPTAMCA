@@ -63,6 +63,7 @@ export const parseJSONField = (field, fieldName) => {
     // Si es string, parsearlo
     if (typeof field === "string") {
       const parsed = JSON.parse(field);
+      console.log("Parsed field:", parsed);
       return Array.isArray(parsed) ? parsed : [parsed];
     }
 
@@ -73,6 +74,14 @@ export const parseJSONField = (field, fieldName) => {
     throw new Error(`Formato inválido en ${fieldName}`);
   }
 };
+
+export function convertToPostgresArray(jsonArray) {
+  if (!jsonArray || jsonArray.length === 0) return "{}";
+
+  const array = JSON.parse(jsonArray);
+  // Convertir a formato PostgreSQL: {element1,element2,element3}
+  return `{${array.map((item) => `"${item}"`).join(",")}}`;
+}
 
 /**
  *

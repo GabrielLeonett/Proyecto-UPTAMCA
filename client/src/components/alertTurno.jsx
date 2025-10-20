@@ -14,12 +14,11 @@ import NightsStayIcon from "@mui/icons-material/NightsStay";
 import Swal from "sweetalert2";
 
 export default function AlertTurno({ idSeccion, isOpen, onClose }) {
-  const axios = useApi();
+  const axios = useApi(true);
 
   const handleSelect = async (turnoId, turnoNombre) => {
     try {
-      await axios.post("Secciones/asignar-turno", {
-        idSeccion: idSeccion,
+      await axios.put(`/secciones/${idSeccion}/turno`, {
         idTurno: turnoId,
       });
 

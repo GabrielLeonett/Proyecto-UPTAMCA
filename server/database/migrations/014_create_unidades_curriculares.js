@@ -1,4 +1,4 @@
-// migrations/xxxx_create_unidades_curriculares.js
+// migrations/014_create_unidades_curriculares.js
 
 /**
  * @param { import("knex").Knex } knex
@@ -12,13 +12,20 @@ export async function up(knex){
     table.string('nombre_unidad_curricular', 100).notNullable().comment('Nombre completo de la unidad curricular');
     table.text('descripcion_unidad_curricular').notNullable().comment('Descripción detallada de los contenidos y objetivos');
     table.smallint('horas_clase').notNullable().comment('Duración de horas de clase');
+    
+    // Soft delete
+    table.boolean('activo').notNullable().defaultTo(true).comment('Estado activo/inactivo de la unidad curricular');
+    table.timestamp('deleted_at').nullable().comment('Fecha de eliminación soft delete');
+    
+    // Campos de auditoría básicos
     table.timestamp('created_at').notNullable().defaultTo(knex.fn.now()).comment('Fecha de creación del registro');
     table.timestamp('updated_at').notNullable().defaultTo(knex.fn.now()).comment('Fecha de última actualización');
 
     // Índices
-    table.index('codigo_unidad', 'idx_uc_codigo', 'btree');
-    table.index('nombre_unidad_curricular', 'idx_uc_nombre', 'btree');
-    table.index('id_trayecto', 'idx_uc_trayecto', 'btree');
+    table.index('codigo_unidad', 'idx_uc_codigo');
+    table.index('nombre_unidad_curricular', 'idx_uc_nombre');
+    table.index('id_trayecto', 'idx_uc_trayecto');
+    table.index('activo', 'idx_uc_activo');
 
     // Relación con trayectos (CASCADE como especificaste)
     table.foreign('id_trayecto')
@@ -26,6 +33,10 @@ export async function up(knex){
       .inTable('trayectos')
       .onDelete('CASCADE');
   });
+
+  await knex.raw(`
+    COMMENT ON TABLE unidades_curriculares IS 'Tabla de unidades curriculares por trayecto';
+  `);
 };
 
 /**

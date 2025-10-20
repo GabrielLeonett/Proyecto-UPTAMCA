@@ -1,4 +1,4 @@
-// migrations/xxxx_create_notifications.js
+// migrations/024_create_notifications.js
 
 /**
  * @param { import("knex").Knex } knex
@@ -14,14 +14,23 @@ export async function up(knex){
     table.boolean('is_read').defaultTo(false).comment('Indica si la notificación fue leída');
     table.timestamp('read_at').comment('Fecha/hora de lectura');
     table.jsonb('metadata').comment('Metadatos adicionales en formato JSON');
+    
+    // Soft delete
+    table.boolean('activo').notNullable().defaultTo(true).comment('Estado activo/inactivo de la notificación');
+    table.timestamp('deleted_at').nullable().comment('Fecha de eliminación soft delete');
+    
+    // Campos de auditoría básicos
     table.timestamp('created_at').defaultTo(knex.fn.now()).comment('Fecha de creación');
     table.boolean('is_mass').defaultTo(false).comment('Indica si es notificación masiva');
     table.bigInteger('mass_parent_id').comment('ID de la notificación padre para masivas');
 
     // Índices
-    table.index('created_at', 'notifications_created_at_index', 'btree');
-    table.index('is_mass', 'notifications_is_mass_index', 'btree');
-    table.index('user_id', 'notifications_user_id_index', 'btree');
+    table.index('created_at', 'notifications_created_at_index');
+    table.index('is_mass', 'notifications_is_mass_index');
+    table.index('user_id', 'notifications_user_id_index');
+    table.index('type', 'notifications_type_index');
+    table.index('is_read', 'notifications_is_read_index');
+    table.index('activo', 'notifications_activo_index');
 
     // Relaciones
     table.foreign('user_id')
@@ -35,7 +44,7 @@ export async function up(knex){
   });
 
   await knex.raw(`
-    COMMENT ON TABLE notifications IS 'Esta es la tabla principal de las notificaciones';
+    COMMENT ON TABLE notifications IS 'Tabla principal de las notificaciones del sistema';
   `);
 };
 

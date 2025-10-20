@@ -16,11 +16,11 @@ export default function GestionProfesores() {
     setLoading(true);
     setError(null);
     try {
-      const endpoint = "/Profesor";
-      const response = await axios.get(endpoint);
-
+      const endpoint = "/profesores";
+      const data = await axios.get(endpoint);
+      console.log("🔍 Profesores obtenidos:", data);
       // Asegurarse de que response sea un array
-      let profesoresData = response?.data || response || [];
+      let profesoresData = data.profesores || [];
 
       setProfesores(profesoresData);
     } finally {

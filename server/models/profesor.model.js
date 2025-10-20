@@ -3,6 +3,7 @@ Importación de la clase para el formateo de los datos que se reciben de la BD y
 su procesamiento para devolver al controlador un resultado estandarizado.
 */
 import FormatResponseModel from "../utils/FormatterResponseModel.js";
+import { convertToPostgresArray } from "../utils/utilis.js";
 
 // Importación de la conexión con la base de datos
 import client from "../database/pg.js";
@@ -63,7 +64,7 @@ export default class ProfesorModel {
         dedicacion,
         pre_grado,
         pos_grado,
-        area_de_conocimiento,
+        convertToPostgresArray(area_de_conocimiento),
         imagen,
         municipio,
         fecha_ingreso,

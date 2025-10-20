@@ -1,8 +1,8 @@
 // ===========================================================
 // Importación de dependencias y conexión a la base de datos
 // ===========================================================
-import db from "../database/db.js";
-import FormatResponseModel from "../utils/FormatResponseModel.js";
+import pg from "../database/pg.js";
+import FormatterResponseModel from "../utils/FormatterResponseModel.js";
 
 /**
  * @class CurricularModel
@@ -34,7 +34,7 @@ export default class CurricularModel {
     try {
       const { nombrePNF, descripcionPNF, codigoPNF, sedePNF } = datos;
 
-      const query = `CALL public.registrar_pnf_completo(?, ?, ?, ?, ?, NULL)`;
+      const query = `CALL public.registrar_pnf_completo($1, $2, $3, $4, $5, NULL)`;
       const params = [
         usuario_accion.id,
         nombrePNF,
@@ -43,15 +43,18 @@ export default class CurricularModel {
         sedePNF,
       ];
 
-      const { rows } = await db.raw(query, params);
+      const { rows } = await pg.query(query, params);
 
-      return FormatResponseModel.respuestaPostgres(
+      return FormatterResponseModel.respuestaPostgres(
         rows,
         "PNF registrado exitosamente."
       );
     } catch (error) {
       error.details = { path: "CurricularModel.registrarPNF" };
-      throw FormatResponseModel.respuestaError(error, "Error al registrar el PNF");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al registrar el PNF"
+      );
     }
   }
 
@@ -80,7 +83,7 @@ export default class CurricularModel {
         codigoUnidadCurricular,
       } = datos;
 
-      const query = `CALL public.registrar_unidad_curricular_completo(?, ?, ?, ?, ?, ?, NULL)`;
+      const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, NULL)`;
       const params = [
         usuario_accion.id,
         idTrayecto,
@@ -90,15 +93,15 @@ export default class CurricularModel {
         codigoUnidadCurricular,
       ];
 
-      const { rows } = await db.raw(query, params);
+      const { rows } = await pg.query(query, params);
 
-      return FormatResponseModel.respuestaPostgres(
+      return FormatterResponseModel.respuestaPostgres(
         rows,
         "Unidad Curricular registrada exitosamente."
       );
     } catch (error) {
       error.details = { path: "CurricularModel.registrarUnidadCurricular" };
-      throw FormatResponseModel.respuestaError(
+      throw FormatterResponseModel.respuestaError(
         error,
         "Error al registrar la Unidad Curricular"
       );
@@ -118,11 +121,17 @@ export default class CurricularModel {
    */
   static async mostrarPNF() {
     try {
-      const { rows } = await db.raw(`SELECT * FROM public.vista_pnfs`);
-      return FormatResponseModel.respuestaPostgres(rows, "Listado de PNFs obtenidos.");
+      const { rows } = await pg.query(`SELECT * FROM public.vista_pnfs`);
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Listado de PNFs obtenidos."
+      );
     } catch (error) {
       error.details = { path: "CurricularModel.mostrarPNF" };
-      throw FormatResponseModel.respuestaError(error, "Error al obtener los PNFs");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener los PNFs"
+      );
     }
   }
 
@@ -138,35 +147,46 @@ export default class CurricularModel {
     try {
       let rows;
       if (codigoPNF) {
-        ({ rows } = await db.raw(
+        ({ rows } = await pg.query(
           `
           SELECT 
             t.id_trayecto, 
             t.poblacion_estudiantil, 
             t.valor_trayecto, 
             p.nombre_pnf,
-            p.id_pnf
+            p.id_pnf,
+            p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE p.codigo_pnf = ?`,
+          WHERE p.codigo_pnf = $1
+          ORDER BY t.valor_trayecto ASC`,
           [codigoPNF]
         ));
       } else {
-        ({ rows } = await db.raw(`
+        ({ rows } = await pg.query(`
           SELECT 
             t.id_trayecto, 
             t.poblacion_estudiantil, 
             t.valor_trayecto, 
-            p.nombre_pnf 
+            p.nombre_pnf,
+            p.id_pnf,
+            p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
+          ORDER BY p.nombre_pnf, t.valor_trayecto ASC
         `));
       }
 
-      return FormatResponseModel.respuestaPostgres(rows, "Trayectos obtenidos correctamente.");
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Trayectos obtenidos correctamente."
+      );
     } catch (error) {
       error.details = { path: "CurricularModel.mostrarTrayectos" };
-      throw FormatResponseModel.respuestaError(error, "Error al obtener los trayectos");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener los trayectos"
+      );
     }
   }
 
@@ -180,25 +200,32 @@ export default class CurricularModel {
    */
   static async mostrarSecciones(trayecto) {
     try {
-      const { rows } = await db.raw(
+      const { rows } = await pg.query(
         `
         SELECT 
           s.id_seccion,
           s.valor_seccion,
           s.cupos_disponibles,
-          t.nombre_turno
+          t.nombre_turno,
+          s.id_trayecto
         FROM secciones s
-        JOIN turnos t ON s.id_turno = t.id_turno
-        WHERE s.id_trayecto = ?
-        ORDER BY s.id_seccion ASC;
+        LEFT JOIN turnos t ON s.id_turno = t.id_turno
+        WHERE s.id_trayecto = $1
+        ORDER BY s.valor_seccion ASC;
         `,
         [trayecto]
       );
 
-      return FormatResponseModel.respuestaPostgres(rows, "Secciones obtenidas correctamente.");
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Secciones obtenidas correctamente."
+      );
     } catch (error) {
       error.details = { path: "CurricularModel.mostrarSecciones" };
-      throw FormatResponseModel.respuestaError(error, "Error al obtener las secciones");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las secciones"
+      );
     }
   }
 
@@ -212,28 +239,32 @@ export default class CurricularModel {
    */
   static async mostrarUnidadesCurriculares(trayecto) {
     try {
-      const { rows } = await db.raw(
+      const { rows } = await pg.query(
         `
         SELECT 
           id_unidad_curricular,
           horas_clase,
           nombre_unidad_curricular, 
           descripcion_unidad_curricular,
-          codigo_unidad
+          codigo_unidad,
+          id_trayecto
         FROM unidades_curriculares
-        WHERE id_trayecto = ?
-        ORDER BY id_unidad_curricular ASC;
+        WHERE id_trayecto = $1
+        ORDER BY nombre_unidad_curricular ASC;
         `,
         [trayecto]
       );
 
-      return FormatResponseModel.respuestaPostgres(
+      return FormatterResponseModel.respuestaPostgres(
         rows,
         "Unidades curriculares obtenidas correctamente."
       );
     } catch (error) {
       error.details = { path: "CurricularModel.mostrarUnidadesCurriculares" };
-      throw FormatResponseModel.respuestaError(error, "Error al obtener las unidades curriculares");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las unidades curriculares"
+      );
     }
   }
 
@@ -246,26 +277,30 @@ export default class CurricularModel {
    * @async
    * @method CrearSecciones
    * @description Crea automáticamente las secciones de un trayecto según la población estudiantil
+   * @param {number} idTrayecto - ID del trayecto
    * @param {Object} datos - Datos para la creación
-   * @param {number} datos.idTrayecto - ID del trayecto
    * @param {number} datos.poblacionEstudiantil - Cantidad de estudiantes
+   * @param {Object} usuario_accion - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado de la creación
    */
-  static async CrearSecciones(datos) {
+  static async CrearSecciones(idTrayecto, datos, usuario_accion) {
     try {
-      const { idTrayecto, poblacionEstudiantil } = datos;
-      const { rows } = await db.raw(
-        `CALL public.distribuir_estudiantes_secciones(?, ?, NULL)`,
-        [idTrayecto, poblacionEstudiantil]
-      );
+      const { poblacionEstudiantil } = datos;
+      const query = `CALL public.distribuir_estudiantes_secciones($1, $2, NULL)`;
+      const params = [idTrayecto, poblacionEstudiantil];
 
-      return FormatResponseModel.respuestaPostgres(
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
         rows,
         `Secciones creadas correctamente para el trayecto ${idTrayecto}.`
       );
     } catch (error) {
       error.details = { path: "CurricularModel.CrearSecciones" };
-      throw FormatResponseModel.respuestaError(error, "Error al crear las secciones");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al crear las secciones"
+      );
     }
   }
 
@@ -274,27 +309,61 @@ export default class CurricularModel {
    * @async
    * @method asignacionTurnoSeccion
    * @description Asigna un turno a una sección específica
+   * @param {number} idSeccion - ID de la sección
+   * @param {number} idTurno - ID del turno
    * @param {Object} usuario_accion - Usuario que ejecuta la acción
-   * @param {Object} datos - Datos de asignación
-   * @param {number} datos.idSeccion - ID de la sección
-   * @param {number} datos.idTurno - ID del turno
    * @returns {Promise<Object>} Resultado de la asignación
    */
-  static async asignacionTurnoSeccion(usuario_accion, datos) {
+  static async asignacionTurnoSeccion(idSeccion, idTurno, usuario_accion) {
     try {
-      const { idSeccion, idTurno } = datos;
-      const { rows } = await db.raw(
-        `CALL public.asignar_turno_seccion(?, ?, ?, NULL)`,
-        [usuario_accion.id, idSeccion, idTurno]
-      );
+      console.log("idSeccion:", idSeccion, "idTurno:", idTurno, "usuario_accion:", usuario_accion.id);
+      const query = `CALL public.asignar_turno_seccion($1, $2, $3, NULL)`;
+      const params = [usuario_accion.id, idSeccion, idTurno];
 
-      return FormatResponseModel.respuestaPostgres(
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
         rows,
         "Turno asignado correctamente a la sección."
       );
     } catch (error) {
+      console.log(error);
       error.details = { path: "CurricularModel.asignacionTurnoSeccion" };
-      throw FormatResponseModel.respuestaError(error, "Error al asignar el turno a la sección");
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al asignar el turno a la sección"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarTurnos
+   * @description Obtiene todos los turnos disponibles
+   * @returns {Promise<Object>} Resultado de la consulta
+   */
+  static async mostrarTurnos() {
+    try {
+      const { rows } = await pg.query(`
+        SELECT 
+          id_turno,
+          nombre_turno,
+          descripcion_turno
+        FROM turnos
+        ORDER BY id_turno ASC;
+      `);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Turnos obtenidos correctamente."
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.mostrarTurnos" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener los turnos"
+      );
     }
   }
 }

@@ -44,10 +44,13 @@ export default function ModalRegisterPosgrado({ open, onClose, setState }) {
         nombre: data.nombre,
       };
 
-      await axios.post("/Profesor/pos-grado", payload);
-      
+      await axios.post("/catalogos/posgrados", payload);
+
+      const res = await axios.get("/catalogos/posgrados");
+      setState(res);
+
       reset();
-    }  finally {
+    } finally {
       onClose();
       setIsLoading(false);
     }

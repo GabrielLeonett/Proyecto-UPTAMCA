@@ -62,7 +62,7 @@ export default class CurricularController {
   static async mostrarTrayectos(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.mostrarTrayectos(req.query.PNF)
+      CurricularService.mostrarTrayectos(req.params.codigoPNF)
     );
   }
 
@@ -120,7 +120,7 @@ export default class CurricularController {
   static async asignacionTurnoSeccion(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.asignarTurnoSeccion(req.body, req.user)
+      CurricularService.asignarTurnoSeccion(req.params.idSeccion, req.body, req.user)
     );
   }
 }

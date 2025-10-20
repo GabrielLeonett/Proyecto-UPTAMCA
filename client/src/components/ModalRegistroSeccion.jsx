@@ -20,9 +20,8 @@ export default function ModalRegistroSeccion({
 
   const onSubmit = async (data) => {
     try {
-      await axios.post(`/Trayecto/${idTrayecto}/create-secciones`, {
-        poblacionEstudiantil: parseInt(data.poblacion_estudiantil)
-,
+      await axios.post(`/trayectos/${idTrayecto}/secciones`, {
+        poblacionEstudiantil: parseInt(data.poblacion_estudiantil),
       });
     } finally {
       reset();
