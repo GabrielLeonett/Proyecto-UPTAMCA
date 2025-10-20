@@ -121,7 +121,7 @@ export const profesorSchema = userSchema.extend({
     }
   ),
 
-  area_de_conocimiento: z
+  areas_de_conocimiento: z
     .array(
       z.string({
         required_error: "El Área de conocimiento es requerida",

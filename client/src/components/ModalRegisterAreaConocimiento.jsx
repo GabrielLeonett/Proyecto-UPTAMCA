@@ -5,7 +5,11 @@ import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
 
-export default function ModalRegisterAreaConocimiento({ open, onClose }) {
+export default function ModalRegisterAreaConocimiento({
+  open,
+  onClose,
+  setState,
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const axios = useApi(true);
 
@@ -21,8 +25,10 @@ export default function ModalRegisterAreaConocimiento({ open, onClose }) {
 
       const payload = { area_conocimiento: data.area_conocimiento };
 
-      await axios.post("/Profesor/areas-conocimiento", payload);
+      await axios.post("/catalogos/areas-conocimiento", payload);
 
+      const res = await axios.get("/catalogos/areas-conocimiento");
+      setState(res);
       reset();
     } finally {
       onClose();

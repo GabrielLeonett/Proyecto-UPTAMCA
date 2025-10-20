@@ -19,7 +19,7 @@ import ModalRegisterPosGrado from "../../components/ModalRegisterPosgrado";
 import useApi from "../../hook/useApi";
 
 export default function FormRegister() {
-  const axios = useApi(true);
+  const axios = useApi(false);
   const theme = useTheme();
   const {
     register,
@@ -67,10 +67,13 @@ export default function FormRegister() {
           axios.get("/catalogos/pregrados"),
           axios.get("/catalogos/posgrados"),
         ]);
+        console.log("Áreas de Conocimiento:", areasRes);
+        console.log("Pre-Grados:", pregradoRes);
+        console.log("Pos-Grados:", postgradoRes);
 
-        setAreas(areasRes.data);
-        setPregrados(pregradoRes.data);
-        setPostgrados(postgradoRes.data);
+        setAreas(areasRes.areas_conocimiento);
+        setPregrados(pregradoRes);
+        setPostgrados(postgradoRes);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -79,15 +82,6 @@ export default function FormRegister() {
     fetchData();
   }, []);
 
-  // 👉 Maneja la actualización de la lista cuando se registra una nueva área
-  const actualizarAreas = async () => {
-    try {
-      const res = await axios.get("/Profesor/areas-conocimiento");
-      setAreas(res.data.data.data);
-    } catch (error) {
-      console.error("Error al actualizar áreas:", error);
-    }
-  };
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -170,7 +164,7 @@ export default function FormRegister() {
         dataToSend.append("imagen", selectedImage);
       }
 
-      await axios.post("/Profesor/register", dataToSend);
+      await axios.post("/profesores", dataToSend);
     } finally {
       setIsSubmitting(false);
     }

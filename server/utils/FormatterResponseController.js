@@ -48,7 +48,7 @@ export default class FormatterResponseController {
         response.pagination = metadata.pagination;
       }
 
-      console.log("✅ Respuesta exitosa optimizada:", response);
+      //console.log("✅ Respuesta exitosa optimizada:", response);
       return res.status(response.status).json(response);
     } catch (error) {
       return this.respuestaError(res, {
@@ -69,13 +69,6 @@ export default class FormatterResponseController {
    */
   static async respuestaError(res, serviceResponse) {
     try {
-      console.log("🔍 [respuestaError] ServiceResponse recibido:", {
-        status: serviceResponse?.status,
-        title: serviceResponse?.title,
-        message: serviceResponse?.message,
-        errorCode: serviceResponse?.error?.code,
-        fullResponse: serviceResponse,
-      });
 
       // DETECCIÓN MEJORADA DE ERRORES 4xx
       const isClientError =
@@ -97,7 +90,7 @@ export default class FormatterResponseController {
         serviceResponse.message?.includes("no encontrado");
 
       if (isClientError) {
-        console.log("✅ Identificado como error del cliente (4xx)");
+        //console.log("✅ Identificado como error del cliente (4xx)");
 
         // Caso específico: Validación
         if (
@@ -123,13 +116,13 @@ export default class FormatterResponseController {
           },
         };
 
-        console.log("❌ Error del cliente formateado:", response);
+        //console.log("❌ Error del cliente formateado:", response);
         return res.status(status).json(response);
       }
 
       // Si es una instancia de Error nativa
       if (serviceResponse instanceof Error) {
-        console.log("🔍 Es una instancia de Error nativa");
+        //console.log("🔍 Es una instancia de Error nativa");
         return this.respuestaError(res, {
           status: 500,
           title: "Error Interno",
@@ -148,7 +141,7 @@ export default class FormatterResponseController {
 
       // Para errores 500 (sin detalles al usuario)
       if (serviceResponse.status === 500 || !serviceResponse.status) {
-        console.log("🔍 Identificado como error del servidor (5xx)");
+        //console.log("🔍 Identificado como error del servidor (5xx)");
 
         await generateReport({
           status: 500,
@@ -172,12 +165,12 @@ export default class FormatterResponseController {
           },
         };
 
-        console.log("❌ Respuesta de error 500 optimizada");
+        //console.log("❌ Respuesta de error 500 optimizada");
         return res.status(500).json(response);
       }
 
       // Caso por defecto (otros errores)
-      console.log("🔍 Usando caso por defecto");
+      //console.log("🔍 Usando caso por defecto");
       const status = serviceResponse.status || 500;
       const response = {
         success: false,
@@ -192,7 +185,7 @@ export default class FormatterResponseController {
         },
       };
 
-      console.log("❌ Respuesta de error genérica:", response);
+      //console.log("❌ Respuesta de error genérica:", response);
       return res.status(status).json(response);
     } catch (internalError) {
       console.error("💥 ERROR CRÍTICO en respuestaError:", internalError);
@@ -260,7 +253,7 @@ export default class FormatterResponseController {
       },
     };
 
-    console.log("❌ Error de validación formateado:", response);
+    //console.log("❌ Error de validación formateado:", response);
     return res.status(400).json(response);
   }
 

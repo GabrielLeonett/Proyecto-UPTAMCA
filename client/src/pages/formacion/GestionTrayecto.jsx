@@ -34,15 +34,15 @@ export default function GestionTrayecto() {
 
   // Funciones para obtener datos
   const fetchUnidadesCurriculares = async () => {
-    const response = await axios.get(
-      `/Trayecto/Unidades-Curriculares?Trayecto=${idTrayecto}`
+    const { unidades_curriculares } = await axios.get(
+      `/trayectos/${idTrayecto}/unidades-curriculares`
     );
-    setUnidades(response || []);
+    setUnidades(unidades_curriculares || []);
   };
 
   const fetchSecciones = async () => {
-    const response = await axios.get(`/Secciones/?Trayecto=${idTrayecto}`);
-    setSecciones(response || []);
+    const { secciones } = await axios.get(`/Secciones/?Trayecto=${idTrayecto}`);
+    setSecciones(secciones || []);
   };
 
   // Carga inicial de datos

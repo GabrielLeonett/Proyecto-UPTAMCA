@@ -2,7 +2,7 @@ import { Router } from "express";
 import SedesController from "../controllers/sedes.controller.js";
 import { middlewareAuth } from "../middlewares/auth.js";
 
-const { registerSede, mostrarSedes } = SedesController;
+const { registerSede, mostrarSedes, obtenerSedePorId } = SedesController;
 
 export const SedesRouter = Router();
 
@@ -36,6 +36,29 @@ SedesRouter.get(
 );
 
 /**
+ * @name GET /sedes/:id
+ * @description Obtener todas las sedes registradas
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ *   - Profesor
+ * @returns {Array} Lista de sedes
+ */
+SedesRouter.get(
+  "/sedes/:id",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  obtenerSedePorId
+);
+
+/**
  * =============================================
  * SECCIÓN DE RUTAS POST
  * =============================================
@@ -57,7 +80,7 @@ SedesRouter.get(
  * // Ejemplo de body JSON:
  * {
  *   "nombreSede": "Núcleo de Tecnología y Ciencias Administrativas",
- *   "ubicacionSede": "Los Teques, Edo. Miranda", 
+ *   "ubicacionSede": "Los Teques, Edo. Miranda",
  *   "googleSede": "https://maps.app.goo.gl/EHHeHjA7uXgNA32s9"
  * }
  */
@@ -66,7 +89,7 @@ SedesRouter.post(
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
-    "Director General de Gestión Curricular"
+    "Director General de Gestión Curricular",
   ]),
   registerSede
 );
@@ -95,9 +118,9 @@ SedesRouter.put(
   "/sedes/:id",
   middlewareAuth([
     "SuperAdmin",
-    "Vicerrector", 
-    "Director General de Gestión Curricular"
-  ]),
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+  ])
   // Aquí iría el controlador para actualizar sede
 );
 
@@ -118,10 +141,7 @@ SedesRouter.put(
  */
 SedesRouter.delete(
   "/sedes/:id",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector"
-  ]),
+  middlewareAuth(["SuperAdmin", "Vicerrector"])
   // Aquí iría el controlador para eliminar sede
 );
 
@@ -149,8 +169,8 @@ SedesRouter.get(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador", 
+    "Coordinador",
     "Profesor",
-  ]),
+  ])
   // Aquí iría el controlador para obtener sede por ID
 );

@@ -12,8 +12,8 @@ export default function ProgramasFormacion() {
 
   useEffect(() => {
     const fetchPNFS = async () => {
-      const data = await axios.get("/PNF");
-      setPNFS(data);
+      const {pnf} = await axios.get("/pnf");
+      setPNFS(pnf);
       setLoading(false);
     };
 

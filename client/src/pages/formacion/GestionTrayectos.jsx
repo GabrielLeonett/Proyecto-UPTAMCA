@@ -27,8 +27,8 @@ export default function PNF() {
       try {
         setLoading(true);
         setError(null);
-        const res = await axios.get(`/Trayectos?PNF=${codigo}`);
-        setTrayectos(res);
+        const { trayectos } = await axios.get(`/pnf/${codigo}/trayectos`);
+        setTrayectos(trayectos);
       } finally {
         setLoading(false);
       }
@@ -84,7 +84,6 @@ export default function PNF() {
             ))}
           </Grid>
         )}
-
       </Box>
     </>
   );

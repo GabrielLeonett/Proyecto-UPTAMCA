@@ -117,7 +117,7 @@ export default class FormatterResponseService {
       },
     };
     
-    throw errorObj; // ← PROPAGACIÓN AUTOMÁTICA
+    return errorObj; // ← PROPAGACIÓN AUTOMÁTICA
   }
 
   /**

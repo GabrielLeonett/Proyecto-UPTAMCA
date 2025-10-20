@@ -42,10 +42,9 @@ export default class FormatterResponseModel {
   static respuestaError(rows = null, title = "Error") {
     try {
       const resultado = rows ? this.validacionesComunes(rows) : {};
-
       // Si el resultado ya tiene estructura de error, lanzarlo directamente
       if (resultado.status === "error" || resultado.state === "error") {
-        throw {
+        return {
           status: resultado.status_code || resultado.status || 400,
           state: "error",
           title: resultado.title || title,
@@ -67,7 +66,7 @@ export default class FormatterResponseModel {
         resultado.status_code === undefined
       ) {
         // Es probablemente un error crudo de PostgreSQL
-        throw {
+        return {
           status: 500,
           state: "error",
           title: "Error de Base de Datos",
@@ -85,7 +84,7 @@ export default class FormatterResponseModel {
       }
 
       // Caso por defecto - lanzar error formateado
-      throw {
+      return {
         status: resultado.status_code || 400,
         state: "error",
         title: title,

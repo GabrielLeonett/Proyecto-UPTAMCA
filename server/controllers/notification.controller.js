@@ -47,10 +47,6 @@ export default class NotificationController {
 
       // Llamar al servicio
       const respuestaServicio = await service.searchNotifications(parametros);
-      console.log(
-        "Esta es la respuesta del servicio de las notificaciones",
-        respuestaServicio
-      );
 
       // Retornar respuesta exitosa
       return FormatterResponseController.respuestaExito(res, {

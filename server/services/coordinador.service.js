@@ -1,46 +1,45 @@
 import ValidationService from "./validation.service.js";
 import NotificationService from "./notification.service.js";
-import ImagenService from "./imagen.service.js";
-import EmailService from "./email.service.js";
-import ProfesorModel from "../models/profesor.model.js";
+import CoordinadorModel from "../models/coordinador.model.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
 import { loadEnv } from "../utils/utilis.js";
-import { generarPassword, hashPassword } from "../utils/encrypted.js";
 
 loadEnv();
 
 /**
- * @class ProfesorService
- * @description Servicio para operaciones de negocio relacionadas con profesores
+ * @class CoordinadorService
+ * @description Servicio para operaciones de negocio relacionadas con coordinadores
  */
-export default class ProfesorService {
-  static async registrarProfesor(datos, imagen, user_action) {
+export default class CoordinadorService {
+  /**
+   * @static
+   * @async
+   * @method asignarCoordinador
+   * @description Asigna un profesor como coordinador de un PNF
+   * @param {Object} datos - Datos de asignación del coordinador
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async asignarCoordinador(datos, user_action) {
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+      console.log("🔍 [asignarCoordinador] Iniciando asignación de coordinador...");
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
-          imagen: imagen
-            ? {
-                originalName: imagen.originalName,
-                size: imagen.size,
-                mimetype: imagen.mimetype,
-              }
-            : "No image provided",
           user_action: user_action,
         });
       }
 
-      // 1. Validar datos del profesor
-      console.log("✅ Validando datos del profesor...");
-      const validation = ValidationService.validateProfesor(datos);
+      // 1. Validar datos de asignación
+      console.log("✅ Validando datos de asignación...");
+      const validation = ValidationService.validateAsignacionCoordinador(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en registro de profesor"
+          "Error de validación en asignación de coordinador"
         );
       }
 
@@ -53,175 +52,109 @@ export default class ProfesorService {
 
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // 3. Validar imagen (solo si se proporciona)
-      let imagenPath = null;
-      if (imagen && imagen.originalName) {
-        console.log("🖼️ Validando imagen...");
-        const imagenService = new ImagenService("Profesores");
-        const validationImage = await imagenService.validateImage(
-          imagen.originalName,
-          {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            maxSize: 5 * 1024 * 1024,
-            quality: 85,
-            format: "webp",
-          }
-        );
-
-        if (!validationImage.isValid) {
-          console.error(
-            "❌ Validación de imagen fallida:",
-            validationImage.error
-          );
-          FormatterResponseService.validationError(
-            [{ path: "imagen", message: validationImage.error }],
-            "Error de validación de imagen"
-          );
-        }
-
-        console.log("✅ Imagen válida:", validationImage.message);
-
-        // Guardar imagen y obtener la ruta
-        console.log("💾 Procesando y guardando imagen...");
-        imagenPath = await imagenService.processAndSaveImage(
-          imagen.originalName,
-          {
-            maxWidth: 1920,
-            maxHeight: 1080,
-            quality: 85,
-            format: "webp",
-          }
-        );
-
-        if (process.env.MODE === "DEVELOPMENT") {
-          console.log("📁 Ruta de imagen guardada:", imagenPath);
-        }
-      } else {
-        console.log("ℹ️ No se proporcionó imagen, continuando sin ella...");
+      // 3. Verificar que el profesor existe y está activo
+      console.log("👨‍🏫 Verificando profesor...");
+      const profesorValidation = await ValidationService.validateProfesorExists(datos.cedula_profesor);
+      
+      if (!profesorValidation.exists) {
+        console.error("❌ Profesor no encontrado:", datos.cedula_profesor);
+        return FormatterResponseService.notFound("Profesor", datos.cedula_profesor);
       }
 
-      // 4. Validar email
-      console.log("📧 Validando email...");
-      const emailService = new EmailService();
-      const validationEmail = await emailService.verificarEmailConAPI(
-        datos.email
-      );
-
-      if (!validationEmail.existe) {
-        console.error("❌ Validación de email fallida:", validationEmail);
-        FormatterResponseService.error(
-          "El email proporcionado no es válido o no existe",
-          "Lo sentimos, el email proporcionado no es válido o no existe",
+      if (!profesorValidation.activo) {
+        console.error("❌ Profesor inactivo:", datos.cedula_profesor);
+        return FormatterResponseService.error(
+          "Profesor inactivo",
+          "No se puede asignar como coordinador a un profesor inactivo",
           400,
-          "INVALID_EMAIL",
-          {
-            email: datos.email,
-          }
+          "PROFESOR_INACTIVO",
+          { cedula: datos.cedula_profesor }
         );
       }
-      const contrania = await generarPassword();
-      const hash = hashPassword(contrania);
 
-      // 5. Crear profesor en el modelo
-      console.log("👨‍🏫 Creando profesor en base de datos...");
-      const respuestaModel = await ProfesorModel.crear(
-        {
-          ...datos,
-          imagen: imagenPath,
-          password: hash,
-        },
+      // 4. Verificar que el PNF existe y está activo
+      console.log("📚 Verificando PNF...");
+      const pnfValidation = await ValidationService.validatePnfExists(datos.id_pnf);
+      
+      if (!pnfValidation.exists) {
+        console.error("❌ PNF no encontrado:", datos.id_pnf);
+        return FormatterResponseService.notFound("PNF", datos.id_pnf);
+      }
+
+      if (!pnfValidation.activo) {
+        console.error("❌ PNF inactivo:", datos.id_pnf);
+        return FormatterResponseService.error(
+          "PNF inactivo",
+          "No se puede asignar coordinador a un PNF inactivo",
+          400,
+          "PNF_INACTIVO",
+          { id_pnf: datos.id_pnf }
+        );
+      }
+
+      // 6. Asignar coordinador en el modelo
+      console.log("👑 Asignando coordinador en base de datos...");
+      const respuestaModel = await CoordinadorModel.asignarCoordinador(
+        datos,
         user_action.id
       );
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      if (process.MODE === "DEVELOPMENT") {
+      if (process.env.MODE === "DEVELOPMENT") {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      const Correo = {
-        asunto: "Bienvenido/a al Sistema Académico - Credenciales de Acceso",
-        html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-        <h2 style="color: #2c3e50;">¡Bienvenido/a, ${datos.nombres}!</h2>
-        <p>Es un placer darle la bienvenida a nuestra plataforma académica como profesor.</p>
-        <p>Sus credenciales de acceso son:</p>
-        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-          <p><strong>Usuario:</strong> ${datos.email}</p>
-          <p><strong>Contraseña temporal:</strong> ${contrania}</p>
-        </div>
-        <p><strong>Instrucciones importantes:</strong></p>
-        <ul>
-          <li>Cambie su contraseña después del primer acceso</li>
-          <li>Esta contraseña es temporal y de uso personal</li>
-          <li>Guarde esta información en un lugar seguro</li>
-        </ul>
-        <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
-      </div>
-      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-            <a href="${process.env.ORIGIN_FRONTEND}/inicio-sesion" style="display: inline-block; background-color: #1C75BA; color: white; 
-                      padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-                Acceder a la plataforma
-            </a>
-        </div>
-      `,
-      };
-
-      const Resultado = await emailService.enviarEmail({
-        Destinatario: datos.email,
-        Correo: Correo,
-        verificarEmail: false,
-      });
-      console.log("📧 Email enviado:", Resultado);
-
-      // 6. Enviar notificación
+      // 7. Enviar notificación
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Nuevo Profesor Registrado",
-        tipo: "profesor_creado",
-        contenido: `Se ha registrado al profesor ${datos.nombres} ${datos.apellidos} en el sistema`,
+        titulo: "Nuevo Coordinador Asignado",
+        tipo: "coordinador_asignado",
+        contenido: `Se ha asignado al profesor ${profesorValidation.nombre} como coordinador del PNF ${pnfValidation.nombre}`,
         metadatos: {
-          profesor_cedula: datos.cedula,
-          profesor_nombre: `${datos.nombres} ${datos.apellidos}`,
-          usuario_creador: user_action.id,
-          fecha_registro: new Date().toISOString(),
+          coordinador_cedula: datos.cedula_profesor,
+          coordinador_nombre: profesorValidation.nombre,
+          pnf_id: datos.id_pnf,
+          pnf_nombre: pnfValidation.nombre,
+          fecha_inicio: datos.fecha_inicio,
+          usuario_asignador: user_action.id,
+          fecha_asignacion: new Date().toISOString(),
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id, datos.cedula],
+        roles_ids: [1, 2, 3], // IDs de roles administrativos
+        users_ids: [user_action.id, datos.cedula_profesor],
       });
 
-      console.log("🎉 Profesor registrado exitosamente");
+      console.log("🎉 Coordinador asignado exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: "Profesor creado exitosamente",
-          profesor: {
-            cedula: datos.cedula,
-            nombres: datos.nombres,
-            apellidos: datos.apellidos,
-            email: datos.email,
-            imagen: imagenPath,
+          message: "Coordinador asignado exitosamente",
+          coordinador: {
+            cedula: datos.cedula_profesor,
+            nombre: profesorValidation.nombre,
+            pnf: pnfValidation.nombre,
+            fecha_inicio: datos.fecha_inicio,
+            fecha_fin: datos.fecha_fin || null,
           },
         },
-        "Profesor registrado exitosamente",
+        "Coordinador asignado exitosamente",
         {
           status: 201,
-          title: "Profesor Creado",
+          title: "Coordinador Asignado",
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio crear profesor:", error);
-      // Re-lanza el error para que el controlador lo maneje
+      console.error("💥 Error en servicio asignar coordinador:", error);
       throw error;
     }
   }
@@ -229,48 +162,54 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method obtenerTodos
-   * @description Obtener todos los profesores con validación de parámetros
+   * @method listarCoordinadores
+   * @description Obtiene el listado de todos los coordinadores
    * @param {Object} queryParams - Parámetros de consulta
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerTodos(queryParams = {}) {
+  static async listarCoordinadores(queryParams = {}) {
     try {
+      console.log("🔍 [listarCoordinadores] Obteniendo listado de coordinadores...");
+
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order"];
+      const allowedParams = ["page", "limit", "sort", "order", "activo", "id_pnf"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
       );
 
       if (!queryValidation.isValid) {
-        FormatterResponseService.validationError(
+        console.error("❌ Validación de parámetros fallida:", queryValidation.errors);
+        return FormatterResponseService.validationError(
           queryValidation.errors,
           "Error de validación en parámetros de consulta"
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerTodos();
+      const respuestaModel = await CoordinadorModel.listarCoordinadores(queryParams);
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
+      console.log(`✅ Se encontraron ${respuestaModel.data?.length || 0} coordinadores`);
+
       return FormatterResponseService.success(
         {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
+          coordinadores: respuestaModel.data,
+          total: respuestaModel.data?.length || 0,
           page: parseInt(queryParams.page) || 1,
-          limit: parseInt(queryParams.limit) || respuestaModel.data.length,
+          limit: parseInt(queryParams.limit) || (respuestaModel.data?.length || 0),
         },
-        "Profesores obtenidos exitosamente",
+        "Coordinadores obtenidos exitosamente",
         {
           status: 200,
-          title: "Lista de Profesores",
+          title: "Lista de Coordinadores",
         }
       );
     } catch (error) {
-      console.error("Error en servicio obtener todos los profesores:", error);
+      console.error("💥 Error en servicio listar coordinadores:", error);
       throw error;
     }
   }
@@ -278,121 +217,51 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method obtenerConFiltros
-   * @description Obtener profesores con filtros validados
-   * @param {Object} filtros - Filtros de búsqueda
+   * @method obtenerCoordinador
+   * @description Obtiene los detalles de un coordinador específico
+   * @param {number} cedula - Cédula del coordinador
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerConFiltros(filtros = {}) {
+  static async obtenerCoordinador(cedula) {
     try {
-      // Validar estructura de filtros
-      const filterValidation = ValidationService.validateQueryParams(filtros, [
-        "dedicacion",
-        "categoria",
-        "ubicacion",
-        "area",
-        "fecha",
-        "genero",
-      ]);
+      console.log(`🔍 [obtenerCoordinador] Buscando coordinador cédula: ${cedula}`);
 
-      if (!filterValidation.isValid) {
-        FormatterResponseService.validationError(
-          filterValidation.errors,
-          "Error de validación en filtros de búsqueda"
+      // Validar cédula
+      const cedulaValidation = ValidationService.validateCedula(cedula);
+      if (!cedulaValidation.isValid) {
+        console.error("❌ Validación de cédula fallida:", cedulaValidation.errors);
+        return FormatterResponseService.validationError(
+          cedulaValidation.errors,
+          "Cédula de coordinador inválida"
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerConFiltros(filtros);
+      const respuestaModel = await CoordinadorModel.obtenerCoordinador(cedula);
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
+      if (!respuestaModel.data || respuestaModel.data.length === 0) {
+        console.error("❌ Coordinador no encontrado:", cedula);
+        return FormatterResponseService.notFound("Coordinador", cedula);
+      }
+
+      const coordinador = respuestaModel.data[0];
+
+      console.log(`✅ Coordinador encontrado: ${coordinador.nombres} ${coordinador.apellidos}`);
+
       return FormatterResponseService.success(
-        {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          filtros_aplicados: filtros,
-        },
-        "Profesores filtrados obtenidos exitosamente",
+        coordinador,
+        "Coordinador obtenido exitosamente",
         {
           status: 200,
-          title: "Profesores Filtrados",
+          title: "Coordinador Encontrado",
         }
       );
     } catch (error) {
-      console.error("Error en servicio obtener profesores con filtros:", error);
-      throw error;
-    }
-  }
-
-  static async obtenerImagenProfesor(id_profesor, queryParams = {}) {
-    try {
-      console.log(
-        `🔍 [obtenerImagenProfesor] Buscando imagen del profesor ID: ${id_profesor}`
-      );
-
-      // Validar ID del profesor
-      const idValidation = ValidationService.validateId(
-        id_profesor,
-        "profesor"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de profesor inválido"
-        );
-      }
-
-      // Buscar información del profesor
-      const respuesta = await ProfesorModel.buscar(id_profesor.toString());
-
-      if (FormatterResponseService.isError(respuesta)) {
-        return respuesta;
-      }
-
-      if (!respuesta.data || respuesta.data.length === 0) {
-        FormatterResponseService.notFound("Profesor", id_profesor);
-      }
-
-      const profesor = respuesta.data[0];
-
-      if (!profesor.imagen) {
-        FormatterResponseService.error(
-          "Imagen no encontrada",
-          "El profesor no tiene una imagen registrada en el sistema",
-          404,
-          "IMAGE_NOT_FOUND",
-          { profesor_id: id_profesor }
-        );
-      }
-
-      console.log(
-        `✅ Imagen encontrada para profesor ${profesor.nombres} ${profesor.apellidos}`
-      );
-
-      // Obtener la imagen usando el servicio de imágenes
-      const servicioImagen = new ImagenService("profesores");
-      const imagen = await servicioImagen.getImage(
-        profesor.imagen,
-        queryParams
-      );
-
-      return FormatterResponseService.success(
-        imagen,
-        "Imagen del profesor obtenida exitosamente",
-        {
-          status: 200,
-          title: "Imagen del Profesor",
-          profesor: {
-            id: id_profesor,
-            nombre: `${profesor.nombres} ${profesor.apellidos}`,
-            cedula: profesor.cedula,
-          },
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio obtener imagen del profesor:", error);
+      console.error("💥 Error en servicio obtener coordinador:", error);
       throw error;
     }
   }
@@ -400,164 +269,113 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method buscar
-   * @description Buscar profesores con validación de término de búsqueda
-   * @param {string} busqueda - Término de búsqueda
-   * @returns {Object} Resultado de la operación
-   */
-  static async buscar(busqueda) {
-    try {
-      // Validar término de búsqueda
-      if (
-        !busqueda ||
-        typeof busqueda !== "string" ||
-        busqueda.trim().length === 0
-      ) {
-        FormatterResponseService.validationError(
-          [
-            {
-              path: "busqueda",
-              message:
-                "El término de búsqueda es requerido y debe ser una cadena no vacía",
-            },
-          ],
-          "Error de validación en búsqueda"
-        );
-      }
-
-      const termino = busqueda.trim();
-
-      if (termino.length < 2) {
-        FormatterResponseService.validationError(
-          [
-            {
-              path: "busqueda",
-              message:
-                "El término de búsqueda debe tener al menos 2 caracteres",
-            },
-          ],
-          "Término de búsqueda demasiado corto"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.buscar(termino);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          termino_busqueda: termino,
-        },
-        "Búsqueda de profesores completada exitosamente",
-        {
-          status: 200,
-          title: "Resultados de Búsqueda",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio buscar profesores:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method actualizar
-   * @description Actualizar un profesor existente con validación y notificación
-   * @param {Object} datos - Datos actualizados del profesor
+   * @method actualizarCoordinador
+   * @description Actualiza los datos de un coordinador existente
+   * @param {number} id - ID del coordinador
+   * @param {Object} datos - Datos actualizados del coordinador
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async actualizar(datos, usuarioId) {
+  static async actualizarCoordinador(id, datos, user_action) {
     try {
-      // Validar datos parciales del profesor
-      const validation = ValidationService.validatePartialProfesor(datos);
+      console.log(`🔍 [actualizarCoordinador] Actualizando coordinador ID: ${id}`);
 
-      if (!validation.isValid) {
-        FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en actualización de profesor"
-        );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          id: id,
+          datos: JSON.stringify(datos, null, 2),
+          user_action: user_action,
+        });
       }
 
-      // Validar que tenga ID de profesor
-      const requiredValidation = ValidationService.validateRequiredFields(
-        datos,
-        ["id_profesor"]
-      );
-
-      if (!requiredValidation.isValid) {
-        FormatterResponseService.validationError(
-          requiredValidation.errors,
-          "Campos requeridos faltantes"
-        );
-      }
-
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(usuarioId, "usuario");
+      // 1. Validar ID del coordinador
+      const idValidation = ValidationService.validateId(id, "coordinador");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
           idValidation.errors,
+          "ID de coordinador inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(user_action.id, "usuario");
+      if (!usuarioValidation.isValid) {
+        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesorActual = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
-
-      if (!profesorActual) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
+      // 3. Validar datos de actualización
+      const validation = ValidationService.validateActualizacionCoordinador(datos);
+      if (!validation.isValid) {
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en actualización de coordinador"
+        );
       }
 
-      // Actualizar profesor
-      const respuestaModel = await ProfesorModel.actualizar(datos, usuarioId);
+      // 4. Verificar que el coordinador existe
+      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
+      
+      if (FormatterResponseService.isError(coordinadorExistente)) {
+        return coordinadorExistente;
+      }
+
+      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
+        console.error("❌ Coordinador no encontrado:", id);
+        return FormatterResponseService.notFound("Coordinador", id);
+      }
+
+      // 5. Actualizar coordinador en el modelo
+      console.log("📝 Actualizando coordinador en base de datos...");
+      const respuestaModel = await CoordinadorModel.actualizarCoordinador(
+        id,
+        datos,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      // Enviar notificación de actualización
+      // 6. Enviar notificación
+      console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Profesor Actualizado",
-        tipo: "profesor_actualizado",
-        contenido: `Se han actualizado los datos del profesor ${
-          datos.nombres || profesorActual.nombres
-        } ${datos.apellidos || profesorActual.apellidos}`,
+        titulo: "Coordinador Actualizado",
+        tipo: "coordinador_actualizado",
+        contenido: `Se han actualizado los datos del coordinador ${coordinadorExistente.data[0].nombres} ${coordinadorExistente.data[0].apellidos}`,
         metadatos: {
-          profesor_id: datos.id_profesor,
-          profesor_cedula: profesorActual.cedula,
-          campos_actualizados: Object.keys(datos).filter(
-            (key) => key !== "id_profesor"
-          ),
-          usuario_actualizador: usuarioId,
+          coordinador_id: id,
+          coordinador_cedula: coordinadorExistente.data[0].cedula,
+          campos_actualizados: Object.keys(datos),
+          usuario_actualizador: user_action.id,
           fecha_actualizacion: new Date().toISOString(),
         },
-        roles_ids: ["admin", "coordinador"],
-        users_ids: [usuarioId],
+        roles_ids: [1, 2, 3],
+        users_ids: [user_action.id, coordinadorExistente.data[0].cedula],
       });
+
+      console.log("✅ Coordinador actualizado exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: "Profesor actualizado exitosamente",
-          profesor_id: datos.id_profesor,
+          message: "Coordinador actualizado exitosamente",
+          coordinador_id: id,
         },
-        "Profesor actualizado exitosamente",
+        "Coordinador actualizado exitosamente",
         {
           status: 200,
-          title: "Profesor Actualizado",
+          title: "Coordinador Actualizado",
         }
       );
     } catch (error) {
-      console.error("Error en servicio actualizar profesor:", error);
+      console.error("💥 Error en servicio actualizar coordinador:", error);
       throw error;
     }
   }
@@ -565,410 +383,102 @@ export default class ProfesorService {
   /**
    * @static
    * @async
-   * @method eliminar
-   * @description Eliminar/destituir un profesor con validación y notificación
-   * @param {Object} datos - Datos de la eliminación
+   * @method eliminarCoordinador
+   * @description Elimina un coordinador (destitución)
+   * @param {number} id - ID del coordinador
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async eliminar(datos, usuarioId) {
+  static async eliminarCoordinador(id, user_action) {
     try {
-      // Validar datos de eliminación
-      const requiredValidation = ValidationService.validateRequiredFields(
-        datos,
-        ["id_profesor", "tipo_accion", "razon"]
-      );
+      console.log(`🔍 [eliminarCoordinador] Eliminando coordinador ID: ${id}`);
 
-      if (!requiredValidation.isValid) {
-        FormatterResponseService.validationError(
-          requiredValidation.errors,
-          "Campos requeridos faltantes para eliminación"
+      // 1. Validar ID del coordinador
+      const idValidation = ValidationService.validateId(id, "coordinador");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de coordinador inválido"
         );
       }
 
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(usuarioId, "usuario");
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(user_action.id, "usuario");
+      if (!usuarioValidation.isValid) {
+        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // Validar ID de profesor
-      const profesorIdValidation = ValidationService.validateId(
-        datos.id_profesor,
-        "profesor"
-      );
-      if (!profesorIdValidation.isValid) {
-        FormatterResponseService.validationError(
-          profesorIdValidation.errors,
-          "ID de profesor inválido"
-        );
+      // 3. Verificar que el coordinador existe
+      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
+      
+      if (FormatterResponseService.isError(coordinadorExistente)) {
+        return coordinadorExistente;
       }
 
-      // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesor = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
-
-      if (!profesor) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
+      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
+        console.error("❌ Coordinador no encontrado:", id);
+        return FormatterResponseService.notFound("Coordinador", id);
       }
 
-      // Eliminar profesor
-      const respuestaModel = await ProfesorModel.eliminar(datos, usuarioId);
+      const coordinador = coordinadorExistente.data[0];
+
+      // 4. Eliminar coordinador en el modelo
+      console.log("🗑️ Eliminando coordinador en base de datos...");
+      const respuestaModel = await CoordinadorModel.eliminarCoordinador(
+        id,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      // Enviar notificación de eliminación/destitución
+      // 5. Enviar notificación
+      console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: `Profesor ${
-          datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-        }`,
-        tipo: `profesor_${datos.tipo_accion}`,
-        contenido: `Se ha ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-        } al profesor ${profesor.nombres} ${profesor.apellidos} (${
-          profesor.cedula
-        })`,
+        titulo: "Coordinador Destituido",
+        tipo: "coordinador_eliminado",
+        contenido: `Se ha destituido al coordinador ${coordinador.nombres} ${coordinador.apellidos} del PNF ${coordinador.nombre_pnf}`,
         metadatos: {
-          profesor_id: datos.id_profesor,
-          profesor_cedula: profesor.cedula,
-          profesor_nombre: `${profesor.nombres} ${profesor.apellidos}`,
-          tipo_accion: datos.tipo_accion,
-          razon: datos.razon,
-          observaciones: datos.observaciones,
-          fecha_efectiva: datos.fecha_efectiva,
-          usuario_ejecutor: usuarioId,
-          fecha_ejecucion: new Date().toISOString(),
+          coordinador_id: id,
+          coordinador_cedula: coordinador.cedula,
+          coordinador_nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+          pnf_id: coordinador.id_pnf,
+          pnf_nombre: coordinador.nombre_pnf,
+          usuario_ejecutor: user_action.id,
+          fecha_destitucion: new Date().toISOString(),
         },
-        roles_ids: ["admin", "coordinador"],
-        users_ids: [usuarioId],
+        roles_ids: [1, 2, 3],
+        users_ids: [user_action.id, coordinador.cedula],
       });
 
+      console.log("✅ Coordinador eliminado exitosamente");
+
       return FormatterResponseService.success(
         {
-          message: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-          } exitosamente`,
-          profesor: {
-            id: datos.id_profesor,
-            cedula: profesor.cedula,
-            nombre: `${profesor.nombres} ${profesor.apellidos}`,
-            accion: datos.tipo_accion,
+          message: "Coordinador destituido exitosamente",
+          coordinador: {
+            id: id,
+            cedula: coordinador.cedula,
+            nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+            pnf: coordinador.nombre_pnf,
           },
         },
-        `Profesor ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-        } exitosamente`,
+        "Coordinador destituido exitosamente",
         {
           status: 200,
-          title: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-          }`,
+          title: "Coordinador Destituido",
         }
       );
     } catch (error) {
-      console.error("Error en servicio eliminar profesor:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method obtenerPregrados
-   * @description Obtener todos los pregrados con validación
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerPregrados() {
-    try {
-      const respuestaModel = await ProfesorModel.obtenerPregrados();
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        respuestaModel.data,
-        "Pregrados obtenidos exitosamente",
-        {
-          status: 200,
-          title: "Lista de Pregrados",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener pregrados:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method obtenerPosgrados
-   * @description Obtener todos los posgrados con validación
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerPosgrados() {
-    try {
-      const respuestaModel = await ProfesorModel.obtenerPosgrados();
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        respuestaModel.data,
-        "Posgrados obtenidos exitosamente",
-        {
-          status: 200,
-          title: "Lista de Posgrados",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener posgrados:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method obtenerAreasConocimiento
-   * @description Obtener todas las áreas de conocimiento con validación
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerAreasConocimiento() {
-    try {
-      const respuestaModel = await ProfesorModel.obtenerAreasConocimiento();
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          areas_conocimiento: respuestaModel.data,
-          total: respuestaModel.data.length,
-        },
-        "Áreas de conocimiento obtenidas exitosamente",
-        {
-          status: 200,
-          title: "Lista de Áreas de Conocimiento",
-        }
-      );
-    } catch (error) {
-      console.error("Error en servicio obtener áreas de conocimiento:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method crearPregrado
-   * @description Crear un nuevo pregrado
-   * @param {Object} datos - Datos del pregrado
-   * @param {string} datos.nombre - Nombre del pregrado
-   * @param {string} datos.tipo - Tipo del pregrado
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
-   */
-  static async crearPregrado(datos, user_action) {
-    try {
-      console.log("🔍 [crearPregrado] Iniciando creación de pregrado...");
-
-      // Validar datos del pregrado usando el nuevo método
-      const validation = ValidationService.validateNuevoPregrado(datos);
-      if (!validation.isValid) {
-        FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en creación de pregrado"
-        );
-      }
-
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.crearPregrado(
-        datos,
-        user_action.id
-      );
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      console.log("🎉 Pregrado creado exitosamente");
-
-      return FormatterResponseService.success(
-        {
-          message: "Pregrado creado exitosamente",
-          pregrado: {
-            nombre: datos.nombre,
-            tipo: datos.tipo,
-          },
-        },
-        "Pregrado creado exitosamente",
-        {
-          status: 201,
-          title: "Pregrado Creado",
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio crear pregrado:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method crearPosgrado
-   * @description Crear un nuevo posgrado
-   * @param {Object} datos - Datos del posgrado
-   * @param {string} datos.nombre - Nombre del posgrado
-   * @param {string} datos.tipo - Tipo del posgrado
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
-   */
-  static async crearPosgrado(datos, user_action) {
-    try {
-      console.log("🔍 [crearPosgrado] Iniciando creación de posgrado...");
-
-      // Validar datos del posgrado usando el nuevo método
-      const validation = ValidationService.validateNuevoPosgrado(datos);
-      if (!validation.isValid) {
-        FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en creación de posgrado"
-        );
-      }
-
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.crearPosgrado(
-        datos,
-        user_action.id
-      );
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      console.log("🎉 Posgrado creado exitosamente");
-
-      return FormatterResponseService.success(
-        {
-          message: "Posgrado creado exitosamente",
-          posgrado: {
-            nombre: datos.nombre,
-            tipo: datos.tipo,
-          },
-        },
-        "Posgrado creado exitosamente",
-        {
-          status: 201,
-          title: "Posgrado Creado",
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio crear posgrado:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method crearAreaConocimiento
-   * @description Crear una nueva área de conocimiento
-   * @param {Object} datos - Datos del área de conocimiento
-   * @param {string} datos.area_conocimiento - Nombre del área de conocimiento
-   * @param {object} user_action - Usuario que realiza la acción
-   * @param {number} user_action.id - ID del usuario
-   * @returns {Promise<Object>} Resultado de la operación
-   */
-  static async crearAreaConocimiento(datos, user_action) {
-    try {
-      console.log(
-        "🔍 [crearAreaConocimiento] Iniciando creación de área de conocimiento..."
-      );
-
-      // Validar datos del área de conocimiento usando el nuevo método
-      const validation = ValidationService.validateNuevaAreaConocimiento(datos);
-      if (!validation.isValid) {
-        FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en creación de área de conocimiento"
-        );
-      }
-
-      // Validar ID de usuario
-      const idValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
-      }
-
-      const respuestaModel = await ProfesorModel.crearAreaConocimiento(
-        datos,
-        user_action.id
-      );
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      console.log("🎉 Área de conocimiento creada exitosamente");
-
-      return FormatterResponseService.success(
-        {
-          message: "Área de conocimiento creada exitosamente",
-          area_conocimiento: {
-            nombre: datos.area_conocimiento,
-          },
-        },
-        "Área de conocimiento creada exitosamente",
-        {
-          status: 201,
-          title: "Área de Conocimiento Creada",
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio crear área de conocimiento:", error);
+      console.error("💥 Error en servicio eliminar coordinador:", error);
       throw error;
     }
   }

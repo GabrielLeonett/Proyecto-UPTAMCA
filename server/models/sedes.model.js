@@ -38,7 +38,7 @@ export default class SedeModel {
         "Sede creada en base de datos"
       );
     } catch (error) {
-      console.error("💥 Error en modelo crear sede:", {...error});
+      console.error("💥 Error en modelo crear sede:", { ...error });
 
       // Si respuestaError NO es async, no usar await
       throw FormatterResponseModel.respuestaError(
@@ -55,20 +55,9 @@ export default class SedeModel {
    */
   static async mostrarSedes() {
     try {
-      console.log("💾 [mostrarSedes] Obteniendo sedes de BD...");
-
       const { rows } = await pg.query(
-        `SELECT 
-          id_sede as id,
-          nombre_sede as nombre, 
-          ubicacion_sede as direccion, 
-          google_sede as google_maps,
-          'activa' as estado
-         FROM sedes 
-         ORDER BY nombre_sede`
+        `SELECT * FROM public.vista_sedes_completa`
       );
-
-      console.log(`✅ Se obtuvieron ${rows.length} sedes de BD`);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
@@ -94,13 +83,8 @@ export default class SedeModel {
       console.log("💾 [obtenerSedePorId] Buscando sede en BD ID:", idSede);
 
       const { rows } = await pg.query(
-        `SELECT 
-          id_sede as id,
-          nombre_sede as nombre, 
-          ubicacion_sede as direccion, 
-          google_sede as google_maps,
-          'activa' as estado
-         FROM sedes 
+        `SELECT *
+         FROM vista_sedes_completa 
          WHERE id_sede = $1`,
         [idSede]
       );
@@ -113,10 +97,10 @@ export default class SedeModel {
         );
       }
 
-      console.log("✅ Sede encontrada en BD:", rows[0].nombre);
+      console.log("✅ Sede encontrada en BD:", rows[0].id_sede);
 
       return FormatterResponseModel.respuestaPostgres(
-        rows[0],
+        rows,
         "Sede obtenida de base de datos"
       );
     } catch (error) {

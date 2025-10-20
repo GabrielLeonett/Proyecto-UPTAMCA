@@ -3,14 +3,14 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import AulaController from "../controllers/aulas.controller.js";
 
 // Destructuración de los métodos del controlador de Aula
-const { 
-  registerAula, 
+const {
+  registerAula,
   mostrarAulas,
   obtenerAulaPorId,
   actualizarAula,
   eliminarAula,
   obtenerAulasPorTipo,
-  obtenerAulasPorSede 
+  obtenerAulasPorSede,
 } = AulaController;
 
 // Creación del router para las rutas de Aula
@@ -40,10 +40,10 @@ export const AulaRouter = Router();
  * @example
  * // Obtener todas las aulas
  * curl -X GET 'http://localhost:3000/aulas'
- * 
+ *
  * // Obtener aulas de tipo laboratorio
  * curl -X GET 'http://localhost:3000/aulas?tipo=laboratorio'
- * 
+ *
  * // Obtener aulas con capacidad mayor a 30 personas
  * curl -X GET 'http://localhost:3000/aulas?capacidadMin=30'
  */

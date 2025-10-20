@@ -4,7 +4,7 @@ import ImagenService from "./imagen.service.js";
 import EmailService from "./email.service.js";
 import ProfesorModel from "../models/profesor.model.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
-import { loadEnv } from "../utils/utilis.js";
+import { loadEnv, parseJSONField } from "../utils/utilis.js";
 import { generarPassword, hashPassword } from "../utils/encrypted.js";
 
 loadEnv();
@@ -16,25 +16,25 @@ loadEnv();
 export default class ProfesorService {
   static async registrarProfesor(datos, imagen, user_action) {
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...", datos, imagen, user_action);
+      const Pregrados = parseJSONField(datos.pre_grado, "Pre-Grados");
+      const Posgrado = parseJSONField(datos.pos_grado, "Pos-Grados");
+      const Areasconocimiento = parseJSONField(
+        datos.area_de_conocimiento,
+        "Areas de conocimiento"
+      );
 
-      if (process.env.MODE === "DEVELOPMENT") {
-        console.log("📝 Datos recibidos:", {
-          datos: JSON.stringify(datos, null, 2),
-          imagen: imagen
-            ? {
-                originalName: imagen.originalName,
-                size: imagen.size,
-                mimetype: imagen.mimetype,
-              }
-            : "No image provided",
-          user_action: user_action,
-        });
-      }
+      const datosProfesor = {
+        ...datos, // ← Spread primero
+        pre_grado: Pregrados, // ← Luego sobrescribes con los valores parseados
+        pos_grado: Posgrado,
+        areas_de_conocimiento: Areasconocimiento,
+        cedula: parseInt(datos.cedula),
+      };
 
+      console.log("✅ Datos del profesor:", datosProfesor);
       // 1. Validar datos del profesor
       console.log("✅ Validando datos del profesor...");
-      const validation = ValidationService.validateProfesor(datos);
+      const validation = ValidationService.validateProfesor(datosProfesor);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
@@ -133,7 +133,7 @@ export default class ProfesorService {
       console.log("👨‍🏫 Creando profesor en base de datos...");
       const respuestaModel = await ProfesorModel.crear(
         {
-          ...datos,
+          ...datosProfesor,
           imagen: imagenPath,
           password: hash,
         },
@@ -972,5 +972,4 @@ export default class ProfesorService {
       throw error;
     }
   }
-
 }
