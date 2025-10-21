@@ -44,6 +44,13 @@ const pnfSchema = z.object({
     )
     .trim()
     .toUpperCase(),
+  duracionTrayectosPNF: z
+    .number({
+      invalid_type_error: "La duración debe ser un número",
+      required_error: "La duración de los trayectos es obligatoria",
+    })
+    .min(1, "La duración mínima es 1 trayecto")
+    .max(5, "La duración máxima es 5 trayectos"),
 
   sedePNF: z
     .number({

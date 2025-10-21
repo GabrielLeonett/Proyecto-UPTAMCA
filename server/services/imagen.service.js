@@ -12,7 +12,9 @@ export default class ImagenService {
 
   async validateImage(originalName, options = {}) {
     try {
+      console.log(`🔍 [validateImage] Validando imagen: ${originalName}`);
       const fullPath = join(this.storageImage, originalName);
+      console.log(`🔍 [validateImage] Ruta completa: ${fullPath}`);
 
       try {
         await access(fullPath);
@@ -117,14 +119,10 @@ export default class ImagenService {
 
   async processAndSaveImage(originalName, options = {}) {
     let tempImagePath = null;
-
+    console.log(`🔄 [processAndSaveImage] Procesando imagen: ${originalName}`);
     try {
       // 1. Validar la imagen primero
-      const validation = await ImageProcessingService.validateImage(
-        this.storageImage,
-        originalName,
-        options
-      );
+      const validation = await this.validateImage(originalName, options);
 
       if (!validation.isValid) {
         throw new Error(validation.error || "Error de validación desconocido");
@@ -211,7 +209,7 @@ export default class ImagenService {
         );
       }
 
-      throw new Error(`Error procesando imagen: ${error.message}`);
+      throw `Error procesando imagen: ${error.message}`;
     }
   }
 

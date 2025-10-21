@@ -110,8 +110,6 @@ AulaRouter.get(
  *     "capacidad": 40,
  *     "ubicacion": "Edificio A, Primer Piso",
  *     "descripcion": "Laboratorio de Informática",
- *     "equipamiento": "25 computadoras, proyector, aire acondicionado",
- *     "disponible": true
  *   }'
  */
 AulaRouter.post(

@@ -6,7 +6,8 @@ const unidadcurricularSchema = z.object({
       invalid_type_error: "El id de trayecto tiene que se un numero",
       required_error: "El id de trayecto es obligatorio",
     })
-    .positive("El id tiene que se positivo"),
+    .positive("El id tiene que se positivo")
+    .optional(),
 
   nombreUnidadCurricular: z
     .string({

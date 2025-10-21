@@ -15,7 +15,11 @@ loadEnv();
  */
 export default class ProfesorService {
   static async registrarProfesor(datos, imagen, user_action) {
+    const imagenService = new ImagenService("Profesores");
+    let imagenPath = null;
+
     try {
+      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
       const Pregrados = parseJSONField(datos.pre_grado, "Pre-Grados");
       const Posgrado = parseJSONField(datos.pos_grado, "Pos-Grados");
       const Areasconocimiento = parseJSONField(
@@ -27,7 +31,7 @@ export default class ProfesorService {
         ...datos, // ← Spread primero
         pre_grado: Pregrados, // ← Luego sobrescribes con los valores parseados
         pos_grado: Posgrado,
-        areas_de_conocimiento: Areasconocimiento,
+        areas_de_conocimiento: ["Matemáticas"],
         cedula: parseInt(datos.cedula),
       };
 
@@ -38,7 +42,7 @@ export default class ProfesorService {
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en registro de profesor"
         );
@@ -53,19 +57,17 @@ export default class ProfesorService {
 
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
       }
 
       // 3. Validar imagen (solo si se proporciona)
-      let imagenPath = null;
-      if (imagen && imagen.originalName) {
+      if (imagen && imagen.originalname) {
         console.log("🖼️ Validando imagen...");
-        const imagenService = new ImagenService("Profesores");
         const validationImage = await imagenService.validateImage(
-          imagen.originalName,
+          imagen.originalname,
           {
             maxWidth: 1920,
             maxHeight: 1080,
@@ -80,7 +82,7 @@ export default class ProfesorService {
             "❌ Validación de imagen fallida:",
             validationImage.error
           );
-          FormatterResponseService.validationError(
+          return FormatterResponseService.validationError(
             [{ path: "imagen", message: validationImage.error }],
             "Error de validación de imagen"
           );
@@ -91,7 +93,7 @@ export default class ProfesorService {
         // Guardar imagen y obtener la ruta
         console.log("💾 Procesando y guardando imagen...");
         imagenPath = await imagenService.processAndSaveImage(
-          imagen.originalName,
+          imagen.originalname,
           {
             maxWidth: 1920,
             maxHeight: 1080,
@@ -116,7 +118,7 @@ export default class ProfesorService {
 
       if (!validationEmail.existe) {
         console.error("❌ Validación de email fallida:", validationEmail);
-        FormatterResponseService.error(
+        return FormatterResponseService.error(
           "El email proporcionado no es válido o no existe",
           "Lo sentimos, el email proporcionado no es válido o no existe",
           400,
@@ -126,15 +128,16 @@ export default class ProfesorService {
           }
         );
       }
+
       const contrania = await generarPassword();
-      const hash = hashPassword(contrania);
+      const hash = await hashPassword(contrania);
 
       // 5. Crear profesor en el modelo
       console.log("👨‍🏫 Creando profesor en base de datos...");
       const respuestaModel = await ProfesorModel.crear(
         {
           ...datosProfesor,
-          imagen: imagenPath,
+          imagen: imagenPath.fileName,
           password: hash,
         },
         user_action.id
@@ -144,7 +147,7 @@ export default class ProfesorService {
         return respuestaModel;
       }
 
-      if (process.MODE === "DEVELOPMENT") {
+      if (process.env.MODE === "DEVELOPMENT") {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
@@ -221,6 +224,9 @@ export default class ProfesorService {
       );
     } catch (error) {
       console.error("💥 Error en servicio crear profesor:", error);
+      if (imagenPath != null) {
+        imagenService.deleteImage(imagenPath.fileName);
+      }
       // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
@@ -244,7 +250,7 @@ export default class ProfesorService {
       );
 
       if (!queryValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           queryValidation.errors,
           "Error de validación en parámetros de consulta"
         );
@@ -296,7 +302,7 @@ export default class ProfesorService {
       ]);
 
       if (!filterValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           filterValidation.errors,
           "Error de validación en filtros de búsqueda"
         );
@@ -338,7 +344,7 @@ export default class ProfesorService {
         "profesor"
       );
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de profesor inválido"
         );
@@ -352,13 +358,13 @@ export default class ProfesorService {
       }
 
       if (!respuesta.data || respuesta.data.length === 0) {
-        FormatterResponseService.notFound("Profesor", id_profesor);
+        return FormatterResponseService.notFound("Profesor", id_profesor);
       }
 
       const profesor = respuesta.data[0];
 
       if (!profesor.imagen) {
-        FormatterResponseService.error(
+        return FormatterResponseService.error(
           "Imagen no encontrada",
           "El profesor no tiene una imagen registrada en el sistema",
           404,
@@ -377,9 +383,10 @@ export default class ProfesorService {
         profesor.imagen,
         queryParams
       );
+      console.log(imagen)
 
       return FormatterResponseService.success(
-        imagen,
+        imagen.buffer,
         "Imagen del profesor obtenida exitosamente",
         {
           status: 200,
@@ -413,7 +420,7 @@ export default class ProfesorService {
         typeof busqueda !== "string" ||
         busqueda.trim().length === 0
       ) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "busqueda",
@@ -428,7 +435,7 @@ export default class ProfesorService {
       const termino = busqueda.trim();
 
       if (termino.length < 2) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "busqueda",
@@ -479,7 +486,7 @@ export default class ProfesorService {
       const validation = ValidationService.validatePartialProfesor(datos);
 
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en actualización de profesor"
         );
@@ -492,7 +499,7 @@ export default class ProfesorService {
       );
 
       if (!requiredValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           requiredValidation.errors,
           "Campos requeridos faltantes"
         );
@@ -501,7 +508,7 @@ export default class ProfesorService {
       // Validar ID de usuario
       const idValidation = ValidationService.validateId(usuarioId, "usuario");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -514,7 +521,7 @@ export default class ProfesorService {
       );
 
       if (!profesorActual) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
+        return FormatterResponseService.notFound("Profesor", datos.id_profesor);
       }
 
       // Actualizar profesor
@@ -580,7 +587,7 @@ export default class ProfesorService {
       );
 
       if (!requiredValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           requiredValidation.errors,
           "Campos requeridos faltantes para eliminación"
         );
@@ -589,7 +596,7 @@ export default class ProfesorService {
       // Validar ID de usuario
       const idValidation = ValidationService.validateId(usuarioId, "usuario");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -601,7 +608,7 @@ export default class ProfesorService {
         "profesor"
       );
       if (!profesorIdValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           profesorIdValidation.errors,
           "ID de profesor inválido"
         );
@@ -614,7 +621,7 @@ export default class ProfesorService {
       );
 
       if (!profesor) {
-        FormatterResponseService.notFound("Profesor", datos.id_profesor);
+        return FormatterResponseService.notFound("Profesor", datos.id_profesor);
       }
 
       // Eliminar profesor
@@ -788,7 +795,7 @@ export default class ProfesorService {
       // Validar datos del pregrado usando el nuevo método
       const validation = ValidationService.validateNuevoPregrado(datos);
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en creación de pregrado"
         );
@@ -800,7 +807,7 @@ export default class ProfesorService {
         "usuario"
       );
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -856,7 +863,7 @@ export default class ProfesorService {
       // Validar datos del posgrado usando el nuevo método
       const validation = ValidationService.validateNuevoPosgrado(datos);
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en creación de posgrado"
         );
@@ -868,7 +875,7 @@ export default class ProfesorService {
         "usuario"
       );
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -925,7 +932,7 @@ export default class ProfesorService {
       // Validar datos del área de conocimiento usando el nuevo método
       const validation = ValidationService.validateNuevaAreaConocimiento(datos);
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en creación de área de conocimiento"
         );
@@ -937,7 +944,7 @@ export default class ProfesorService {
         "usuario"
       );
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -969,6 +976,76 @@ export default class ProfesorService {
       );
     } catch (error) {
       console.error("💥 Error en servicio crear área de conocimiento:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method registrarDisponibilidad
+   * @description Crear una nueva disponibilidad docente
+   * @param {number} idProfesor - ID del profesor
+   * @param {Object} datos - Datos de la disponibilidad
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async registrarDisponibilidad(idProfesor, datos, user_action) {
+    try {
+      console.log(
+        "🔍 [registrarDisponibilidad] Iniciando creación de disponibilidad..."
+      );
+
+      // Validar datos de disponibilidad
+      const validation = ValidationService.validateDisponibilidadDocente(datos);
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en creación de disponibilidad"
+        );
+      }
+
+      // Validar ID de usuario
+      const idValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!idValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      const respuestaModel = await ProfesorModel.crearDisponibilidad(
+        idProfesor,
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      console.log("🎉 Disponibilidad creada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Disponibilidad creada exitosamente",
+          disponibilidad: {
+            dia_semana: datos.dia_semana,
+            hora_inicio: datos.hora_inicio,
+            hora_fin: datos.hora_fin,
+          },
+        },
+        "Disponibilidad creada exitosamente",
+        {
+          status: 201,
+          title: "Disponibilidad Creada",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio crear disponibilidad:", error);
       throw error;
     }
   }

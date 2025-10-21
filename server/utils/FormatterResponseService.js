@@ -151,7 +151,7 @@ export default class FormatterResponseService {
    * @throws {Object} Error de validación formateado
    */
   static validationError(errors, message = "Error de validación") {
-    this.error( // ← SIN return, se propaga automáticamente
+    const error = this.error( // ← SIN return, se propaga automáticamente
       "Error de Validación",
       message,
       400,
@@ -160,6 +160,7 @@ export default class FormatterResponseService {
         validationErrors: errors,
       }
     );
+    return error;
   }
 
   /**

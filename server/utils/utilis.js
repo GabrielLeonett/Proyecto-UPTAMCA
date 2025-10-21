@@ -1,6 +1,6 @@
 // utils/envLoader.js
 import dotenv from "dotenv";
-import path from "path";
+import path, { format } from "path";
 import { fileURLToPath } from "url";
 
 /**
@@ -75,12 +75,41 @@ export const parseJSONField = (field, fieldName) => {
   }
 };
 
-export function convertToPostgresArray(jsonArray) {
-  if (!jsonArray || jsonArray.length === 0) return "{}";
+export function convertToPostgresArray(input) {
+  console.log("Input recibido:", input);
+  console.log("Tipo del input:", typeof input);
 
-  const array = JSON.parse(jsonArray);
+  if (!input) return "{}";
+
+  let array;
+
+  // Si ya es un array, usarlo directamente
+  if (Array.isArray(input)) {
+    array = input;
+  }
+  // Si es un string, intentar parsearlo como JSON
+  else if (typeof input === "string") {
+    try {
+      array = JSON.parse(input);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+      return "{}";
+    }
+  }
+  // Si es otro tipo, convertirlo a array
+  else {
+    array = [input];
+  }
+
+  // Validar que sea un array
+  if (!Array.isArray(array) || array.length === 0) {
+    return "{}";
+  }
+
   // Convertir a formato PostgreSQL: {element1,element2,element3}
-  return `{${array.map((item) => `"${item}"`).join(",")}}`;
+  const postgresFormat = `{${array.map((item) => `"${item}"`).join(",")}}`;
+  console.log("Formato PostgreSQL:", postgresFormat);
+  return postgresFormat;
 }
 
 /**

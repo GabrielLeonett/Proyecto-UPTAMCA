@@ -69,7 +69,6 @@ export default class FormatterResponseController {
    */
   static async respuestaError(res, serviceResponse) {
     try {
-
       // DETECCIÓN MEJORADA DE ERRORES 4xx
       const isClientError =
         // Por código de estado
@@ -170,8 +169,11 @@ export default class FormatterResponseController {
       }
 
       // Caso por defecto (otros errores)
-      //console.log("🔍 Usando caso por defecto");
-      const status = serviceResponse.status || 500;
+      const defaultStatus = 500; // Estado de fallback
+      const status =
+        (typeof serviceResponse.status === "number" &&
+          serviceResponse.status) ||
+        defaultStatus; // <--- AQUI LA CLAVE: Se asegura que sea número, o usa 500.
       const response = {
         success: false,
         status: status,
@@ -335,8 +337,20 @@ export default class FormatterResponseController {
   static async manejarServicio(res, servicioPromise) {
     try {
       const resultado = await servicioPromise;
+      if (resultado === undefined || resultado === null) {
+        return this.respuestaError(res, {
+          status: 500,
+          title: "Error del Servicio",
+          message: "El servicio no devolvió una respuesta válida",
+        });
+      }
+
+      if (resultado.success === false) {
+        throw resultado;
+      }
       return this.respuestaExito(res, resultado);
     } catch (error) {
+      console.log(error)
       return this.respuestaError(res, error);
     }
   }

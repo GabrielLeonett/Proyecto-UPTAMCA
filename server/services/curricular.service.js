@@ -34,7 +34,7 @@ export default class CurricularService {
 
       // 1. Validar datos del PNF
       console.log("✅ Validando datos del PNF...");
-      const validation = ValidationService.validatePNF(datos);
+      const validation = ValidationService.validatePnf(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
@@ -61,7 +61,7 @@ export default class CurricularService {
 
       // 3. Crear PNF en el modelo
       console.log("🎓 Creando PNF en base de datos...");
-      const respuestaModel = await CurricularModel.crearPNF(
+      const respuestaModel = await CurricularModel.registrarPNF(
         datos,
         user_action.id
       );
@@ -144,11 +144,12 @@ export default class CurricularService {
    * @async
    * @method registrarUnidadCurricular
    * @description Registrar una nueva Unidad Curricular
+   * @param {number} idTrayecto - ID del trayecto
    * @param {Object} datos - Datos de la unidad curricular
    * @param {Object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async registrarUnidadCurricular(datos, user_action) {
+  static async registrarUnidadCurricular(idTrayecto, datos, user_action) {
     try {
       console.log(
         "🔍 [registrarUnidadCurricular] Iniciando registro de unidad curricular..."
@@ -166,7 +167,6 @@ export default class CurricularService {
       const validation = ValidationService.validateUnidadCurricular(datos);
 
       if (!validation.isValid) {
-        console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en registro de unidad curricular"
@@ -187,9 +187,27 @@ export default class CurricularService {
         );
       }
 
+      // 2. Validar ID de trayecto
+      const idTrayectoValidation = ValidationService.validateId(
+        idTrayecto,
+        "id del trayecto"
+      );
+
+      if (!idTrayectoValidation.isValid) {
+        console.error(
+          "❌ Validación de ID fallida:",
+          idTrayectoValidation.errors
+        );
+        return FormatterResponseService.validationError(
+          idTrayectoValidation.errors,
+          "ID de trayecto inválido"
+        );
+      }
+
       // 3. Crear unidad curricular en el modelo
       console.log("📚 Creando unidad curricular en base de datos...");
       const respuestaModel = await CurricularModel.registrarUnidadCurricular(
+        idTrayecto,
         datos,
         user_action.id
       );

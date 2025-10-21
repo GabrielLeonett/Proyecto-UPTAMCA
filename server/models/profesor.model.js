@@ -25,6 +25,8 @@ export default class ProfesorModel {
    */
   static async crear(datos, usuarioId) {
     try {
+      console.log("🔍 [ProfesorModel.crear] Iniciando creación de profesor...");
+      console.log("Datos recibidos:", datos);
       const {
         cedula,
         nombres,
@@ -39,7 +41,7 @@ export default class ProfesorModel {
         dedicacion,
         categoria,
         municipio,
-        area_de_conocimiento,
+        areas_de_conocimiento,
         pre_grado,
         pos_grado,
         password,
@@ -64,12 +66,13 @@ export default class ProfesorModel {
         dedicacion,
         pre_grado,
         pos_grado,
-        convertToPostgresArray(area_de_conocimiento),
+        convertToPostgresArray(areas_de_conocimiento),
         imagen,
         municipio,
         fecha_ingreso,
       ];
 
+      console.log(values);
       const { rows } = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
@@ -163,7 +166,6 @@ export default class ProfesorModel {
       const values = [`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`];
 
       const { rows } = await client.query(query, values);
-
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Búsqueda de profesores completada"
@@ -402,24 +404,19 @@ export default class ProfesorModel {
    * @async
    * @method crearDisponibilidad
    * @description Crear disponibilidad docente
+   * @param {number} idProfesor - ID del profesor
    * @param {Object} datos - Datos de la disponibilidad
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Promise<Object>} Resultado de la operación en la base de datos
    */
-  static async crearDisponibilidad(datos, usuarioId) {
+  static async crearDisponibilidad(idProfesor, datos, usuarioId) {
     try {
-      const { id_profesor, dia_semana, hora_inicio, hora_fin } = datos;
+      const { dia_semana, hora_inicio, hora_fin } = datos;
 
       const query =
         "CALL registrar_disponibilidad_docente_completo($1, $2, $3, $4, $5, NULL)";
-      const values = [
-        usuarioId,
-        id_profesor,
-        dia_semana,
-        hora_inicio,
-        hora_fin,
-      ];
-
+      const values = [usuarioId, idProfesor, dia_semana, hora_inicio, hora_fin];
+      console.log(values);
       const { rows } = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
@@ -437,7 +434,6 @@ export default class ProfesorModel {
       );
     }
   }
-
   /**
    * @static
    * @async

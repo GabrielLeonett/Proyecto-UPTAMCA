@@ -27,20 +27,28 @@ export default class CurricularModel {
    * @param {string} params.datos.descripcionPNF - Descripción del PNF
    * @param {string} params.datos.codigoPNF - Código único del PNF
    * @param {string} params.datos.sedePNF - Sede donde se imparte el PNF
-   * @param {Object} usuario_accion - Usuario que ejecuta la acción
+   * @param {number} usuario_accion - Usuario que ejecuta la acción
    * @returns {Promise<Object>} Resultado del registro
    */
-  static async registrarPNF({ datos, usuario_accion }) {
+  static async registrarPNF(datos, usuario_accion) {
     try {
-      const { nombrePNF, descripcionPNF, codigoPNF, sedePNF } = datos;
+      console.log("Datos para registrar PNF:", datos);
+      const {
+        nombrePNF,
+        descripcionPNF,
+        codigoPNF,
+        duracionTrayectosPNF,
+        sedePNF,
+      } = datos;
 
-      const query = `CALL public.registrar_pnf_completo($1, $2, $3, $4, $5, NULL)`;
+      const query = `CALL public.registrar_pnf_completo($1, $2, $3, $4, $5, $6, NULL)`;
       const params = [
-        usuario_accion.id,
+        usuario_accion,
         nombrePNF,
         descripcionPNF,
         codigoPNF,
         sedePNF,
+        duracionTrayectosPNF,
       ];
 
       const { rows } = await pg.query(query, params);
@@ -65,18 +73,18 @@ export default class CurricularModel {
    * @description Registra una nueva Unidad Curricular
    * @param {Object} params - Parámetros del registro
    * @param {Object} params.datos - Datos de la Unidad Curricular
-   * @param {number} params.datos.idTrayecto - ID del trayecto al que pertenece
+   * @param {number} idTrayecto - ID del trayecto al que pertenece
    * @param {string} params.datos.nombreUnidadCurricular - Nombre de la unidad curricular
    * @param {string} params.datos.descripcionUnidadCurricular - Descripción de la unidad
    * @param {number} params.datos.cargaHorasAcademicas - Carga horaria total
    * @param {string} params.datos.codigoUnidadCurricular - Código único de la unidad
-   * @param {Object} usuario_accion - Usuario que realiza la acción
+   * @param {number} usuario_accion - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado del registro
    */
-  static async registrarUnidadCurricular({ datos, usuario_accion }) {
+  static async registrarUnidadCurricular(idTrayecto, datos, usuario_accion) {
     try {
+      console.log("Datos para registrar Unidad Curricular:", datos);
       const {
-        idTrayecto,
         nombreUnidadCurricular,
         descripcionUnidadCurricular,
         cargaHorasAcademicas,
@@ -85,7 +93,7 @@ export default class CurricularModel {
 
       const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, NULL)`;
       const params = [
-        usuario_accion.id,
+        usuario_accion,
         idTrayecto,
         nombreUnidadCurricular,
         descripcionUnidadCurricular,
@@ -152,7 +160,8 @@ export default class CurricularModel {
           SELECT 
             t.id_trayecto, 
             t.poblacion_estudiantil, 
-            t.valor_trayecto, 
+            t.valor_trayecto,
+            t.descripcion_trayecto, 
             p.nombre_pnf,
             p.id_pnf,
             p.codigo_pnf
@@ -167,7 +176,8 @@ export default class CurricularModel {
           SELECT 
             t.id_trayecto, 
             t.poblacion_estudiantil, 
-            t.valor_trayecto, 
+            t.valor_trayecto,
+            t.descripcion_trayecto, 
             p.nombre_pnf,
             p.id_pnf,
             p.codigo_pnf
@@ -283,7 +293,7 @@ export default class CurricularModel {
    * @param {Object} usuario_accion - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado de la creación
    */
-  static async CrearSecciones(idTrayecto, datos, usuario_accion) {
+  static async CrearSecciones(idTrayecto, datos) {
     try {
       const { poblacionEstudiantil } = datos;
       const query = `CALL public.distribuir_estudiantes_secciones($1, $2, NULL)`;
@@ -316,7 +326,14 @@ export default class CurricularModel {
    */
   static async asignacionTurnoSeccion(idSeccion, idTurno, usuario_accion) {
     try {
-      console.log("idSeccion:", idSeccion, "idTurno:", idTurno, "usuario_accion:", usuario_accion.id);
+      console.log(
+        "idSeccion:",
+        idSeccion,
+        "idTurno:",
+        idTurno,
+        "usuario_accion:",
+        usuario_accion.id
+      );
       const query = `CALL public.asignar_turno_seccion($1, $2, $3, NULL)`;
       const params = [usuario_accion.id, idSeccion, idTurno];
 

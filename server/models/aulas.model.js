@@ -20,18 +20,17 @@ export default class AulaModel {
    */
   static async crear(datos, id_usuario) {
     try {
-      const { id_sede, codigo, nombre, tipo, capacidad, equipamiento } = datos;
-      const query = `CALL registrar_aula_completo(?, ?, ?, ?, ?, ?, ?, NULL)`;
+      const { id_sede, codigo, tipo, capacidad } = datos;
+      const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, NULL)`;
 
       const params = [
         id_usuario,
         id_sede,
         codigo,
-        nombre,
         tipo,
-        capacidad,
-        equipamiento || null,
+        capacidad
       ];
+      console.log(query, params)
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -51,81 +50,96 @@ export default class AulaModel {
    * @static
    * @async
    * @method obtenerTodas
-   * @description Obtener todas las aulas con soporte para parámetros de consulta
+   * @description Obtener todas las aulas (a través de la vista vista_sedes_completa) con soporte para parámetros de consulta
    * @param {Object} queryParams - Parámetros de consulta (paginación, filtros, ordenamiento)
    * @returns {Promise<Object>} Lista de aulas
    */
   static async obtenerTodas(queryParams = {}) {
     try {
       let query = `
-        SELECT 
-          a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
-          s.id_sede,
-          s.nombre as nombre_sede,
-          a.fecha_creacion,
-          a.fecha_actualizacion
-        FROM public.aulas a
-        INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE 1=1
-      `;
+       SELECT 
+         id_sede,
+         nombre_sede,
+         ubicacion_sede,
+         google_sede,
+         id_aula,
+         codigo_aula,
+         tipo_aula,
+         capacidad_aula
+       FROM 
+         public.vista_sedes_completa
+       WHERE 1=1
+     `;
       const params = [];
 
-      // Aplicar filtros si están presentes
-      if (queryParams.sede) {
-        query += ` AND s.nombre = ?`;
-        params.push(queryParams.sede);
+      // --- 1. Aplicar Filtros ---
+
+      // Filtro por ID de Sede
+      if (queryParams.idSede) {
+        query += ` AND id_sede = ?`;
+        params.push(queryParams.idSede);
       }
 
+      // Filtro por Tipo de Aula
       if (queryParams.tipo) {
-        query += ` AND a.tipo = ?`;
+        query += ` AND tipo_aula = ?`; // Usando 'tipo_aula' de la vista
         params.push(queryParams.tipo);
       }
 
-      if (queryParams.estado !== undefined) {
-        query += ` AND a.estado = ?`;
-        params.push(queryParams.estado);
+      // Filtro por Código de Aula (ILIKE para búsqueda parcial)
+      if (queryParams.codigo) {
+        query += ` AND codigo_aula ILIKE ?`; // Usando 'codigo_aula' de la vista
+        params.push(`%${queryParams.codigo}%`);
       }
 
-      // Aplicar ordenamiento
+      // Filtro por Capacidad (ejemplo)
+      if (queryParams.minCapacidad) {
+        query += ` AND capacidad_aula >= ?`;
+        params.push(parseInt(queryParams.minCapacidad));
+      }
+
+      // --- 2. Aplicar Ordenamiento ---
+
       if (queryParams.sort) {
+        // Campos permitidos para ordenar de la vista
         const allowedSortFields = [
-          "nombre",
-          "codigo",
-          "tipo",
-          "capacidad",
-          "fecha_creacion",
+          "nombre_sede",
+          "codigo_aula",
+          "tipo_aula",
+          "capacidad_aula",
         ];
         const sortField = allowedSortFields.includes(queryParams.sort)
           ? queryParams.sort
-          : "nombre";
+          : "nombre_sede"; // Default
         const sortOrder =
           queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
-        query += ` ORDER BY a.${sortField} ${sortOrder}`;
+
+        // El ordenamiento se aplica directamente a los campos de la vista
+        query += ` ORDER BY ${sortField} ${sortOrder}`;
       } else {
-        query += ` ORDER BY a.nombre ASC`;
+        // Ordenamiento por defecto
+        query += ` ORDER BY nombre_sede ASC, codigo_aula ASC`;
       }
 
-      // Aplicar paginación
+      // --- 3. Aplicar Paginación ---
+
       if (queryParams.limit) {
         const limit = parseInt(queryParams.limit);
         const offset = queryParams.page
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
+
         query += ` LIMIT ? OFFSET ?`;
+        // Los parámetros de límite y offset van al final
         params.push(limit, offset);
       }
 
+      // 🚀 Ejecutar la consulta con parámetros
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aulas obtenidas exitosamente"
+        "Aulas obtenidas exitosamente (desde vista)"
       );
     } catch (error) {
       error.details = { path: "AulaModel.obtenerTodas" };

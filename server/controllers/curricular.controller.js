@@ -34,7 +34,11 @@ export default class CurricularController {
   static async regitrarUnidadCurricular(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.registrarUnidadCurricular(req.body, req.user)
+      CurricularService.registrarUnidadCurricular(
+        req.params.idTrayecto,
+        req.body,
+        req.user
+      )
     );
   }
 
@@ -74,7 +78,7 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarUnidadesCurriculares(req, res) {
-    const trayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
+    const trayecto = req.params.idTrayecto ? Number(req.params.idTrayecto) : null;
     return FormatResponseController.manejarServicio(
       res,
       CurricularService.mostrarUnidadesCurriculares(trayecto)
@@ -106,7 +110,11 @@ export default class CurricularController {
   static async CrearSecciones(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.crearSecciones(parseInt(req.params.idTrayecto), req.body, req.user)
+      CurricularService.crearSecciones(
+        parseInt(req.params.idTrayecto),
+        req.body,
+        req.user
+      )
     );
   }
 
@@ -120,7 +128,11 @@ export default class CurricularController {
   static async asignacionTurnoSeccion(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      CurricularService.asignarTurnoSeccion(req.params.idSeccion, req.body, req.user)
+      CurricularService.asignarTurnoSeccion(
+        req.params.idSeccion,
+        req.body,
+        req.user
+      )
     );
   }
 }

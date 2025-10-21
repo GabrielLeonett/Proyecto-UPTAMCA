@@ -16,7 +16,6 @@ export async function up(knex) {
     table.string('telefono', 20).nullable().comment('Teléfono de contacto de la sede');
     table.string('email', 100).nullable().comment('Email de contacto de la sede');
     table.string('ciudad', 100).notNullable().comment('Ciudad donde se ubica la sede');
-    table.string('estado', 100).notNullable().comment('Estado donde se ubica la sede');
     
     // Campos de estado y soft delete
     table.boolean('activo').notNullable().defaultTo(true).comment('Estado activo/inactivo de la sede');
@@ -29,8 +28,24 @@ export async function up(knex) {
     // Índices
     table.index('nombre_sede', 'idx_sede_nombre');
     table.index('ciudad', 'idx_sede_ciudad');
-    table.index('estado', 'idx_sede_estado');
   });
+
+  // Crear secuencia para IDs automáticos
+  await knex.raw(`
+    CREATE SEQUENCE IF NOT EXISTS sedes_id_sede_seq 
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 32767
+    CACHE 1;
+  `);
+
+  // Asignar la secuencia a la columna id_sede
+  await knex.raw(`
+    ALTER TABLE sedes 
+    ALTER COLUMN id_sede 
+    SET DEFAULT nextval('sedes_id_sede_seq');
+  `);
 
   await knex.raw(`
     COMMENT ON TABLE sedes IS 'Tabla de sedes universitarias';
@@ -42,5 +57,16 @@ export async function up(knex) {
  * @returns { Promise<void> }
  */
 export async function down(knex) {
+  // Remover la secuencia antes de eliminar la tabla
+  await knex.raw(`
+    ALTER TABLE sedes 
+    ALTER COLUMN id_sede 
+    DROP DEFAULT;
+  `);
+
+  await knex.raw(`
+    DROP SEQUENCE IF EXISTS sedes_id_sede_seq;
+  `);
+
   await knex.schema.dropTable('sedes');
 }

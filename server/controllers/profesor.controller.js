@@ -49,6 +49,7 @@ export default class ProfesorController {
         req.query
       );
 
+      console.log( respuesta)
       // Configurar headers para la respuesta de imagen
       res.set({
         "Content-Type": respuesta.mimeType,
@@ -59,7 +60,7 @@ export default class ProfesorController {
       });
 
       // Enviar el buffer de la imagen
-      res.send(respuesta.buffer);
+      res.send(respuesta.data);
     } catch (error) {
       FormatResponseController.respuestaError(res, error);
     }
@@ -187,7 +188,7 @@ export default class ProfesorController {
   static async registrarDisponibilidad(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      ProfesorService.registrarDisponibilidad(req.body, req.user)
+      ProfesorService.registrarDisponibilidad(req.params.id, req.body, req.user)
     );
   }
 

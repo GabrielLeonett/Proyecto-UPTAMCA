@@ -19,6 +19,7 @@ import seccionSchema from "../schemas/seccion.schema.js";
 import sedeSchema from "../schemas/sede.schema.js";
 import unidadCurricularSchema from "../schemas/unidadcurricular.schema.js";
 import userSchema from "../schemas/user.schema.js";
+import { z } from "zod";
 
 /**
  * @class ValidationService
@@ -915,6 +916,37 @@ export default class ValidationService {
       title: "Datos Erróneos",
       message: "Los datos de entrada no son válidos",
       error: errors,
+    };
+  }
+  /**
+   * @static
+   * @method validateCreacionSecciones
+   * @description Valida los datos completos para la creación de un nuevo posgrado
+   * @param {Object} data - Datos del posgrado a validar
+   * @param {number} data.poblacionEstudiantil- Población estudiantil para distribuir en secciones (requerido)
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   * @returns {boolean} return.isValid - Indica si la validación fue exitosa
+   * @returns {Array} return.errors - Array de errores de validación
+   * @returns {Object|null} return.data - Datos validados o null si hay errores
+   */
+  static validateCreacionSecciones(data, options = {}) {
+    const objeto = z.object({
+      poblacionEstudiantil: z
+        .number({
+          required_error: "La poblacion estudiantil es requeridad.",
+          invalid_type_error: "La poblacion estudiantil debe ser un numero.",
+        })
+        .min(8, "La población estudiantil debe ser al menos 8")
+        .max(520, "La población estudiantil no puede exceder 520"),
+    });
+    const validationResult = objeto.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
     };
   }
 }

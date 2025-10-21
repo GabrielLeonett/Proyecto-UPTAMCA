@@ -7,7 +7,8 @@ const disponibilidaddocenteSchema = z.object({
       required_error: "El ID del profesor es obligatorio",
     })
     .int({ message: "El ID del profesor debe ser un número entero" })
-    .positive({ message: "El ID del profesor debe ser un número positivo" }),
+    .positive({ message: "El ID del profesor debe ser un número positivo" })
+    .optional(),
 
   dia_semana: z.enum(
     ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],

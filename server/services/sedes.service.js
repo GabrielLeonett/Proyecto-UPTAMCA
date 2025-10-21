@@ -156,10 +156,10 @@ export default class SedeService {
       // Agrupar PNFs por sede
       const pnfsPorSede = {};
 
-      // Primero: recorrer todos los datos para agrupar los PNFs
+      // Recorrer todos los datos
       Sedes.forEach((item) => {
-        // Si el item tiene datos de sede y PNF
-        if (item.id_sede && item.id_pnf) {
+        // Si el item tiene datos de sede (esto siempre debe existir)
+        if (item.id_sede) {
           const sedeId = item.id_sede;
 
           // Si es la primera vez que vemos esta sede, inicializar el array
@@ -192,12 +192,12 @@ export default class SedeService {
       // Convertir el objeto a array
       const FormatSedes = Object.values(pnfsPorSede);
 
-      console.log(`✅ Se obtuvieron ${respuestaModel.data?.length || 0} sedes`);
+      console.log(`✅ Se obtuvieron ${FormatSedes.length} sedes`);
 
       return FormatterResponseService.success(
         {
           sedes: FormatSedes,
-          total: respuestaModel.data?.length || 0,
+          total: FormatSedes.length,
         },
         "Sedes obtenidas exitosamente",
         {

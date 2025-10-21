@@ -23,7 +23,7 @@ export default class AulaService {
   static async registrarAula(datos, user_action) {
     try {
       console.log("🔍 [registrarAula] Iniciando registro de aula...");
-
+      console.log("🏷️ Datos del aula a registrar:", datos);
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
@@ -57,34 +57,6 @@ export default class AulaService {
           "ID de usuario inválido"
         );
       }
-
-      // 3. Verificar si el aula ya existe (por código o nombre)
-      console.log("🔎 Verificando duplicados de aula...");
-      const aulasExistentes = await AulaModel.obtenerTodas();
-
-      const aulaDuplicada = aulasExistentes.data.find(
-        (aula) => aula.codigo === datos.codigo || aula.nombre === datos.nombre
-      );
-
-      if (aulaDuplicada) {
-        console.error("❌ Aula duplicada encontrada:", aulaDuplicada);
-        FormatterResponseService.error(
-          "Aula ya existe",
-          "Ya existe un aula con el mismo código o nombre",
-          409,
-          "AULA_DUPLICADA",
-          {
-            codigo: datos.codigo,
-            nombre: datos.nombre,
-            aula_existente: {
-              id: aulaDuplicada.id_aula,
-              codigo: aulaDuplicada.codigo,
-              nombre: aulaDuplicada.nombre,
-            },
-          }
-        );
-      }
-
       // 4. Crear aula en el modelo
       console.log("🏫 Creando aula en base de datos...");
       const respuestaModel = await AulaModel.crear(datos, user_action.id);

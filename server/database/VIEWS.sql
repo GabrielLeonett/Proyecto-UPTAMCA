@@ -348,3 +348,16 @@ SELECT
     s.google_sede
 FROM pnfs p
     JOIN sedes s ON p.id_sede = s.id_sede;
+
+CREATE OR REPLACE VIEW vista_sedes_completa AS
+SELECT 
+    p.id_pnf,
+    p.codigo_pnf,
+    p.nombre_pnf,
+    p.poblacion_estudiantil_pnf,
+    s.id_sede,
+    s.nombre_sede,
+    s.ubicacion_sede,
+    s.google_sede
+FROM pnfs p
+INNER JOIN sedes s ON p.id_sede = s.id_sede;

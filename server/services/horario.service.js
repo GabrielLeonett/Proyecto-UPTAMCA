@@ -15,13 +15,19 @@ export default class HorarioService {
    */
   static async mostrarHorariosProfesores(idProfesor) {
     try {
-      validationService.validateId(idProfesor, "ID de profesor");
+      const validation = validationService.validateId(idProfesor, "profesor");
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "ID de profesor inválido"
+        );
+      }
 
       const dbResponse = await HorarioModel.obtenerPorProfesor(idProfesor);
 
       // Si el modelo retorna una respuesta formateada, la adaptamos
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const rows = dbResponse.data || dbResponse;
@@ -66,7 +72,7 @@ export default class HorarioService {
         throw error;
       }
       // Si es un error crudo, lo formateamos
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al obtener horarios del profesor",
         error.message,
         500,
@@ -82,12 +88,18 @@ export default class HorarioService {
    */
   static async mostrarHorariosPorSeccion(idSeccion) {
     try {
-      validationService.validateId(idSeccion, "ID de Sección");
+      const validation = validationService.validateId(idSeccion, "sección");
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "ID de sección inválido"
+        );
+      }
 
       const dbResponse = await HorarioModel.obtenerPorSeccion(idSeccion);
 
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       console.log("📊 Respuesta de la base de datos:", dbResponse);
@@ -96,7 +108,7 @@ export default class HorarioService {
 
       // Validar que hay datos
       if (!rows || rows.length === 0) {
-        FormatterResponseService.notFound("Sección", idSeccion);
+        return FormatterResponseService.notFound("Sección", idSeccion);
       }
 
       // Usar los nombres correctos de las columnas según tu consulta SQL
@@ -148,7 +160,7 @@ export default class HorarioService {
       if (error.success === false) {
         throw error;
       }
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al obtener horarios de la sección",
         error.message,
         500,
@@ -164,12 +176,18 @@ export default class HorarioService {
    */
   static async mostrarHorariosPorAula(idAula) {
     try {
-      validationService.validateId(idAula, "ID de Aula");
+      const validation = validationService.validateId(idAula, "aula");
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "ID de aula inválido"
+        );
+      }
 
       const dbResponse = await HorarioModel.obtenerPorAula(idAula);
 
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const rows = dbResponse.data || dbResponse;
@@ -212,7 +230,7 @@ export default class HorarioService {
       if (error.success === false) {
         throw error;
       }
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al obtener horarios del aula",
         error.message,
         500,
@@ -228,14 +246,23 @@ export default class HorarioService {
    */
   static async mostrarProfesoresParaHorario(horasNecesarias) {
     try {
-      validationService.validateId(horasNecesarias, "Horas necesarias");
+      const validation = validationService.validateId(
+        horasNecesarias,
+        "horas necesarias"
+      );
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Horas necesarias inválidas"
+        );
+      }
 
       const dbResponse = await HorarioModel.obtenerProfesoresDisponibles(
         horasNecesarias
       );
 
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const rows = dbResponse.data || dbResponse;
@@ -248,7 +275,7 @@ export default class HorarioService {
       if (error.success === false) {
         throw error;
       }
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al obtener profesores disponibles",
         error.message,
         500,
@@ -264,12 +291,21 @@ export default class HorarioService {
    */
   static async mostrarAulasParaHorario(nombrePNF) {
     try {
-      validationService.validarTexto(nombrePNF, "Nombre del PNF");
+      const validation = validationService.validarTexto(
+        nombrePNF,
+        "Nombre del PNF"
+      );
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Nombre de PNF inválido"
+        );
+      }
 
       const dbResponse = await HorarioModel.obtenerAulasDisponibles(nombrePNF);
 
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const rows = dbResponse.data || dbResponse;
@@ -282,7 +318,7 @@ export default class HorarioService {
       if (error.success === false) {
         throw error;
       }
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al obtener aulas disponibles",
         error.message,
         500,
@@ -299,16 +335,29 @@ export default class HorarioService {
    */
   static async registrarHorario(datos, usuario_accion) {
     try {
-      validationService.validateId(
+      const userValidation = validationService.validateId(
         usuario_accion.id,
-        "ID del usuario en sesión"
+        "usuario"
       );
-      validationService.validateHorario(datos);
+      if (!userValidation.isValid) {
+        return FormatterResponseService.validationError(
+          userValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      const horarioValidation = validationService.validateHorario(datos);
+      if (!horarioValidation.isValid) {
+        return FormatterResponseService.validationError(
+          horarioValidation.errors,
+          "Error de validación en datos del horario"
+        );
+      }
 
       const dbResponse = await HorarioModel.crear(datos, usuario_accion.id);
 
       if (dbResponse && dbResponse.state === "error") {
-        FormatterResponseService.fromDatabaseResponse(dbResponse);
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const resultado = dbResponse.data || dbResponse;
@@ -321,7 +370,7 @@ export default class HorarioService {
       if (error.success === false) {
         throw error;
       }
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al registrar horario",
         error.message,
         500,
@@ -337,11 +386,24 @@ export default class HorarioService {
    */
   static async generarDocumentoHorario(idSeccion) {
     try {
-      validationService.validateId(idSeccion, "ID de la sección");
+      const validation = validationService.validateId(idSeccion, "sección");
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "ID de sección inválido"
+        );
+      }
+
       console.log("📥 Generando documento para la sección:", idSeccion);
 
       // 1️⃣ Obtener datos desde el modelo
-      const { data } = await this.mostrarHorariosPorSeccion(idSeccion);
+      const response = await this.mostrarHorariosPorSeccion(idSeccion);
+
+      if (FormatterResponseService.isError(response)) {
+        return response;
+      }
+
+      const { data } = response;
 
       // 4️ Generar documento
       const buffer = await DocumentServices.generarDocumentoHorario(data);
@@ -360,7 +422,7 @@ export default class HorarioService {
         throw error;
       }
 
-      FormatterResponseService.error(
+      return FormatterResponseService.error(
         "Error al generar documento del horario",
         error.message,
         500,

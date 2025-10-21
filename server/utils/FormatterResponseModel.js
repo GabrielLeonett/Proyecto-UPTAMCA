@@ -107,8 +107,6 @@ export default class FormatterResponseModel {
         stack: error.stack,
         originalError: error,
         timestamp: new Date().toISOString(),
-        ...(error?.code && { code: error.code }),
-        ...(error?.details && { details: error.details }),
       });
 
       // Lanzar error interno formateado
