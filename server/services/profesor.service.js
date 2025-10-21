@@ -383,10 +383,9 @@ export default class ProfesorService {
         profesor.imagen,
         queryParams
       );
-      console.log(imagen)
 
       return FormatterResponseService.success(
-        imagen.buffer,
+        imagen,
         "Imagen del profesor obtenida exitosamente",
         {
           status: 200,

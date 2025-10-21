@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const ContraseñaSchema = z.object({
+const contraseniaSchema = z.object({
   antiguaPassword: z
     .string({
       required_error: "La contraseña es requerida",
@@ -36,3 +36,5 @@ export const ContraseñaSchema = z.object({
   message: "Las contraseñas no coinciden",
   path: ["repetirPassword"],
 });
+
+export default contraseniaSchema;

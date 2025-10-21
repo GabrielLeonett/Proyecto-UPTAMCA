@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
-import { SedeSchema } from "../../schemas/SedeSchema";
+import sedeSchema from "../../schemas/sede.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomButton from "../../components/customButton"; // 👈 Importamos tu botón
 import useApi from "../../hook/useApi"; // Added import for axios
@@ -17,7 +17,7 @@ export default function RegisterSede() {
     handleSubmit,
     reset, // 👈 aquí está el reset de react-hook-form
   } = useForm({
-    resolver: zodResolver(SedeSchema),
+    resolver: zodResolver(sedeSchema),
     mode: "onChange",
     shouldFocusError: true,
   });

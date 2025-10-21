@@ -5,7 +5,7 @@ import { Box, Typography, Stack } from "@mui/material";
 import CustomButton from "../../components/customButton";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
-import { UnidadCurricularSchema } from "../../schemas/UnidadCurricularSchema";
+import UnidadCurricularSchema from "../../schemas/unidadcurricular.schema";
 import useApi from "../../hook/useApi";
 import { useLocation } from "react-router-dom";
 

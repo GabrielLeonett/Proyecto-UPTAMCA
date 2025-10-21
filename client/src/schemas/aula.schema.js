@@ -1,7 +1,6 @@
-// src/schemas/AulaSchema.js
 import { z } from "zod";
 
-export const AulaSchema = z.object({
+const aulaSchema = z.object({
   codigo: z
     .string()
     .min(3, { message: "El código debe tener al menos 3 caracteres" })
@@ -36,3 +35,5 @@ export const AulaSchema = z.object({
     .max(500, { message: "La capacidad máxima es 500 estudiantes" })
     .positive({ message: "La capacidad debe ser un número positivo" }),
 });
+
+export default aulaSchema;

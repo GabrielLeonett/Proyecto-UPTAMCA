@@ -35,13 +35,11 @@ export default function CardProfesor({ profesor }) {
       hasFetched.current = true;
       try {
         const response = await axios.get(
-          `http://localhost:3000/profesor/img/${profesor.cedula}`,
-          { responseType: "blob" }
+          `/profesores/${profesor.cedula}/imagen`,
         );
-        if (response.status === 200 && response.data.size > 0) {
-          const imageUrl = URL.createObjectURL(response.data);
-          setAvatarUrl(imageUrl);
-        }
+        console.log(response)
+        const imageUrl = URL.createObjectURL(response);
+        setAvatarUrl(imageUrl);
       } catch (error) {
         console.error("Error cargando imagen:", error);
       }

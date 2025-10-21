@@ -11,6 +11,8 @@ import { useState } from "react";
 import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { nuevoPosgradoSchema } from "../schemas/profesor.schema.js";
 
 const TIPOS_POSGRADO = [
   "Especialización",
@@ -29,6 +31,7 @@ export default function ModalRegisterPosgrado({ open, onClose, setState }) {
   const axios = useApi(true);
 
   const { register, handleSubmit, reset } = useForm({
+    resolver: zodResolver(nuevoPosgradoSchema),
     defaultValues: {
       tipo: "",
       nombre: "",

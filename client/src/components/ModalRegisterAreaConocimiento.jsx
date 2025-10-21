@@ -4,6 +4,8 @@ import { useState } from "react";
 import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { nuevaAreaConocimientoSchema } from "../schemas/profesor.schema.js";
 
 export default function ModalRegisterAreaConocimiento({
   open,
@@ -14,6 +16,7 @@ export default function ModalRegisterAreaConocimiento({
   const axios = useApi(true);
 
   const { register, handleSubmit, reset } = useForm({
+    resolver: zodResolver(nuevaAreaConocimientoSchema),
     defaultValues: {
       area_conocimiento: "",
     },
@@ -27,8 +30,8 @@ export default function ModalRegisterAreaConocimiento({
 
       await axios.post("/catalogos/areas-conocimiento", payload);
 
-      const res = await axios.get("/catalogos/areas-conocimiento");
-      setState(res);
+      const {areas_conocimiento} = await axios.get("/catalogos/areas-conocimiento");
+      setState(areas_conocimiento);
       reset();
     } finally {
       onClose();

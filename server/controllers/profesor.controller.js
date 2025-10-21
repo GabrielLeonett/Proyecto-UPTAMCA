@@ -48,19 +48,21 @@ export default class ProfesorController {
         id,
         req.query
       );
-
-      console.log( respuesta)
+      const dataImagen = respuesta.data;
+      console.log(respuesta.data);
+      
       // Configurar headers para la respuesta de imagen
       res.set({
-        "Content-Type": respuesta.mimeType,
-        "Content-Length": respuesta.fileSize,
-        "Content-Disposition": `inline; filename="${respuesta.fileName}"`,
+        "Content-Type": dataImagen.mimeType,
+        "Content-Length": dataImagen.fileSize,
+        "Content-Disposition": `inline; filename="${dataImagen.fileName}"`,
         "Cache-Control": "public, max-age=86400",
-        ETag: `"${respuesta.fileName}-${respuesta.fileSize}"`,
+        ETag: `"${dataImagen.fileName}-${dataImagen.fileSize}"`,
       });
 
+
       // Enviar el buffer de la imagen
-      res.send(respuesta.data);
+      res.send(dataImagen);
     } catch (error) {
       FormatResponseController.respuestaError(res, error);
     }

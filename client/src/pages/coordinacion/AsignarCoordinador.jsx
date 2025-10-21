@@ -19,7 +19,7 @@ import ResponsiveAppBar from "../../components/navbar";
 import CustomLabel from "../../components/customLabel";
 import CustomButton from "../../components/customButton";
 import useApi from "../../hook/useApi"; // Added import for axios
-import { AsignarCoordinadorSchema } from "../../schemas/AsignarCoordinadorSchema";
+import asignarCoordinadorSchema from "../../schemas/asignarCoordinador.Schema";
 
 export default function AsignarCoordinador() {
   const axios = useApi();

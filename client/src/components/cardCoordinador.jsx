@@ -13,7 +13,7 @@ import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
-import { ProfesorSchema } from "../schemas/ProfesorSchema.js";
+import profesorSchema  from "../schemas/profesor.schema.js";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,7 +25,7 @@ export function CardCoordinador({ coordinador }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(ProfesorSchema),
+    resolver: zodResolver(profesorSchema),
   });
   return (
     <Box

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "../schemas/LoginSchema";
+import loginSchema from "../schemas/login.schema";
 import CustomLabel from "../components/customLabel";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
