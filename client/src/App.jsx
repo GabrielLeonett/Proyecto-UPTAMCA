@@ -69,6 +69,8 @@ import BotonCambiarTema from "./components/BotonCambiarTema";
 import ProtectedViews from "./security/ProtectedViews";
 
 import ProfesoresEliminados from "./pages/academico/eliminarProfesor";
+import MiPerfil from "./pages/MiPerfil";
+import EditarAula from "./pages/EditarAula";
 
 
 // Roles comunes para reutilización
@@ -291,6 +293,19 @@ export default function App() {
 
               {/* === RUTA PARA PÁGINA NO ENCONTRADA === */}
               <Route path="*" element={<PaginaNoEncontrada />} />
+
+              <Route
+                path="/perfil"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                    <MiPerfil />
+                  </ProtectedViews>
+                }
+              />
+
+              <Route path="/aulas/editar/:id" element={<EditarAula />} />
+
+
             </Routes>
           </AuthProvider>
         </Router>
