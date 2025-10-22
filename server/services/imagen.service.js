@@ -408,6 +408,7 @@ export default class ImagenService {
           withoutEnlargement = true,
         } = options;
 
+
         // Validar opciones de procesamiento
         if (width && (width < 1 || width > 10000)) {
           throw {

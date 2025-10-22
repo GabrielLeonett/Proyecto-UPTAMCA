@@ -12,6 +12,7 @@ export const useApi = (colocarAlertas = false) => {
     SUCCESS: "success",
     ERROR: "error",
     VALIDATION_ERROR: "validation_error",
+    BINARY: "binary" // 👈 NUEVO tipo para respuestas binarias
   };
 
   // Mover showAutoAlert a useCallback para que sea estable
@@ -139,11 +140,45 @@ export const useApi = (colocarAlertas = false) => {
     // Interceptor de respuesta ESPECÍFICO para FormatterResponseController
     instance.interceptors.response.use(
       (response) => {
+        const contentType = response.headers['content-type'];
+        
+        // 👇 DETECTAR SI ES UNA IMAGEN/BINARIO
+        const isBinaryResponse = 
+          contentType && (
+            contentType.includes('image/') ||
+            contentType.includes('application/octet-stream') ||
+            contentType.includes('application/pdf') ||
+            response.config.responseType === 'blob' ||
+            response.config.responseType === 'arraybuffer'
+          );
+          
+        console.log("🔍 Tipo de respuesta:", {
+          contentType,
+          isBinaryResponse,
+          configResponseType: response.config.responseType
+        });
+
+        // CASO 1: ES UNA RESPUESTA BINARIA (IMAGEN, PDF, etc.)
+        if (isBinaryResponse) {
+          console.log("🖼️ Respuesta binaria detectada");
+          
+          // Para respuestas binarias, devolver la respuesta completa
+          // El frontend manejará el blob/arraybuffer directamente
+          return {
+            type: RESPONSE_TYPES.BINARY,
+            data: response.data,
+            headers: response.headers,
+            status: response.status,
+            config: response.config,
+            _isBinary: true
+          };
+        }
+
         const backendResponse = response.data;
 
         console.log("🔍 Respuesta del backend:", backendResponse);
 
-        // CASO 1: Respuesta exitosa de FormatterResponseController
+        // CASO 2: Respuesta exitosa de FormatterResponseController
         if (backendResponse && backendResponse.success === true) {
           console.log("✅ Respuesta exitosa detectada");
 
@@ -160,7 +195,7 @@ export const useApi = (colocarAlertas = false) => {
           return backendResponse.data !== undefined ? backendResponse.data : backendResponse;
         }
 
-        // CASO 2: Respuesta de error de FormatterResponseController
+        // CASO 3: Respuesta de error de FormatterResponseController
         if (backendResponse && backendResponse.success === false) {
           console.log("❌ Respuesta de error detectada");
 
@@ -186,7 +221,7 @@ export const useApi = (colocarAlertas = false) => {
           return Promise.reject(errorResponse);
         }
 
-        // CASO 3: Respuesta sin formato FormatterResponseController (fallback)
+        // CASO 4: Respuesta sin formato FormatterResponseController (fallback)
         console.warn("⚠️ Respuesta sin formato FormatterResponseController:", backendResponse);
         
         // Si no tiene el formato esperado pero es una respuesta exitosa HTTP
@@ -287,6 +322,61 @@ export const useApi = (colocarAlertas = false) => {
       );
     };
 
+    // 👇 NUEVOS MÉTODOS PARA MANEJAR BINARIOS/IMÁGENES
+
+    // Verificar si es respuesta binaria
+    instance.isBinary = (response) => {
+      return response && (response._isBinary === true || response.type === RESPONSE_TYPES.BINARY);
+    };
+
+    // Verificar si es imagen específicamente
+    instance.isImage = (response) => {
+      if (!instance.isBinary(response)) return false;
+      const contentType = response.headers?.['content-type'];
+      return contentType && contentType.includes('image/');
+    };
+
+    // Método para procesar respuestas de imagen
+    instance.handleImageResponse = async (response, filename = 'image') => {
+      if (!instance.isBinary(response)) {
+        throw new Error('La respuesta no es binaria');
+      }
+
+      try {
+        // Para imágenes en el navegador, crear URL de objeto
+        const blob = new Blob([response.data], { 
+          type: response.headers['content-type'] 
+        });
+        const imageUrl = URL.createObjectURL(blob);
+        
+        return {
+          blob,
+          imageUrl,
+          contentType: response.headers['content-type'],
+          size: blob.size,
+          filename,
+          headers: response.headers
+        };
+      } catch (error) {
+        console.error('Error procesando imagen:', error);
+        throw error;
+      }
+    };
+
+    // Método específico para obtener imágenes (más simple)
+    instance.getImageBlob = async (url, options = {}) => {
+      const response = await instance.get(url, {
+        responseType: 'blob',
+        ...options
+      });
+      
+      if (instance.isBinary(response)) {
+        return instance.handleImageResponse(response);
+      }
+      
+      throw new Error('La respuesta no es una imagen');
+    };
+
     // Obtener mensajes de validación formateados
     instance.getValidationMessages = (error) => {
       if (
@@ -322,7 +412,7 @@ export const useApi = (colocarAlertas = false) => {
         });
 
         // Crear URL temporal para descarga
-        const blob = new Blob([response]);
+        const blob = new Blob([response.data]);
         const downloadUrl = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = downloadUrl;
@@ -335,6 +425,30 @@ export const useApi = (colocarAlertas = false) => {
         return true;
       } catch (error) {
         console.error('Error descargando archivo:', error);
+        throw error;
+      }
+    };
+
+    // 👇 NUEVO: Método específico para descargar imágenes
+    instance.downloadImage = async (url, filename = 'image') => {
+      try {
+        const imageData = await instance.getImageBlob(url);
+        
+        const link = document.createElement('a');
+        link.href = imageData.imageUrl;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Limpiar después de un tiempo
+        setTimeout(() => {
+          URL.revokeObjectURL(imageData.imageUrl);
+        }, 1000);
+        
+        return true;
+      } catch (error) {
+        console.error('Error descargando imagen:', error);
         throw error;
       }
     };

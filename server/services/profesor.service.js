@@ -337,6 +337,7 @@ export default class ProfesorService {
       console.log(
         `🔍 [obtenerImagenProfesor] Buscando imagen del profesor ID: ${id_profesor}`
       );
+      console.log(queryParams)
 
       // Validar ID del profesor
       const idValidation = ValidationService.validateId(
@@ -383,10 +384,9 @@ export default class ProfesorService {
         profesor.imagen,
         queryParams
       );
-      console.log(imagen)
 
       return FormatterResponseService.success(
-        imagen.buffer,
+        imagen,
         "Imagen del profesor obtenida exitosamente",
         {
           status: 200,

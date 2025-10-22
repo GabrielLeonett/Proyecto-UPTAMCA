@@ -19,7 +19,10 @@ export const useSweetAlert = () => {
   });
 
   const alert = {
-    show: (config) => Swal.fire({ ...getBaseConfig(), ...config }),
+    show: (config) => {
+      console.log(config);
+      Swal.fire({ ...getBaseConfig(), ...config });
+    },
 
     success: (title, text = "", config = {}) =>
       Swal.fire({
