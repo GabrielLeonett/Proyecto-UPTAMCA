@@ -208,9 +208,11 @@ profesorRouter.post(
     "Vicerrector",
     "Director General de Gestión Curricular",
     "Coordinador",
+    "Profesor",
   ]),
   registrarDisponibilidad
 );
+
 
 /**
  * =============================================

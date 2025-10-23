@@ -73,6 +73,10 @@ const MiPerfil = () => {
               <CustomButton text="Ver carga" onClick={() => navigate("/carga-academica")} />
               <CustomButton text="Notificaciones" onClick={() => navigate("/notificaciones")} />
               <CustomButton text="Solicitar corrección" onClick={() => navigate("/tickets")} />
+              <CustomButton
+                text="Registrar disponibilidad"
+                onClick={() => navigate("/registrar-disponibilidad")}
+              />
             </div>
           )}
 

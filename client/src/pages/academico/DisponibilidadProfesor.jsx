@@ -136,16 +136,17 @@ export default function DisponibilidadProfesor() {
       // Enviar cada registro individualmente
       const promises = disponibilidadData.map(async (data) => {
         const response = await axios.post(
-          'http://localhost:3000/Profesor/Register/Disponibilidad',
-          data, // Enviar objeto individual, no array
+          `http://localhost:3000/profesores/${id_profesor}/disponibilidad`, // ✅ Ruta correcta
+          data,
           {
             headers: {
               'Content-Type': 'application/json',
-              'Cookie': `autorization=${token}`
+              'Authorization': `Bearer ${token}` // ✅ Recomendado en vez de enviar cookie manual
             },
             withCredentials: true
           }
         );
+
         return response;
       });
 
