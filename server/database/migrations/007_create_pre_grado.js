@@ -10,7 +10,7 @@ export async function up(knex) {
     table.increments('id_pre_grado').primary().notNullable().comment('ID del pre-grado');
     
     // Campos principales
-    table.string('nombre_pre_grado', 100).unique().notNullable().comment('Nombre del pre-grado');
+    table.string('nombre_pre_grado', 100).notNullable().comment('Nombre del pre-grado');
     table.enum('tipo_pre_grado', [
       'Técnico Superior', 'Licenciatura', 'Ingeniería', 'Medicina', 
       'Arquitectura', 'Derecho', 'Educación', 'Administración', 

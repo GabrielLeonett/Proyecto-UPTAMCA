@@ -15,7 +15,7 @@ import ResponsiveAppBar from "../components/navbar";
 import CustomLabel from "../components/customLabel";
 import CustomButton from "../components/customButton";
 import useApi from "../hook/useApi";
-import { AulaSchema } from "../schemas/AulaSchema";
+import AulaSchema from "../schemas/aula.schema";
 
 export default function EditarAula() {
   const theme = useTheme();

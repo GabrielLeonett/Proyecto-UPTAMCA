@@ -314,6 +314,7 @@ export default class ProfesorModel {
       const values = [usuarioId, nombre, tipo];
 
       const { rows } = await client.query(query, values);
+      console.log(rows)
 
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -492,6 +493,7 @@ export default class ProfesorModel {
       ];
 
       const { rows } = await client.query(query, values);
+      console.log(rows);
 
       return FormatResponseModel.respuestaPostgres(
         rows,

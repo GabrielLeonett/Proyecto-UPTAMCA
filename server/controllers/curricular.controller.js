@@ -43,6 +43,62 @@ export default class CurricularController {
   }
 
   /**
+   * @name actualizarPNF
+   * @description Actualizar un Programa Nacional de Formación (PNF) existente
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarPNF(req, res) {
+    const idPNF = parseInt(req.params.idPNF);
+
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.actualizarPNF(idPNF, req.body, req.user)
+    );
+  }
+
+  /**
+   * @name actualizarDescripcionTrayecto
+   * @description Actualizar la descripción de un trayecto específico
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarDescripcionTrayecto(req, res) {
+    const idTrayecto = parseInt(req.params.idTrayecto);
+
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.actualizarDescripcionTrayecto(
+        idTrayecto,
+        req.body,
+        req.user
+      )
+    );
+  }
+
+  /**
+   * @name actualizarUnidadCurricular
+   * @description Actualizar una Unidad Curricular existente (parcial o completamente)
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async actualizarUnidadCurricular(req, res) {
+    const idUnidadCurricular = parseInt(req.params.idUnidadCurricular);
+
+    return FormatResponseController.manejarServicio(
+      res,
+      CurricularService.actualizarUnidadCurricular(
+        idUnidadCurricular,
+        req.body,
+        req.user
+      )
+    );
+  }
+
+  /**
    * @name mostrarPNF
    * @description Obtener todos los Programas Nacionales de Formación registrados
    * @param {Object} req - Objeto de solicitud Express
@@ -78,7 +134,9 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarUnidadesCurriculares(req, res) {
-    const trayecto = req.params.idTrayecto ? Number(req.params.idTrayecto) : null;
+    const trayecto = req.params.idTrayecto
+      ? Number(req.params.idTrayecto)
+      : null;
     return FormatResponseController.manejarServicio(
       res,
       CurricularService.mostrarUnidadesCurriculares(trayecto)

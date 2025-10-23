@@ -82,21 +82,22 @@ export default class CurricularService {
         );
       }
 
-      // 4. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 4. Enviar notificación GLOBAL (PNF es información institucional importante)
+      console.log("🔔 Enviando notificación GLOBAL de PNF...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Nuevo PNF Registrado",
+        titulo: "Nuevo Programa Nacional de Formación (PNF)",
         tipo: "pnf_creado",
-        contenido: `Se ha registrado el PNF ${datos.nombrePNF} en el sistema`,
+        contenido: `Se ha registrado el nuevo PNF "${datos.nombrePNF}" (Código: ${datos.codigoPNF}) en el sistema académico`,
         metadatos: {
           pnf_nombre: datos.nombrePNF,
           pnf_codigo: datos.codigoPNF,
+          pnf_descripcion: datos.descripcionPNF,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
+          url_action: `/academico/pnf`,
         },
-        roles_ids: [3, 4, 20], // Administradores y coordinadores
-        users_ids: [user_action.id],
+        // NO se pasan roles_ids ni users_ids → Notificación global para todos
       });
 
       console.log("🎉 PNF registrado exitosamente");
@@ -220,22 +221,25 @@ export default class CurricularService {
         return respuestaModel;
       }
 
-      // 4. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 4. Enviar notificación específica para coordinación académica
+      console.log("🔔 Enviando notificaciones de unidad curricular...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Nueva Unidad Curricular Registrada",
         tipo: "unidad_curricular_creada",
-        contenido: `Se ha registrado la unidad curricular ${datos.nombreUnidadCurricular}`,
+        contenido: `Se ha registrado la unidad curricular "${datos.nombreUnidadCurricular}" (Código: ${datos.codigoUnidadCurricular}) en el sistema`,
         metadatos: {
           unidad_curricular_nombre: datos.nombreUnidadCurricular,
           unidad_curricular_codigo: datos.codigoUnidadCurricular,
-          trayecto: datos.idTrayecto,
+          trayecto_id: idTrayecto,
+          creditos: datos.creditos,
+          horas_academicas: datos.horasAcademicas,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
+          url_action: `/academico/unidades-curriculares`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 20], // Solo Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que creó la unidad curricular
       });
 
       console.log("🎉 Unidad curricular registrada exitosamente");
@@ -561,24 +565,23 @@ export default class CurricularService {
         return respuestaModel;
       }
 
-      // 5. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 5. Enviar notificación específica para coordinación académica
+      console.log("🔔 Enviando notificaciones de creación de secciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Secciones Creadas",
+        titulo: "Secciones Creadas para Trayecto",
         tipo: "secciones_creadas",
-        contenido: `Se han creado ${
-          datos.cantidadSecciones || "varias"
-        } secciones para el trayecto ${idTrayecto}`,
+        contenido: `Se han creado ${datos.cantidadSecciones} secciones para el trayecto académico. Turno: ${datos.turno}`,
         metadatos: {
           trayecto_id: idTrayecto,
           cantidad_secciones: datos.cantidadSecciones,
           turno: datos.turno,
           usuario_creador: user_action.id,
           fecha_creacion: new Date().toISOString(),
+          url_action: `/academico/secciones?trayecto=${idTrayecto}`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 20], // Solo Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que creó las secciones
       });
 
       console.log("🎉 Secciones creadas exitosamente");
@@ -677,21 +680,24 @@ export default class CurricularService {
         return respuestaModel;
       }
 
-      // 4. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 4. Enviar notificación específica para coordinación académica
+      console.log("🔔 Enviando notificaciones de asignación de turno...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Turno Asignado a Sección",
         tipo: "turno_asignado",
-        contenido: `Se ha asignado un turno a la sección ${datos.idSeccion}`,
+        contenido: `Se ha asignado un turno a la sección académica`,
         metadatos: {
-          seccion_id: datos.idSeccion,
+          seccion_id: idSeccion,
           turno_id: datos.idTurno,
+          seccion_nombre: respuestaModel.data?.seccion_nombre,
+          turno_nombre: respuestaModel.data?.turno_nombre,
           usuario_asignador: user_action.id,
           fecha_asignacion: new Date().toISOString(),
+          url_action: `/academico/secciones/${idSeccion}`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 20], // Solo Coordinador, Directores y SuperAdmin
+        users_ids: [user_action.id], // Usuario que asignó el turno
       });
 
       console.log("🎉 Turno asignado exitosamente");
@@ -714,6 +720,472 @@ export default class CurricularService {
       );
     } catch (error) {
       console.error("💥 Error en servicio asignar turno:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarPNF
+   * @description Actualizar un PNF existente
+   * @param {number} idPNF - ID del PNF
+   * @param {Object} datos - Datos actualizados
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarPNF(idPNF, datos, user_action) {
+    try {
+      console.log("🔍 [actualizarPNF] Actualizando PNF ID:", idPNF);
+
+      // Validaciones
+      const pnfValidation = ValidationService.validateId(idPNF, "PNF");
+      if (!pnfValidation.isValid) {
+        return FormatterResponseService.validationError(
+          pnfValidation.errors,
+          "ID de PNF inválido"
+        );
+      }
+
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      const validation = ValidationService.validatePartialPnf(datos);
+      if (!validation.isValid) {
+        return FormatterResponseService.validationError(
+          validation.errors,
+          "Error de validación en actualización de PNF"
+        );
+      }
+
+      // Actualizar en modelo
+      const respuestaModel = await CurricularModel.actualizarPNF(
+        idPNF,
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Notificación GLOBAL (PNF es información institucional)
+      console.log("🔔 Enviando notificación GLOBAL de actualización de PNF...");
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "PNF Actualizado",
+        tipo: "pnf_actualizado",
+        contenido: `Se han actualizado los datos del Programa Nacional de Formación. Cambios realizados: ${Object.keys(
+          datos
+        ).join(", ")}`,
+        metadatos: {
+          pnf_id: idPNF,
+          pnf_nombre: datos.nombrePNF,
+          campos_actualizados: Object.keys(datos),
+          usuario_actualizador: user_action.id,
+          fecha_actualizacion: new Date().toISOString(),
+          url_action: `/academico/pnf`,
+        },
+        // NO se pasan roles_ids ni users_ids → Notificación global para todos
+      });
+
+      return FormatterResponseService.success(
+        {
+          message: "PNF actualizado exitosamente",
+          pnf_id: idPNF,
+          cambios: datos,
+        },
+        "PNF actualizado exitosamente",
+        {
+          status: 200,
+          title: "PNF Actualizado",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio actualizar PNF:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarDescripcionTrayecto
+   * @description Actualizar la descripción de un trayecto específico
+   * @param {number} idTrayecto - ID del trayecto
+   * @param {Object} datos - Datos de actualización
+   * @param {string} datos.descripcionTrayecto - Nueva descripción
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarDescripcionTrayecto(idTrayecto, datos, user_action) {
+    try {
+      console.log(
+        "🔍 [actualizarDescripcionTrayecto] Actualizando descripción del trayecto ID:",
+        idTrayecto
+      );
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos de actualización:", {
+          idTrayecto,
+          datos: JSON.stringify(datos, null, 2),
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar ID del trayecto
+      const trayectoValidation = ValidationService.validateId(
+        idTrayecto,
+        "trayecto"
+      );
+      if (!trayectoValidation.isValid) {
+        return FormatterResponseService.validationError(
+          trayectoValidation.errors,
+          "ID de trayecto inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Validar descripción
+      if (
+        !datos.descripcionTrayecto ||
+        datos.descripcionTrayecto.trim() === ""
+      ) {
+        return FormatterResponseService.error(
+          "Descripción requerida",
+          "La descripción del trayecto no puede estar vacía",
+          400,
+          "DESCRIPCION_REQUERIDA"
+        );
+      }
+
+      const descripcionLimpia = datos.descripcionTrayecto.trim();
+
+      if (descripcionLimpia.length < 10) {
+        return FormatterResponseService.error(
+          "Descripción muy corta",
+          "La descripción debe tener al menos 10 caracteres",
+          400,
+          "DESCRIPCION_MUY_CORTA"
+        );
+      }
+
+      if (descripcionLimpia.length > 500) {
+        return FormatterResponseService.error(
+          "Descripción muy larga",
+          "La descripción no puede exceder los 500 caracteres",
+          400,
+          "DESCRIPCION_MUY_LARGA"
+        );
+      }
+
+      // 4. Llamar al modelo para actualizar
+      const respuestaModel =
+        await CurricularModel.actualizarDescripcionTrayecto(
+          idTrayecto,
+          descripcionLimpia,
+          user_action.id
+        );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // 5. Enviar notificación específica
+      console.log(
+        "🔔 Enviando notificación de actualización de descripción de trayecto..."
+      );
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Descripción de Trayecto Actualizada",
+        tipo: "trayecto_descripcion_actualizada",
+        contenido: `Se ha actualizado la descripción del trayecto "${
+          respuestaModel.data?.valor_trayecto || "N/A"
+        }"`,
+        metadatos: {
+          trayecto_id: idTrayecto,
+          trayecto_nombre: respuestaModel.data?.valor_trayecto,
+          pnf_id: respuestaModel.data?.id_pnf,
+          descripcion_anterior: respuestaModel.data?.descripcion_anterior,
+          descripcion_nueva: descripcionLimpia,
+          usuario_actualizador: user_action.id,
+          fecha_actualizacion: new Date().toISOString(),
+          url_action: `/academico/trayectos/${idTrayecto}`,
+        },
+        roles_ids: [2, 7, 8, 10, 20], // Coordinador, Directores, Vicerrector, SuperAdmin
+        users_ids: [user_action.id],
+      });
+
+      console.log("🎉 Descripción del trayecto actualizada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Descripción del trayecto actualizada exitosamente",
+          trayecto: {
+            id: idTrayecto,
+            valor_trayecto: respuestaModel.data?.valor_trayecto,
+            descripcion_anterior: respuestaModel.data?.descripcion_anterior,
+            descripcion_nueva: descripcionLimpia,
+            id_pnf: respuestaModel.data?.id_pnf,
+          },
+        },
+        "Descripción del trayecto actualizada exitosamente",
+        {
+          status: 200,
+          title: "Descripción Actualizada",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "💥 Error en servicio actualizar descripción de trayecto:",
+        error
+      );
+      throw error;
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method actualizarUnidadCurricular
+   * @description Actualizar una Unidad Curricular existente (parcial o completamente)
+   * @param {number} idUnidadCurricular - ID de la unidad curricular
+   * @param {Object} datos - Datos de actualización
+   * @param {string} [datos.codigo_unidad] - Nuevo código de la unidad
+   * @param {string} [datos.nombre_unidad_curricular] - Nuevo nombre de la unidad
+   * @param {string} [datos.descripcion_unidad_curricular] - Nueva descripción
+   * @param {number} [datos.horas_clase] - Nuevas horas de clase
+   * @param {number} [datos.id_trayecto] - Nuevo ID del trayecto
+   * @param {Object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarUnidadCurricular(
+    idUnidadCurricular,
+    datos,
+    user_action
+  ) {
+    try {
+      console.log(
+        "🔍 [actualizarUnidadCurricular] Actualizando unidad curricular ID:",
+        idUnidadCurricular
+      );
+
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos de actualización:", {
+          idUnidadCurricular,
+          datos: JSON.stringify(datos, null, 2),
+          user_action: user_action,
+        });
+      }
+
+      // 1. Validar ID de la unidad curricular
+      const unidadValidation = ValidationService.validateId(
+        idUnidadCurricular,
+        "unidad_curricular"
+      );
+      if (!unidadValidation.isValid) {
+        return FormatterResponseService.validationError(
+          unidadValidation.errors,
+          "ID de unidad curricular inválido"
+        );
+      }
+
+      // 2. Validar ID de usuario
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!usuarioValidation.isValid) {
+        return FormatterResponseService.validationError(
+          usuarioValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // 3. Validar que al menos un campo sea proporcionado
+      const camposPermitidos = [
+        "codigo_unidad",
+        "nombre_unidad_curricular",
+        "descripcion_unidad_curricular",
+        "horas_clase",
+        "id_trayecto",
+      ];
+
+      const camposProporcionados = Object.keys(datos).filter(
+        (key) =>
+          camposPermitidos.includes(key) &&
+          datos[key] !== undefined &&
+          datos[key] !== null
+      );
+
+      if (camposProporcionados.length === 0) {
+        return FormatterResponseService.error(
+          "Sin campos para actualizar",
+          "Debe proporcionar al menos un campo para actualizar: codigo_unidad, nombre_unidad_curricular, descripcion_unidad_curricular, horas_clase o id_trayecto",
+          400,
+          "SIN_CAMPOS_ACTUALIZAR"
+        );
+      }
+
+      // 4. Validaciones específicas por campo
+      const erroresValidacion = [];
+
+      // Validar código_unidad si se proporciona
+      if (datos.codigo_unidad !== undefined) {
+        const codigoLimpio = datos.codigo_unidad?.toString().trim();
+        if (!codigoLimpio || codigoLimpio.length === 0) {
+          erroresValidacion.push("El código de la unidad no puede estar vacío");
+        } else if (codigoLimpio.length < 2 || codigoLimpio.length > 20) {
+          erroresValidacion.push(
+            "El código de la unidad debe tener entre 2 y 20 caracteres"
+          );
+        }
+        datos.codigo_unidad = codigoLimpio;
+      }
+
+      // Validar nombre_unidad_curricular si se proporciona
+      if (datos.nombre_unidad_curricular !== undefined) {
+        const nombreLimpio = datos.nombre_unidad_curricular?.toString().trim();
+        if (!nombreLimpio || nombreLimpio.length === 0) {
+          erroresValidacion.push(
+            "El nombre de la unidad curricular no puede estar vacío"
+          );
+        } else if (nombreLimpio.length < 3 || nombreLimpio.length > 100) {
+          erroresValidacion.push(
+            "El nombre de la unidad curricular debe tener entre 3 y 100 caracteres"
+          );
+        }
+        datos.nombre_unidad_curricular = nombreLimpio;
+      }
+
+      // Validar descripcion_unidad_curricular si se proporciona
+      if (datos.descripcion_unidad_curricular !== undefined) {
+        const descripcionLimpia = datos.descripcion_unidad_curricular
+          ?.toString()
+          .trim();
+        if (!descripcionLimpia || descripcionLimpia.length === 0) {
+          erroresValidacion.push(
+            "La descripción de la unidad curricular no puede estar vacía"
+          );
+        } else if (descripcionLimpia.length < 10) {
+          erroresValidacion.push(
+            "La descripción de la unidad curricular debe tener al menos 10 caracteres"
+          );
+        }
+        datos.descripcion_unidad_curricular = descripcionLimpia;
+      }
+
+      // Validar horas_clase si se proporciona
+      if (datos.horas_clase !== undefined) {
+        const horas = parseInt(datos.horas_clase);
+        if (isNaN(horas) || horas <= 0 || horas > 100) {
+          erroresValidacion.push(
+            "Las horas de clase deben ser un número entre 1 y 100"
+          );
+        }
+        datos.horas_clase = horas;
+      }
+
+      // Validar id_trayecto si se proporciona
+      if (datos.id_trayecto !== undefined) {
+        const trayectoId = parseInt(datos.id_trayecto);
+        if (isNaN(trayectoId) || trayectoId <= 0) {
+          erroresValidacion.push(
+            "El ID del trayecto debe ser un número válido"
+          );
+        }
+        datos.id_trayecto = trayectoId;
+      }
+
+      // Retornar errores de validación si existen
+      if (erroresValidacion.length > 0) {
+        return FormatterResponseService.validationError(
+          erroresValidacion,
+          "Errores de validación en los datos proporcionados"
+        );
+      }
+
+      // 5. Llamar al modelo para actualizar
+      const respuestaModel = await CurricularModel.actualizarUnidadCurricular(
+        idUnidadCurricular,
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // 6. Enviar notificación específica
+      console.log(
+        "🔔 Enviando notificación de actualización de unidad curricular..."
+      );
+      const notificationService = new NotificationService();
+
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Unidad Curricular Actualizada",
+        tipo: "unidad_curricular_actualizada",
+        contenido: `Se ha actualizado la unidad curricular "${
+          respuestaModel.data?.unidad_curricular?.nombre_unidad_curricular ||
+          datos.nombre_unidad_curricular ||
+          "N/A"
+        }"`,
+        metadatos: {
+          unidad_curricular_id: idUnidadCurricular,
+          unidad_curricular_nombre:
+            respuestaModel.data?.unidad_curricular?.nombre_unidad_curricular ||
+            datos.nombre_unidad_curricular,
+          campos_actualizados:
+            respuestaModel.data?.unidad_curricular?.campos_actualizados,
+          horas_anteriores:
+            respuestaModel.data?.unidad_curricular?.horas_anteriores,
+          horas_nuevas: respuestaModel.data?.unidad_curricular?.horas_nuevas,
+          usuario_actualizador: user_action.id,
+          fecha_actualizacion: new Date().toISOString(),
+          url_action: `/academico/unidades-curriculares/${idUnidadCurricular}`,
+        },
+        roles_ids: [2, 7, 8, 10, 20], // Coordinador, Directores, Vicerrector, SuperAdmin
+        users_ids: [user_action.id],
+      });
+
+      console.log("🎉 Unidad curricular actualizada exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Unidad curricular actualizada exitosamente",
+          unidad_curricular: respuestaModel.data?.unidad_curricular,
+          campos_actualizados:
+            respuestaModel.data?.unidad_curricular?.campos_actualizados,
+        },
+        "Unidad curricular actualizada exitosamente",
+        {
+          status: 200,
+          title: "Unidad Curricular Actualizada",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "💥 Error en servicio actualizar unidad curricular:",
+        error
+      );
       throw error;
     }
   }

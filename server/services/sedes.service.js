@@ -76,21 +76,22 @@ export default class SedeService {
         );
       }
 
-      // 4. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 4. Enviar notificación GLOBAL (para todos los usuarios)
+      console.log("🔔 Enviando notificación GLOBAL...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Nueva Sede Registrada",
         tipo: "sede_creada",
-        contenido: `Se ha registrado la sede ${datos.nombreSede} en el sistema`,
+        contenido: `Se ha registrado la sede "${datos.nombreSede}" en el sistema. Ubicación: ${datos.UbicacionSede}`,
         metadatos: {
           sede_nombre: datos.nombreSede,
           sede_direccion: datos.UbicacionSede,
+          google_maps: datos.GoogleSede,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
+          url_action: `/sedes/${respuestaModel.data?.id_sede || respuestaModel.data?.id}`,
         },
-        roles_ids: [3, 4, 20], // Administradores y coordinadores
-        users_ids: [user_action.id],
+        // NO se pasan roles_ids ni users_ids → Notificación global para todos
       });
 
       console.log("🎉 Sede registrada exitosamente");
@@ -372,22 +373,22 @@ export default class SedeService {
         return respuestaModel;
       }
 
-      // 6. Enviar notificación
-      console.log("🔔 Enviando notificación de actualización...");
+      // 6. Enviar notificación GLOBAL (para todos los usuarios)
+      console.log("🔔 Enviando notificación GLOBAL de actualización...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Sede Actualizada",
         tipo: "sede_actualizada",
-        contenido: `Se han actualizado los datos de la sede ${sedeExistente.data[0].nombre}`,
+        contenido: `Se han actualizado los datos de la sede "${sedeExistente.data[0].nombre_sede}". Cambios realizados: ${Object.keys(datos).join(', ')}`,
         metadatos: {
           sede_id: id,
-          sede_nombre: sedeExistente.data[0].nombre,
+          sede_nombre: sedeExistente.data[0].nombre_sede,
           campos_actualizados: Object.keys(datos),
           usuario_actualizador: user_action.id,
           fecha_actualizacion: new Date().toISOString(),
+          url_action: `/sedes/${id}`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        // NO se pasan roles_ids ni users_ids → Notificación global para todos
       });
 
       console.log("✅ Sede actualizada exitosamente");
@@ -472,7 +473,7 @@ export default class SedeService {
           "La sede tiene aulas u otras dependencias asociadas. Elimine primero las dependencias.",
           409,
           "SEDE_CON_DEPENDENCIAS",
-          { sede_id: id, sede_nombre: sede.nombre }
+          { sede_id: id, sede_nombre: sede.nombre_sede }
         );
       }
 
@@ -485,22 +486,21 @@ export default class SedeService {
         return respuestaModel;
       }
 
-      // 6. Enviar notificación
-      console.log("🔔 Enviando notificación de eliminación...");
+      // 6. Enviar notificación GLOBAL (para todos los usuarios)
+      console.log("🔔 Enviando notificación GLOBAL de eliminación...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Sede Eliminada",
         tipo: "sede_eliminada",
-        contenido: `Se ha eliminado la sede ${sede.nombre} del sistema`,
+        contenido: `Se ha eliminado la sede "${sede.nombre_sede}" del sistema. Ubicación anterior: ${sede.ubicacion_sede}`,
         metadatos: {
           sede_id: id,
-          sede_nombre: sede.nombre,
-          sede_direccion: sede.direccion,
+          sede_nombre: sede.nombre_sede,
+          sede_direccion: sede.ubicacion_sede,
           usuario_eliminador: user_action.id,
           fecha_eliminacion: new Date().toISOString(),
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        // NO se pasan roles_ids ni users_ids → Notificación global para todos
       });
 
       console.log("✅ Sede eliminada exitosamente");
@@ -510,7 +510,7 @@ export default class SedeService {
           message: "Sede eliminada exitosamente",
           sede: {
             id: id,
-            nombre: sede.nombre,
+            nombre: sede.nombre_sede,
           },
         },
         "Sede eliminada exitosamente",

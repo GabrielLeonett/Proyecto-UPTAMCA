@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AsignarCoordinadorSchema = z.object({
+const asignarCoordinadorSchema = z.object({
   idProfesor: z
     .number({
       invalid_type_error: "Debe seleccionar un profesor válido",
@@ -15,3 +15,4 @@ export const AsignarCoordinadorSchema = z.object({
     })
     .int(),
 });
+export default asignarCoordinadorSchema;

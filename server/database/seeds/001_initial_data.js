@@ -34,10 +34,15 @@ export async function seed(knex) {
 
   // Inserta datos iniciales
   await knex("roles").insert([
-    { id_rol: 1, nombre_rol: "Vicerrector" },
-    { id_rol: 2, nombre_rol: "Director General de Gestión Curricular" },
-    { id_rol: 3, nombre_rol: "Profesor" },
-    { id_rol: 4, nombre_rol: "Coordinador" },
+    { id_rol: 1, nombre_rol: "Profesor" },
+    { id_rol: 2, nombre_rol: "Coordinador" },
+    { id_rol: 7, nombre_rol: "Director General de Gestión Curricular" },
+    {
+      id_rol: 8,
+      nombre_rol: "Director General de Gestión Permanente y Docente",
+    },
+    { id_rol: 9, nombre_rol: "Secretario de Vicerrector" }, // ← NUEVO
+    { id_rol: 10, nombre_rol: "Vicerrector" },
     { id_rol: 20, nombre_rol: "SuperAdmin" },
   ]);
 

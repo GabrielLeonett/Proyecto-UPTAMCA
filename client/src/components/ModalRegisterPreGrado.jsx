@@ -5,23 +5,24 @@ import {
   Fade,
   Backdrop,
   MenuItem,
+  TextField,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import useApi from "../hook/useApi.jsx";
 import CustomButton from "./customButton.jsx";
-import CustomLabel from "./customLabel.jsx";
 
 export default function ModalRegisterPreGrado({ open, onClose, setState }) {
   const [isLoading, setIsLoading] = useState(false);
-  const { axios } = useApi(true);
+  const axios  = useApi(true);
 
-  const { register, handleSubmit, reset } = useForm({
+  const { register, handleSubmit, reset, watch } = useForm({
     defaultValues: {
       tipo: "",
       nombre: "",
     },
   });
+
 
   const tiposPregrado = [
     "Técnico Superior",
@@ -44,7 +45,6 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-
       const payload = {
         tipo: data.tipo,
         nombre: data.nombre,
@@ -52,9 +52,9 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
 
       await axios.post("/catalogos/pregrados", payload);
 
-      // 🔄 Actualiza la lista de pregrados al cerrar
+      // Actualizar lista
       const res = await axios.get("/catalogos/pregrados");
-      setState(res);
+      setState(res); // ✅ Asegúrate de usar res.data
 
       reset();
     } finally {
@@ -63,10 +63,16 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
     }
   };
 
+  // Manejar cierre del modal
+  const handleClose = () => {
+    reset(); // ✅ Resetear form al cerrar
+    onClose();
+  };
+
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose} // ✅ Usar handleClose
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
       slotProps={{ backdrop: { timeout: 300 } }}
@@ -94,38 +100,42 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
             Nuevo Pregrado
           </Typography>
 
-          {/* Campo tipo */}
-          <CustomLabel
-            select
-            label="Tipo de Pregrado"
-            name="tipo"
-            required
-            fullWidth
-            {...register("tipo", { required: true })}
-          >
-            <MenuItem value="">Seleccione un tipo</MenuItem>
-            {tiposPregrado.map((tipo) => (
-              <MenuItem key={tipo} value={tipo}>
-                {tipo}
-              </MenuItem>
-            ))}
-          </CustomLabel>
+          {/* Campo tipo - SOLUCIÓN */}
+          <Box>
+            <TextField
+              select
+              label="Tipo de Pregrado"
+              required
+              id="tipo"
+              fullWidth
+              {...register("tipo", { required: true })}
+              value={watch("tipo") || ""} // ✅ Esto asegura que nunca sea undefined
+            >
+              <MenuItem value="">Seleccione un tipo</MenuItem>
+              {tiposPregrado.map((tipo) => (
+                <MenuItem key={tipo} value={tipo}>
+                  {tipo}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
 
           {/* Campo nombre */}
-          <CustomLabel
-            label="Nombre del Pregrado"
-            name="nombre"
-            required
-            multiline
-            rows={2}
-            {...register("nombre", { required: true })}
-          />
+          <Box>
+            <TextField
+              label="Nombre del Pregrado"
+              id="nombre"
+              required
+              multiline
+              rows={2}
+              fullWidth
+              {...register("nombre", { required: true })}
+            />
+          </Box>
 
           {/* Botones */}
-          <Box
-            sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}
-          >
-            <CustomButton onClick={onClose} tipo="secondary">
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 2 }}>
+            <CustomButton onClick={handleClose} tipo="secondary">
               Cancelar
             </CustomButton>
             <CustomButton tipo="primary" disabled={isLoading} type="submit">

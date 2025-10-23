@@ -1,7 +1,9 @@
 import horarioSchema from "../schemas/horario.schema.js";
 import aulaSchema from "../schemas/aula.schema.js";
 import contraseniaSchema from "../schemas/contrasenia.schema.js";
-import coordinadorSchema from "../schemas/coordinador.schema.js";
+import coordinadorSchema, {
+  asignarCoordinadorSchema,
+} from "../schemas/coordinador.schema.js";
 import destitucionSchema from "../schemas/destitucion.schema.js";
 import disponibilidadDocenteSchema from "../schemas/disponiblidaddocente.schema.js";
 import loginSchema from "../schemas/login.schema.js";
@@ -237,6 +239,24 @@ export default class ValidationService {
    */
   static validateCoordinador(data, options = {}) {
     const validationResult = coordinadorSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validateAsignacionCoordinador
+   * @description Valida los datos necesarios para asignar profesor como coordinador
+   * @param {Object} data - Datos del coordinador a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validateAsignacionCoordinador(data, options = {}) {
+    const validationResult = asignarCoordinadorSchema.safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

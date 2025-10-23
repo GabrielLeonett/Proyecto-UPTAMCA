@@ -252,7 +252,7 @@ export default class ProfesorController {
   static async actualizarProfesor(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      ProfesorService.actualizarProfesor(req.body, req.user)
+      ProfesorService.actualizar(req.params.id, req.body, req.user.id)
     );
   }
 

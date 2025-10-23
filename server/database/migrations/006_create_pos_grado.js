@@ -10,7 +10,7 @@ export async function up(knex) {
     table.increments('id_pos_grado').primary().notNullable().comment('ID del Pos-Grado');
     
     // Campos principales
-    table.string('nombre_pos_grado', 100).unique().notNullable().comment('Nombre del Pos-Grado');
+    table.string('nombre_pos_grado', 100).notNullable().comment('Nombre del Pos-Grado');
     table.enum('tipo_pos_grado', [
       'Especialización', 'Maestría', 'Doctorado', 'Diplomado', 
       'Posdoctorado', 'Certificación', 'Curso Avanzado', 

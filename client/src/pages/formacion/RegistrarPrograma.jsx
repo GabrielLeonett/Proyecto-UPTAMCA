@@ -5,7 +5,7 @@ import { Box, Typography, Stack, MenuItem } from "@mui/material";
 import CustomButton from "../../components/customButton";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
-import PNFSchema from "../../schemas/PnfSchema";
+import pnfSchema from "../../schemas/pnf.schema";
 import useApi from "../../hook/useApi"; // Added import for axios
 import Swal from "sweetalert2"; // Missing import
 
@@ -20,7 +20,7 @@ export default function PnfForm() {
     reset,
     formState: { errors, isValid },
   } = useForm({
-    resolver: zodResolver(PNFSchema),
+    resolver: zodResolver(pnfSchema),
     mode: "onChange",
   });
 

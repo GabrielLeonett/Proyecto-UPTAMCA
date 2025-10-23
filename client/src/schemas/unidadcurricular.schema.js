@@ -1,12 +1,13 @@
 import z from "zod";
 
-export const UnidadCurricularSchema = z.object({
+const unidadcurricularSchema = z.object({
   idTrayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que se un numero",
       required_error: "El id de trayecto es obligatorio",
     })
-    .positive("El id tiene que se positivo"),
+    .positive("El id tiene que se positivo")
+    .optional(),
 
   nombreUnidadCurricular: z
     .string({
@@ -53,15 +54,4 @@ export const UnidadCurricularSchema = z.object({
     .toUpperCase(),
 });
 
-// Validación completa
-export const validationUnidadCurricular = ({ input }) => {
-  const validationResult = UnidadCurricularSchema.safeParse(input);
-  return validationResult;
-};
-
-// Validación parcial (para actualizaciones)
-export const validationPartialUnidadCurricular = ({ input }) => {
-  const PartialUnidadCurricularSchema =
-    UnidadCurricularSchema.partial().safeParse(input);
-  return PartialUnidadCurricularSchema;
-};
+export default unidadcurricularSchema;
