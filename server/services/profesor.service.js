@@ -28,14 +28,15 @@ export default class ProfesorService {
       );
 
       const datosProfesor = {
-        ...datos, // ← Spread primero
-        pre_grado: Pregrados, // ← Luego sobrescribes con los valores parseados
+        ...datos,
+        pre_grado: Pregrados,
         pos_grado: Posgrado,
         areas_de_conocimiento: ["Matemáticas"],
         cedula: parseInt(datos.cedula),
       };
 
       console.log("✅ Datos del profesor:", datosProfesor);
+      
       // 1. Validar datos del profesor
       console.log("✅ Validando datos del profesor...");
       const validation = ValidationService.validateProfesor(datosProfesor);
@@ -186,21 +187,38 @@ export default class ProfesorService {
       });
       console.log("📧 Email enviado:", Resultado);
 
-      // 6. Enviar notificación
+      // 6. Enviar notificaciones
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
+      
+      // Notificación individual para el profesor creado (solo él la ve)
+      await notificationService.crearNotificacionIndividual({
+        titulo: "Bienvenido al Sistema Académico",
+        tipo: "profesor_registro_exitoso",
+        user_id: datos.cedula,
+        contenido: `¡Bienvenido ${datos.nombres} ${datos.apellidos}! Su registro como profesor ha sido exitoso.`,
+        metadatos: {
+          profesor_cedula: respuestaModel.data.profesor.cedula,
+          profesor_nombre: `${respuestaModel.data.profesor.nombres} ${respuestaModel.data.profesor.apellidos}`,
+          fecha_registro: new Date().toISOString(),
+          url_action: `/academico/profesores/${respuestaModel.data.profesor.id}`,
+        },
+      });
+
+      // Notificación masiva para roles administrativos (NO incluye profesores)
       await notificationService.crearNotificacionMasiva({
         titulo: "Nuevo Profesor Registrado",
         tipo: "profesor_creado",
-        contenido: `Se ha registrado al profesor ${datos.nombres} ${datos.apellidos} en el sistema`,
+        contenido: `Se ha registrado al profesor ${respuestaModel.data.profesor.nombres} ${respuestaModel.data.profesor.apellidos} en el sistema`,
         metadatos: {
-          profesor_cedula: datos.cedula,
-          profesor_nombre: `${datos.nombres} ${datos.apellidos}`,
+          profesor_cedula: respuestaModel.data.profesor.cedula,
+          profesor_nombre: `${respuestaModel.data.profesor.nombres} ${respuestaModel.data.profesor.apellidos}`,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
+          url_action: `/academico/profesores/${respuestaModel.data.profesor.id}`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id, datos.cedula],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
+        users_ids: [user_action.id], // Solo el usuario que creó
       });
 
       console.log("🎉 Profesor registrado exitosamente");
@@ -227,7 +245,6 @@ export default class ProfesorService {
       if (imagenPath != null) {
         imagenService.deleteImage(imagenPath.fileName);
       }
-      // Re-lanza el error para que el controlador lo maneje
       throw error;
     }
   }
@@ -337,6 +354,7 @@ export default class ProfesorService {
       console.log(
         `🔍 [obtenerImagenProfesor] Buscando imagen del profesor ID: ${id_profesor}`
       );
+      console.log(queryParams);
 
       // Validar ID del profesor
       const idValidation = ValidationService.validateId(
@@ -479,12 +497,23 @@ export default class ProfesorService {
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async actualizar(datos, usuarioId) {
+  static async actualizar(idProfesor, data, usuarioId) {
+    console.log("🔧 INICIANDO actualizar profesor");
+    console.log("👤 Usuario ID:", usuarioId);
+    const datos = {
+      ...data,
+      id_profesor: parseInt(idProfesor),
+    };
+    console.log("📥 Datos recibidos:", datos);
+
     try {
       // Validar datos parciales del profesor
-      const validation = ValidationService.validatePartialProfesor(datos);
+      console.log("🔍 Validando datos parciales del profesor...");
+      const validation = ValidationService.validatePartialProfesor({ datos });
+      console.log("✅ Resultado validación parcial:", validation);
 
       if (!validation.isValid) {
+        console.log("❌ Validación parcial fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en actualización de profesor"
@@ -492,12 +521,18 @@ export default class ProfesorService {
       }
 
       // Validar que tenga ID de profesor
+      console.log("🔍 Validando campos requeridos...");
       const requiredValidation = ValidationService.validateRequiredFields(
         datos,
         ["id_profesor"]
       );
+      console.log("✅ Resultado validación requeridos:", requiredValidation);
 
       if (!requiredValidation.isValid) {
+        console.log(
+          "❌ Validación requeridos fallida:",
+          requiredValidation.errors
+        );
         return FormatterResponseService.validationError(
           requiredValidation.errors,
           "Campos requeridos faltantes"
@@ -505,53 +540,72 @@ export default class ProfesorService {
       }
 
       // Validar ID de usuario
+      console.log("🔍 Validando ID de usuario...");
       const idValidation = ValidationService.validateId(usuarioId, "usuario");
+      console.log("✅ Resultado validación ID usuario:", idValidation);
+
       if (!idValidation.isValid) {
+        console.log("❌ Validación ID usuario fallida:", idValidation.errors);
         return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
       }
 
-      // Verificar que el profesor existe
-      const profesores = await ProfesorModel.obtenerTodos();
-      const profesorActual = profesores.data.find(
-        (p) => p.id_profesor === datos.id_profesor
-      );
-
-      if (!profesorActual) {
-        return FormatterResponseService.notFound("Profesor", datos.id_profesor);
-      }
-
       // Actualizar profesor
+      console.log("🔄 Iniciando actualización en el modelo...");
       const respuestaModel = await ProfesorModel.actualizar(datos, usuarioId);
+      console.log("✅ Respuesta del modelo:", respuestaModel);
 
       if (FormatterResponseService.isError(respuestaModel)) {
+        console.log("❌ Error en el modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      // Enviar notificación de actualización
+      // Enviar notificaciones de actualización
+      console.log("📢 Creando notificaciones...");
       const notificationService = new NotificationService();
+
+      const camposActualizados = Object.keys(datos).filter(
+        (key) => key !== "id_profesor"
+      );
+      console.log("📝 Campos actualizados:", camposActualizados);
+
+      // Notificación individual para el profesor afectado
+      await notificationService.crearNotificacionIndividual({
+        titulo: "Sus Datos Han Sido Actualizados",
+        tipo: "profesor_actualizado_propio",
+        user_id: datos.cedula || idProfesor,
+        contenido: `Se han actualizado sus datos personales en el sistema. Campos modificados: ${camposActualizados.join(', ')}`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          campos_actualizados: camposActualizados,
+          usuario_actualizador: usuarioId,
+          fecha_actualizacion: new Date().toISOString(),
+          url_action: `/academico/profesores/${datos.id_profesor}`,
+        },
+      });
+
+      // Notificación masiva para roles administrativos
       await notificationService.crearNotificacionMasiva({
         titulo: "Profesor Actualizado",
         tipo: "profesor_actualizado",
-        contenido: `Se han actualizado los datos del profesor ${
-          datos.nombres || profesorActual.nombres
-        } ${datos.apellidos || profesorActual.apellidos}`,
+        contenido: `Se han actualizado los datos del profesor ${datos.nombres} ${datos.apellidos}`,
         metadatos: {
           profesor_id: datos.id_profesor,
-          profesor_cedula: profesorActual.cedula,
-          campos_actualizados: Object.keys(datos).filter(
-            (key) => key !== "id_profesor"
-          ),
+          profesor_nombre: `${datos.nombres} ${datos.apellidos}`,
+          campos_actualizados: camposActualizados,
           usuario_actualizador: usuarioId,
           fecha_actualizacion: new Date().toISOString(),
+          url_action: `/academico/profesores/${datos.id_profesor}`,
         },
-        roles_ids: ["admin", "coordinador"],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
         users_ids: [usuarioId],
       });
 
-      return FormatterResponseService.success(
+      console.log("✅ Notificaciones creadas exitosamente");
+
+      const respuestaFinal = FormatterResponseService.success(
         {
           message: "Profesor actualizado exitosamente",
           profesor_id: datos.id_profesor,
@@ -562,8 +616,13 @@ export default class ProfesorService {
           title: "Profesor Actualizado",
         }
       );
+
+      console.log("🎉 Actualización completada exitosamente:", respuestaFinal);
+      return respuestaFinal;
     } catch (error) {
-      console.error("Error en servicio actualizar profesor:", error);
+      console.error("💥 ERROR CRÍTICO en servicio actualizar profesor:", error);
+      console.error("📌 Stack trace:", error.stack);
+      console.error("📊 Datos que causaron el error:", { datos, usuarioId });
       throw error;
     }
   }
@@ -630,18 +689,34 @@ export default class ProfesorService {
         return respuestaModel;
       }
 
-      // Enviar notificación de eliminación/destitución
+      // Enviar notificaciones de eliminación/destitución
       const notificationService = new NotificationService();
+      
+      const accionTipo = datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido";
+      const accionContenido = datos.tipo_accion === "eliminar" ? "eliminado" : "destituido";
+
+      // Notificación individual para el profesor afectado
+      await notificationService.crearNotificacionIndividual({
+        titulo: `Usted Ha Sido ${accionTipo}`,
+        tipo: `profesor_${datos.tipo_accion}_propio`,
+        user_id: profesor.cedula,
+        contenido: `Usted ha sido ${accionContenido} del sistema. Razón: ${datos.razon}`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          tipo_accion: datos.tipo_accion,
+          razon: datos.razon,
+          observaciones: datos.observaciones,
+          fecha_efectiva: datos.fecha_efectiva,
+          usuario_ejecutor: usuarioId,
+          fecha_ejecucion: new Date().toISOString(),
+        },
+      });
+
+      // Notificación masiva para roles administrativos
       await notificationService.crearNotificacionMasiva({
-        titulo: `Profesor ${
-          datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-        }`,
+        titulo: `Profesor ${accionTipo}`,
         tipo: `profesor_${datos.tipo_accion}`,
-        contenido: `Se ha ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-        } al profesor ${profesor.nombres} ${profesor.apellidos} (${
-          profesor.cedula
-        })`,
+        contenido: `Se ha ${accionContenido} al profesor ${profesor.nombres} ${profesor.apellidos} (${profesor.cedula})`,
         metadatos: {
           profesor_id: datos.id_profesor,
           profesor_cedula: profesor.cedula,
@@ -653,7 +728,7 @@ export default class ProfesorService {
           usuario_ejecutor: usuarioId,
           fecha_ejecucion: new Date().toISOString(),
         },
-        roles_ids: ["admin", "coordinador"],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
         users_ids: [usuarioId],
       });
 
@@ -674,9 +749,7 @@ export default class ProfesorService {
         } exitosamente`,
         {
           status: 200,
-          title: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido"
-          }`,
+          title: `Profesor ${accionTipo}`,
         }
       );
     } catch (error) {

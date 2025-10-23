@@ -21,9 +21,9 @@ export default class CoordinadorModel {
    */
   static async asignarCoordinador(datos, id_usuario) {
     try {
-      const query = `CALL asignar_coordinador(?, ?, ?, NULL)`;
-      const params = [id_usuario, datos.cedula_profesor, datos.id_pnf];
-
+      const query = `CALL asignar_coordinador($1, $2, $3)`;
+      const params = [id_usuario, datos.idProfesor, datos.idPnf];
+      console.log(params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -51,23 +51,34 @@ export default class CoordinadorModel {
     try {
       let query = `SELECT * FROM public.coordinadores_informacion_completa WHERE 1=1`;
       const params = [];
+      let paramCount = 0;
 
       // Aplicar filtros si están presentes
       if (queryParams.activo !== undefined) {
-        query += ` AND activo = ?`;
+        paramCount++;
+        query += ` AND activo = $${paramCount}`;
         params.push(queryParams.activo);
       }
 
       if (queryParams.id_pnf) {
-        query += ` AND id_pnf = ?`;
+        paramCount++;
+        query += ` AND id_pnf = $${paramCount}`;
         params.push(queryParams.id_pnf);
       }
 
       // Aplicar ordenamiento
       if (queryParams.sort) {
-        const allowedSortFields = ['nombres', 'apellidos', 'nombre_pnf', 'fecha_inicio'];
-        const sortField = allowedSortFields.includes(queryParams.sort) ? queryParams.sort : 'nombres';
-        const sortOrder = queryParams.order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+        const allowedSortFields = [
+          "nombres",
+          "apellidos",
+          "nombre_pnf",
+          "fecha_inicio",
+        ];
+        const sortField = allowedSortFields.includes(queryParams.sort)
+          ? queryParams.sort
+          : "nombres";
+        const sortOrder =
+          queryParams.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
         query += ` ORDER BY ${sortField} ${sortOrder}`;
       } else {
         query += ` ORDER BY nombres ASC`;
@@ -76,9 +87,19 @@ export default class CoordinadorModel {
       // Aplicar paginación
       if (queryParams.limit) {
         const limit = parseInt(queryParams.limit);
-        const offset = queryParams.page ? (parseInt(queryParams.page) - 1) * limit : 0;
-        query += ` LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
+        const offset = queryParams.page
+          ? (parseInt(queryParams.page) - 1) * limit
+          : 0;
+
+        paramCount++;
+        query += ` LIMIT $${paramCount}`;
+        params.push(limit);
+
+        if (offset > 0) {
+          paramCount++;
+          query += ` OFFSET $${paramCount}`;
+          params.push(offset);
+        }
       }
 
       const { rows } = await pg.query(query, params);
@@ -108,7 +129,7 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = ?
+        WHERE cedula = $1
       `;
       const params = [cedula];
 
@@ -139,7 +160,7 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE id_coordinador = ?
+        WHERE id_coordinador = $1
       `;
       const params = [id_coordinador];
 
@@ -173,16 +194,21 @@ export default class CoordinadorModel {
       // Construir la consulta dinámicamente basada en los campos proporcionados
       const campos = [];
       const params = [];
+      let paramCount = 0;
 
       // Campos permitidos para actualización
       const camposPermitidos = [
-        'fecha_inicio', 'fecha_fin', 'observaciones', 
-        'estado', 'motivo_destitucion'
+        "fecha_inicio",
+        "fecha_fin",
+        "observaciones",
+        "estado",
+        "motivo_destitucion",
       ];
 
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = ?`);
+          paramCount++;
+          campos.push(`${campo} = $${paramCount}`);
           params.push(valor);
         }
       }
@@ -195,12 +221,17 @@ export default class CoordinadorModel {
       }
 
       // Agregar ID del coordinador y usuario que actualiza
-      params.push(id_coordinador, id_usuario);
+      paramCount++;
+      params.push(id_coordinador);
+      paramCount++;
+      params.push(id_usuario);
 
       const query = `
         UPDATE public.coordinadores 
-        SET ${campos.join(', ')}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = ?
-        WHERE id_coordinador = ?
+        SET ${campos.join(
+          ", "
+        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $${paramCount}
+        WHERE id_coordinador = $${paramCount - 1}
       `;
 
       const { rows } = await pg.query(query, params);
@@ -229,9 +260,12 @@ export default class CoordinadorModel {
    */
   static async eliminarCoordinador(id_coordinador, id_usuario) {
     try {
-      const query = `CALL desasignar_coordinador(?, ?, ?, NULL)`;
-      const params = [id_usuario, id_coordinador, 'Destitución por usuario del sistema'];
-
+      const query = `CALL desasignar_coordinador($1, $2, $3)`;
+      const params = [
+        id_usuario,
+        id_coordinador,
+        "Destitución por usuario del sistema",
+      ];
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -260,8 +294,12 @@ export default class CoordinadorModel {
    */
   static async desasignarCoordinador({ id_coordinador, id_usuario, motivo }) {
     try {
-      const query = `CALL desasignar_coordinador(?, ?, ?, NULL)`;
-      const params = [id_usuario, id_coordinador, motivo];
+      const query = `CALL desasignar_coordinador($1, $2, $3)`;
+      const params = [
+        id_usuario,
+        id_coordinador,
+        motivo || "Desasignación por usuario del sistema",
+      ];
 
       const { rows } = await pg.query(query, params);
 
@@ -291,7 +329,7 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = ? AND id_pnf = ? AND activo = true
+        WHERE cedula = $1 AND id_pnf = $2 AND activo = true
       `;
       const params = [cedula_profesor, id_pnf];
 
@@ -322,7 +360,7 @@ export default class CoordinadorModel {
     try {
       const query = `
         SELECT * FROM public.coordinadores_informacion_completa 
-        WHERE cedula = ? 
+        WHERE cedula = $1 
         ORDER BY fecha_inicio DESC
       `;
       const params = [cedula_profesor];

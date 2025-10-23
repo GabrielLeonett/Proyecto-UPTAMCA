@@ -44,26 +44,74 @@ export default class ProfesorController {
   static async getImageProfesorDirect(req, res) {
     try {
       const { id } = req.params;
+      console.log(req.query);
       const respuesta = await ProfesorService.obtenerImagenProfesor(
         id,
         req.query
       );
-      const dataImagen = respuesta.data;
-      console.log(respuesta.data);
-      
-      // Configurar headers para la respuesta de imagen
-      res.set({
-        "Content-Type": dataImagen.mimeType,
-        "Content-Length": dataImagen.fileSize,
-        "Content-Disposition": `inline; filename="${dataImagen.fileName}"`,
-        "Cache-Control": "public, max-age=86400",
-        ETag: `"${dataImagen.fileName}-${dataImagen.fileSize}"`,
+
+      const imagenData = respuesta.data;
+
+      // DEBUG: Ver qué hay en el buffer
+      console.log("🔍 Tipo de imagenData.buffer:", typeof imagenData.buffer);
+      console.log("🔍 Es Buffer nativo?", Buffer.isBuffer(imagenData.buffer));
+      console.log("🔍 Estructura:", {
+        hasType: imagenData.buffer?.type,
+        hasData: Array.isArray(imagenData.buffer?.data),
+        dataLength: imagenData.buffer?.data?.length,
       });
 
+      let bufferToSend;
 
-      // Enviar el buffer de la imagen
-      res.send(dataImagen);
+      // CASO 1: Si es un objeto Buffer de Node.js con estructura {type: "Buffer", data: [...]}
+      if (
+        imagenData.buffer &&
+        imagenData.buffer.type === "Buffer" &&
+        Array.isArray(imagenData.buffer.data)
+      ) {
+        console.log("✅ Convirtiendo Buffer object a Buffer nativo");
+        bufferToSend = Buffer.from(imagenData.buffer.data);
+      }
+      // CASO 2: Si ya es un Buffer nativo de Node.js
+      else if (Buffer.isBuffer(imagenData.buffer)) {
+        console.log("✅ Usando Buffer nativo directamente");
+        bufferToSend = imagenData.buffer;
+      }
+      // CASO 3: Si es un array de números directamente
+      else if (Array.isArray(imagenData.buffer)) {
+        console.log("✅ Convirtiendo array a Buffer");
+        bufferToSend = Buffer.from(imagenData.buffer);
+      } else {
+        throw new Error("Formato de buffer no reconocido");
+      }
+
+      // Verificar que el buffer no esté vacío
+      if (!bufferToSend || bufferToSend.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Buffer de imagen vacío",
+        });
+      }
+
+      // Configurar headers para la respuesta de imagen
+      res.set({
+        "Content-Type": imagenData.mimeType || "image/webp",
+        "Content-Length": bufferToSend.length,
+        "Content-Disposition": `inline; filename="${imagenData.fileName}"`,
+        "Cache-Control": "public, max-age=86400",
+        // Eliminar ETag si causa problemas
+      });
+
+      console.log("📤 Enviando buffer:", {
+        size: bufferToSend.length,
+        type: imagenData.mimeType,
+        primerosBytes: Array.from(bufferToSend.slice(0, 4)),
+      });
+
+      // ✅ Enviar el BUFFER convertido correctamente
+      res.send(bufferToSend);
     } catch (error) {
+      console.error("❌ Error en getImageProfesorDirect:", error);
       FormatResponseController.respuestaError(res, error);
     }
   }
@@ -204,7 +252,7 @@ export default class ProfesorController {
   static async actualizarProfesor(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      ProfesorService.actualizarProfesor(req.body, req.user)
+      ProfesorService.actualizar(req.params.id, req.body, req.user.id)
     );
   }
 

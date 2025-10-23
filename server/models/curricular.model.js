@@ -65,6 +65,98 @@ export default class CurricularModel {
       );
     }
   }
+  /**
+   * @static
+   * @async
+   * @method actualizarPNF
+   * @description Actualizar un PNF existente usando el procedimiento almacenado
+   * @param {number} idPNF - ID del PNF
+   * @param {Object} datos - Datos actualizados
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarPNF(idPNF, datos, usuarioId) {
+    try {
+      const query = `
+      CALL actualizar_pnf_completo_o_parcial(
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+      )
+    `;
+
+      const valores = [
+        null, // p_resultado (OUT parameter)
+        usuarioId,
+        idPNF,
+        datos.codigoPNF || null,
+        datos.nombrePNF || null,
+        datos.descripcionPNF || null,
+        datos.duracionTrayectosPNF || null,
+        datos.poblacionEstudiantilPNF || null,
+        datos.sedePNF || null,
+        datos.activo || null,
+      ];
+
+      const { rows } = await pg.query(query, valores);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "PNF actualizado exitosamente."
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.actualizarPNF" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al actualizar el PNF"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method actualizarDescripcionTrayecto
+   * @description Actualizar la descripción de un trayecto usando el procedimiento almacenado
+   * @param {number} idTrayecto - ID del trayecto
+   * @param {string} descripcion - Nueva descripción
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarDescripcionTrayecto(
+    idTrayecto,
+    descripcion,
+    usuarioId
+  ) {
+    try {
+      console.log("📊 [Model] Actualizando descripción del trayecto:", {
+        idTrayecto,
+        usuarioId,
+      });
+
+      const query = `
+        CALL actualizar_descripcion_trayecto($1, $2, $3, $4)
+      `;
+
+      const valores = [
+        null, // p_resultado (OUT parameter)
+        usuarioId,
+        idTrayecto,
+        descripcion,
+      ];
+
+      const { rows } = await pg.query(query, valores);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Unidad Curricular registrada exitosamente."
+      );
+    } catch (error) {
+      error.details = { path: "CurricularModel.registrarUnidadCurricular" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al registrar la Unidad Curricular"
+      );
+    }
+  }
 
   /**
    * @static
@@ -112,6 +204,65 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al registrar la Unidad Curricular"
+      );
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method actualizarUnidadCurricular
+   * @description Actualizar una Unidad Curricular usando el procedimiento almacenado
+   * @param {number} idUnidadCurricular - ID de la unidad curricular
+   * @param {Object} datos - Datos de actualización
+   * @param {string} [datos.codigo_unidad] - Nuevo código de la unidad
+   * @param {string} [datos.nombre_unidad_curricular] - Nuevo nombre de la unidad
+   * @param {string} [datos.descripcion_unidad_curricular] - Nueva descripción
+   * @param {number} [datos.horas_clase] - Nuevas horas de clase
+   * @param {number} [datos.id_trayecto] - Nuevo ID del trayecto
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async actualizarUnidadCurricular(
+    idUnidadCurricular,
+    datos,
+    usuarioId
+  ) {
+    try {
+      console.log("📊 [Model] Actualizando unidad curricular:", {
+        idUnidadCurricular,
+        datos,
+        usuarioId,
+      });
+
+      const query = `
+        CALL actualizar_unidad_curricular_completa_o_parcial(
+          $1, $2, $3, $4, $5, $6, $7, $8
+        )
+      `;
+
+      const valores = [
+        null, // p_resultado (OUT parameter)
+        usuarioId,
+        idUnidadCurricular,
+        datos.codigo_unidad || null,
+        datos.nombre_unidad_curricular || null,
+        datos.descripcion_unidad_curricular || null,
+        datos.horas_clase || null,
+        datos.id_trayecto || null,
+      ];
+
+      const { rows } = await pg.query(query, valores);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Unidad Curricular actualizada exitosamente."
+      );
+    } catch (error) {
+      console.error("💥 Error en modelo actualizar unidad curricular:", error);
+      error.details = { path: "CurricularModel.actualizarUnidadCurricular" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al actualizar la Unidad Curricular"
       );
     }
   }
@@ -167,7 +318,7 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE p.codigo_pnf = $1
+          WHERE p.codigo_pnf = $1 AND deleted_as = NULL
           ORDER BY t.valor_trayecto ASC`,
           [codigoPNF]
         ));
@@ -183,9 +334,11 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
+          WHERE deleted_as = NULL
           ORDER BY p.nombre_pnf, t.valor_trayecto ASC
         `));
       }
+      console.log("📊 [Model] Trayectos obtenidos:", rows);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,

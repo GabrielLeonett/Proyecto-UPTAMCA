@@ -201,32 +201,41 @@ export default class HorarioModel {
 
   /**
    * @name actualizar
-   * @description Actualizar un horario existente
+   * @description Actualizar un horario existente (solo hora_inicio, hora_fin y dia_semana)
    * @param {number} idHorario - ID del horario a actualizar
    * @param {Object} datos - Datos actualizados
+   * @param {string} [datos.dia_semana] - Nuevo día de la semana
+   * @param {string} [datos.hora_inicio] - Nueva hora de inicio
+   * @param {string} [datos.hora_fin] - Nueva hora de fin
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Object} Respuesta formateada del resultado
    */
   static async actualizar(idHorario, datos, usuarioId) {
     try {
+      console.log("📊 [HorarioModel.actualizar] Actualizando horario:", {
+        idHorario,
+        datos,
+        usuarioId,
+      });
+
       const { rows } = await pg.query(
-        "CALL public.actualizar_horario($1, $2, $3, $4, $5, $6, $7, $8)",
+        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6)",
         [
+          null, // p_resultado (OUT parameter)
           usuarioId,
           idHorario,
-          datos.idSeccion,
-          datos.idProfesor,
-          datos.idUnidadCurricular,
-          datos.idAula,
-          datos.diaSemana,
-          datos.horaInicio,
+          datos.hora_inicio || null,
+          datos.hora_fin || null,
+          datos.dia_semana || null,
         ]
       );
+
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Horario actualizado exitosamente"
       );
     } catch (error) {
+      console.error("💥 Error en HorarioModel.actualizar:", error);
       throw FormatResponseModel.respuestaError(
         error,
         "Error al actualizar el horario"

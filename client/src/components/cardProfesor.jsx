@@ -36,9 +36,10 @@ export default function CardProfesor({ profesor }) {
       try {
         const response = await axios.get(
           `/profesores/${profesor.cedula}/imagen`,
+          { responseType: "blob" }
         );
-        console.log(response)
-        const imageUrl = URL.createObjectURL(response);
+        console.log(response.data)
+        const imageUrl = URL.createObjectURL(response.data);
         setAvatarUrl(imageUrl);
       } catch (error) {
         console.error("Error cargando imagen:", error);

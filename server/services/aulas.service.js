@@ -37,7 +37,7 @@ export default class AulaService {
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en registro de aula"
         );
@@ -52,7 +52,7 @@ export default class AulaService {
 
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de usuario inválido"
         );
@@ -69,24 +69,26 @@ export default class AulaService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      // 5. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 5. Enviar notificación específica para gestión de infraestructura
+      console.log("🔔 Enviando notificaciones de aula...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Nueva Aula Registrada",
         tipo: "aula_creada",
-        contenido: `Se ha registrado el aula ${datos.nombre} (${datos.codigo}) en el sistema`,
+        contenido: `Se ha registrado el aula "${datos.nombre}" (Código: ${datos.codigo}) en la sede ${datos.sede}`,
         metadatos: {
           aula_codigo: datos.codigo,
           aula_nombre: datos.nombre,
           aula_tipo: datos.tipo,
           aula_capacidad: datos.capacidad,
           aula_sede: datos.sede,
+          equipamiento: datos.equipamiento,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
+          url_action: `/infraestructura/aulas`,
         },
-        roles_ids: [3, 4, 20], // IDs de roles administrativos
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
+        users_ids: [user_action.id], // Usuario que creó el aula
       });
 
       console.log("🎉 Aula registrada exitosamente");
@@ -136,7 +138,7 @@ export default class AulaService {
       );
 
       if (!queryValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           queryValidation.errors,
           "Error de validación en parámetros de consulta"
         );
@@ -182,7 +184,7 @@ export default class AulaService {
       // Validar ID del aula
       const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de aula inválido"
         );
@@ -195,7 +197,7 @@ export default class AulaService {
       }
 
       if (!respuestaModel.data || respuestaModel.data.length === 0) {
-        FormatterResponseService.notFound("Aula", id_aula);
+        return FormatterResponseService.notFound("Aula", id_aula);
       }
 
       const aula = respuestaModel.data[0];
@@ -235,7 +237,7 @@ export default class AulaService {
       // Validar ID del aula
       const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de aula inválido"
         );
@@ -244,7 +246,7 @@ export default class AulaService {
       // Validar datos parciales del aula
       const validation = ValidationService.validatePartialAula(datos);
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en actualización de aula"
         );
@@ -256,7 +258,7 @@ export default class AulaService {
         "usuario"
       );
       if (!userValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           userValidation.errors,
           "ID de usuario inválido"
         );
@@ -269,7 +271,7 @@ export default class AulaService {
         !aulaExistente.data ||
         aulaExistente.data.length === 0
       ) {
-        FormatterResponseService.notFound("Aula", id_aula);
+        return FormatterResponseService.notFound("Aula", id_aula);
       }
 
       const aulaActual = aulaExistente.data[0];
@@ -285,7 +287,7 @@ export default class AulaService {
         );
 
         if (aulaDuplicada) {
-          FormatterResponseService.error(
+          return FormatterResponseService.error(
             "Aula ya existe",
             "Ya existe otro aula con el mismo código o nombre",
             409,
@@ -312,24 +314,24 @@ export default class AulaService {
         return respuestaModel;
       }
 
-      // Enviar notificación de actualización
+      // Enviar notificación específica para gestión de infraestructura
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Aula Actualizada",
         tipo: "aula_actualizada",
-        contenido: `Se han actualizado los datos del aula ${
-          datos.nombre || aulaActual.nombre
-        } (${datos.codigo || aulaActual.codigo})`,
+        contenido: `Se han actualizado los datos del aula "${datos.nombre || aulaActual.nombre}" (${datos.codigo || aulaActual.codigo}) en la sede ${datos.sede || aulaActual.sede}`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: datos.codigo || aulaActual.codigo,
           aula_nombre: datos.nombre || aulaActual.nombre,
+          aula_sede: datos.sede || aulaActual.sede,
           campos_actualizados: Object.keys(datos),
           usuario_actualizador: user_action.id,
           fecha_actualizacion: new Date().toISOString(),
+          url_action: `/infraestructura/aulas/${id_aula}`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
+        users_ids: [user_action.id], // Usuario que actualizó el aula
       });
 
       console.log("✅ Aula actualizada exitosamente");
@@ -368,7 +370,7 @@ export default class AulaService {
       // Validar ID del aula
       const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           idValidation.errors,
           "ID de aula inválido"
         );
@@ -380,7 +382,7 @@ export default class AulaService {
         "usuario"
       );
       if (!userValidation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           userValidation.errors,
           "ID de usuario inválido"
         );
@@ -393,7 +395,7 @@ export default class AulaService {
         !aulaExistente.data ||
         aulaExistente.data.length === 0
       ) {
-        FormatterResponseService.notFound("Aula", id_aula);
+        return FormatterResponseService.notFound("Aula", id_aula);
       }
 
       const aula = aulaExistente.data[0];
@@ -403,7 +405,7 @@ export default class AulaService {
         id_aula
       );
       if (tieneHorariosFuturos) {
-        FormatterResponseService.error(
+        return FormatterResponseService.error(
           "Aula en uso",
           "No se puede eliminar el aula porque tiene horarios asignados en el futuro",
           409,
@@ -423,21 +425,24 @@ export default class AulaService {
         return respuestaModel;
       }
 
-      // Enviar notificación de eliminación
+      // Enviar notificación específica para gestión de infraestructura
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         titulo: "Aula Eliminada",
         tipo: "aula_eliminada",
-        contenido: `Se ha eliminado el aula ${aula.nombre} (${aula.codigo}) del sistema`,
+        contenido: `Se ha eliminado el aula "${aula.nombre}" (${aula.codigo}) de la sede ${aula.sede} del sistema`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: aula.codigo,
           aula_nombre: aula.nombre,
+          aula_sede: aula.sede,
+          aula_tipo: aula.tipo,
           usuario_ejecutor: user_action.id,
           fecha_eliminacion: new Date().toISOString(),
+          url_action: `/infraestructura/aulas`,
         },
-        roles_ids: [3, 4, 20],
-        users_ids: [user_action.id],
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
+        users_ids: [user_action.id], // Usuario que eliminó el aula
       });
 
       console.log("✅ Aula eliminada exitosamente");
@@ -477,7 +482,7 @@ export default class AulaService {
 
       // Validar tipo de aula
       if (!tipo || typeof tipo !== "string" || tipo.trim().length === 0) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "tipo",
@@ -500,7 +505,7 @@ export default class AulaService {
         "TALLER",
       ];
       if (!tiposValidos.includes(tipoLimpio)) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "tipo",
@@ -551,7 +556,7 @@ export default class AulaService {
 
       // Validar sede
       if (!sede || typeof sede !== "string" || sede.trim().length === 0) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "sede",
@@ -574,7 +579,7 @@ export default class AulaService {
         "CENTRO",
       ];
       if (!sedesValidas.includes(sedeLimpia)) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           [
             {
               path: "sede",
@@ -631,7 +636,7 @@ export default class AulaService {
       // Validar filtros de disponibilidad
       const validation = ValidationService.validateDisponibilidadAula(filtros);
       if (!validation.isValid) {
-        FormatterResponseService.validationError(
+        return FormatterResponseService.validationError(
           validation.errors,
           "Error de validación en filtros de disponibilidad"
         );

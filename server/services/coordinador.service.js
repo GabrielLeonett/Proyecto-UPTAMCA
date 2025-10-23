@@ -22,7 +22,9 @@ export default class CoordinadorService {
    */
   static async asignarCoordinador(datos, user_action) {
     try {
-      console.log("🔍 [asignarCoordinador] Iniciando asignación de coordinador...");
+      console.log(
+        "🔍 [asignarCoordinador] Iniciando asignación de coordinador..."
+      );
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
@@ -58,46 +60,6 @@ export default class CoordinadorService {
         );
       }
 
-      // 3. Verificar que el profesor existe y está activo
-      console.log("👨‍🏫 Verificando profesor...");
-      const profesorValidation = await ValidationService.validateProfesorExists(datos.cedula_profesor);
-      
-      if (!profesorValidation.exists) {
-        console.error("❌ Profesor no encontrado:", datos.cedula_profesor);
-        return FormatterResponseService.notFound("Profesor", datos.cedula_profesor);
-      }
-
-      if (!profesorValidation.activo) {
-        console.error("❌ Profesor inactivo:", datos.cedula_profesor);
-        return FormatterResponseService.error(
-          "Profesor inactivo",
-          "No se puede asignar como coordinador a un profesor inactivo",
-          400,
-          "PROFESOR_INACTIVO",
-          { cedula: datos.cedula_profesor }
-        );
-      }
-
-      // 4. Verificar que el PNF existe y está activo
-      console.log("📚 Verificando PNF...");
-      const pnfValidation = await ValidationService.validatePnfExists(datos.id_pnf);
-      
-      if (!pnfValidation.exists) {
-        console.error("❌ PNF no encontrado:", datos.id_pnf);
-        return FormatterResponseService.notFound("PNF", datos.id_pnf);
-      }
-
-      if (!pnfValidation.activo) {
-        console.error("❌ PNF inactivo:", datos.id_pnf);
-        return FormatterResponseService.error(
-          "PNF inactivo",
-          "No se puede asignar coordinador a un PNF inactivo",
-          400,
-          "PNF_INACTIVO",
-          { id_pnf: datos.id_pnf }
-        );
-      }
-
       // 6. Asignar coordinador en el modelo
       console.log("👑 Asignando coordinador en base de datos...");
       const respuestaModel = await CoordinadorModel.asignarCoordinador(
@@ -120,12 +82,12 @@ export default class CoordinadorService {
       await notificationService.crearNotificacionMasiva({
         titulo: "Nuevo Coordinador Asignado",
         tipo: "coordinador_asignado",
-        contenido: `Se ha asignado al profesor ${profesorValidation.nombre} como coordinador del PNF ${pnfValidation.nombre}`,
+        contenido: `Se ha asignado al profesor ${respuestaModel.data.coordinador.nombres} como coordinador del PNF ${respuestaModel.data.coordinador.nombre_pnf}`,
         metadatos: {
           coordinador_cedula: datos.cedula_profesor,
-          coordinador_nombre: profesorValidation.nombre,
+          coordinador_nombre: respuestaModel.data.coordinador.nombres,
           pnf_id: datos.id_pnf,
-          pnf_nombre: pnfValidation.nombre,
+          pnf_nombre: respuestaModel.data.coordinador.nombre_pnf,
           fecha_inicio: datos.fecha_inicio,
           usuario_asignador: user_action.id,
           fecha_asignacion: new Date().toISOString(),
@@ -169,38 +131,55 @@ export default class CoordinadorService {
    */
   static async listarCoordinadores(queryParams = {}) {
     try {
-      console.log("🔍 [listarCoordinadores] Obteniendo listado de coordinadores...");
+      console.log(
+        "🔍 [listarCoordinadores] Obteniendo listado de coordinadores..."
+      );
 
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order", "activo", "id_pnf"];
+      const allowedParams = [
+        "page",
+        "limit",
+        "sort",
+        "order",
+        "activo",
+        "id_pnf",
+      ];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
       );
 
       if (!queryValidation.isValid) {
-        console.error("❌ Validación de parámetros fallida:", queryValidation.errors);
+        console.error(
+          "❌ Validación de parámetros fallida:",
+          queryValidation.errors
+        );
         return FormatterResponseService.validationError(
           queryValidation.errors,
           "Error de validación en parámetros de consulta"
         );
       }
 
-      const respuestaModel = await CoordinadorModel.listarCoordinadores(queryParams);
+      const respuestaModel = await CoordinadorModel.listarCoordinadores(
+        queryParams
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         console.error("❌ Error en modelo:", respuestaModel);
         return respuestaModel;
       }
 
-      console.log(`✅ Se encontraron ${respuestaModel.data?.length || 0} coordinadores`);
+      console.log(
+        `✅ Se encontraron ${respuestaModel.data?.length || 0} coordinadores`
+      );
 
       return FormatterResponseService.success(
         {
           coordinadores: respuestaModel.data,
           total: respuestaModel.data?.length || 0,
           page: parseInt(queryParams.page) || 1,
-          limit: parseInt(queryParams.limit) || (respuestaModel.data?.length || 0),
+          limit:
+            parseInt(queryParams.limit) || respuestaModel.data?.length || 0,
         },
         "Coordinadores obtenidos exitosamente",
         {
@@ -224,12 +203,17 @@ export default class CoordinadorService {
    */
   static async obtenerCoordinador(cedula) {
     try {
-      console.log(`🔍 [obtenerCoordinador] Buscando coordinador cédula: ${cedula}`);
+      console.log(
+        `🔍 [obtenerCoordinador] Buscando coordinador cédula: ${cedula}`
+      );
 
       // Validar cédula
       const cedulaValidation = ValidationService.validateCedula(cedula);
       if (!cedulaValidation.isValid) {
-        console.error("❌ Validación de cédula fallida:", cedulaValidation.errors);
+        console.error(
+          "❌ Validación de cédula fallida:",
+          cedulaValidation.errors
+        );
         return FormatterResponseService.validationError(
           cedulaValidation.errors,
           "Cédula de coordinador inválida"
@@ -250,7 +234,9 @@ export default class CoordinadorService {
 
       const coordinador = respuestaModel.data[0];
 
-      console.log(`✅ Coordinador encontrado: ${coordinador.nombres} ${coordinador.apellidos}`);
+      console.log(
+        `✅ Coordinador encontrado: ${coordinador.nombres} ${coordinador.apellidos}`
+      );
 
       return FormatterResponseService.success(
         coordinador,
@@ -278,7 +264,9 @@ export default class CoordinadorService {
    */
   static async actualizarCoordinador(id, datos, user_action) {
     try {
-      console.log(`🔍 [actualizarCoordinador] Actualizando coordinador ID: ${id}`);
+      console.log(
+        `🔍 [actualizarCoordinador] Actualizando coordinador ID: ${id}`
+      );
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
@@ -299,9 +287,15 @@ export default class CoordinadorService {
       }
 
       // 2. Validar ID de usuario
-      const usuarioValidation = ValidationService.validateId(user_action.id, "usuario");
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
       if (!usuarioValidation.isValid) {
-        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
+        console.error(
+          "❌ Validación de usuario fallida:",
+          usuarioValidation.errors
+        );
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
           "ID de usuario inválido"
@@ -309,7 +303,8 @@ export default class CoordinadorService {
       }
 
       // 3. Validar datos de actualización
-      const validation = ValidationService.validateActualizacionCoordinador(datos);
+      const validation =
+        ValidationService.validateActualizacionCoordinador(datos);
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
@@ -319,13 +314,17 @@ export default class CoordinadorService {
       }
 
       // 4. Verificar que el coordinador existe
-      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
-      
+      const coordinadorExistente =
+        await CoordinadorModel.obtenerCoordinadorPorId(id);
+
       if (FormatterResponseService.isError(coordinadorExistente)) {
         return coordinadorExistente;
       }
 
-      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
+      if (
+        !coordinadorExistente.data ||
+        coordinadorExistente.data.length === 0
+      ) {
         console.error("❌ Coordinador no encontrado:", id);
         return FormatterResponseService.notFound("Coordinador", id);
       }
@@ -404,9 +403,15 @@ export default class CoordinadorService {
       }
 
       // 2. Validar ID de usuario
-      const usuarioValidation = ValidationService.validateId(user_action.id, "usuario");
+      const usuarioValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
       if (!usuarioValidation.isValid) {
-        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
+        console.error(
+          "❌ Validación de usuario fallida:",
+          usuarioValidation.errors
+        );
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
           "ID de usuario inválido"
@@ -414,13 +419,17 @@ export default class CoordinadorService {
       }
 
       // 3. Verificar que el coordinador existe
-      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
-      
+      const coordinadorExistente =
+        await CoordinadorModel.obtenerCoordinadorPorId(id);
+
       if (FormatterResponseService.isError(coordinadorExistente)) {
         return coordinadorExistente;
       }
 
-      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
+      if (
+        !coordinadorExistente.data ||
+        coordinadorExistente.data.length === 0
+      ) {
         console.error("❌ Coordinador no encontrado:", id);
         return FormatterResponseService.notFound("Coordinador", id);
       }
