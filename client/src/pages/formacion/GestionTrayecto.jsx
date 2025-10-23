@@ -6,7 +6,7 @@ import ResponsiveAppBar from "../../components/navbar";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useApi from "../../hook/useApi";
-import { useSweetAlert } from "../../hook/useSweetAlert";
+import useSweetAlert from "../../hook/useSweetAlert";
 import ModalRegistroSeccion from "../../components/ModalRegistroSeccion";
 import CustomButton from "../../components/customButton";
 

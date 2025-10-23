@@ -171,7 +171,7 @@ export default class FormatterResponseService {
    * @throws {Object} Error 401 formateado
    */
   static unauthorized(message = "No autorizado") {
-    this.error( // ← SIN return
+   return this.error( // ← SIN return
       "No Autorizado",
       message,
       401,

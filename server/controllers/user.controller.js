@@ -18,7 +18,7 @@ export default class UserController {
       const resultado = await UserService.login(req.body);
 
       // Configurar cookie si el login fue exitoso
-      if (resultado.success) {
+      if (resultado.success != undefined) {
         res.cookie("autorization", resultado.data.token, {
           maxAge: 1000 * 60 * 60 * 24,
           httpOnly: true,

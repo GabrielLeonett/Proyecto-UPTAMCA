@@ -49,6 +49,8 @@ export default class UserService {
 
       // 3. Validar contraseña
       console.log("🔐 Validando contraseña...");
+      console.log("📝 Contraseña ingresada:", datos.password);
+      console.log("📝 Contraseña almacenada", user.password )
       const validatePassword = await comparePassword(
         datos.password,
         user.password
@@ -56,7 +58,7 @@ export default class UserService {
 
       if (!validatePassword) {
         console.error("❌ Contraseña inválida para usuario:", email);
-        return FormatterResponseService.unauthorized(
+        throw FormatterResponseService.unauthorized(
           "Correo o contraseña inválida"
         );
       }

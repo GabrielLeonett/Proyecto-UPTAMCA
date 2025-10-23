@@ -2,7 +2,7 @@
 import { useTheme } from "@mui/material/styles";
 import Swal from "sweetalert2";
 
-export const useSweetAlert = () => {
+const useSweetAlert = () => {
   const theme = useTheme();
 
   const getBaseConfig = () => ({
@@ -18,12 +18,22 @@ export const useSweetAlert = () => {
     },
   });
 
+  /**
+   * Función para mostrar una alerta personalizada
+   * @param {object} config - Configuración de SweetAlert2
+   */
   const alert = {
     show: (config) => {
       console.log(config);
       Swal.fire({ ...getBaseConfig(), ...config });
     },
-
+    /**
+     * Función para mostrar una alerta de éxito
+     * @param {string} title - Titulo de la alerta
+     * @param {string} text - Texto de la alerta
+     * @param {object} config - Configuración adicional de SweetAlert2
+     * @returns 
+     */
     success: (title, text = "", config = {}) =>
       Swal.fire({
         ...getBaseConfig(),
@@ -111,3 +121,5 @@ export const useSweetAlert = () => {
 
   return alert;
 };
+
+export default useSweetAlert;

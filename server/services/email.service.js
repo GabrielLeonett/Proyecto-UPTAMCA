@@ -229,7 +229,12 @@ export default class EmailService {
       console.warn(
         `⚠️ Error en API de email reputation: ${error.message}, usando validación local`
       );
-      return this.validarEmailLocal(email);
+      return {
+        existe: false, // CORREGIDO
+        valido: false, // CORREGIDO
+        datos: error,
+        verificadoCon: "api_reputacion_email",
+      };
     }
   }
 

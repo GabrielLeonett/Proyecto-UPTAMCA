@@ -70,6 +70,7 @@ import ProtectedViews from "./security/ProtectedViews";
 
 import ProfesoresEliminados from "./pages/academico/eliminarProfesor";
 import MiPerfil from "./pages/MiPerfil";
+import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
 
 
@@ -297,12 +298,19 @@ export default function App() {
               <Route
                 path="/perfil"
                 element={
-                  <ProtectedViews allowedRoles={ROLES.ADMINISTRADORES}>
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <MiPerfil />
                   </ProtectedViews>
                 }
               />
-
+              <Route
+                path="/cambiar-contraseña"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <CambiarContraseña />
+                  </ProtectedViews>
+                }
+              />
               <Route path="/aulas/editar/:id" element={<EditarAula />} />
 
 

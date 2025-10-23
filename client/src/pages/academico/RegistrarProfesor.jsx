@@ -17,10 +17,13 @@ import ModalRegisterAreaConocimiento from "../../components/ModalRegisterAreaCon
 import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
 import ModalRegisterPosGrado from "../../components/ModalRegisterPosgrado";
 import useApi from "../../hook/useApi";
+import useSweetAlert from "../../hook/useSweetAlert";
+
 
 export default function FormRegister() {
   const axios = useApi(false);
   const theme = useTheme();
+  const alert = useSweetAlert();
   const {
     register,
     formState: { errors, isValid },
@@ -36,7 +39,7 @@ export default function FormRegister() {
       dedicacion: "Convencional",
       categoria: "Agregado",
       municipio: "Guaicaipuro",
-      area_de_conocimiento: [],
+      areas_de_conocimiento: [],
       pre_grado: [],
       pos_grado: [],
     },
@@ -82,10 +85,6 @@ export default function FormRegister() {
     fetchData();
   }, []);
   // Observar campos individuales
-  const watchedFields = watch(['nombres', 'email', 'cedula']);
-  console.log("Campos observados:", watch(), errors)
-  
-
   const handleImageChange = (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -110,6 +109,7 @@ export default function FormRegister() {
     setSelectedImage(null);
     setImagePreview(null);
   };
+  console.log("Formulario a enviar:", errors, isValid, watch());
 
   const onSubmit = async (formData) => {
     setIsSubmitting(true);
@@ -146,12 +146,12 @@ export default function FormRegister() {
 
       // 2. 🔥 CORRECCIÓN: Enviar arrays como JSON stringificado
       if (
-        formData.area_de_conocimiento &&
-        formData.area_de_conocimiento.length > 0
+        formData.areas_de_conocimiento &&
+        formData.areas_de_conocimiento.length > 0
       ) {
         dataToSend.append(
-          "area_de_conocimiento",
-          JSON.stringify(formData.area_de_conocimiento)
+          "areas_de_conocimiento",
+          JSON.stringify(formData.areas_de_conocimiento)
         );
       }
 
@@ -167,8 +167,10 @@ export default function FormRegister() {
       if (selectedImage) {
         dataToSend.append("imagen", selectedImage);
       }
-
       await axios.post("/profesores", dataToSend);
+      alert.success("Profesor registrado con éxito", "Ya puede verlo en la lista.", );
+    } catch (error) {
+      alert.error("No se ha registrado el profesor", "Por favor, intente nuevamente.", );
     } finally {
       setIsSubmitting(false);
     }
@@ -185,7 +187,7 @@ export default function FormRegister() {
         "genero",
         "fecha_nacimiento",
       ],
-      2: ["area_de_conocimiento", "pre_grado", "pos_grado"],
+      2: ["areas_de_conocimiento", "pre_grado", "pos_grado"],
       3: ["categoria", "fecha_ingreso", "dedicacion"],
     };
     const isValid = await trigger(fieldSets[step] || []);
@@ -368,8 +370,9 @@ export default function FormRegister() {
       <Box className="grid grid-cols-1 gap-8 w-full px-10 py-6">
         {/* Área de Conocimiento */}
         <Controller
-          name="area_de_conocimiento"
+          name="areas_de_conocimiento"
           control={control}
+          defaultValue={[]} // ← Esto arregla el error
           render={({ field }) => (
             <>
               <CustomLabel
@@ -780,7 +783,6 @@ export default function FormRegister() {
                         variant="contained"
                         className="h-12 w-32 rounded-xl font-medium"
                         tipo="primary"
-                        disabled={isSubmitting || !isValid}
                       >
                         {isSubmitting ? "Registrando..." : "Registrar"}
                       </CustomButton>

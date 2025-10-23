@@ -19,11 +19,11 @@ export default class ProfesorService {
     let imagenPath = null;
 
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...");
+      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...", datos.areas_de_conocimiento);
       const Pregrados = parseJSONField(datos.pre_grado, "Pre-Grados");
       const Posgrado = parseJSONField(datos.pos_grado, "Pos-Grados");
       const Areasconocimiento = parseJSONField(
-        datos.area_de_conocimiento,
+        datos.areas_de_conocimiento,
         "Areas de conocimiento"
       );
 
@@ -31,12 +31,12 @@ export default class ProfesorService {
         ...datos,
         pre_grado: Pregrados,
         pos_grado: Posgrado,
-        areas_de_conocimiento: ["Matemáticas"],
+        areas_de_conocimiento: Areasconocimiento,
         cedula: parseInt(datos.cedula),
       };
 
       console.log("✅ Datos del profesor:", datosProfesor);
-      
+
       // 1. Validar datos del profesor
       console.log("✅ Validando datos del profesor...");
       const validation = ValidationService.validateProfesor(datosProfesor);
@@ -131,14 +131,16 @@ export default class ProfesorService {
       }
 
       const contrania = await generarPassword();
+      console.log("🔐 Contraseña generada:", contrania);
       const hash = await hashPassword(contrania);
+      console.log("✅ Contraseña hasheada");
 
       // 5. Crear profesor en el modelo
       console.log("👨‍🏫 Creando profesor en base de datos...");
       const respuestaModel = await ProfesorModel.crear(
         {
           ...datosProfesor,
-          imagen: imagenPath.fileName,
+          imagen: imagenPath ? imagenPath.fileName : null,
           password: hash,
         },
         user_action.id
@@ -190,7 +192,7 @@ export default class ProfesorService {
       // 6. Enviar notificaciones
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
-      
+
       // Notificación individual para el profesor creado (solo él la ve)
       await notificationService.crearNotificacionIndividual({
         titulo: "Bienvenido al Sistema Académico",
@@ -691,7 +693,7 @@ export default class ProfesorService {
 
       // Enviar notificaciones de eliminación/destitución
       const notificationService = new NotificationService();
-      
+
       const accionTipo = datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido";
       const accionContenido = datos.tipo_accion === "eliminar" ? "eliminado" : "destituido";
 
@@ -734,9 +736,8 @@ export default class ProfesorService {
 
       return FormatterResponseService.success(
         {
-          message: `Profesor ${
-            datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-          } exitosamente`,
+          message: `Profesor ${datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+            } exitosamente`,
           profesor: {
             id: datos.id_profesor,
             cedula: profesor.cedula,
@@ -744,8 +745,7 @@ export default class ProfesorService {
             accion: datos.tipo_accion,
           },
         },
-        `Profesor ${
-          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+        `Profesor ${datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
         } exitosamente`,
         {
           status: 200,
