@@ -12,7 +12,7 @@ import CustomButton from "../../components/customButton";
 
 export default function GestionTrayecto() {
   // Hooks y estados
-  const { codigo, idTrayecto } = useParams();
+  const { codigoPNF, valorTrayecto } = useParams();
   const [unidades, setUnidades] = useState([]);
   const [secciones, setSecciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,32 +23,33 @@ export default function GestionTrayecto() {
 
   // Validación del trayecto
   useEffect(() => {
-    if (!idTrayecto) {
+    if (!valorTrayecto) {
       alert.show({
         title: "Trayecto No Seleccionado",
         text: "No se ha seleccionado ningún trayecto. Por favor, regresa a la página anterior y selecciona un trayecto válido.",
         icon: "warning",
       });
     }
-  }, [idTrayecto]);
+  }, [valorTrayecto]);
 
   // Funciones para obtener datos
   const fetchUnidadesCurriculares = async () => {
     const { unidades_curriculares } = await axios.get(
-      `/trayectos/${idTrayecto}/unidades-curriculares`
+      `/secciones/${codigoPNF}/${valorTrayecto}`
     );
     setUnidades(unidades_curriculares || []);
   };
 
   const fetchSecciones = async () => {
-    const { secciones } = await axios.get(`/Secciones/?Trayecto=${idTrayecto}`);
-    setSecciones(secciones || []);
+    const res = await axios.get(`/secciones/${codigoPNF}/${valorTrayecto}`);
+    console.log(res)
+    setSecciones(res.secciones || []);
   };
 
   // Carga inicial de datos
   useEffect(() => {
     const loadData = async () => {
-      if (!idTrayecto) return;
+      if (!valorTrayecto) return;
 
       setLoading(true);
       try {
@@ -59,12 +60,12 @@ export default function GestionTrayecto() {
     };
 
     loadData();
-  }, [idTrayecto]);
+  }, [valorTrayecto]);
 
   // Handlers de navegación
   const handleGoToProgramas = () => navigate("/formacion/programas");
 
-  const handleGoToPrograma = () => navigate(`/formacion/programas/${codigo}`);
+  const handleGoToPrograma = () => navigate(`/formacion/programas/${codigoPNF}`);
 
   // Handlers del modal
   const handleOpenModal = () => setModalOpen(true);
@@ -98,10 +99,10 @@ export default function GestionTrayecto() {
         color="inherit"
         onClick={handleGoToPrograma}
       >
-        {codigo}
+        {codigoPNF}
       </Link>
       <Link component="button" underline="hover" color="inherit" disabled>
-        Trayecto {idTrayecto}
+        Trayecto {}
       </Link>
     </Breadcrumbs>
   );
@@ -190,7 +191,7 @@ export default function GestionTrayecto() {
             tipo="primary"
             onClick={() => {
               navigate("/curricular/unidades/registrar", {
-                state: { idTrayecto: idTrayecto },
+                state: { valorTrayecto: valorTrayecto },
               });
             }}
             sx={{ minWidth: 200 }}
@@ -235,7 +236,7 @@ export default function GestionTrayecto() {
         <ModalRegistroSeccion
           open={modalOpen}
           handleClose={handleCloseModal}
-          idTrayecto={idTrayecto}
+          valorTrayecto={valorTrayecto}
           onSeccionCreada={handleSeccionCreada}
         />
       </Box>

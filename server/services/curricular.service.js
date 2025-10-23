@@ -485,6 +485,66 @@ export default class CurricularService {
     }
   }
 
+/**
+ * @static
+ * @async
+ * @method mostrarSeccionesByPnfAndValueTrayecto
+ * @description Obtener todas las secciones de un trayecto específico de un PNF
+ * @param {string} codigoPNF - Código del PNF
+ * @param {string|number} valorTrayecto - Valor del trayecto
+ * @returns {Object} Resultado de la operación
+ */
+static async mostrarSeccionesByPnfAndValueTrayecto(codigoPNF, valorTrayecto) {
+  try {
+    console.log("🔍 [Servicio] Obteniendo secciones...", {
+      codigoPNF,
+      valorTrayecto
+    });
+
+    // Validar parámetros
+    if (!codigoPNF || !valorTrayecto) {
+      return FormatterResponseService.error(
+        "Los parámetros codigoPNF y valorTrayecto son requeridos",
+        {
+          status: 400,
+          title: "Parámetros inválidos"
+        }
+      );
+    }
+
+    const respuestaModel = await CurricularModel.mostrarSeccionesByPnfAndValueTrayecto(
+      codigoPNF, 
+      valorTrayecto
+    );
+
+    if (FormatterResponseService.isError(respuestaModel)) {
+      console.error("❌ Error en modelo obtener secciones:", respuestaModel);
+      return respuestaModel;
+    }
+
+    console.log(
+      `✅ Se obtuvieron ${respuestaModel.data?.length || 0} secciones`
+    );
+
+    return FormatterResponseService.success(
+      {
+        secciones: respuestaModel.data,
+        total: respuestaModel.data?.length || 0,
+        codigoPNF,
+        valorTrayecto
+      },
+      "Secciones obtenidas exitosamente",
+      {
+        status: 200,
+        title: "Lista de Secciones"
+      }
+    );
+  } catch (error) {
+    console.error("💥 Error en servicio mostrar secciones:", error);
+    throw error;
+  }
+}
+
   /**
    * @static
    * @async

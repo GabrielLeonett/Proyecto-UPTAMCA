@@ -14,6 +14,7 @@ import helmet from "helmet";
 import { createServer } from "node:http";
 
 import SocketServices from "./services/socket.service.js";
+import SystemMonitor from "./services/systemMonitor.service.js";
 
 // Importaciones de Rutas
 import { profesorRouter } from "./routes/profesor.routes.js";
@@ -46,11 +47,45 @@ app.use("", SedesRouter);
 app.use("", coordinadorRouter);
 app.use("", NotificationRouter);
 
+//Configuración de WebSocke
 const servicioSocket = new SocketServices();
 const io = servicioSocket.initializeService();
 
-io.on("connection", (socket) => {
+let monitoringInterval = null;
+let superAdminCount = 0;
 
+io.on("connection", (socket) => {
+  console.log("Nuevo cliente conectado:", socket.id);
+
+  if (socket.user && socket.user.roles.includes("SuperAdmin")) {
+    superAdminCount++;
+    console.log(`SuperAdmin conectado. Total: ${superAdminCount}`);
+
+    // 🔥 Iniciar monitoreo SOLO si es el primer SuperAdmin
+    if (superAdminCount === 1 && !monitoringInterval) {
+      console.log("🚀 Iniciando monitoreo del sistema...");
+      monitoringInterval = SystemMonitor.iniciarMonitoreoTiempoReal(5000);
+    }
+
+    // Unir al socket a la sala de SuperAdmin
+    socket.join("role_SuperAdmin");
+  }
+
+  socket.on("disconnect", (reason) => {
+    console.log("Cliente desconectado:", socket.id, "Razón:", reason);
+
+    if (socket.user && socket.user.roles.includes("SuperAdmin")) {
+      superAdminCount--;
+      console.log(`SuperAdmin desconectado. Total: ${superAdminCount}`);
+
+      // 🔥 Detener monitoreo si no hay más SuperAdmins conectados
+      if (superAdminCount === 0 && monitoringInterval) {
+        console.log("⏹️ Deteniendo monitoreo del sistema...");
+        clearInterval(monitoringInterval);
+        monitoringInterval = null;
+      }
+    }
+  });
 });
 
 // Encendido del servidor

@@ -1,59 +1,64 @@
 import { useEffect, useState, useCallback } from "react";
 import Horario from "../../components/horario/Horario";
 import ResponsiveAppBar from "../../components/navbar";
-import {
-  Box,
-  CircularProgress,
-  Typography,
+import { 
+  Box, 
+  Typography, 
+  Grid, 
+  Container, 
   Alert,
-  Grid,
   Card,
   CardContent,
-  Chip,
-  Container,
-  Button,
+  Chip
 } from "@mui/material";
-import {
-  Schedule as ScheduleIcon,
-  Error as ErrorIcon,
-  School as SchoolIcon,
-  Refresh as RefreshIcon,
-} from "@mui/icons-material";
+import { Schedule as ScheduleIcon, Info as InfoIcon } from "@mui/icons-material";
 import useApi from "../../hook/useApi";
+import FiltroAcordeonHorario from "../../components/FiltroAcordeonHorario";
+import LoadingCharge from "../../components/ui/LoadingCharge";
 
 export default function GestionHorarios() {
-  const [horarios, setHorarios] = useState([]);
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [horario, setHorario] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [seccion, setSeccion] = useState(null);
+  const [error, setError] = useState(null);
   const axios = useApi();
 
-  // SOLUCIÓN: Separar la lógica de fetch del useCallback
-  const fetchHorarios = async () => {
-    const response = await axios.get("/Horarios");
-    setHorarios(response || []);
-  };
-
-  // useEffect con dependencias controladas
+  // Efecto para cargar horario cuando se selecciona una sección
   useEffect(() => {
-    const abortController = new AbortController();
+    const fetchHorarios = async () => {
+      if (!seccion?.id_seccion) {
+        setHorario(null);
+        return;
+      }
 
-    fetchHorarios(abortController.signal);
-
-    return () => {
-      console.log("🧹 Cleanup useEffect");
-      abortController.abort();
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await axios.get(
+          `/horarios/seccion/${seccion.id_seccion}`
+        );
+        console.log("📊 Respuesta del horario:", response);
+        setHorario(response?.data || response || null);
+      } catch (e) {
+        console.error("Error al consultar el horario: ", e);
+        setError("Error al cargar el horario. Intente nuevamente.");
+        setHorario(null);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, [refreshCount]); // Solo refreshCount como dependencia
 
-  // Función para formatear el turno si es necesario
+    fetchHorarios();
+  }, [seccion, axios]);
+
+  // Función para formatear el turno
   const formatearTurno = useCallback((turno) => {
     if (!turno) return { horaInicio: "07:00", horaFin: "20:30" };
 
-    // Si el turno ya tiene el formato correcto
     if (turno.horaInicio && turno.horaFin) {
       return turno;
     }
 
-    // Si es un string, intentar parsearlo
     if (typeof turno === "string") {
       const [inicio, fin] = turno.split("-");
       return {
@@ -62,86 +67,142 @@ export default function GestionHorarios() {
       };
     }
 
-    // Valor por defecto
     return { horaInicio: "07:00", horaFin: "20:30" };
   }, []);
 
-  // Función para recargar manualmente
-  const handleRefresh = useCallback(() => {
-    console.log("🔄 Manual refresh triggered");
-    setRefreshCount((prev) => prev + 1);
-  }, []);
+  const manejarSeleccionSeccion = (seccion) => {
+    setSeccion(seccion);
+  };
+
+  if (loading) {
+    return <LoadingCharge charge={loading} />;
+  }
 
   return (
     <>
       <ResponsiveAppBar backgroundColor={true} />
       <Container maxWidth="xl" sx={{ mt: 18, py: 4 }}>
+        
         {/* Header */}
-        <Box
-          sx={{
-            mb: 4,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography variant="h2" component="h1" gutterBottom>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <ScheduleIcon fontSize="large" />
-                Gestión de Horarios
-              </Box>
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Lista de Horarios */}
-        {horarios && horarios.length > 0 ? (
-          <Grid container spacing={4}>
-            {horarios.map((horario) => (
-              <Horario
-                PNF={horario.pnf}
-                Turno={formatearTurno(horario.turno)}
-                Trayecto={horario.trayecto}
-                Seccion={{
-                  seccion: horario.seccion,
-                  idSeccion: horario.idSeccion,
-                }}
-                Horario={horario.dias}
-                Custom={false} // Solo vista, no edición
-              />
-            ))}
-          </Grid>
-        ) : (
-          <Box
-            sx={{
-              textAlign: "center",
-              py: 8,
-              border: "2px dashed",
-              borderColor: "divider",
-              borderRadius: 2,
+        <Box sx={{ mb: 4 }}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 2
             }}
           >
-            <ScheduleIcon
-              sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
-            />
-            <Typography variant="h5" gutterBottom color="text.secondary">
-              No hay horarios disponibles
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-              No se encontraron horarios en el sistema.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<RefreshIcon />}
-              onClick={handleRefresh}
-            >
-              Intentar de nuevo
-            </Button>
-          </Box>
-        )}
+            <ScheduleIcon fontSize="large" />
+            Gestión de Horarios
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            Visualiza el horario académico por sección
+          </Typography>
+        </Box>
+
+        {/* Layout principal con sidebar de filtros y contenido */}
+        <Grid container spacing={4}>
+          {/* Sidebar de Filtros */}
+          <Grid item xs={12} md={4} lg={3}>
+            <Box sx={{ position: "sticky", top: 100 }}>
+              <FiltroAcordeonHorario
+                onSeccionSelect={manejarSeleccionSeccion}
+                selectedSeccion={seccion}
+              />
+            </Box>
+          </Grid>
+
+          {/* Contenido principal */}
+          <Grid item xs={12} md={8} lg={9}>
+            {/* Información de la sección seleccionada */}
+            {seccion && (
+              <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
+                <CardContent>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <InfoIcon color="primary" />
+                    <Typography variant="h6">
+                      Sección Seleccionada
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <Chip 
+                      label={`Sección: ${seccion.valor_seccion || "N/A"}`} 
+                      variant="outlined" 
+                      color="primary"
+                    />
+                    <Chip 
+                      label={`Turno: ${seccion.nombre_turno || "No especificado"}`} 
+                      variant="outlined" 
+                    />
+                    <Chip 
+                      label={`Cupos: ${seccion.cupos_disponibles || 0}`} 
+                      variant="outlined" 
+                    />
+                    <Chip 
+                      label={`Trayecto: ${seccion.id_trayecto || "N/A"}`} 
+                      variant="outlined" 
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Mensajes de estado */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            )}
+
+            {!seccion && (
+              <Alert severity="info" sx={{ mb: 3 }}>
+                Selecciona una sección en el panel izquierdo para visualizar su horario
+              </Alert>
+            )}
+
+            {/* Horario */}
+            {horario ? (
+              <Horario
+                PNF={horario.pnf || horario.PNF}
+                Turno={formatearTurno(horario.turno || horario.Turno)}
+                Trayecto={horario.trayecto || horario.Trayecto}
+                Seccion={{
+                  seccion: horario.seccion || horario.Seccion?.seccion,
+                  idSeccion: horario.idSeccion || horario.Seccion?.idSeccion || seccion?.id_seccion
+                }}
+                Horario={horario.dias || horario.Horario}
+                Custom={true}
+              />
+            ) : (
+              seccion && !loading && (
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    py: 8,
+                    border: "2px dashed",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                    bgcolor: 'background.paper'
+                  }}
+                >
+                  <ScheduleIcon
+                    sx={{ fontSize: 64, color: "text.secondary", mb: 2 }}
+                  />
+                  <Typography variant="h5" gutterBottom color="text.secondary">
+                    No hay horario disponible
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    No se encontró horario para la sección seleccionada.
+                  </Typography>
+                </Box>
+              )
+            )}
+          </Grid>
+        </Grid>
       </Container>
     </>
   );

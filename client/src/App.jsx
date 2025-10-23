@@ -208,7 +208,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/formacion/programas/:codigo/trayecto/:idTrayecto"
+                path="/formacion/programas/:codigoPNF/trayecto/:valorTrayecto"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionTrayecto />

@@ -151,11 +151,55 @@ export default class CurricularController {
    * @returns {void}
    */
   static async mostrarSecciones(req, res) {
-    const trayecto = req.query.Trayecto ? Number(req.query.Trayecto) : null;
+    const trayecto = req.params.idTrayecto
+      ? Number(req.params.idTrayecto)
+      : null;
     return FormatResponseController.manejarServicio(
       res,
       CurricularService.mostrarSecciones(trayecto)
     );
+  }
+
+  /**
+   * @name mostrarSeccionesByPnfAndValueTrayecto
+   * @description Obtener todas las secciones de un trayecto específico de un PNF
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarSeccionesByPnfAndValueTrayecto(req, res) {
+    try {
+      const { codigoPNF, valorTrayecto } = req.params;
+
+      // Validar parámetros requeridos
+      if (!codigoPNF || !valorTrayecto) {
+        return res.status(400).json({
+          success: false,
+          message: "Los parámetros codigoPNF y valorTrayecto son requeridos",
+          data: null,
+        });
+      }
+
+      console.log("🔍 [Controlador] Obteniendo secciones...", {
+        codigoPNF,
+        valorTrayecto,
+      });
+
+      return FormatResponseController.manejarServicio(
+        res,
+        CurricularService.mostrarSeccionesByPnfAndValueTrayecto(
+          codigoPNF,
+          valorTrayecto
+        )
+      );
+    } catch (error) {
+      console.error("💥 Error en controlador mostrar secciones:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error interno del servidor",
+        data: null,
+      });
+    }
   }
 
   /**

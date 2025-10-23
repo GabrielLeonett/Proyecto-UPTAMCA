@@ -295,6 +295,42 @@ CurricularRouter.get(
 );
 
 /**
+ * @route GET /secciones/:codigoPNF/:valorTrayecto
+ * @group Curricular - Operaciones relacionadas con el currículo académico
+ * @param {string} codigoPNF.path.required - Código único del Programa Nacional de Formación (PNF)
+ * @param {string} valorTrayecto.path.required - Valor numérico que identifica el trayecto académico
+ * @returns {Object} 200 - Retorna las secciones encontradas para el PNF y trayecto especificados
+ * @returns {Object} 400 - Error cuando faltan parámetros requeridos
+ * @returns {Object} 404 - No se encontraron secciones para los criterios especificados
+ * @returns {Object} 500 - Error interno del servidor
+ * @description Obtiene todas las secciones académicas filtradas por PNF y trayecto específico
+ * @example GET /api/secciones/INFORMATICA/2
+ * @example Response
+ * {
+ *   "success": true,
+ *   "message": "Secciones obtenidas exitosamente",
+ *   "data": {
+ *     "secciones": [
+ *       {
+ *         "id_seccion": 1,
+ *         "valor_seccion": "A",
+ *         "cupos_disponibles": 30,
+ *         "nombre_turno": "MAÑANA",
+ *         "id_trayecto": 5
+ *       }
+ *     ],
+ *     "total": 1,
+ *     "codigoPNF": "INFORMATICA",
+ *     "valorTrayecto": "2"
+ *   }
+ * }
+ */
+CurricularRouter.get(
+  "/secciones/:codigoPNF/:valorTrayecto",
+  CurricularController.mostrarSeccionesByPnfAndValueTrayecto
+);
+
+/**
  * @name POST /trayectos/:idTrayecto/secciones
  * @description Crea nuevas secciones para un trayecto académico
  * @param {number} idTrayecto - ID del trayecto

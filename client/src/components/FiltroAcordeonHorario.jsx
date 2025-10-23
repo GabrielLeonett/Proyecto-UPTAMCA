@@ -12,7 +12,10 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import useApi from "../hook/useApi";
 
-export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion }) {
+export default function FiltroAcordeonHorario({
+  onSeccionSelect,
+  selectedSeccion,
+}) {
   const [pnfs, setPnfs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedPnf, setExpandedPnf] = useState(null);
@@ -24,8 +27,8 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
     const fetchPnfs = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("/PNF");
-        setPnfs(response || []);
+        const res = await axios.get("/pnf");
+        setPnfs(res.pnf || []);
       } catch (error) {
         console.error("Error cargando PNFs:", error);
       } finally {
@@ -62,13 +65,13 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
   // Cargar trayectos de un PNF
   const fetchTrayectos = async (pnfId, pnfCodigo) => {
     try {
-      const response = await axios.get(`/Trayectos?PNF=${pnfCodigo}`);
+      const response = await axios.get(`/pnf/${pnfCodigo}/trayectos`);
       console.log("Trayectos recibidos:", response);
 
       setPnfs((prev) =>
         prev.map((pnf) =>
-          pnf.id_pnf === pnfId 
-            ? { ...pnf, trayectos: response || [] } 
+          pnf.id_pnf === pnfId
+            ? { ...pnf, trayectos: response.trayectos || [] }
             : pnf
         )
       );
@@ -78,11 +81,10 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
   };
 
   // Cargar secciones de un trayecto
-  const fetchSecciones = async (trayectoId, pnfId, pnfCodigo) => {
+  const fetchSecciones = async (trayectoId, pnfId) => {
     try {
-      const response = await axios.get(`/Secciones/?Trayecto=${trayectoId}`);
-      console.log("Secciones recibidas:", response);
-      
+      const response = await axios.get(`/trayectos/${trayectoId}/secciones`);
+      console.log("Secciones recibidas:", response.secciones);
       setPnfs((prev) =>
         prev.map((pnf) =>
           pnf.id_pnf === pnfId
@@ -91,7 +93,7 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
                 trayectos:
                   pnf.trayectos?.map((trayecto) =>
                     trayecto.id_trayecto === trayectoId
-                      ? { ...trayecto, secciones: response || [] }
+                      ? { ...trayecto, secciones: response.secciones || [] }
                       : trayecto
                   ) || [],
               }
@@ -104,19 +106,9 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
   };
 
   // Manejar selección de sección
-  const handleSeccionClick = (seccion, pnf, trayecto) => {
+  const handleSeccionClick = (seccion) => {
     if (onSeccionSelect) {
-      onSeccionSelect({
-        id: seccion.id_seccion,
-        numero: seccion.valor_seccion,
-        turno: seccion.nombre_turno,
-        cupos_disponibles: seccion.cupos_disponibles,
-        pnf: pnf.nombre_pnf,
-        pnfCodigo: pnf.codigo_pnf,
-        trayecto: trayecto.valor_trayecto,
-        trayectoId: trayecto.id_trayecto,
-        id_pnf: pnf.id_pnf
-      });
+      onSeccionSelect(seccion);
     }
   };
 
@@ -164,7 +156,13 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
               <Accordion
                 key={trayecto.id_trayecto}
                 expanded={expandedTrayectos[trayecto.id_trayecto] || false}
-                onChange={() => handleTrayectoExpand(trayecto.id_trayecto, pnf.id_pnf, pnf.codigo_pnf)}
+                onChange={() =>
+                  handleTrayectoExpand(
+                    trayecto.id_trayecto,
+                    pnf.id_pnf,
+                    pnf.codigo_pnf
+                  )
+                }
                 sx={{
                   m: 0,
                   "&:before": { display: "none" },
@@ -180,11 +178,17 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
                     borderColor: "grey.200",
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "100%",
+                    }}
+                  >
                     <Typography sx={{ fontWeight: "medium" }}>
                       Trayecto {trayecto.valor_trayecto}
                     </Typography>
-                    <Chip 
+                    <Chip
                       label={`${trayecto.poblacion_estudiantil} estudiantes`}
                       size="small"
                       variant="outlined"
@@ -202,13 +206,15 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
                         p: 2,
                         m: 1,
                         border: "1px solid",
-                        borderColor: selectedSeccion?.id === seccion.id_seccion 
-                          ? "primary.main" 
-                          : "grey.300",
+                        borderColor:
+                          selectedSeccion?.id === seccion.id_seccion
+                            ? "primary.main"
+                            : "grey.300",
                         borderRadius: 1,
-                        backgroundColor: selectedSeccion?.id === seccion.id_seccion 
-                          ? "primary.light" 
-                          : "white",
+                        backgroundColor:
+                          selectedSeccion?.id === seccion.id_seccion
+                            ? "primary.light"
+                            : "white",
                         cursor: "pointer",
                         "&:hover": {
                           backgroundColor: "action.hover",
@@ -216,34 +222,45 @@ export default function FiltroAcordeonHorario({ onSeccionSelect, selectedSeccion
                         transition: "all 0.2s",
                       }}
                     >
-                      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 1 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          mb: 1,
+                        }}
+                      >
                         <Typography variant="subtitle1" fontWeight="medium">
                           Sección {seccion.valor_seccion}
                         </Typography>
-                        <Chip 
+                        <Chip
                           label={`${seccion.cupos_disponibles} cupos`}
                           size="small"
-                          color={seccion.cupos_disponibles > 0 ? "success" : "error"}
+                          color={
+                            seccion.cupos_disponibles > 0 ? "success" : "error"
+                          }
                           variant="outlined"
                         />
                       </Box>
-                      
+
                       <Typography variant="body2" color="text.secondary">
                         Turno: {seccion.nombre_turno}
                       </Typography>
-                      
+
                       {/* Información adicional si existe */}
                       {seccion.aula && (
                         <Typography variant="body2" color="text.secondary">
                           Aula: {seccion.aula}
                         </Typography>
                       )}
-                      
+
                       {seccion.estado && (
-                        <Chip 
+                        <Chip
                           label={seccion.estado}
                           size="small"
-                          color={seccion.estado === "ACTIVA" ? "success" : "default"}
+                          color={
+                            seccion.estado === "ACTIVA" ? "success" : "default"
+                          }
                           sx={{ mt: 1 }}
                         />
                       )}

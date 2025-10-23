@@ -207,7 +207,11 @@ export default class AdminService {
       console.log(`🔍 [buscarAdmin] Buscando administradores: ${busqueda}`);
 
       // Validar término de búsqueda
-      if (!busqueda || typeof busqueda !== "string" || busqueda.trim().length === 0) {
+      if (
+        !busqueda ||
+        typeof busqueda !== "string" ||
+        busqueda.trim().length === 0
+      ) {
         return FormatterResponseService.validationError(
           [
             {
@@ -258,7 +262,10 @@ export default class AdminService {
       console.log(`🔍 [obtenerAdminPorId] Buscando admin ID: ${id_admin}`);
 
       // Validar ID del administrador
-      const idValidation = ValidationService.validateId(id_admin, "administrador");
+      const idValidation = ValidationService.validateId(
+        id_admin,
+        "administrador"
+      );
       if (!idValidation.isValid) {
         return FormatterResponseService.validationError(
           idValidation.errors,
@@ -278,7 +285,9 @@ export default class AdminService {
 
       const admin = respuestaModel.data[0];
 
-      console.log(`✅ Administrador encontrado: ${admin.nombre} ${admin.apellido}`);
+      console.log(
+        `✅ Administrador encontrado: ${admin.nombre} ${admin.apellido}`
+      );
 
       return FormatterResponseService.success(
         {
@@ -311,7 +320,10 @@ export default class AdminService {
       console.log(`🔍 [actualizarAdmin] Actualizando admin ID: ${id_admin}`);
 
       // Validar ID del administrador
-      const idValidation = ValidationService.validateId(id_admin, "administrador");
+      const idValidation = ValidationService.validateId(
+        id_admin,
+        "administrador"
+      );
       if (!idValidation.isValid) {
         return FormatterResponseService.validationError(
           idValidation.errors,
@@ -360,7 +372,9 @@ export default class AdminService {
         );
 
         if (adminDuplicado.data && adminDuplicado.data.length > 0) {
-          const adminDupe = adminDuplicado.data.find(admin => admin.id_admin !== id_admin);
+          const adminDupe = adminDuplicado.data.find(
+            (admin) => admin.id_admin !== id_admin
+          );
           if (adminDupe) {
             return FormatterResponseService.error(
               "Administrador ya existe",
@@ -395,7 +409,9 @@ export default class AdminService {
       await notificationService.crearNotificacionMasiva({
         titulo: "Administrador Actualizado",
         tipo: "admin_actualizado",
-        contenido: `Se han actualizado los datos del administrador ${datos.nombre || adminActual.nombre} ${datos.apellido || adminActual.apellido}`,
+        contenido: `Se han actualizado los datos del administrador ${
+          datos.nombre || adminActual.nombre
+        } ${datos.apellido || adminActual.apellido}`,
         metadatos: {
           admin_id: id_admin,
           admin_cedula: datos.cedula || adminActual.cedula,
@@ -444,7 +460,10 @@ export default class AdminService {
       console.log(`🔍 [desactivarAdmin] Desactivando admin ID: ${id_admin}`);
 
       // Validar ID del administrador
-      const idValidation = ValidationService.validateId(id_admin, "administrador");
+      const idValidation = ValidationService.validateId(
+        id_admin,
+        "administrador"
+      );
       if (!idValidation.isValid) {
         return FormatterResponseService.validationError(
           idValidation.errors,
@@ -488,7 +507,10 @@ export default class AdminService {
 
       // No permitir desactivar al último SuperAdmin
       if (admin.rol === "SuperAdmin") {
-        const superAdminsActivos = await AdminModel.contarPorRolYEstado("SuperAdmin", "activo");
+        const superAdminsActivos = await AdminModel.contarPorRolYEstado(
+          "SuperAdmin",
+          "activo"
+        );
         if (superAdminsActivos.data <= 1) {
           return FormatterResponseService.error(
             "Acción no permitida",
@@ -500,7 +522,10 @@ export default class AdminService {
       }
 
       // Desactivar administrador
-      const respuestaModel = await AdminModel.desactivar(id_admin, user_action.id);
+      const respuestaModel = await AdminModel.desactivar(
+        id_admin,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -563,10 +588,15 @@ export default class AdminService {
    */
   static async cambiarRolAdmin(id_admin, nuevoRol, user_action) {
     try {
-      console.log(`🔍 [cambiarRolAdmin] Cambiando rol del admin ID: ${id_admin} a ${nuevoRol}`);
+      console.log(
+        `🔍 [cambiarRolAdmin] Cambiando rol del admin ID: ${id_admin} a ${nuevoRol}`
+      );
 
       // Validar ID del administrador
-      const idValidation = ValidationService.validateId(id_admin, "administrador");
+      const idValidation = ValidationService.validateId(
+        id_admin,
+        "administrador"
+      );
       if (!idValidation.isValid) {
         return FormatterResponseService.validationError(
           idValidation.errors,
@@ -575,13 +605,20 @@ export default class AdminService {
       }
 
       // Validar nuevo rol
-      const rolesValidos = ["SuperAdmin", "Vicerrector", "Director General de Gestión Curricular", "Coordinador"];
+      const rolesValidos = [
+        "SuperAdmin",
+        "Vicerrector",
+        "Director General de Gestión Curricular",
+        "Coordinador",
+      ];
       if (!nuevoRol || !rolesValidos.includes(nuevoRol)) {
         return FormatterResponseService.validationError(
           [
             {
               path: "rol",
-              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(", ")}`,
+              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(
+                ", "
+              )}`,
             },
           ],
           "Error de validación en cambio de rol"
@@ -624,7 +661,10 @@ export default class AdminService {
 
       // Verificar si es el último SuperAdmin y quiere cambiar su rol
       if (admin.rol === "SuperAdmin" && nuevoRol !== "SuperAdmin") {
-        const superAdminsActivos = await AdminModel.contarPorRolYEstado("SuperAdmin", "activo");
+        const superAdminsActivos = await AdminModel.contarPorRolYEstado(
+          "SuperAdmin",
+          "activo"
+        );
         if (superAdminsActivos.data <= 1) {
           return FormatterResponseService.error(
             "Acción no permitida",
@@ -636,7 +676,11 @@ export default class AdminService {
       }
 
       // Cambiar rol
-      const respuestaModel = await AdminModel.cambiarRol(id_admin, nuevoRol, user_action.id);
+      const respuestaModel = await AdminModel.cambiarRol(
+        id_admin,
+        nuevoRol,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -684,7 +728,10 @@ export default class AdminService {
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio cambiar rol de administrador:", error);
+      console.error(
+        "💥 Error en servicio cambiar rol de administrador:",
+        error
+      );
       throw error;
     }
   }
@@ -764,7 +811,9 @@ export default class AdminService {
    */
   static async updateProfile(user, datos) {
     try {
-      console.log(`🔍 [updateProfile] Actualizando perfil del admin ID: ${user.id}`);
+      console.log(
+        `🔍 [updateProfile] Actualizando perfil del admin ID: ${user.id}`
+      );
 
       // Validar ID de usuario
       const userValidation = ValidationService.validateId(user.id, "usuario");
@@ -778,7 +827,7 @@ export default class AdminService {
       // Validar datos permitidos para actualización de perfil
       const camposPermitidos = ["nombre", "apellido", "email"];
       const datosFiltrados = {};
-      
+
       for (const campo of camposPermitidos) {
         if (datos[campo] !== undefined) {
           datosFiltrados[campo] = datos[campo];
@@ -808,9 +857,13 @@ export default class AdminService {
 
       // Verificar duplicados de email
       if (datosFiltrados.email) {
-        const adminDuplicado = await AdminModel.buscarPorEmail(datosFiltrados.email);
+        const adminDuplicado = await AdminModel.buscarPorEmail(
+          datosFiltrados.email
+        );
         if (adminDuplicado.data && adminDuplicado.data.length > 0) {
-          const adminDupe = adminDuplicado.data.find(admin => admin.id_admin !== user.id);
+          const adminDupe = adminDuplicado.data.find(
+            (admin) => admin.id_admin !== user.id
+          );
           if (adminDupe) {
             return FormatterResponseService.error(
               "Email ya existe",
@@ -829,7 +882,10 @@ export default class AdminService {
       }
 
       // Actualizar perfil
-      const respuestaModel = await AdminModel.actualizarPerfil(user.id, datosFiltrados);
+      const respuestaModel = await AdminModel.actualizarPerfil(
+        user.id,
+        datosFiltrados
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -867,13 +923,20 @@ export default class AdminService {
       console.log(`🔍 [obtenerAdminsPorRol] Filtrando admins por rol: ${rol}`);
 
       // Validar rol
-      const rolesValidos = ["SuperAdmin", "Vicerrector", "Director General de Gestión Curricular", "Coordinador"];
+      const rolesValidos = [
+        "SuperAdmin",
+        "Vicerrector",
+        "Director General de Gestión Curricular",
+        "Coordinador",
+      ];
       if (!rol || !rolesValidos.includes(rol)) {
         return FormatterResponseService.validationError(
           [
             {
               path: "rol",
-              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(", ")}`,
+              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(
+                ", "
+              )}`,
             },
           ],
           "Error de validación en filtro por rol"
@@ -914,7 +977,9 @@ export default class AdminService {
    */
   static async obtenerAdminsPorEstado(estado) {
     try {
-      console.log(`🔍 [obtenerAdminsPorEstado] Filtrando admins por estado: ${estado}`);
+      console.log(
+        `🔍 [obtenerAdminsPorEstado] Filtrando admins por estado: ${estado}`
+      );
 
       // Validar estado
       const estadosValidos = ["activo", "inactivo"];
@@ -923,7 +988,9 @@ export default class AdminService {
           [
             {
               path: "estado",
-              message: `Estado inválido. Los estados válidos son: ${estadosValidos.join(", ")}`,
+              message: `Estado inválido. Los estados válidos son: ${estadosValidos.join(
+                ", "
+              )}`,
             },
           ],
           "Error de validación en filtro por estado"

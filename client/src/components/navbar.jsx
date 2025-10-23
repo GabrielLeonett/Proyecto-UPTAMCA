@@ -112,58 +112,57 @@ function ResponsiveAppBar({ backgroundColor }) {
         "SuperAdmin",
       ],
       submenu: [
-  {
-    name: "Gestión de Profesores",
-    url: "/academico/profesores",
-    roles: [
-      "Vicerrector",
-      "Profesor",
-      "Coordinador",
-      "Director General de Gestión Curricular",
-      "SuperAdmin",
-    ],
-  },
-  {
-    name: "Registrar Profesor",
-    url: "/academico/profesores/registrar",
-    roles: [
-      "Vicerrector",
-      "Director General de Gestión Curricular",
-      "SuperAdmin",
-    ],
-  },
-  {
-    name: "Profesores Eliminados",
-    url: "/academico/profesores/eliminados",
-    roles: [
-      "Vicerrector",
-      "Profesor",
-      "Coordinador",
-      "Director General de Gestión Curricular",
-      "SuperAdmin",
-    ],
-  },
-  {
-    name: "Gestión de Coordinadores",
-    url: "/coordinacion/coordinadores",
-    roles: [
-      "Vicerrector",
-      "Coordinador",
-      "Director General de Gestión Curricular",
-      "SuperAdmin",
-    ],
-  },
-  {
-    name: "Asignar Coordinador",
-    url: "/coordinacion/coordinadores/asignar",
-    roles: [
-      "Vicerrector",
-      "Director General de Gestión Curricular",
-      "SuperAdmin",
-    ],
-  },
-],
-
+        {
+          name: "Gestión de Profesores",
+          url: "/academico/profesores",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Profesor",
+          url: "/academico/profesores/registrar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Profesores Eliminados",
+          url: "/academico/profesores/eliminados",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Coordinadores",
+          url: "/coordinacion/coordinadores",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Asignar Coordinador",
+          url: "/coordinacion/coordinadores/asignar",
+          roles: [
+            "Vicerrector",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+      ],
     },
     {
       name: "Formación Académica",
@@ -198,28 +197,7 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
     },
     {
-  name: "Gestión Operativa",
-  roles: [
-    "Vicerrector",
-    "Profesor",
-    "Coordinador",
-    "Director General de Gestión Curricular",
-    "SuperAdmin",
-  ],
-  submenu: [
-    {
-      name: "Gestión de Secciones",
-      url: "/secciones",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-    },
-    {
-      name: "Gestión de Horarios",
-      url: "/horarios",
+      name: "Gestión Operativa",
       roles: [
         "Vicerrector",
         "Profesor",
@@ -227,39 +205,60 @@ function ResponsiveAppBar({ backgroundColor }) {
         "Director General de Gestión Curricular",
         "SuperAdmin",
       ],
-    },
-    {
-      name: "Gestión de Sedes",
-      url: "/infraestructura/sedes",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
+      submenu: [
+        {
+          name: "Gestión de Secciones",
+          url: "/secciones",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Horarios",
+          url: "/horarios",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Sedes",
+          url: "/infraestructura/sedes",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Registrar Sede", // <-- NUEVO
+          url: "/infraestructura/sedes/registrar", // <-- ruta que ya tienes en App.jsx
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Aulas",
+          url: "/infraestructura/aulas",
+          roles: [
+            "Vicerrector",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
       ],
     },
-    {
-      name: "Registrar Sede",   // <-- NUEVO
-      url: "/infraestructura/sedes/registrar", // <-- ruta que ya tienes en App.jsx
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-    },
-    {
-      name: "Gestión de Aulas",
-      url: "/infraestructura/aulas",
-      roles: [
-        "Vicerrector",
-        "Coordinador",
-        "Director General de Gestión Curricular",
-        "SuperAdmin",
-      ],
-    },
-  ],
-},
 
     {
       name: "Administración",
@@ -273,6 +272,11 @@ function ResponsiveAppBar({ backgroundColor }) {
         {
           name: "Configuración del Sistema",
           url: "/administracion/configuracion", // Esta ruta no existe en tus Route, puedes agregarla o removerla
+          roles: ["SuperAdmin"],
+        },
+        {
+          name: "Pagina de pruebas",
+          url: "/desarrollo/pruebas", // Esta ruta no existe en tus Route, puedes agregarla o removerla
           roles: ["SuperAdmin"],
         },
       ],
@@ -541,7 +545,12 @@ function ResponsiveAppBar({ backgroundColor }) {
                 </MenuItem>
               ) : (
                 [
-                  <MenuItem key="mi-cuenta" onClick={handleCloseUserMenu}>
+                  <MenuItem
+                    key="mi-cuenta"
+                    onClick={() => {
+                      navigate("/perfil");
+                    }}
+                  >
                     Mi cuenta
                   </MenuItem>,
                   <MenuItem key="cerrar-sesion" onClick={handleLogout}>

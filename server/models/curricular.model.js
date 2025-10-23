@@ -318,7 +318,7 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE p.codigo_pnf = $1 AND deleted_as = NULL
+          WHERE p.codigo_pnf = $1
           ORDER BY t.valor_trayecto ASC`,
           [codigoPNF]
         ));
@@ -334,7 +334,6 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE deleted_as = NULL
           ORDER BY p.nombre_pnf, t.valor_trayecto ASC
         `));
       }
@@ -349,6 +348,63 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener los trayectos"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarSeccionesByPnfAndValueTrayecto
+   * @description Obtiene secciones por PNF y valor de trayecto
+   * @param {string} codigoPNF - Código del PNF para filtrar
+   * @param {string|number} valorTrayecto - Valor del trayecto para filtrar
+   * @returns {Promise<Object>} Resultado de la consulta
+   */
+  static async mostrarSeccionesByPnfAndValueTrayecto(codigoPNF, valorTrayecto) {
+    try {
+      console.log("📊 [Model] Obteniendo secciones...", {
+        codigoPNF,
+        valorTrayecto,
+      });
+
+      const { rows } = await pg.query(
+        `
+      SELECT 
+        s.id_seccion,
+        s.valor_seccion,
+        s.cupos_disponibles,
+        t.nombre_turno,
+        s.id_trayecto,
+        tr.valor_trayecto as trayecto_valor,
+        p.codigo_pnf,
+        p.nombre_pnf
+      FROM secciones s
+      LEFT JOIN turnos t ON s.id_turno = t.id_turno
+      INNER JOIN trayectos tr ON s.id_trayecto = tr.id_trayecto
+      INNER JOIN pnfs p ON tr.id_pnf = p.id_pnf
+      WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
+      ORDER BY s.valor_seccion ASC;
+      `,
+        [codigoPNF, valorTrayecto]
+      );
+
+      console.log(`📊 [Model] ${rows.length} secciones obtenidas`);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Secciones obtenidas correctamente."
+      );
+    } catch (error) {
+      console.error("❌ Error en modelo mostrar secciones:", error);
+      error.details = {
+        path: "CurricularModel.mostrarSeccionesByPnfAndValueTrayecto",
+        codigoPNF,
+        valorTrayecto,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las secciones"
       );
     }
   }
