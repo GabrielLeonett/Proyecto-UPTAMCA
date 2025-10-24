@@ -23,14 +23,8 @@ export default class AulaModel {
       const { id_sede, codigo, tipo, capacidad } = datos;
       const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, NULL)`;
 
-      const params = [
-        id_usuario,
-        id_sede,
-        codigo,
-        tipo,
-        capacidad
-      ];
-      console.log(query, params)
+      const params = [id_usuario, id_sede, codigo, tipo, capacidad];
+      console.log(query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
@@ -445,6 +439,35 @@ export default class AulaModel {
       }
 
       query += ` ORDER BY a.nombre ASC`;
+
+      const { rows } = await pg.query(query, params);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Aulas disponibles obtenidas exitosamente"
+      );
+    } catch (error) {
+      error.details = { path: "AulaModel.obtenerDisponibles" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener aulas disponibles"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerAulasPorPnf
+   * @description Obtener aulas disponibles para un horario específico
+   * @param {number} codigoPNF - Filtros de disponibilidad
+   * @returns {Promise<Object>} Lista de aulas disponibles
+   */
+  static async obtenerAulasPorPnf(codigoPNF) {
+    try {
+      let query = `
+        
+      `;
 
       const { rows } = await pg.query(query, params);
 

@@ -23,15 +23,12 @@ export default function RegistrarUnidadCurricular() {
   } = useForm({
     resolver: zodResolver(UnidadCurricularSchema),
     mode: "onChange",
-    defaultValues: {
-      idTrayecto: parseInt(idTrayecto),
-    },
   });
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await axios.post("/Unidad_Curricular/create", data);
+      await axios.post(`/trayectos/${idTrayecto}/unidades-curriculares`, data);
       reset();
     } finally {
       setIsSubmitting(false);

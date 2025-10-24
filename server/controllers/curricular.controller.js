@@ -203,6 +203,48 @@ export default class CurricularController {
   }
 
   /**
+   * @name mostrarSeccionesByPnfAndValueUnidadCurricular
+   * @description Obtener todas las unidades curriculares de un trayecto específico de un PNF
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarSeccionesByPnfAndValueUnidadCurricular(req, res) {
+    try {
+      const { codigoPNF, valorTrayecto } = req.params;
+
+      // Validar parámetros requeridos
+      if (!codigoPNF || !valorTrayecto) {
+        return res.status(400).json({
+          success: false,
+          message: "Los parámetros codigoPNF y valorTrayecto son requeridos",
+          data: null,
+        });
+      }
+
+      console.log("🔍 [Controlador] Obteniendo secciones...", {
+        codigoPNF,
+        valorTrayecto,
+      });
+
+      return FormatResponseController.manejarServicio(
+        res,
+        CurricularService.mostrarSeccionesByPnfAndValueUnidadCurricular(
+          codigoPNF,
+          valorTrayecto
+        )
+      );
+    } catch (error) {
+      console.error("💥 Error en controlador mostrar secciones:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error interno del servidor",
+        data: null,
+      });
+    }
+  }
+
+  /**
    * @name CrearSecciones
    * @description Crear secciones para un trayecto de forma automática
    * @param {Object} req - Objeto de solicitud Express

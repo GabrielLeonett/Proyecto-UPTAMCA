@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { UTILS } from "../../../utils/utils";
 
 // Función auxiliar para verificar unidades curriculares existentes (fuera del hook)
 const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
@@ -60,24 +59,20 @@ const useHorarioData = (axios, props, stateSetters, Custom) => {
   const fetchUnidadesCurriculares = async (tableHorario) => {
     if (!Custom) return;
     try {
-      const trayectoNumero = UTILS.obtenerTrayectoNumero(Trayecto);
-      const unidades = await axios.get(
-        `/Trayecto/Unidades-Curriculares?Trayecto=${trayectoNumero}`
+      const res = await axios.get(
+        `/trayectos/${Trayecto.id_trayecto}/unidades-curriculares`
       );
-      
       const unidadesActualizadas = verificarSiExisteUnidadCurricular(
-        unidades,
+        res.unidades_curriculares,
         tableHorario
       );
-      
+
       setUnidadesCurriculares(unidadesActualizadas);
-      return { success: true, data: unidadesActualizadas };
     } catch (error) {
       console.error("Error cargando unidades curriculares:", error);
-      return { success: false, error };
     }
   };
-  
+
   // Fetch de aulas - SIN useCallback
   const fetchAulas = async () => {
     if (!Custom) return;
@@ -90,7 +85,7 @@ const useHorarioData = (axios, props, stateSetters, Custom) => {
       return { success: false, error };
     }
   };
-  
+
   // Fetch de profesores - SIN useCallback
   const fetchProfesores = async (horasClase) => {
     if (!Custom) return;
@@ -105,15 +100,10 @@ const useHorarioData = (axios, props, stateSetters, Custom) => {
       return { success: false, error };
     }
   };
-  
+
   // Fetch de horarios de profesores - SIN useCallback
   const fetchProfesoresHorarios = async (profesores) => {
     if (!Custom) return;
-    if (!profesores || profesores.length === 0) {
-      console.warn("No hay profesores para cargar horarios");
-      return { success: false, error: "No hay profesores" };
-    }
-
     setLoading(true);
     try {
       const horariosPromises = profesores.map((profesor) =>
@@ -121,9 +111,7 @@ const useHorarioData = (axios, props, stateSetters, Custom) => {
       );
 
       const responses = await Promise.all(horariosPromises);
-      const horarios = responses.map(
-        (response) => response || response
-      );
+      const horarios = responses.map((response) => response || response);
 
       setProfesoresHorarios(horarios);
       return { success: true, data: horarios };
@@ -136,53 +124,19 @@ const useHorarioData = (axios, props, stateSetters, Custom) => {
   };
 
   // Función para cargar todos los datos iniciales - CON useCallback pero sin dependencias problemáticas
-  const fetchAllInitialData = useCallback(
-    async (tableHorario) => {
-      try {
-        setLoading(true);
-
-        const [unidadesResult, aulasResult] = await Promise.all([
-          fetchUnidadesCurriculares(tableHorario),
-          fetchAulas(),
-        ]);
-
-        return {
-          success: unidadesResult.success && aulasResult.success,
-          unidades: unidadesResult.data,
-          aulas: aulasResult.data,
-        };
-      } catch (error) {
-        console.error("Error cargando datos iniciales:", error);
-        return { success: false, error };
-      } finally {
-        setLoading(false);
-      }
-    },
-    [setLoading]
-  ); // Solo setLoading como dependencia
+  const fetchAllInitialData = useCallback(async (tableHorario) => {
+    setLoading(true);
+    await fetchUnidadesCurriculares(tableHorario);
+    await fetchAulas();
+    setLoading(false);
+  }, []); // Solo setLoading como dependencia
 
   // Función para cargar datos de profesores basados en unidad seleccionada - CON useCallback
   const fetchProfesoresData = useCallback(async (unidad) => {
     if (!unidad) return { success: false, error: "No hay unidad seleccionada" };
-
-    try {
-      const profesoresResult = await fetchProfesores(unidad.horas_clase);
-
-      if (profesoresResult.success) {
-        const horariosResult = await fetchProfesoresHorarios(
-          profesoresResult.data
-        );
-        return {
-          success: horariosResult.success,
-          profesores: profesoresResult.data,
-          horarios: horariosResult.data,
-        };
-      }
-
-      return profesoresResult;
-    } catch (error) {
-      console.error("Error cargando datos de profesores:", error);
-      return { success: false, error };
+    const profesoresResult = await fetchProfesores(unidad.horas_clase);
+    if (profesoresResult.success) {
+      await fetchProfesoresHorarios(profesoresResult.data);
     }
   }, []); // Sin dependencias - las funciones fetch son estables
 

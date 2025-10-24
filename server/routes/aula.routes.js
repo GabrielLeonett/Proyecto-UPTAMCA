@@ -11,6 +11,7 @@ const {
   eliminarAula,
   obtenerAulasPorTipo,
   obtenerAulasPorSede,
+  obtenerAulasPorPnf
 } = AulaController;
 
 // Creación del router para las rutas de Aula
@@ -235,6 +236,32 @@ AulaRouter.get(
     "Profesor",
   ]),
   obtenerAulasPorSede
+);
+
+/**
+ * @name GET /aulas/pnf/:codigoPNF
+ * @description Obtiene aulas filtradas por sede o ubicación
+ * @param {string} sede - Sede o ubicación específica
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ *   - Profesor
+ * @returns {Array} Lista de aulas de la sede especificada
+ * @example
+ * curl -X GET 'http://localhost:3000/aulas/sede/Edificio+A'
+ */
+AulaRouter.get(
+  "/aulas/pnf/:codigoPNF",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  obtenerAulasPorPnf
 );
 
 /**

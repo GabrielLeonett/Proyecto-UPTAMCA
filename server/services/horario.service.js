@@ -115,8 +115,11 @@ export default class HorarioService {
       // Usar los nombres correctos de las columnas según tu consulta SQL
       const {
         nombre_pnf, // ← existe en tu SQL
+        codigo_pnf, // ← existe en tu SQL
         valor_trayecto, // ← existe en tu SQL
+        id_trayecto, // ← existe en tu SQL
         valor_seccion, // ← existe en tu SQL
+        id_seccion, // ← existe en tu SQL
         nombre_turno, // ← CORREGIDO: era turno_nombre
         turno_hora_inicio, // ← existe en tu SQL
         turno_hora_fin, // ← existe en tu SQL
@@ -140,9 +143,9 @@ export default class HorarioService {
 
       // Crear configuración con nombres consistentes
       const configuracion = {
-        PNF: nombre_pnf,
-        Trayecto: valor_trayecto,
-        Seccion: valor_seccion,
+        PNF: { nombre_pnf, codigo_pnf },
+        Trayecto: { id_trayecto, valor_trayecto },
+        Seccion: { valor_seccion, id_seccion },
         Turno: {
           nombre: nombre_turno, // ← CORREGIDO: era turno_nombre
           horaInicio: turno_hora_inicio || "07:00",
@@ -372,7 +375,9 @@ export default class HorarioService {
         titulo: "Nueva Asignación de Horario",
         tipo: "horario_asignado",
         user_id: datos.id_profesor, // El profesor que recibe el horario
-        contenido: `Se le ha asignado un nuevo horario para la unidad curricular "${datos.nombre_unidad_curricular || 'N/A'}" en el aula ${datos.codigo_aula || 'N/A'}`,
+        contenido: `Se le ha asignado un nuevo horario para la unidad curricular "${
+          datos.nombre_unidad_curricular || "N/A"
+        }" en el aula ${datos.codigo_aula || "N/A"}`,
         metadatos: {
           horario_id: resultado.id_horario || resultado.id,
           profesor_id: datos.id_profesor,
@@ -391,11 +396,13 @@ export default class HorarioService {
       await notificationService.crearNotificacionMasiva({
         titulo: "Nuevo Horario Registrado",
         tipo: "horario_creado",
-        contenido: `Se ha registrado un nuevo horario para el profesor en el aula ${datos.codigo_aula || 'N/A'}`,
+        contenido: `Se ha registrado un nuevo horario para el profesor en el aula ${
+          datos.codigo_aula || "N/A"
+        }`,
         metadatos: {
           horario_id: resultado.id_horario || resultado.id,
           profesor_id: datos.id_profesor,
-          profesor_nombre: datos.nombre_profesor || 'Profesor',
+          profesor_nombre: datos.nombre_profesor || "Profesor",
           unidad_curricular: datos.nombre_unidad_curricular,
           aula: datos.codigo_aula,
           dia_semana: datos.dia_semana,
@@ -459,7 +466,7 @@ export default class HorarioService {
       // Notificación para el usuario que generó el documento
       console.log("🔔 Enviando notificación de generación de documento...");
       const notificationService = new NotificationService();
-      
+
       await notificationService.crearNotificacionIndividual({
         titulo: "Documento de Horario Generado",
         tipo: "documento_horario_generado",
@@ -519,7 +526,10 @@ export default class HorarioService {
         );
       }
 
-      const horarioIdValidation = validationService.validateId(idHorario, "horario");
+      const horarioIdValidation = validationService.validateId(
+        idHorario,
+        "horario"
+      );
       if (!horarioIdValidation.isValid) {
         return FormatterResponseService.validationError(
           horarioIdValidation.errors,
@@ -535,8 +545,11 @@ export default class HorarioService {
         );
       }
 
-
-      const dbResponse = await HorarioModel.actualizar(idHorario, datos, usuario_accion.id);
+      const dbResponse = await HorarioModel.actualizar(
+        idHorario,
+        datos,
+        usuario_accion.id
+      );
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);
@@ -552,7 +565,7 @@ export default class HorarioService {
       const horarioInfo = await HorarioModel.obtenerPorId(idHorario);
       if (horarioInfo && horarioInfo.data && horarioInfo.data.length > 0) {
         const horario = horarioInfo.data[0];
-        
+
         // Notificación individual para el PROFESOR afectado
         await notificationService.crearNotificacionIndividual({
           titulo: "Horario Actualizado",
@@ -622,7 +635,10 @@ export default class HorarioService {
         );
       }
 
-      const horarioValidation = validationService.validateId(idHorario, "horario");
+      const horarioValidation = validationService.validateId(
+        idHorario,
+        "horario"
+      );
       if (!horarioValidation.isValid) {
         return FormatterResponseService.validationError(
           horarioValidation.errors,
@@ -638,7 +654,10 @@ export default class HorarioService {
 
       const horario = horarioInfo.data[0];
 
-      const dbResponse = await HorarioModel.eliminar(idHorario, usuario_accion.id);
+      const dbResponse = await HorarioModel.eliminar(
+        idHorario,
+        usuario_accion.id
+      );
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);

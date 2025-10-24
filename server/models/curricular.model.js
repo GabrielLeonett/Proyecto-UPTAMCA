@@ -318,7 +318,7 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
-          WHERE p.codigo_pnf = $1
+          WHERE p.codigo_pnf = $1 AND t.activo = true AND p.activo = true
           ORDER BY t.valor_trayecto ASC`,
           [codigoPNF]
         ));
@@ -334,6 +334,7 @@ export default class CurricularModel {
             p.codigo_pnf
           FROM trayectos t
           JOIN pnfs p ON t.id_pnf = p.id_pnf
+          WHERE t.activo = true AND p.activo = true
           ORDER BY p.nombre_pnf, t.valor_trayecto ASC
         `));
       }
@@ -405,6 +406,70 @@ export default class CurricularModel {
       throw FormatterResponseModel.respuestaError(
         error,
         "Error al obtener las secciones"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method mostrarSeccionesByPnfAndValueUnidadCurricular
+   * @description Obtiene unidades curriculares por PNF y valor de trayecto
+   * @param {string} codigoPNF - Código del PNF para filtrar
+   * @param {string|number} valorTrayecto - Valor del trayecto para filtrar
+   * @returns {Promise<Object>} Resultado de la consulta
+   */
+  static async mostrarSeccionesByPnfAndValueUnidadCurricular(
+    codigoPNF,
+    valorTrayecto
+  ) {
+    try {
+      console.log("📊 [Model] Obteniendo unidades curriculares...", {
+        codigoPNF,
+        valorTrayecto,
+      });
+
+      const { rows } = await pg.query(
+        `
+      SELECT 
+        uc.nombre_unidad_curricular,
+        uc.codigo_unidad,
+        uc.horas_clase,
+        tr.valor_trayecto as trayecto_valor,
+        p.codigo_pnf,
+        p.nombre_pnf
+      FROM unidades_curriculares uc
+      INNER JOIN trayectos tr ON uc.id_trayecto = tr.id_trayecto
+      INNER JOIN pnfs p ON tr.id_pnf = p.id_pnf
+      WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
+      ORDER BY uc.id_unidad_curricular ASC;
+      `,
+        [codigoPNF, valorTrayecto]
+      );
+      console.log(
+        "Se filtro por el siguiente codigo PNF: " +
+          codigoPNF +
+          " y su trayecto:" +
+          valorTrayecto
+      );
+      console.log(rows)
+
+      console.log(`📊 [Model] ${rows.length} unidades curriculares obtenidas`);
+
+      return FormatterResponseModel.respuestaPostgres(
+        rows,
+        "Secciones obtenidas correctamente."
+      );
+    } catch (error) {
+      console.error("❌ Error en modelo mostrar unidades curriculares:", error);
+      error.details = {
+        path: "CurricularModel.mostrarSeccionesByPnfAndValueUnidadCurricular",
+        codigoPNF,
+        valorTrayecto,
+      };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al obtener las unidades curriculares"
       );
     }
   }

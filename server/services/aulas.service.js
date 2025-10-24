@@ -665,4 +665,40 @@ export default class AulaService {
       throw error;
     }
   }
+  
+  /**
+   * @static
+   * @async
+   * @method obtenerAulasPorPnf
+   * @description Obtener aulas disponibles para un horario específico
+   * @param {number} codigoPNF - de disponibilidad
+   * @returns {Object} Resultado de la operación
+   */
+  static async obtenerAulasPorPnf(codigoPNF) {
+    try {
+      console.log("🔍 [obtenerAulasPorPnf] Buscando aulas disponibles...");
+
+      const respuestaModel = await AulaModel.obtenerAulasPorPnf(codigoPNF);
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      return FormatterResponseService.success(
+        {
+          aulas_disponibles: respuestaModel.data,
+          total: respuestaModel.data.length,
+          filtros: filtros,
+        },
+        "Aulas disponibles obtenidas exitosamente",
+        {
+          status: 200,
+          title: "Aulas Disponibles",
+        }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio obtener aulas disponibles:", error);
+      throw error;
+    }
+  }
 }

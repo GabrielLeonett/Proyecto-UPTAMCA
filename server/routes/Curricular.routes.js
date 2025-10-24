@@ -11,6 +11,8 @@ const {
   mostrarTrayectos,
   mostrarSecciones,
   mostrarUnidadesCurriculares,
+  mostrarSeccionesByPnfAndValueTrayecto,
+  mostrarSeccionesByPnfAndValueUnidadCurricular,
   CrearSecciones,
   asignacionTurnoSeccion,
 } = CurricularController;
@@ -179,7 +181,7 @@ CurricularRouter.put(
  * =============================================
  * RUTAS DE UNIDADES CURRICULARES
  * =============================================
- */
+*/
 
 /**
  * @name GET /trayectos/:idTrayecto/unidades-curriculares
@@ -192,7 +194,7 @@ CurricularRouter.put(
  *  - Coordinador
  *  - Profesor
  * @returns {Array} Lista de unidades curriculares
- */
+*/
 CurricularRouter.get(
   "/trayectos/:idTrayecto/unidades-curriculares",
   middlewareAuth([
@@ -203,6 +205,49 @@ CurricularRouter.get(
     "Profesor",
   ]),
   mostrarUnidadesCurriculares
+);
+
+/**
+ * @route GET /secciones/:codigoPNF/:valorTrayecto
+ * @group Curricular - Operaciones relacionadas con el currículo académico
+ * @param {string} codigoPNF.path.required - Código único del Programa Nacional de Formación (PNF)
+ * @param {string} valorTrayecto.path.required - Valor numérico que identifica el trayecto académico
+ * @returns {Object} 200 - Retorna las secciones encontradas para el PNF y trayecto especificados
+ * @returns {Object} 400 - Error cuando faltan parámetros requeridos
+ * @returns {Object} 404 - No se encontraron secciones para los criterios especificados
+ * @returns {Object} 500 - Error interno del servidor
+ * @description Obtiene todas las secciones académicas filtradas por PNF y trayecto específico
+ * @example GET /api/secciones/INFORMATICA/2
+ * @example Response
+ * {
+ *   "success": true,
+ *   "message": "Secciones obtenidas exitosamente",
+ *   "data": {
+ *     "secciones": [
+ *       {
+ *         "id_seccion": 1,
+ *         "valor_seccion": "A",
+ *         "cupos_disponibles": 30,
+ *         "nombre_turno": "MAÑANA",
+ *         "id_trayecto": 5
+ *       }
+ *     ],
+ *     "total": 1,
+ *     "codigoPNF": "INFORMATICA",
+ *     "valorTrayecto": "2"
+ *   }
+ * }
+ */
+CurricularRouter.get(
+  "/unidades-curriculares/:codigoPNF/:valorTrayecto",
+    middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarSeccionesByPnfAndValueUnidadCurricular
 );
 
 /**
@@ -327,7 +372,14 @@ CurricularRouter.get(
  */
 CurricularRouter.get(
   "/secciones/:codigoPNF/:valorTrayecto",
-  CurricularController.mostrarSeccionesByPnfAndValueTrayecto
+    middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarSeccionesByPnfAndValueTrayecto
 );
 
 /**

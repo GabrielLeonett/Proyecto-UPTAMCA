@@ -103,4 +103,18 @@ export default class AulaController {
       AulaService.obtenerAulasPorSede(req.params.sede)
     );
   }
+
+  /**
+   * @name obtenerAulasPorPnf
+   * @description Obtener aulas filtradas por sede
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async obtenerAulasPorPnf(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      AulaService.obtenerAulasPorPnf(req.params.codigoPNF)
+    );
+  }
 }

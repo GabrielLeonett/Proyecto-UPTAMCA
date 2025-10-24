@@ -7,7 +7,10 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { Schedule as ScheduleIcon } from "@mui/icons-material";
+import {
+  ConstructionOutlined,
+  Schedule as ScheduleIcon,
+} from "@mui/icons-material";
 
 // Hooks
 import useHorarioState from "./hooks/useHorarioState";
@@ -62,12 +65,7 @@ const Horario = ({
     overlayVisible,
 
     // Setters individuales
-    setTableHorario,
-    setSelectedClass,
-    setAvailableSlots,
     setNewClass,
-    setLoading,
-    setClassToMove,
     setOverlayVisible,
 
     // Agrupados
@@ -129,22 +127,23 @@ const Horario = ({
     },
     [aulas, setNewClass]
   );
+  /*
+const handleSave = useCallback(async () => {
+  try {
+    setLoading(true);
+    // Aquí iría la lógica para guardar el horario
+    console.log("Guardando horario...", tableHorario);
+    // await dataFetchers.saveHorario(tableHorario);
+    alert("Horario guardado exitosamente");
+  } catch (error) {
+    console.error("Error guardando horario:", error);
+    alert("Error al guardar el horario");
+  } finally {
+    setLoading(false);
+  }
+}, [tableHorario, setLoading]);
 
-  const handleSave = useCallback(async () => {
-    try {
-      setLoading(true);
-      // Aquí iría la lógica para guardar el horario
-      console.log("Guardando horario...", tableHorario);
-      // await dataFetchers.saveHorario(tableHorario);
-      alert("Horario guardado exitosamente");
-    } catch (error) {
-      console.error("Error guardando horario:", error);
-      alert("Error al guardar el horario");
-    } finally {
-      setLoading(false);
-    }
-  }, [tableHorario, setLoading]);
-
+*/
   useEffect(() => {
     console.log("🧩 Datos actualizados en el horario:");
     console.log({
@@ -155,7 +154,7 @@ const Horario = ({
     });
   }, [unidadesCurriculares, profesores, aulas, tableHorario]);
 
-  const handleDelete = useCallback(() => {
+  /*const handleDelete = useCallback(() => {
     if (
       window.confirm("¿Estás seguro de que quieres eliminar el horario actual?")
     ) {
@@ -176,7 +175,7 @@ const Horario = ({
     setClassToMove,
     setAvailableSlots,
     setNewClass,
-  ]);
+  ]);*/
 
   const handleEditMode = useCallback(() => {
     setOverlayVisible(false);
@@ -215,7 +214,7 @@ const Horario = ({
   }, [setOverlayVisible]);
 
   // Handler para activar el overlay con botón
-  const handleShowOverlay = useCallback(() => {
+  /*const handleShowOverlay = useCallback(() => {
     if (Custom) {
       console.log("🔘 Botón - mostrando overlay");
       setOverlayVisible(true);
@@ -228,6 +227,7 @@ const Horario = ({
     setAvailableSlots([]);
     setNewClass({ profesor: null, unidad: null, aula: null });
   }, [setSelectedClass, setClassToMove, setAvailableSlots, setNewClass]);
+  */
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, position: "relative" }}>
@@ -305,29 +305,6 @@ const Horario = ({
       </Box>
     </Container>
   );
-};
-
-// Necesitamos definir initialHours aquí también
-const initialHours = {
-  700: null,
-  745: null,
-  830: null,
-  915: null,
-  1000: null,
-  1045: null,
-  1130: null,
-  1215: null,
-  1300: null,
-  1345: null,
-  1430: null,
-  1515: null,
-  1600: null,
-  1645: null,
-  1730: null,
-  1815: null,
-  1900: null,
-  1945: null,
-  2030: null,
 };
 
 export default Horario;

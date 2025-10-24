@@ -1,17 +1,20 @@
 import { useEffect, useState, useCallback } from "react";
 import Horario from "../../components/horario/Horario";
 import ResponsiveAppBar from "../../components/navbar";
-import { 
-  Box, 
-  Typography, 
-  Grid, 
-  Container, 
+import {
+  Box,
+  Typography,
+  Grid,
+  Container,
   Alert,
   Card,
   CardContent,
-  Chip
+  Chip,
 } from "@mui/material";
-import { Schedule as ScheduleIcon, Info as InfoIcon } from "@mui/icons-material";
+import {
+  Schedule as ScheduleIcon,
+  Info as InfoIcon,
+} from "@mui/icons-material";
 import useApi from "../../hook/useApi";
 import FiltroAcordeonHorario from "../../components/FiltroAcordeonHorario";
 import LoadingCharge from "../../components/ui/LoadingCharge";
@@ -82,18 +85,17 @@ export default function GestionHorarios() {
     <>
       <ResponsiveAppBar backgroundColor={true} />
       <Container maxWidth="xl" sx={{ mt: 18, py: 4 }}>
-        
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            gutterBottom 
-            sx={{ 
+          <Typography
+            variant="h3"
+            component="h1"
+            gutterBottom
+            sx={{
               fontWeight: 700,
               display: "flex",
               alignItems: "center",
-              gap: 2
+              gap: 2,
             }}
           >
             <ScheduleIcon fontSize="large" />
@@ -118,49 +120,10 @@ export default function GestionHorarios() {
 
           {/* Contenido principal */}
           <Grid item xs={12} md={8} lg={9}>
-            {/* Información de la sección seleccionada */}
-            {seccion && (
-              <Card sx={{ mb: 3, bgcolor: 'background.default' }}>
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <InfoIcon color="primary" />
-                    <Typography variant="h6">
-                      Sección Seleccionada
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <Chip 
-                      label={`Sección: ${seccion.valor_seccion || "N/A"}`} 
-                      variant="outlined" 
-                      color="primary"
-                    />
-                    <Chip 
-                      label={`Turno: ${seccion.nombre_turno || "No especificado"}`} 
-                      variant="outlined" 
-                    />
-                    <Chip 
-                      label={`Cupos: ${seccion.cupos_disponibles || 0}`} 
-                      variant="outlined" 
-                    />
-                    <Chip 
-                      label={`Trayecto: ${seccion.id_trayecto || "N/A"}`} 
-                      variant="outlined" 
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Mensajes de estado */}
-            {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
-              </Alert>
-            )}
-
             {!seccion && (
               <Alert severity="info" sx={{ mb: 3 }}>
-                Selecciona una sección en el panel izquierdo para visualizar su horario
+                Selecciona una sección en el panel izquierdo para visualizar su
+                horario
               </Alert>
             )}
 
@@ -171,14 +134,19 @@ export default function GestionHorarios() {
                 Turno={formatearTurno(horario.turno || horario.Turno)}
                 Trayecto={horario.trayecto || horario.Trayecto}
                 Seccion={{
-                  seccion: horario.seccion || horario.Seccion?.seccion,
-                  idSeccion: horario.idSeccion || horario.Seccion?.idSeccion || seccion?.id_seccion
+                  seccion:
+                    horario.valor_seccion || horario.Seccion?.valor_seccion,
+                  idSeccion:
+                    horario.idSeccion ||
+                    horario.Seccion?.idSeccion ||
+                    seccion?.id_seccion,
                 }}
                 Horario={horario.dias || horario.Horario}
                 Custom={true}
               />
             ) : (
-              seccion && !loading && (
+              seccion &&
+              !loading && (
                 <Box
                   sx={{
                     textAlign: "center",
@@ -186,7 +154,7 @@ export default function GestionHorarios() {
                     border: "2px dashed",
                     borderColor: "divider",
                     borderRadius: 2,
-                    bgcolor: 'background.paper'
+                    bgcolor: "background.paper",
                   }}
                 >
                   <ScheduleIcon

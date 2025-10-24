@@ -28,7 +28,7 @@ export default function CardTrayecto({ Trayecto, codigoPNF }) {
         },
       }}
       onClick={() => {
-        navigate(`/formacion/programas/${codigoPNF}/trayecto/${Trayecto?.valor_trayecto}`);
+        navigate(`/formacion/programas/${codigoPNF}/trayecto/${Trayecto?.valor_trayecto}`, {state:{idTrayecto: Trayecto.id_trayecto}});
       }}
     >
       <Typography

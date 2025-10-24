@@ -38,6 +38,7 @@ export default class HorarioModel {
         `SELECT 
           id_horario,
           id_profesor,
+          id_trayecto,
           nombres_profesor,
           apellidos_profesor,
           id_unidad_curricular,
@@ -54,7 +55,8 @@ export default class HorarioModel {
           hora_inicio,
           hora_fin,
           dia_semana,
-          nombre_pnf
+          nombre_pnf,
+          codigo_pnf
          FROM public.clases_completas 
          WHERE id_seccion = $1`,
         [idSeccion]

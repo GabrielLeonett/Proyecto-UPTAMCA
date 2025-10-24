@@ -4,7 +4,7 @@ import CardUnidadCurricular from "../../components/cardUnidadCurricular";
 import CardSeccion from "../../components/cardSeccion";
 import ResponsiveAppBar from "../../components/navbar";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useApi from "../../hook/useApi";
 import useSweetAlert from "../../hook/useSweetAlert";
 import ModalRegistroSeccion from "../../components/ModalRegistroSeccion";
@@ -12,6 +12,8 @@ import CustomButton from "../../components/customButton";
 
 export default function GestionTrayecto() {
   // Hooks y estados
+  const location = useLocation();
+  const { idTrayecto } = location.state;
   const { codigoPNF, valorTrayecto } = useParams();
   const [unidades, setUnidades] = useState([]);
   const [secciones, setSecciones] = useState([]);
@@ -34,15 +36,14 @@ export default function GestionTrayecto() {
 
   // Funciones para obtener datos
   const fetchUnidadesCurriculares = async () => {
-    const { unidades_curriculares } = await axios.get(
-      `/secciones/${codigoPNF}/${valorTrayecto}`
+    const res = await axios.get(
+      `/unidades-curriculares/${codigoPNF}/${valorTrayecto}`
     );
-    setUnidades(unidades_curriculares || []);
+    setUnidades(res.unidades || []);
   };
 
   const fetchSecciones = async () => {
     const res = await axios.get(`/secciones/${codigoPNF}/${valorTrayecto}`);
-    console.log(res)
     setSecciones(res.secciones || []);
   };
 
@@ -65,7 +66,8 @@ export default function GestionTrayecto() {
   // Handlers de navegación
   const handleGoToProgramas = () => navigate("/formacion/programas");
 
-  const handleGoToPrograma = () => navigate(`/formacion/programas/${codigoPNF}`);
+  const handleGoToPrograma = () =>
+    navigate(`/formacion/programas/${codigoPNF}`);
 
   // Handlers del modal
   const handleOpenModal = () => setModalOpen(true);
@@ -102,7 +104,7 @@ export default function GestionTrayecto() {
         {codigoPNF}
       </Link>
       <Link component="button" underline="hover" color="inherit" disabled>
-        Trayecto {}
+        Trayecto {valorTrayecto}
       </Link>
     </Breadcrumbs>
   );
@@ -191,7 +193,7 @@ export default function GestionTrayecto() {
             tipo="primary"
             onClick={() => {
               navigate("/curricular/unidades/registrar", {
-                state: { valorTrayecto: valorTrayecto },
+                state: { idTrayecto: idTrayecto },
               });
             }}
             sx={{ minWidth: 200 }}
@@ -236,7 +238,7 @@ export default function GestionTrayecto() {
         <ModalRegistroSeccion
           open={modalOpen}
           handleClose={handleCloseModal}
-          valorTrayecto={valorTrayecto}
+          idTrayecto={idTrayecto}
           onSeccionCreada={handleSeccionCreada}
         />
       </Box>
