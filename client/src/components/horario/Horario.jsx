@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback } from "react";
 import {
   Box,
   Container,
@@ -56,7 +56,6 @@ const Horario = ({
     tableHorario,
     selectedClass,
     availableSlots,
-    newClass,
     unidadesCurriculares,
     profesores,
     aulas,
@@ -65,7 +64,6 @@ const Horario = ({
     overlayVisible,
 
     // Setters individuales
-    setNewClass,
     setOverlayVisible,
 
     // Agrupados
@@ -74,15 +72,10 @@ const Horario = ({
   } = useHorarioState();
 
   // 2. Datos
-  const dataFetchers = useHorarioData(axios, props, stateSetters, Custom);
+  useHorarioData(axios, props, state, stateSetters, Custom);
 
   // 3. Movimiento de clases
-  const movementActions = useClassMovement(
-    state,
-    stateSetters,
-    UTILS,
-    dataFetchers
-  );
+  const movementActions = useClassMovement(state, stateSetters, UTILS);
 
   // 4. Gestión de slots
   const slotActions = useSlotManagement(
@@ -97,7 +90,6 @@ const Horario = ({
     props,
     state,
     { ...movementActions, ...slotActions },
-    dataFetchers,
     stateSetters
   );
 
@@ -107,26 +99,30 @@ const Horario = ({
       const unidad = unidadesCurriculares.find(
         (u) => u.id_unidad_curricular === unidadId
       );
-      setNewClass((prev) => ({ ...prev, unidad }));
+      console.log("Esta es la unidad nueva:", unidad);
+      stateSetters.setUnidadCurricularSelected(unidad);
     },
-    [unidadesCurriculares, setNewClass]
+    [unidadesCurriculares, stateSetters]
   );
 
   const handleProfesorChange = useCallback(
     (profesorId) => {
       const profesor = profesores.find((p) => p.id_profesor === profesorId);
-      setNewClass((prev) => ({ ...prev, profesor }));
+      stateSetters.setProfesorSelected(profesor);
+      stateSetters.setAulaSelected({});
     },
-    [profesores, setNewClass]
+    [profesores, stateSetters]
   );
 
   const handleAulaChange = useCallback(
     (aulaId) => {
       const aula = aulas.find((a) => a.id_aula === aulaId);
-      setNewClass((prev) => ({ ...prev, aula }));
+      console.log(aula);
+      stateSetters.setAulaSelected(aula);
     },
-    [aulas, setNewClass]
+    [aulas, stateSetters]
   );
+
   /*
 const handleSave = useCallback(async () => {
   try {
@@ -144,16 +140,6 @@ const handleSave = useCallback(async () => {
 }, [tableHorario, setLoading]);
 
 */
-  useEffect(() => {
-    console.log("🧩 Datos actualizados en el horario:");
-    console.log({
-      unidadesCurricularesCount: unidadesCurriculares?.length,
-      profesoresCount: profesores?.length,
-      aulasCount: aulas?.length,
-      horarioActual: tableHorario?.length,
-    });
-  }, [unidadesCurriculares, profesores, aulas, tableHorario]);
-
   /*const handleDelete = useCallback(() => {
     if (
       window.confirm("¿Estás seguro de que quieres eliminar el horario actual?")
@@ -289,10 +275,12 @@ const handleSave = useCallback(async () => {
         {Custom && (
           <Box sx={{ mt: 3 }}>
             <ClassForm
-              newClass={newClass}
               unidadesCurriculares={unidadesCurriculares}
+              unidadCurricularSelected={state.unidadCurricularSelected}
               profesores={profesores}
+              profesorSelected={state.profesorSelected}
               aulas={aulas}
+              aulaSelected={state.aulaSelected}
               onUnidadChange={handleUnidadChange}
               onProfesorChange={handleProfesorChange}
               onAulaChange={handleAulaChange}

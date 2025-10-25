@@ -6,14 +6,16 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
     availableSlots,
     selectedClass,
     classToMove,
-    newClass
+    profesorSelected,
+    aulaSelected,
+    unidadCurricularSelected,
   } = state;
 
   const {
     setSelectedClass,
     setClassToMove,
     setAvailableSlots,
-    setTableHorario
+    setTableHorario,
   } = stateSetters;
 
   const { completarMovimiento } = actions;
@@ -103,7 +105,8 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
         if (
           window.confirm(
             `¿Mover ${
-              classToMove.nombre_unidad_curricular || classToMove.nombreUnidadCurricular
+              classToMove.nombre_unidad_curricular ||
+              classToMove.nombreUnidadCurricular
             } a ${utils.obtenerDiaNombre(diaIndex)} a ${utils.formatearHora(
               horaInicio
             )}?`
@@ -116,7 +119,8 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
         if (
           window.confirm(
             `¿Programar ${
-              selectedClass.nombre_unidad_curricular || selectedClass.nombreUnidadCurricular
+              selectedClass.nombre_unidad_curricular ||
+              selectedClass.nombreUnidadCurricular
             } en ${utils.obtenerDiaNombre(diaIndex)} a ${utils.formatearHora(
               horaInicio
             )}?`
@@ -132,32 +136,38 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       classToMove,
       completarMovimiento,
       MoverClassEnHorario, // ✅ Ahora está definido antes
-      utils
+      utils,
     ]
   );
 
   // Crear nueva clase en el estado
   const crearClaseEnHorario = useCallback(() => {
-    if (!newClass.profesor || !newClass.aula || !newClass.unidad) {
+    if (!profesorSelected || !aulaSelected || !unidadCurricularSelected) {
       console.warn("Datos incompletos para crear clase");
       return;
     }
 
     const nuevaClase = {
       id: Date.now(),
-      idProfesor: newClass.profesor.id_profesor,
-      idAula: newClass.aula.id_aula,
-      idUnidadCurricular: newClass.unidad.id_unidad_curricular,
-      nombreProfesor: newClass.profesor.nombres,
-      apellidoProfesor: newClass.profesor.apellidos,
-      nombreUnidadCurricular: newClass.unidad.nombre_unidad_curricular,
-      horasClase: newClass.unidad.horas_clase,
+      idProfesor: profesorSelected.id_profesor,
+      idAula: aulaSelected.id_aula,
+      idUnidadCurricular: unidadCurricularSelected.id_unidad_curricular,
+      nombreProfesor: profesorSelected.nombres,
+      apellidoProfesor: profesorSelected.apellidos,
+      nombreUnidadCurricular: unidadCurricularSelected.nombre_unidad_curricular,
+      horasClase: unidadCurricularSelected.horas_clase,
       nuevaClase: true,
     };
 
     setSelectedClass({ ...nuevaClase });
     setClassToMove({ ...nuevaClase });
-  }, [newClass, setSelectedClass, setClassToMove]);
+  }, [
+    profesorSelected,
+    aulaSelected,
+    unidadCurricularSelected,
+    setSelectedClass,
+    setClassToMove,
+  ]);
 
   // Función para limpiar selección
   const limpiarSeleccion = useCallback(() => {

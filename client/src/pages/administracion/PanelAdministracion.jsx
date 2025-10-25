@@ -10,8 +10,7 @@ import {
   Chip,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { useState, useEffect, useRef } from "react";
-import io from "socket.io-client";
+import { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -24,6 +23,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import ResponsiveAppBar from "../../components/navbar";
+import useWebSocket from "../../hook/useWebSocket"; // ✅ USAR EL HOOK
 
 // Registrar componentes de Chart.js
 ChartJS.register(
@@ -36,8 +36,6 @@ ChartJS.register(
   Legend
 );
 
-import env from "../../config/env";
-
 export default function PanelAdministracion() {
   const theme = useTheme();
   const [performanceData, setPerformanceData] = useState(null);
@@ -46,33 +44,42 @@ export default function PanelAdministracion() {
   const [systemMemoryHistory, setSystemMemoryHistory] = useState([]);
   const [nodeMemoryHistory, setNodeMemoryHistory] = useState([]);
   const [connectionHistory, setConnectionHistory] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const socketRef = useRef(null);
+  
+  // ✅ USAR EL HOOK WEBSOCKET
+  const { 
+    connect, 
+    disconnect, 
+    on, 
+    off, 
+    emit, 
+    isConnected, 
+    getCurrentUser,
+    hasActiveConnection 
+  } = useWebSocket();
 
-  // Configurar Socket.IO
+  // Configurar Socket.IO usando el hook singleton
   useEffect(() => {
-    const newSocket = io(env.serverUrl, {
-      transports: ["websocket"],
-      withCredentials: true,
-      timeout: 20000,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+    // Obtener usuario y roles (ajusta según tu autenticación)
+    const userID = "admin_panel"; // Identificador único para este panel
+    const userRoles = ["SuperAdmin"]; // Roles necesarios
 
-    socketRef.current = newSocket;
+    // Conectar usando la instancia singleton
+    connect(userID, userRoles)
+      .then(() => {
+        console.log("✅ PanelAdmin conectado via singleton");
 
-    newSocket.on("connect", () => {
-      console.log("✅ Conectado al servidor");
-      setIsConnected(true);
-    });
+        // Unirse a la sala de SuperAdmin
+        emit("join_role_room", "SuperAdmin");
 
-    newSocket.on("disconnect", () => {
-      console.log("❌ Desconectado del servidor");
-      setIsConnected(false);
-    });
+        // Escuchar eventos de performance
+        on("system-performance", handlePerformanceData);
+      })
+      .catch((error) => {
+        console.error("❌ Error conectando panel admin:", error);
+      });
 
-    newSocket.on("system-performance", (data) => {
+    // Handler para datos de performance
+    const handlePerformanceData = (data) => {
       console.log("📊 Datos recibidos:", data);
       setPerformanceData(data);
 
@@ -134,16 +141,14 @@ export default function PanelAdministracion() {
         ];
         return newHistory.slice(-15);
       });
-    });
-
-    newSocket.emit("join-room", "role_SuperAdmin");
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-      }
     };
-  }, []);
+
+    // Cleanup
+    return () => {
+      off("system-performance", handlePerformanceData);
+      // NO desconectamos aquí - el hook maneja el cleanup automáticamente
+    };
+  }, [connect, disconnect, on, off, emit]);
 
   // Configuración de gráficos Chart.js
   const chartOptions = {
@@ -215,6 +220,9 @@ export default function PanelAdministracion() {
     ],
   };
 
+  // ✅ DEBUG: Información de conexión
+  const debugInfo = `Usuario: ${getCurrentUser() || "N/A"} | Conectado: ${isConnected()} | Activa: ${hasActiveConnection()}`;
+
   return (
     <>
       <ResponsiveAppBar backgroundColor />
@@ -236,10 +244,15 @@ export default function PanelAdministracion() {
           <Typography variant="h6" color="text.secondary">
             Monitoreo en tiempo real - Sistema vs Node.js
           </Typography>
+          
+          {/* ✅ DEBUG INFO */}
+          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+            {debugInfo}
+          </Typography>
         </Box>
 
-        <Alert severity={isConnected ? "success" : "error"} sx={{ mb: 4 }}>
-          {isConnected
+        <Alert severity={isConnected() ? "success" : "error"} sx={{ mb: 4 }}>
+          {isConnected()
             ? `✅ Conectado al servidor${
                 performanceData
                   ? ` - ${performanceData.activeConnections} conexiones activas`
@@ -261,7 +274,7 @@ export default function PanelAdministracion() {
           >
             <CircularProgress />
             <Typography variant="h6">
-              {isConnected
+              {isConnected()
                 ? "Esperando datos del sistema..."
                 : "Conectando al servidor..."}
             </Typography>

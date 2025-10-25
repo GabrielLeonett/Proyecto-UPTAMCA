@@ -7,11 +7,11 @@ import {
   ocuparNuevoSlot,
 } from "../utils/movementUtils";
 
-const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
+const useClassMovement = (state, stateSetters, utils) => {
   const {
     tableHorario,
-    profesores,
-    profesoresHorarios,
+    profesorSelected,
+    profesorHorarios,
     classToMove,
     originalSlot,
   } = state;
@@ -26,6 +26,7 @@ const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
   } = stateSetters;
 
   const { verificarDisponibilidadProfesor } = useProfessorAvailability();
+  
   const { procesarDisponibilidadDocente, validarDatosClase } =
     useSlotCalculations();
 
@@ -100,28 +101,24 @@ const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
         return;
       }
 
-      const profesor = profesores.find(
-        (prof) => prof.id_profesor === clase.idProfesor
-      );
-
-      if (!profesor) {
+      if (!profesorSelected) {
         console.warn(`Profesor con ID ${clase.idProfesor} no encontrado`);
         setAvailableSlots([]);
         return;
       }
 
-      if (!profesor.disponibilidad || profesor.disponibilidad.length === 0) {
+      if (
+        !profesorSelected.disponibilidades ||
+        profesorSelected.disponibilidades.length === 0
+      ) {
         console.warn("Profesor no tiene disponibilidad definida");
         setAvailableSlots([]);
         return;
       }
 
-      // Obtener datos de profesores
-      dataFetchers.getDataProfesores(clase.horasClase);
-
       const slotsDisponibles = [];
 
-      profesor.disponibilidad.forEach((disponibilidad) => {
+      profesorSelected.disponibilidades.forEach((disponibilidad) => {
         if (
           !disponibilidad.dia_semana ||
           !disponibilidad.hora_inicio ||
@@ -141,7 +138,7 @@ const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
               diaIndex,
               horaInicio,
               bloques,
-              profesoresHorarios
+              profesorHorarios
             ),
           clase
         );
@@ -153,11 +150,10 @@ const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
     },
     [
       validarDatosClase,
-      profesores,
+      profesorSelected,
       tableHorario,
-      profesoresHorarios,
+      profesorHorarios,
       setAvailableSlots,
-      dataFetchers,
       procesarDisponibilidadDocente,
       verificarDisponibilidadProfesor,
     ]
@@ -179,7 +175,7 @@ const useClassMovement = (state, stateSetters, utils, dataFetchers) => {
         diaIndex,
         horaInicio,
         bloquesNecesarios,
-        profesoresHorarios
+        profesorHorarios
       ),
   };
 };

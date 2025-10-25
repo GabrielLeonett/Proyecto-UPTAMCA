@@ -58,7 +58,11 @@ export default class HorarioController {
   static async mostrarAulasParaHorario(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.mostrarAulasParaHorario(req.query.pnf)
+      HorarioService.mostrarAulasParaHorario(
+        parseInt(req.params.idSeccion),
+        parseInt(req.body.horasNecesarias),
+        parseInt(req.body.idProfesor),
+      )
     );
   }
 
@@ -72,7 +76,10 @@ export default class HorarioController {
   static async mostrarProfesoresParaHorario(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.mostrarProfesoresParaHorario(req.query.horasNecesarias)
+      HorarioService.mostrarProfesoresParaHorario(
+        parseInt(req.params.idSeccion),
+        parseInt(req.body.horasNecesarias)
+      )
     );
   }
 
@@ -136,7 +143,7 @@ export default class HorarioController {
       const horarioResponse = await HorarioService.generarDocumentoHorario(
         parseInt(id_seccion)
       );
-      
+
       console.log("✅ Documento generado exitosamente", horarioResponse);
       const { buffer, fileName } = horarioResponse.data;
       res.set({

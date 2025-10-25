@@ -13,6 +13,26 @@ export const useSlotCalculations = () => {
       const slotsDisponibles = [];
 
       try {
+        // Validar parámetros críticos primero
+        if (
+          !disponibilidad ||
+          !disponibilidad.hora_inicio ||
+          !disponibilidad.hora_fin
+        ) {
+          console.warn("Disponibilidad incompleta", disponibilidad);
+          return slotsDisponibles;
+        }
+
+        if (!clase || !clase.idProfesor) {
+          console.warn("Clase o idProfesor no definido", clase);
+          return slotsDisponibles;
+        }
+
+        if (!verificarDisponibilidadProfesor) {
+          console.warn("Función verificarDisponibilidadProfesor no definida");
+          return slotsDisponibles;
+        }
+
         const [horaInicio, minutoInicio] = disponibilidad.hora_inicio
           .split(":")
           .map(Number);
@@ -87,28 +107,20 @@ export const useSlotCalculations = () => {
 
           if (!esDisponible) continue;
 
-          // Verificar disponibilidad del profesor
-          const profesorDisponible = verificarDisponibilidadProfesor(
-            clase.idProfesor,
-            diaDisponibilidad,
-            horasFiltradas[i],
-            bloquesNecesarios
-          );
-
-          if (profesorDisponible) {
-            slotsDisponibles.push({
-              diaIndex: diaDisponibilidad,
-              horaInicio: horasFiltradas[i],
-              bloquesNecesarios,
-            });
-          }
+          slotsDisponibles.push({
+            diaIndex: diaDisponibilidad,
+            horaInicio: horasFiltradas[i],
+            horaFin: horasFiltradas[i + bloquesNecesarios - 1], // Agregar hora fin
+            horasBloque: horasBloque, // Agregar todo el bloque
+            bloquesNecesarios,
+          });
         }
       } catch (error) {
-        console.error(
-          "Error procesando disponibilidad:",
-          error,
-          disponibilidad
-        );
+        console.error("Error procesando disponibilidad:", error, {
+          disponibilidad,
+          clase,
+          bloquesNecesarios,
+        });
       }
 
       return slotsDisponibles;
@@ -117,6 +129,7 @@ export const useSlotCalculations = () => {
   );
 
   const validarDatosClase = useCallback((clase) => {
+    console.log(clase);
     if (!clase || !clase.idProfesor || !clase.horasClase) {
       console.warn("Datos de clase incompletos");
       return false;

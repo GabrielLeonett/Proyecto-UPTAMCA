@@ -42,13 +42,9 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     try {
       // Hacer petición de logout al backend
-      await axios.get(
-        "/auth/logout",
-        {},
-        {
-          withCredentials: true, // Importante para enviar las cookies
-        }
-      );
+      console.log("Cerrando la session...");
+      await axios.get("/auth/logout");
+      console.log("Cierre exitoso");
 
       // Limpiar el estado local
       setUser(null);

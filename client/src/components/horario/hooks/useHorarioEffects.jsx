@@ -81,33 +81,26 @@ const useHorarioInitialization = (props, stateSetters) => {
 
 // Efecto para nueva clase completa
 const useNewClassEffect = (state, actions) => {
-  const { newClass } = state;
+  const { profesorSelected, aulaSelected, unidadCurricularSelected } = state;
   const { calcularHorariosDisponibles, crearClaseEnHorario } = actions;
 
   useEffect(() => {
-    if (newClass.aula && newClass.profesor && newClass.unidad) {
+    if (unidadCurricularSelected && profesorSelected && aulaSelected) {
       calcularHorariosDisponibles({
-        idProfesor: newClass.profesor.id_profesor,
-        horasClase: newClass.unidad.horas_clase,
+        idProfesor: profesorSelected.id_profesor,
+        horasClase: unidadCurricularSelected.horas_clase,
       });
       crearClaseEnHorario();
     }
-  }, [newClass, calcularHorariosDisponibles, crearClaseEnHorario]);
+  }, [
+    profesorSelected,
+    aulaSelected,
+    unidadCurricularSelected,
+    // Estas deben ser estables con useCallback
+    calcularHorariosDisponibles,
+    crearClaseEnHorario,
+  ]);
 };
-
-// Efecto para horarios de profesores
-const useProfesoresHorariosEffect = (state, stateSetters, dataFetchers) => {
-  const { profesores } = state;
-  const { setLoading } = stateSetters;
-  const { fetchProfesoresHorarios } = dataFetchers;
-
-  useEffect(() => {
-    if (profesores && profesores.length > 0) {
-      fetchProfesoresHorarios(profesores);
-    }
-  }, [profesores, fetchProfesoresHorarios, setLoading]);
-};
-
 // Efecto para recalcular cuando cambia clase seleccionada
 const useSelectedClassEffect = (state, actions) => {
   const { selectedClass, classToMove } = state;
@@ -120,51 +113,17 @@ const useSelectedClassEffect = (state, actions) => {
   }, [selectedClass, classToMove, calcularHorariosDisponibles]);
 };
 
-// Efecto para carga de datos iniciales
-const useInitialDataEffect = (props, state, stateSetters, dataFetchers) => {
-  const { tableHorario, newClass } = state;
-  const { setLoading } = stateSetters;
-  const { fetchAllInitialData, fetchProfesoresData } = dataFetchers;
-
-  useEffect(() => {
-    if (tableHorario.length > 0) {
-      const loadInitialData = async () => {
-        setLoading(true);
-        try {
-          await fetchAllInitialData(tableHorario);
-          
-          // Si hay una unidad seleccionada, cargar profesores
-          if (newClass.unidad) {
-            await fetchProfesoresData(newClass.unidad);
-          }
-        } catch (error) {
-          console.error("Error cargando datos iniciales:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      loadInitialData();
-    }
-  }, [tableHorario, newClass.unidad, fetchAllInitialData, fetchProfesoresData, setLoading]);
-};
 
 // Hook principal de efectos
-const useHorarioEffects = (props, state, actions, dataFetchers, stateSetters) => {
+const useHorarioEffects = (props, state, actions, stateSetters) => {
   // Efecto para carga inicial de horario
   useHorarioInitialization(props, stateSetters);
 
   // Efecto para nueva clase completa
   useNewClassEffect(state, actions);
 
-  // Efecto para horarios de profesores
-  useProfesoresHorariosEffect(state, stateSetters, dataFetchers);
-
   // Efecto para recalcular cuando cambia clase seleccionada
   useSelectedClassEffect(state, actions);
-
-  // Efecto para carga de datos iniciales
-  useInitialDataEffect(props, state, stateSetters, dataFetchers);
 };
 
 export default useHorarioEffects;

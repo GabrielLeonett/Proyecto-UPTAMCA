@@ -100,22 +100,15 @@ export default class HorarioModel {
   /**
    * @name obtenerProfesoresDisponibles
    * @description Obtener profesores con horas disponibles
-   * @param {string} horasNecesarias - Horas necesarias en formato intervalo
+   * @param {number} idSeccion - id de la sección
+   * @param {number} horasNecesarias - Horas necesarias en formato intervalo
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async obtenerProfesoresDisponibles(horasNecesarias) {
+  static async obtenerProfesoresDisponibles(idSeccion, horasNecesarias) {
     try {
       const { rows } = await pg.query(
-        `SELECT 
-          id_profesor, 
-          nombres, 
-          apellidos, 
-          disponibilidad, 
-          horas_disponibles, 
-          areas_de_conocimiento
-         FROM public.profesores_informacion_completa
-         WHERE horas_disponibles > ($1 * INTERVAL '45 minutes')`,
-        [horasNecesarias]
+        `SELECT * FROM buscar_profesores_disponibles($1, $2) AS p_resultado;`,
+        [idSeccion, horasNecesarias]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -132,15 +125,19 @@ export default class HorarioModel {
   /**
    * @name obtenerAulasDisponibles
    * @description Obtener aulas disponibles por PNF
-   * @param {string} nombrePNF - Nombre del PNF
+   * @param {number} idSeccion - id de la seccion
+   * @param {number} horasNecesarias - horas necesarias
+   * @param {number} idProfesor - id de la profesor
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
-  static async obtenerAulasDisponibles(nombrePNF) {
+  static async obtenerAulasDisponibles(idSeccion, horasNecesarias, idProfesor) {
     try {
+      console.log(idSeccion, horasNecesarias, idProfesor);
       const { rows } = await pg.query(
-        "SELECT id_aula, codigo_aula FROM public.sedes_completas WHERE nombre_pnf = $1",
-        [nombrePNF]
+        "SELECT * FROM buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
+        [idSeccion, idProfesor, horasNecesarias]
       );
+      console.log(rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Aulas disponibles obtenidas exitosamente"

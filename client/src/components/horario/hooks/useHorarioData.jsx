@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 // Función auxiliar para verificar unidades curriculares existentes (fuera del hook)
 const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
@@ -43,119 +43,304 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
   });
 };
 
+// Función para validar si las unidades curriculares están inicializadas
+const validarUnidadesCurricularesInicializadas = (unidades) => {
+  return (
+    unidades &&
+    Array.isArray(unidades) &&
+    unidades.length > 0 &&
+    unidades.every(
+      (unidad) =>
+        unidad &&
+        typeof unidad === "object" &&
+        unidad.id_unidad_curricular !== undefined &&
+        unidad.horas_clase !== undefined
+    )
+  );
+};
+
 // Hook principal de datos
-const useHorarioData = (axios, props, stateSetters, Custom) => {
+const useHorarioData = (axios, props, state, stateSetters, Custom) => {
   const {
     setUnidadesCurriculares,
     setAulas,
     setProfesores,
-    setProfesoresHorarios,
+    setProfesorHorario,
     setLoading,
   } = stateSetters;
+  const { profesorSelected, unidadCurricularSelected, unidadesCurriculares, tableHorario } =
+    state;
+  const { Trayecto, Seccion } = props;
 
-  const { Trayecto, PNF } = props;
+  // Fetch de unidades curriculares CON useCallback
+  const fetchUnidadesCurriculares = useCallback(
+    async (tableHorarioParam = null) => {
+      if (!Custom) {
+        console.warn("Custom no está disponible");
+        return;
+      }
 
-  // Fetch de unidades curriculares - SIN useCallback para evitar dependencias circulares
-  const fetchUnidadesCurriculares = async (tableHorario) => {
-    if (!Custom) return;
-    try {
-      const res = await axios.get(
-        `/trayectos/${Trayecto.id_trayecto}/unidades-curriculares`
-      );
-      const unidadesActualizadas = verificarSiExisteUnidadCurricular(
-        res.unidades_curriculares,
-        tableHorario
-      );
+      if (!Trayecto?.id_trayecto) {
+        console.warn("Trayecto no está definido o no tiene id_trayecto");
+        return;
+      }
 
-      setUnidadesCurriculares(unidadesActualizadas);
-    } catch (error) {
-      console.error("Error cargando unidades curriculares:", error);
+      try {
+        const res = await axios.get(
+          `/trayectos/${Trayecto.id_trayecto}/unidades-curriculares`
+        );
+
+        if (
+          !res ||
+          !res.unidades_curriculares ||
+          !Array.isArray(res.unidades_curriculares)
+        ) {
+          console.error("Respuesta inválida de unidades curriculares:", res);
+          return;
+        }
+
+        // Usar el tableHorario del parámetro o del estado
+        const horarioParaVerificar = tableHorarioParam || tableHorario;
+
+        const unidadesActualizadas = verificarSiExisteUnidadCurricular(
+          res.unidades_curriculares,
+          horarioParaVerificar
+        );
+
+        if (validarUnidadesCurricularesInicializadas(unidadesActualizadas)) {
+          setUnidadesCurriculares(unidadesActualizadas);
+        } else {
+          console.error(
+            "Unidades curriculares no tienen la estructura esperada"
+          );
+          setUnidadesCurriculares([]);
+        }
+      } catch (error) {
+        console.error("Error cargando unidades curriculares:", error);
+        setUnidadesCurriculares([]);
+      }
+    },
+    [Custom, Trayecto?.id_trayecto, axios, setUnidadesCurriculares, tableHorario]
+  );
+
+  // Fetch de profesores CON useCallback
+  const fetchProfesores = useCallback(async () => {
+    if (!Custom) {
+      console.warn("Custom no está disponible");
+      return;
     }
-  };
 
-  // Fetch de aulas - SIN useCallback
-  const fetchAulas = async () => {
-    if (!Custom) return;
-    try {
-      const aulas = await axios.get(`/Aulas/to/Horarios?pnf=${PNF}`);
-      setAulas(aulas);
-      return { success: true, data: aulas };
-    } catch (error) {
-      console.error("Error cargando aulas:", error);
-      return { success: false, error };
-    }
-  };
-
-  // Fetch de profesores - SIN useCallback
-  const fetchProfesores = async (horasClase) => {
-    if (!Custom) return;
-    try {
-      const profesores = await axios.get(
-        `/Profesores/to/Horarios?horasNecesarias=${horasClase}`
+    if (!validarUnidadesCurricularesInicializadas(unidadesCurriculares)) {
+      console.warn(
+        "Unidades curriculares no están inicializadas o no son válidas"
       );
-      setProfesores(profesores);
-      return { success: true, data: profesores };
+      return;
+    }
+
+    if (!unidadCurricularSelected || !unidadCurricularSelected.horas_clase) {
+      console.log(unidadCurricularSelected);
+      console.warn(
+        "No hay unidad curricular seleccionada o no tiene horas_clase definidas"
+      );
+      return;
+    }
+
+    if (!Seccion?.idSeccion) {
+      console.warn("Sección no está definida o no tiene idSeccion");
+      return;
+    }
+
+    try {
+      const profesores = await axios.post(
+        `/profesores/to/seccion/${Seccion.idSeccion}`,
+        {
+          horasNecesarias: unidadCurricularSelected.horas_clase,
+        }
+      );
+      console.log(
+        "Estos son los profesores que se pueden seleccionar:",
+        profesores
+      );
+      if (profesores && Array.isArray(profesores)) {
+        setProfesores(profesores);
+      } else {
+        console.error("Respuesta de profesores inválida:", profesores);
+        setProfesores([]);
+      }
     } catch (error) {
       console.error("Error cargando profesores:", error);
-      return { success: false, error };
+      setProfesores([]);
     }
-  };
+  }, [
+    Custom,
+    unidadesCurriculares,
+    unidadCurricularSelected,
+    Seccion?.idSeccion,
+    axios,
+    setProfesores,
+  ]);
 
-  // Fetch de horarios de profesores - SIN useCallback
-  const fetchProfesoresHorarios = async (profesores) => {
-    if (!Custom) return;
-    setLoading(true);
-    try {
-      const horariosPromises = profesores.map((profesor) =>
-        axios.get(`/Horarios/Profesores?Profesor=${profesor.id_profesor}`)
+  // Fetch del horario del profesor CON useCallback
+  const fetchProfesoresHorario = useCallback(
+    async (profesor) => {
+      if (!Custom) {
+        console.warn("Custom no está disponible");
+        return;
+      }
+
+      if (!profesor) {
+        console.warn("No se proporcionó un profesor para obtener el horario");
+        return;
+      }
+
+      // Obtener la cédula del profesor
+      const cedulaProfesor = profesor.cedula || profesor.cedula_profesor;
+
+      if (!cedulaProfesor) {
+        console.warn("El profesor no tiene cédula definida");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log(
+          `Obteniendo horario del profesor con cédula: ${cedulaProfesor}`
+        );
+
+        const horario = await axios.get(`/horarios/profesor/${cedulaProfesor}`);
+
+        console.log("Horario del profesor obtenido:", horario);
+
+        if (horario) {
+          setProfesorHorario(horario);
+        } else {
+          console.error("Respuesta de horario del profesor inválida:", horario);
+          setProfesorHorario(null);
+        }
+      } catch (error) {
+        console.error("Error cargando horario del profesor:", error);
+        setProfesorHorario(null);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [Custom, axios, setProfesorHorario, setLoading]
+  );
+
+  // Fetch de aulas CON useCallback
+  const fetchAulas = useCallback(async () => {
+    if (!Custom) {
+      console.warn("Custom no está disponible");
+      return;
+    }
+
+    if (!validarUnidadesCurricularesInicializadas(unidadesCurriculares)) {
+      console.warn(
+        "Unidades curriculares no están inicializadas o no son válidas"
       );
+      return;
+    }
 
-      const responses = await Promise.all(horariosPromises);
-      const horarios = responses.map((response) => response || response);
+    if (!unidadCurricularSelected || !unidadCurricularSelected.horas_clase) {
+      console.warn(
+        "No hay unidad curricular seleccionada o no tiene horas_clase definidas"
+      );
+      return;
+    }
 
-      setProfesoresHorarios(horarios);
-      return { success: true, data: horarios };
+    if (!Seccion?.idSeccion) {
+      console.log(Seccion);
+      console.warn("Sección no está definida o no tiene idSeccion");
+      return;
+    }
+
+    if (
+      !profesorSelected ||
+      (!profesorSelected.id_profesor && !profesorSelected.idProfesor)
+    ) {
+      console.warn("No hay profesor seleccionado o no tiene ID válido");
+      return;
+    }
+
+    try {
+      const idProfesor =
+        profesorSelected.id_profesor || profesorSelected.idProfesor;
+
+      const aulas = await axios.post(`/aulas/to/seccion/${Seccion.idSeccion}`, {
+        idProfesor,
+        horasNecesarias: unidadCurricularSelected.horas_clase,
+      });
+
+      if (aulas && Array.isArray(aulas)) {
+        setAulas(aulas);
+      } else {
+        console.error("Respuesta de aulas inválida:", aulas);
+        setAulas([]);
+      }
     } catch (error) {
-      console.error("Error cargando horarios de profesores:", error);
-      return { success: false, error };
-    } finally {
-      setLoading(false);
+      console.error("Error cargando aulas:", error);
+      setAulas([]);
     }
-  };
+  }, [
+    Custom,
+    unidadesCurriculares,
+    unidadCurricularSelected,
+    Seccion,
+    profesorSelected,
+    axios,
+    setAulas,
+  ]);
 
-  // Función para cargar todos los datos iniciales - CON useCallback pero sin dependencias problemáticas
-  const fetchAllInitialData = useCallback(async (tableHorario) => {
-    setLoading(true);
-    await fetchUnidadesCurriculares(tableHorario);
-    await fetchAulas();
-    setLoading(false);
-  }, []); // Solo setLoading como dependencia
-
-  // Función para cargar datos de profesores basados en unidad seleccionada - CON useCallback
-  const fetchProfesoresData = useCallback(async (unidad) => {
-    if (!unidad) return { success: false, error: "No hay unidad seleccionada" };
-    const profesoresResult = await fetchProfesores(unidad.horas_clase);
-    if (profesoresResult.success) {
-      await fetchProfesoresHorarios(profesoresResult.data);
+  // Efecto para cargar unidades curriculares automáticamente al inicio
+  useEffect(() => {
+    if (Custom && Trayecto?.id_trayecto && tableHorario) {
+      console.log("Cargando unidades curriculares iniciales...");
+      fetchUnidadesCurriculares();
     }
-  }, []); // Sin dependencias - las funciones fetch son estables
+  }, [Custom, Trayecto?.id_trayecto, tableHorario, fetchUnidadesCurriculares]);
 
-  // Función para obtener datos de profesores (alias)
-  const fetchDataForNewClass = fetchProfesoresData;
+  // Efecto para cargar profesores automáticamente
+  useEffect(() => {
+    if (unidadCurricularSelected && unidadesCurriculares.length > 0) {
+      console.log("Unidad curricular seleccionada, cargando profesores...");
+      fetchProfesores();
+    }
+  }, [unidadCurricularSelected, unidadesCurriculares, fetchProfesores]);
+
+  // Efecto para cargar horario del profesor automáticamente
+  useEffect(() => {
+    if (
+      profesorSelected &&
+      (profesorSelected.cedula || profesorSelected.cedula_profesor)
+    ) {
+      console.log("Profesor seleccionado, cargando horario...");
+      fetchProfesoresHorario(profesorSelected);
+    }
+  }, [profesorSelected, fetchProfesoresHorario]);
+
+  // Efecto para cargar aulas automáticamente
+  useEffect(() => {
+    if (
+      profesorSelected &&
+      unidadCurricularSelected &&
+      unidadesCurriculares.length > 0
+    ) {
+      console.log("Profesor seleccionado, cargando aulas...");
+      fetchAulas();
+    }
+  }, [
+    profesorSelected,
+    unidadCurricularSelected,
+    unidadesCurriculares,
+    fetchAulas,
+  ]);
 
   return {
-    // Funciones individuales (sin useCallback - son estables)
+    // Funciones individuales
     fetchUnidadesCurriculares,
     fetchAulas,
     fetchProfesores,
-    fetchProfesoresHorarios,
-
-    // Funciones combinadas (con useCallback controlado)
-    fetchAllInitialData,
-    fetchProfesoresData,
-
-    // Alias
-    fetchDataForNewClass,
+    fetchProfesoresHorario,
   };
 };
 

@@ -41,8 +41,8 @@ const HorarioTable = ({
 
   const getHeaderTitle = () => {
     const parts = [];
-    if (PNF) parts.push(PNF);
-    if (Trayecto) parts.push(`Trayecto ${Trayecto}`);
+    if (PNF) parts.push(PNF.nombre_pnf);
+    if (Trayecto) parts.push(`Trayecto ${Trayecto.valor_trayecto}`);
     if (Seccion?.seccion) parts.push(`Sección ${Seccion.seccion}`);
     return parts.join(" • ");
   };

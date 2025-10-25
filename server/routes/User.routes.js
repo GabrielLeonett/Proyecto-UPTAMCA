@@ -41,11 +41,11 @@ UserRouter.post("/auth/login", login);
 UserRouter.get("/auth/verify", middlewareAuth(null), verificarUsers);
 
 /**
- * @name POST /auth/logout
+ * @name get /auth/logout
  * @description Cerrar sesión del usuario
  * @middleware Requiere autenticación (cualquier rol)
  */
-UserRouter.post("/auth/logout", middlewareAuth(null), closeSession);
+UserRouter.get("/auth/logout", middlewareAuth(null), closeSession);
 
 /**
  * @name PUT /auth/password

@@ -92,7 +92,7 @@ HorarioRouter.get(
 );
 
 /**
- * @name GET /profesores/to/horarios
+ * @name POST /profesores/to/seccion/:idSeccion
  * @description Obtener información de profesores para la creación de un nuevo horario.
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -101,8 +101,8 @@ HorarioRouter.get(
  *   - Coordinador
  *   - Profesor
  */
-HorarioRouter.get(
-  "/profesores/to/horarios",
+HorarioRouter.post(
+  "/profesores/to/seccion/:idSeccion",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -114,7 +114,7 @@ HorarioRouter.get(
 );
 
 /**
- * @name GET /aulas/to/horarios
+ * @name POST /aulas/to/horarios
  * @description Obtener información de aulas disponibles para la creación de un nuevo horario.
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -123,8 +123,8 @@ HorarioRouter.get(
  *   - Coordinador
  *   - Profesor
  */
-HorarioRouter.get(
-  "/aulas/to/horarios",
+HorarioRouter.post(
+  "/aulas/to/seccion/:idSeccion",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",

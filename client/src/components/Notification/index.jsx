@@ -9,32 +9,50 @@ import {
 } from "@mui/material";
 import NotificationCard from "./NotificationCard";
 import NotificationTarget from "./NotificationTarget";
-import { useEffect, useState } from "react"; // ✅ Agregar useRef
+import { useEffect, useState, useCallback, useRef } from "react";
 import CloseIcon from "@mui/icons-material/Close";
-import io from "socket.io-client";
 import useApi from "../../hook/useApi";
-import env from '../../config/env.js'
+import useWebSocket from "../../hook/useWebSocket";
 
 export default function Notification({ userRoles, userID }) {
   const theme = useTheme();
   const axios = useApi();
   const [target, setTarget] = useState(false);
   const [filter, setFilter] = useState("all");
-  const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updateTrigger, setUpdateTrigger] = useState(0);
+  const [socketConnected, setSocketConnected] = useState(false);
+  const [error, setError] = useState(null);
+
+  // ✅ USAR useRef PARA RASTREAR SI YA NOS UNIMOS A LAS SALAS
+  const hasJoinedRoomsRef = useRef(false);
+
+  // ✅ USAR EL HOOK DE WEBSOCKET
+  const {
+    connect,
+    on,
+    off,
+    emit,
+    getSocket,
+    isConnected: wsIsConnected,
+  } = useWebSocket();
 
   const getNotificationHistory = async () => {
-    const response = await axios.get(`/notifications`);
+    try {
+      const response = await axios.get(`/notifications`);
 
-    // 🔥 ACTUALIZAR ÚLTIMA CONEXIÓN SOLO SI LA PETICIÓN FUE EXITOSA
-    localStorage.setItem(
-      "ultima_conexion_notificaciones",
-      new Date().toISOString()
-    );
+      // 🔥 ACTUALIZAR ÚLTIMA CONEXIÓN SOLO SI LA PETICIÓN FUE EXITOSA
+      localStorage.setItem(
+        "ultima_conexion_notificaciones",
+        new Date().toISOString()
+      );
 
-    return response;
+      return response;
+    } catch (err) {
+      console.error("❌ Error cargando historial:", err);
+      throw err;
+    }
   };
 
   // 🔥 INICIALIZAR ÚLTIMA CONEXIÓN SI NO EXISTE
@@ -56,9 +74,14 @@ export default function Notification({ userRoles, userID }) {
       }
 
       try {
+        console.log("📥 Cargando historial de notificaciones...");
         const history = await getNotificationHistory();
         setNotifications(history);
         setUpdateTrigger((prev) => prev + 1);
+        console.log(`✅ Cargadas ${history.length} notificaciones`);
+      } catch (err) {
+        console.error("❌ Error cargando historial:", err);
+        setError("Error cargando notificaciones");
       } finally {
         setLoading(false);
       }
@@ -67,101 +90,154 @@ export default function Notification({ userRoles, userID }) {
     loadNotificationHistory();
   }, [userID, userRoles]);
 
-  // ✅ CONEXIÓN WEBSOCKET CORREGIDA
+  // ✅ MANEJADORES DE EVENTOS OPTIMIZADOS
+  const handleNewNotification = useCallback((data) => {
+    console.log("🔔 Nueva notificación recibida:", data);
+
+    let notificationData = data;
+
+    // Si viene envuelta en data.data, extraerla
+    if (data && data.data) {
+      notificationData = data.data;
+    }
+
+    // Asegurarnos que es un array
+    if (!Array.isArray(notificationData)) {
+      notificationData = [notificationData];
+    }
+
+    // 🔥 AGREGAR AL INICIO para que las nuevas aparezcan primero
+    setNotifications((prev) => [...notificationData, ...prev]);
+    setUpdateTrigger((prev) => prev + 1);
+  }, []);
+
+  const handleConnect = useCallback(() => {
+    console.log("✅ Notificaciones: WebSocket CONECTADO");
+    setSocketConnected(true);
+    setLoading(false);
+    setError(null);
+
+    // ✅ UNIRSE A LAS SALAS DE ROLES SOLO UNA VEZ AL CONECTAR
+    if (!hasJoinedRoomsRef.current && userRoles?.length > 0) {
+      userRoles.forEach((role) => {
+        emit("join_role_room", role);
+        console.log(`✅ Notificaciones: Unido a sala de rol ${role}`);
+      });
+      hasJoinedRoomsRef.current = true;
+    }
+  }, [userRoles, emit]);
+
+  const handleConnectError = useCallback((error) => {
+    console.error("❌ Notificaciones: Error de conexión WebSocket:", error);
+    setSocketConnected(false);
+    setLoading(false);
+    setError(`Error de conexión: ${error.message}`);
+    hasJoinedRoomsRef.current = false;
+  }, []);
+
+  const handleDisconnect = useCallback(() => {
+    console.log("❌ Notificaciones: WebSocket DESCONECTADO");
+    setSocketConnected(false);
+    hasJoinedRoomsRef.current = false;
+  }, []);
+
+  // ✅ CONFIGURAR WEBSOCKET - VERSIÓN MEJORADA
   useEffect(() => {
     if (!userID) {
+      console.log("⏸️ Notificaciones: No userID, esperando...");
       return;
     }
 
-    const newSocket = io(env.serverUrl, {
-      transports: ["websocket"], // Permitir ambos
-      withCredentials: true,
-      auth: {
-        user_id: userID,
-        roles: userRoles,
-      },
-      timeout: 20000,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-    });
+    console.log("🚀 Notificaciones: INICIANDO CONEXIÓN WEBSOCKET...");
 
-    newSocket.current = newSocket;
+    // 1. CONFIGURAR EVENTOS PRIMERO (IMPORTANTE)
+    console.log("🔧 Notificaciones: Configurando event listeners...");
 
-    const safetyTimeout = setTimeout(() => {
-      setLoading(false);
-    }, 10000);
+    on("connect", handleConnect);
+    on("disconnect", handleDisconnect);
+    on("connect_error", handleConnectError);
+    on("new_notification", handleNewNotification);
 
-    const handleConnect = () => {
-      setSocket(newSocket);
-      setLoading(false);
-      clearTimeout(safetyTimeout);
+    // 2. VERIFICAR SI YA ESTÁ CONECTADO INMEDIATAMENTE
+    const socket = getSocket();
+    console.log("Socket actual:", socket);
+    console.log("¿Socket conectado?", socket?.connected);
 
-      // Unirse a salas por rol
-      if (userRoles?.length > 0) {
-        userRoles.forEach((role) => {
-          newSocket.emit("join_role_room", role);
-        });
-      }
-    };
+    if (socket?.connected) {
+      console.log("✅ Notificaciones: Ya conectado, actualizando estado...");
+      handleConnect(); // ✅ ACTUALIZAR ESTADO INMEDIATAMENTE
+    } else {
+      // 3. INTENTAR CONECTAR SOLO SI NO ESTÁ CONECTADO
+      console.log("🔌 Notificaciones: Intentando conectar...");
+      setLoading(true);
+      setError(null);
 
-    const handleNewNotification = (data) => {
-      let notificationData = data;
+      const connectWebSocket = async () => {
+        try {
+          console.log("🔄 Notificaciones: Llamando a connect()...");
+          await connect(userID, userRoles);
+          console.log("✅ Notificaciones: Connect() completado");
 
-      // Si viene envuelta en data.data, extraerla
-      if (data && data.data) {
-        notificationData = data.data;
-      }
-
-      // Asegurarnos que es un array
-      if (!Array.isArray(notificationData)) {
-        notificationData = [notificationData];
-      }
-
-      // 🔥 AGREGAR AL INICIO para que las nuevas aparezcan primero
-      setNotifications((prev) => [...notificationData, ...prev]);
-      setUpdateTrigger((prev) => prev + 1);
-      clearTimeout(safetyTimeout);
-    };
-
-    const handleConnectError = () => {
-      clearTimeout(safetyTimeout);
-    };
-
-    const handleDisconnect = () => {
-      clearTimeout(safetyTimeout);
-    };
-
-    // Event listeners
-    newSocket.on("connect", handleConnect);
-    newSocket.on("new_notification", handleNewNotification);
-    newSocket.on("connect_error", handleConnectError);
-    newSocket.on("disconnect", handleDisconnect);
-
-    // Cleanup mejorado
-    return () => {
-      clearTimeout(safetyTimeout);
-
-      if (newSocket.current) {
-        newSocket.current.off("connect", handleConnect);
-        newSocket.current.off("new_notification", handleNewNotification);
-        newSocket.current.off("connect_error", handleConnectError);
-        newSocket.current.off("disconnect", handleDisconnect);
-
-        // Solo cerrar si no hay userID
-        if (!userID) {
-          newSocket.current.close();
-          newSocket.current = null;
-          setSocket(null);
+          // ✅ VERIFICAR NUEVAMENTE DESPUÉS DE CONECTAR
+          const newSocket = getSocket();
+          if (newSocket?.connected && !socketConnected) {
+            console.log("✅ Forzando actualización de estado...");
+            handleConnect();
+          }
+        } catch (err) {
+          console.error("💥 Notificaciones: Error en connect():", err);
+          setError(`Error al conectar: ${err.message}`);
+          setLoading(false);
         }
-      }
+      };
+
+      connectWebSocket();
+    }
+
+    // 4. CLEANUP
+    return () => {
+      console.log("🧹 Notificaciones: Limpiando event listeners...");
+      off("connect", handleConnect);
+      off("disconnect", handleDisconnect);
+      off("connect_error", handleConnectError);
+      off("new_notification", handleNewNotification);
+      hasJoinedRoomsRef.current = false;
     };
-  }, [userID, userRoles]); // ✅ Dependencies correctas
+  }, [
+    userID,
+    userRoles,
+    connect,
+    on,
+    off,
+    getSocket,
+    handleConnect,
+    handleDisconnect,
+    handleConnectError,
+    handleNewNotification,
+  ]);
+
+  // ✅ DEBUG EN TIEMPO REAL
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const socket = getSocket();
+      console.log("🔍 Notificaciones - Estado actual:", {
+        loading,
+        socketConnected,
+        socketConnectedActual: socket?.connected,
+        socketId: socket?.id,
+        notificationsCount: notifications.length,
+        unreadCount: notifications.filter((n) => !n.leida).length,
+      });
+    }, 10000); // Cada 10 segundos
+
+    return () => clearInterval(interval);
+  }, [loading, socketConnected, notifications, getSocket]);
 
   // 🔥 MEJORADO: Marcar notificación como leída
   const markAsRead = async (notificationId) => {
-    if (socket && socket.connected) {
-      socket.emit("mark_notification_read", { notificationId });
+    if (socketConnected) {
+      emit("mark_notification_read", { notificationId });
+      console.log("📝 Marcando notificación como leída:", notificationId);
     }
 
     // ✅ ACTUALIZAR ESTADO LOCAL INMEDIATAMENTE
@@ -245,6 +321,8 @@ export default function Notification({ userRoles, userID }) {
               <Typography variant="body2" color={theme.palette.text.secondary}>
                 {unreadCount} sin leer de {allCount} totales
                 {loading && " - Cargando..."}
+                {socketConnected ? " • ✅ Conectado" : " • ❌ Desconectado"}
+                {error && ` • ⚠️ ${error}`}
               </Typography>
             </Box>
 

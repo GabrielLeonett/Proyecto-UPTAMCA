@@ -1,8 +1,8 @@
 import { useState } from "react";
-import {UTILS} from '../../../utils/utils'
+import { UTILS } from "../../../utils/utils";
 
 // Todos los estados del componente
-const useHorarioState = (initialProps = {}) => {
+const useHorarioState = () => {
   // Estado de la clase seleccionada
   const [selectedClass, setSelectedClass] = useState(null);
   // Estado de los Slots que están habilitados para un posible movimiento
@@ -19,8 +19,14 @@ const useHorarioState = (initialProps = {}) => {
   const [profesores, setProfesores] = useState([]);
   // Estado para las aulas
   const [aulas, setAulas] = useState([]);
+  // Estado de unidad curricular seleccionada
+  const [unidadCurricularSelected, setUnidadCurricularSelected] = useState([]);
+  //Estado del profesor seleccionado
+  const [profesorSelected, setProfesorSelected] = useState([]);
+  // Estado para las aulas
+  const [aulaSelected, setAulaSelected] = useState([]);
   // Estado para los horarios de los profesores
-  const [profesoresHorarios, setProfesoresHorarios] = useState([]);
+  const [profesorHorario, setProfesorHorario] = useState([]);
   // Estado para si se está ejecutando algo que utilice un cargador
   const [loading, setLoading] = useState(false);
   // Estado para la clase que se está por mover
@@ -46,11 +52,14 @@ const useHorarioState = (initialProps = {}) => {
     setUnidadesCurriculares,
     setProfesores,
     setAulas,
-    setProfesoresHorarios,
+    setProfesorHorario,
     setLoading,
     setClassToMove,
     setOriginalSlot,
     setOverlayVisible,
+    setUnidadCurricularSelected,
+    setAulaSelected,
+    setProfesorSelected,
   };
 
   // Agrupar todos los estados para facilitar el acceso
@@ -62,17 +71,20 @@ const useHorarioState = (initialProps = {}) => {
     unidadesCurriculares,
     profesores,
     aulas,
-    profesoresHorarios,
+    profesorHorario,
     loading,
     classToMove,
     originalSlot,
     overlayVisible,
+    unidadCurricularSelected,
+    profesorSelected,
+    aulaSelected,
   };
 
   return {
     // Estados individuales
     ...state,
-    
+
     // Setters individuales
     setTableHorario,
     setSelectedClass,
@@ -81,12 +93,12 @@ const useHorarioState = (initialProps = {}) => {
     setUnidadesCurriculares,
     setProfesores,
     setAulas,
-    setProfesoresHorarios,
+    setProfesorHorario,
     setLoading,
     setClassToMove,
     setOriginalSlot,
     setOverlayVisible,
-    
+
     // Agrupados para conveniencia
     state,
     stateSetters,

@@ -245,11 +245,23 @@ export default class HorarioService {
 
   /**
    * Mostrar profesores disponibles según horas necesarias
+   * @param {number} idSeccion
    * @param {number} horasNecesarias
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async mostrarProfesoresParaHorario(horasNecesarias) {
+  static async mostrarProfesoresParaHorario(idSeccion, horasNecesarias) {
     try {
+      const validationidSeccion = validationService.validateId(
+        idSeccion,
+        "Id Seccion"
+      );
+      if (!validationidSeccion.isValid) {
+        return FormatterResponseService.validationError(
+          validationidSeccion.errors,
+          "Id de la seccion inválido"
+        );
+      }
+
       const validation = validationService.validateId(
         horasNecesarias,
         "horas necesarias"
@@ -262,6 +274,7 @@ export default class HorarioService {
       }
 
       const dbResponse = await HorarioModel.obtenerProfesoresDisponibles(
+        idSeccion,
         horasNecesarias
       );
 
@@ -289,24 +302,45 @@ export default class HorarioService {
   }
 
   /**
-   * Mostrar aulas disponibles para un PNF
-   * @param {string} nombrePNF
+   * Mostrar aulas disponibles para una seccion y un profesor
+   * @param {number} idSeccion - id de la seccion
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
-  static async mostrarAulasParaHorario(nombrePNF) {
+  static async mostrarAulasParaHorario(idSeccion, horasNecesarias, idProfesor) {
     try {
-      const validation = validationService.validarTexto(
-        nombrePNF,
-        "Nombre del PNF"
+      const validationidSeccion = validationService.validateId(
+        idSeccion,
+        "id seccion"
+      );
+      if (!validationidSeccion.isValid) {
+        return FormatterResponseService.validationError(
+          validationidSeccion.errors,
+          "Id de la seccion inválido"
+        );
+      }
+
+      const validation = validationService.validateId(
+        horasNecesarias,
+        "horas necesarias"
       );
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
-          "Nombre de PNF inválido"
+          "Horas necesarias inválidas"
         );
       }
 
-      const dbResponse = await HorarioModel.obtenerAulasDisponibles(nombrePNF);
+      const validationidProfesor = validationService.validateId(
+        idProfesor,
+        "id profesor"
+      );
+      if (!validationidProfesor.isValid) {
+        return FormatterResponseService.validationError(
+          validationidProfesor.errors,
+          "Id del profesor inválido"
+        );
+      }
+      const dbResponse = await HorarioModel.obtenerAulasDisponibles(idSeccion, horasNecesarias, idProfesor);
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);
