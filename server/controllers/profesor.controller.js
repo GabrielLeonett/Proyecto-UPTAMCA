@@ -52,15 +52,6 @@ export default class ProfesorController {
 
       const imagenData = respuesta.data;
 
-      // DEBUG: Ver qué hay en el buffer
-      console.log("🔍 Tipo de imagenData.buffer:", typeof imagenData.buffer);
-      console.log("🔍 Es Buffer nativo?", Buffer.isBuffer(imagenData.buffer));
-      console.log("🔍 Estructura:", {
-        hasType: imagenData.buffer?.type,
-        hasData: Array.isArray(imagenData.buffer?.data),
-        dataLength: imagenData.buffer?.data?.length,
-      });
-
       let bufferToSend;
 
       // CASO 1: Si es un objeto Buffer de Node.js con estructura {type: "Buffer", data: [...]}

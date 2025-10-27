@@ -1,4 +1,4 @@
-import { profesorSchema } from "./profesor.schema.js";
+import profesorSchema from "./profesor.schema";
 import z from "zod";
 
 // Esquema principal para Coordinadores

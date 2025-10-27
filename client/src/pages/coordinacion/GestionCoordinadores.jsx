@@ -13,9 +13,10 @@ export default function Coordinadores() {
   const fetchCoordinadores = useCallback(async () => {
     setLoading(true);
     try {
-      const endpoint = "/Coordinadores";
-      const { data } = await axios.get(endpoint);
-      setCoordinadores(data || []);
+      const endpoint = "/coordinadores";
+      const respuesta = await axios.get(endpoint);
+      console.log("Respuesta de coordinadores:", respuesta);
+      setCoordinadores(respuesta.coordinadores || []);
     } finally {
       setLoading(false);
     }

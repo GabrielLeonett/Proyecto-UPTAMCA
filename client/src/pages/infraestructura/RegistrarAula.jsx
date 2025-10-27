@@ -39,8 +39,8 @@ export default function RegistrarAula() {
     console.log("🔄 useEffect ejecutándose - cargando sedes");
     const fetchSedes = async () => {
       try {
-        const response = await axios.get("/Sedes");
-        setSedes(response.data.data);
+        const response = await axios.get("/sedes");
+        setSedes(response.sedes || []);
       } finally {
         setLoadingSedes(false);
       }
@@ -58,7 +58,7 @@ export default function RegistrarAula() {
         capacidad: Number(data.capacidad),
       };
 
-      await axios.post("/Aula/register", formData);
+      await axios.post("/aulas", formData);
     } finally {
       setRegistering(false);
     }

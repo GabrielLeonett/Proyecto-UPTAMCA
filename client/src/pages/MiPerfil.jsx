@@ -166,7 +166,7 @@ const Miuser = () => {
                       />
                       <ActionButton
                         label="Registrar Disponibilidad"
-                        onClick={() => navigate("/registrar-disponibilidad")}
+                        onClick={() => navigate("/academico/profesores/disponibilidad")}
                       />
                     </Grid>
                   )}

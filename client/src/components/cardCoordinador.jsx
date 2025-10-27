@@ -13,7 +13,7 @@ import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
-import profesorSchema  from "../schemas/profesor.schema.js";
+import coordinadorSchema from "../schemas/coordinador.schema";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,7 +25,7 @@ export function CardCoordinador({ coordinador }) {
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: zodResolver(profesorSchema),
+    resolver: zodResolver(coordinadorSchema),
   });
   return (
     <Box
@@ -95,175 +95,183 @@ export function CardCoordinador({ coordinador }) {
       </Grid>
 
       {/* Sección de acordeón */}
-      <Grid item xs={12} md={6}>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          {/* Acordeón 1: Información Personal */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel1-content"
-              id="panel1-header"
-            >
-              <Typography variant="h6" component="span">
-                Información Personal
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Cédula de Identidad:</strong>{" "}
-                  {coordinador?.cedula || "No especificado"}
-                </Typography>
+<Grid item xs={12} md={6}>
+  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+    {/* Acordeón 1: Información Personal */}
+    <Accordion
+      sx={{
+        width: "100%",
+        "&:before": { display: "none" },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel1-content"
+        id="panel1-header"
+      >
+        <Typography variant="h6" component="span">
+          Información Personal
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Cédula de Identidad:</strong> {coordinador?.cedula || "No especificado"}
+          </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Género:</strong>{" "}
-                  {coordinador?.genero || "No especificado"}
-                </Typography>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Género:</strong> {coordinador?.genero || "No especificado"}
+          </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Fecha de Nacimiento:</strong>{" "}
-                  {coordinador?.fecha_nacimiento
-                    ? dayjs(coordinador.fecha_nacimiento).format("DD/MM/YYYY")
-                    : "No especificado"}
-                </Typography>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Fecha de Nacimiento:</strong>{" "}
+            {coordinador?.fecha_nacimiento
+              ? dayjs(coordinador.fecha_nacimiento).format("DD/MM/YYYY")
+              : "No especificado"}
+          </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Email:</strong>{" "}
-                  {coordinador?.email || "No especificado"}
-                  <Tooltip title="Editar email" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Email:</strong> {coordinador?.email || "No especificado"}
+            <Tooltip title="Editar email" arrow>
+              <IconButton size="small" sx={{ padding: "4px" }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Typography>
 
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Teléfono Celular:</strong>{" "}
-                  {coordinador?.telefono_movil || "No especificado"}
-                  <Tooltip title="Editar teléfono" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Teléfono Celular:</strong> {coordinador?.telefono_movil || "No especificado"}
+            <Tooltip title="Editar teléfono" arrow>
+              <IconButton size="small" sx={{ padding: "4px" }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Typography>
 
-          {/* Acordeón 3: Información Profesional */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel3-content"
-              id="panel3-header"
-            >
-              <Typography variant="h6" component="span">
-                Información Profesional
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Fecha Ingreso:</strong>{" "}
-                  {coordinador?.fecha_ingreso
-                    ? dayjs(coordinador.fecha_ingreso).format("DD/MM/YYYY")
-                    : "No especificado"}
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Categoría:</strong>{" "}
-                  {coordinador?.categoria || "No especificado"}
-                  <Tooltip title="Editar categoría" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
-
-                <Typography
-                  variant="body2"
-                  sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                >
-                  <strong>Dedicación:</strong>{" "}
-                  {coordinador?.dedicacion || "No especificado"}
-                  <Tooltip title="Editar dedicación" arrow>
-                    <IconButton size="small" sx={{ padding: "4px" }}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </Typography>
-
-                <Typography variant="body2">
-                  <strong>Disponibilidad:</strong>{" "}
-                  {coordinador?.horas_disponibles
-                    ? `${coordinador?.horas_disponibles?.hours || 0} horas ${
-                        coordinador?.horas_disponibles?.minutes || 0
-                      } minutos`
-                    : "No especificado"}
-                </Typography>
-              </Box>
-            </AccordionDetails>
-          </Accordion>
-
-          {/* Acordeón 4: Disponibilidad Horaria */}
-          <Accordion
-            sx={{
-              width: "100%",
-              "&:before": { display: "none" },
-            }}
-          >
-            <AccordionSummary
-              expandIcon={<ExpandMoreIcon />}
-              aria-controls="panel5-content"
-              id="panel5-header"
-            >
-              <Typography variant="h6" component="span">
-                Disponibilidad Horaria
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography
-                variant="body2"
-                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-              >
-                Detalles específicos sobre la disponibilidad horaria del
-                coordinador...
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Dirección:</strong> {coordinador?.direccion || "No especificado"}
+          </Typography>
         </Box>
-      </Grid>
+      </AccordionDetails>
+    </Accordion>
+
+    {/* Acordeón 2: Información Coordinación */}
+    <Accordion
+      sx={{
+        width: "100%",
+        "&:before": { display: "none" },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel3-content"
+        id="panel3-header"
+      >
+        <Typography variant="h6" component="span">
+          Información de Coordinación
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>PNF que coordina:</strong>{" "}
+            {coordinador?.nombre_pnf
+              ? `${coordinador.nombre_pnf} (${coordinador.codigo_pnf || "Sin código"})`
+              : "No especificado"}
+          </Typography>
+
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Estatus de Coordinador:</strong> {coordinador?.estatus_coordinador || "No especificado"}
+          </Typography>
+
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Años de Experiencia:</strong> {coordinador?.anos_experiencia_coordinador || "No especificado"}
+          </Typography>
+
+          <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+            <strong>Fecha de Designación:</strong>{" "}
+            {coordinador?.fecha_designacion
+              ? dayjs(coordinador.fecha_designacion).format("DD/MM/YYYY")
+              : "No especificado"}
+          </Typography>
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+
+    {/* Acordeón 3: Información de Interés */}
+    <Accordion
+      sx={{
+        width: "100%",
+        "&:before": { display: "none" },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon />}
+        aria-controls="panel4-content"
+        id="panel4-header"
+      >
+        <Typography variant="h6" component="span">
+          Información de Interés
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+          <Typography variant="body2">
+            <strong>Dedicación:</strong> {coordinador?.dedicacion || "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Categoría:</strong> {coordinador?.categoria || "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Áreas de Conocimiento:</strong>{" "}
+            {coordinador?.areas_de_conocimiento?.length
+              ? coordinador.areas_de_conocimiento.join(", ")
+              : "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Horas Disponibles:</strong>{" "}
+            {coordinador?.horas_disponibles?.hours
+              ? `${coordinador.horas_disponibles.hours} horas`
+              : "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Disponibilidad:</strong>{" "}
+            {coordinador?.disponibilidad?.length
+              ? coordinador.disponibilidad
+                  .map(
+                    (d) => `${d.dia_semana}: ${d.hora_inicio} - ${d.hora_fin}`
+                  )
+                  .join(" | ")
+              : "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Pregrado:</strong>{" "}
+            {coordinador?.pre_grados?.length
+              ? coordinador.pre_grados
+                  .map((p) => `${p.completo}`)
+                  .join(", ")
+              : "No especificado"}
+          </Typography>
+
+          <Typography variant="body2">
+            <strong>Postgrados:</strong>{" "}
+            {coordinador?.pos_grados?.length
+              ? coordinador.pos_grados
+                  .map((p) => `${p.completo}`)
+                  .join(", ")
+              : "No posee"}
+          </Typography>
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+  </Box>
+</Grid>
+
     </Box>
   );
 }

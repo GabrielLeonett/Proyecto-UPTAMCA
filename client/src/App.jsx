@@ -147,7 +147,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/academico/profesores/:id/disponibilidad"
+                path="/academico/profesores/disponibilidad"
                 element={
                   <ProtectedViews allowedRoles={ROLES.PERSONAL_ACADEMICO}>
                     <DisponibilidadProfesor />

@@ -7,7 +7,7 @@ import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
 import pnfSchema from "../../schemas/pnf.schema";
 import useApi from "../../hook/useApi"; // Added import for axios
-import Swal from "sweetalert2"; // Missing import
+import { Watch } from "@mui/icons-material";
 
 export default function PnfForm() {
   const axios = useApi();
@@ -19,16 +19,25 @@ export default function PnfForm() {
     handleSubmit,
     reset,
     formState: { errors, isValid },
+    watch,
   } = useForm({
     resolver: zodResolver(pnfSchema),
     mode: "onChange",
+    defaultValues: {
+      nombrePNF: "",
+      codigoPNF: "",
+      descripcionPNF: "",
+      sedePNF: "", // debe ser string vacío, no undefined
+    },
   });
+
+  console.log(errors, isValid, watch());
 
   // Added useEffect to fetch sedes (campuses)
   useEffect(() => {
     const fetchSedes = async () => {
-      const response = await axios.get("/Sedes");
-      setSedes(response);
+      const response = await axios.get("/sedes");
+      setSedes(response.sedes || []);
     };
 
     fetchSedes();
@@ -36,11 +45,10 @@ export default function PnfForm() {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    console.log(data)
+    console.log(data);
     try {
-      await axios.post("/PNF/create", data );
+      await axios.post("/pnf", data);
       reset();
-      
     } finally {
       setIsSubmitting(false);
     }
@@ -89,6 +97,31 @@ export default function PnfForm() {
                     errors.nombrePNF?.message || "Colocar el nombre del PNF"
                   }
                   inputProps={{ "aria-required": "true" }}
+                />
+
+                <CustomLabel
+                  fullWidth
+                  type="number"
+                  label="Número de trayectos"
+                  variant="outlined"
+                  {...register("duracionTrayectosPNF", {
+                    valueAsNumber: true, // convierte el valor automáticamente a número
+                  })}
+                  error={!!errors.duracionTrayectosPNF}
+                  helperText={
+                    errors.duracionTrayectosPNF?.message ||
+                    "Colocar el número de trayectos"
+                  }
+                  inputProps={{
+                    "aria-required": "true",
+                    min: 1,
+                    step: 1, // evita decimales
+                    onKeyDown: (e) => {
+                      if (e.key === "." || e.key === "," || e.key === "e") {
+                        e.preventDefault(); // bloquea puntos, comas y notación científica
+                      }
+                    },
+                  }}
                 />
 
                 <CustomLabel

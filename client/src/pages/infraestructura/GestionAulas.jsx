@@ -36,8 +36,8 @@ export default function GestionAulas() {
   useEffect(() => {
     const fetchAulas = async () => {
       try {
-        const response = await axios.get("/Aula/all");
-        const data = response.data.data || response.data; // por compatibilidad
+        const response = await axios.get("/aulas");
+        const data = response.aulas || [];
         setAulas(data);
         setFilteredAulas(data);
       } catch (error) {
@@ -66,7 +66,7 @@ export default function GestionAulas() {
     if (!window.confirm("¿Seguro que deseas eliminar esta aula?")) return;
     try {
       await axios.delete(`/Aula/delete/${id}`);
-      setAulas(aulas.filter((a) => a.id_aula !== id));
+      setAulas(aula.filter((a) => a.id_aula !== id));
       setFilteredAulas(filteredAulas.filter((a) => a.id_aula !== id));
     } catch (error) {
       console.error("❌ Error al eliminar aula:", error);
@@ -168,7 +168,7 @@ export default function GestionAulas() {
                         <IconButton
                           color="primary"
                           onClick={() =>
-                            navigate(`/aulas/editar/${aula.id_aula}`)
+                            navigate(`/aulas/editar/${aulas.id_aula}`)
                           }
                         >
                           <Edit />
@@ -177,7 +177,7 @@ export default function GestionAulas() {
                       <Tooltip title="Eliminar">
                         <IconButton
                           color="error"
-                          onClick={() => handleDelete(aula.id_aula)}
+                          onClick={() => handleDelete(aulas.id_aula)}
                         >
                           <Delete />
                         </IconButton>

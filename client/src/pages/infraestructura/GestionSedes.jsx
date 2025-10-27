@@ -32,8 +32,9 @@ export default function GestionSedes() {
   useEffect(() => {
     const fetchSedes = async () => {
       try {
-        const response = await axios.get("/Sedes");
-        setSedes(response);
+        const response = await axios.get("/sedes");
+        setSedes(response.sedes || []);
+
       } catch (err) {
         console.error("Error al obtener las sedes:", err);
         setError("No se pudieron cargar las sedes.");
@@ -58,7 +59,7 @@ export default function GestionSedes() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`/Sede/delete/${id}`);
+          await axios.delete(`/sede/delete/${id}`);
           setSedes((prev) => prev.filter((sede) => sede.id !== id));
           Swal.fire("Eliminada", "La sede ha sido eliminada.", "success");
         } catch (err) {

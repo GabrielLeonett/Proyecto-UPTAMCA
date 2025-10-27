@@ -61,7 +61,7 @@ export default class AulaModel {
          tipo_aula,
          capacidad_aula
        FROM 
-         public.vista_sedes_completa
+         public.vistas_aulas
        WHERE 1=1
      `;
       const params = [];

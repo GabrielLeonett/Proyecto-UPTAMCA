@@ -19,7 +19,6 @@ import ModalRegisterPosGrado from "../../components/ModalRegisterPosgrado";
 import useApi from "../../hook/useApi";
 import useSweetAlert from "../../hook/useSweetAlert";
 
-
 export default function FormRegister() {
   const axios = useApi(false);
   const theme = useTheme();
@@ -30,7 +29,6 @@ export default function FormRegister() {
     control,
     handleSubmit,
     trigger,
-    watch,
   } = useForm({
     resolver: zodResolver(profesorSchema),
     defaultValues: {
@@ -43,8 +41,6 @@ export default function FormRegister() {
       pre_grado: [],
       pos_grado: [],
     },
-    mode: "onChange",
-    shouldFocusError: true,
   });
 
   const [pregrados, setPregrados] = useState([]);
@@ -109,7 +105,6 @@ export default function FormRegister() {
     setSelectedImage(null);
     setImagePreview(null);
   };
-  console.log("Formulario a enviar:", errors, isValid, watch());
 
   const onSubmit = async (formData) => {
     setIsSubmitting(true);
@@ -168,9 +163,15 @@ export default function FormRegister() {
         dataToSend.append("imagen", selectedImage);
       }
       await axios.post("/profesores", dataToSend);
-      alert.success("Profesor registrado con éxito", "Ya puede verlo en la lista.", );
+      alert.success(
+        "Profesor registrado con éxito",
+        "Ya puede verlo en la lista."
+      );
     } catch (error) {
-      alert.error("No se ha registrado el profesor", "Por favor, intente nuevamente.", );
+      alert.error(
+        "No se ha registrado el profesor",
+        "Por favor, intente nuevamente."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -318,7 +319,6 @@ export default function FormRegister() {
           {...register("municipio", { required: true })}
           error={!!errors.municipio}
           helperText={errors.municipio?.message || "Seleccione su municipio"}
-          value={watch("municipio") || ""}
         >
           <MenuItem value="">Seleccione</MenuItem>
           <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
@@ -332,7 +332,6 @@ export default function FormRegister() {
           {...register("genero", { required: true })}
           error={!!errors.genero}
           helperText={errors.genero?.message || "Seleccione su género"}
-          value={watch("genero") || "masculino"}
         >
           <MenuItem value="masculino">Masculino</MenuItem>
           <MenuItem value="femenino">Femenino</MenuItem>
@@ -441,10 +440,15 @@ export default function FormRegister() {
                 onChange={(_, newValue) => {
                   const uniqueValues = newValue.filter(
                     (item, index, self) =>
-                      index === self.findIndex((t) => t.id_pre_grado === item.id_pre_grado)
+                      index ===
+                      self.findIndex(
+                        (t) => t.id_pre_grado === item.id_pre_grado
+                      )
                   );
 
-                  if (uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")) {
+                  if (
+                    uniqueValues.some((opt) => opt.nombre_pre_grado === "Otro")
+                  ) {
                     setOpenModalPregrado(true);
                     const filteredValues = uniqueValues.filter(
                       (v) => v.nombre_pre_grado !== "Otro"
@@ -461,7 +465,8 @@ export default function FormRegister() {
                     variant="outlined"
                     error={!!errors.pre_grado}
                     helperText={
-                      errors.pre_grado?.message || "Seleccione al menos un pregrado"
+                      errors.pre_grado?.message ||
+                      "Seleccione al menos un pregrado"
                     }
                   />
                 )}
@@ -485,11 +490,13 @@ export default function FormRegister() {
               <Autocomplete
                 multiple
                 options={[
-                  ...(Array.isArray(postgrados) ? postgrados : []).map((pg) => ({
-                    id_pos_grado: pg.id_pos_grado,
-                    nombre_pos_grado: pg.nombre_pos_grado,
-                    tipo_pos_grado: pg.tipo_pos_grado,
-                  })),
+                  ...(Array.isArray(postgrados) ? postgrados : []).map(
+                    (pg) => ({
+                      id_pos_grado: pg.id_pos_grado,
+                      nombre_pos_grado: pg.nombre_pos_grado,
+                      tipo_pos_grado: pg.tipo_pos_grado,
+                    })
+                  ),
                   {
                     id_pos_grado: "otro",
                     nombre_pos_grado: "Otro",
@@ -503,10 +510,15 @@ export default function FormRegister() {
                 onChange={(_, newValue) => {
                   const uniqueValues = newValue.filter(
                     (item, index, self) =>
-                      index === self.findIndex((t) => t.id_pos_grado === item.id_pos_grado)
+                      index ===
+                      self.findIndex(
+                        (t) => t.id_pos_grado === item.id_pos_grado
+                      )
                   );
 
-                  if (uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")) {
+                  if (
+                    uniqueValues.some((opt) => opt.nombre_pos_grado === "Otro")
+                  ) {
                     setOpenModalPosgrado(true);
                     const filteredValues = uniqueValues.filter(
                       (v) => v.nombre_pos_grado !== "Otro"
@@ -539,7 +551,6 @@ export default function FormRegister() {
     </>
   );
 
-
   const Step3ProfessionalInfo = () => (
     <>
       <Typography component="h3" variant="h3" className="self-start mb-6">
@@ -556,7 +567,6 @@ export default function FormRegister() {
           error={!!errors.categoria}
           helperText={errors.categoria?.message}
           fullWidth
-          value={watch("categoria") || ""}
         >
           <MenuItem value="Instructor">Instructor</MenuItem>
           <MenuItem value="Asistente">Asistente</MenuItem>
@@ -594,7 +604,6 @@ export default function FormRegister() {
           error={!!errors.dedicacion}
           helperText={errors.dedicacion?.message}
           fullWidth
-          value={watch("dedicacion") || ""}
         >
           <MenuItem value="Convencional">Convencional</MenuItem>
           <MenuItem value="Medio Tiempo">Medio Tiempo</MenuItem>

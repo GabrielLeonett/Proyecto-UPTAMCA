@@ -32,7 +32,7 @@ export default function AsignarCoordinador() {
     formState: { errors, isSubmitting, isValid },
     reset,
   } = useForm({
-    resolver: zodResolver(AsignarCoordinadorSchema),
+    resolver: zodResolver(asignarCoordinadorSchema),
     mode: "onChange",
     defaultValues: {
       idProfesor: "",
@@ -49,45 +49,31 @@ export default function AsignarCoordinador() {
     const fetchData = async () => {
       try {
         const [resProfesores, resPnfs] = await Promise.all([
-          axios.get("/Profesor"),
-          axios.get("/PNF"),
+          axios.get("/profesores"),
+          axios.get("/pnf"),
         ]);
 
+        console.log("Respuesta Profesores:", resProfesores);
+        console.log("Respuesta PNFs:", resPnfs);
         // Extraer datos según la estructura de tu API
         let datosProfesores = [];
         let datosPnfs = [];
 
         // Para profesores - ajusta según tu estructura real
-        if (resProfesores.data && resProfesores.data.data) {
-          if (Array.isArray(resProfesores.data.data.data)) {
-            datosProfesores = resProfesores.data.data.data;
-          } else if (Array.isArray(resProfesores.data.data)) {
-            datosProfesores = resProfesores.data.data;
-          }
+        if (resProfesores.profesores) {
+          datosProfesores = resProfesores.profesores;
         }
 
         // Para PNFs - ajusta según tu estructura real
-        if (resPnfs.data && resPnfs.data.data) {
-          if (Array.isArray(resPnfs.data.data)) {
-            datosPnfs = resPnfs.data.data;
-          } else if (Array.isArray(resPnfs.data)) {
-            datosPnfs = resPnfs.data;
-          }
+        if (resPnfs.pnf) {
+          if (Array.isArray(resPnfs.pnf))
+            datosPnfs = resPnfs.pnf;
         }
 
         console.log("Todos los profesores:", datosProfesores);
 
-        // Filtrar solo profesores que NO son coordinadores Y tienen estado activo: false
-        const profesoresFiltrados = datosProfesores.filter(
-          (profe) => !profe.is_coordinador && profe.activo === false
-        );
-
-        const pnfsFiltrados = datosPnfs.filter(
-          (pnf) => !pnf.tiene_coordinar != true
-        );
-
-        setProfesores(profesoresFiltrados);
-        setPnfs(pnfsFiltrados);
+        setProfesores(datosProfesores);
+        setPnfs(datosPnfs);
       } catch (error) {
         console.error("Error al cargar datos:", error);
       } finally {
@@ -103,13 +89,13 @@ export default function AsignarCoordinador() {
 
       // Asegúrate de que los nombres de los campos coincidan con tu backend
       const payload = {
-        cedula_profesor: data.idProfesor,
-        id_pnf: data.idPnf,
+        idProfesor: data.idProfesor,
+        idPnf: data.idPnf,
       };
 
       console.log("Payload:", payload);
 
-      await axios.post("/Coordinador/asignar", payload);
+      await axios.post("/coordinadores", payload);
 
       await Swal.fire({
         icon: "success",
@@ -126,11 +112,11 @@ export default function AsignarCoordinador() {
       const resProfesores = await axios.get("/Profesor");
       let nuevosProfesores = [];
 
-      if (resProfesores.data && resProfesores.data.data) {
-        if (Array.isArray(resProfesores.data.data.data)) {
-          nuevosProfesores = resProfesores.data.data.data;
-        } else if (Array.isArray(resProfesores.data.data)) {
-          nuevosProfesores = resProfesores.data.data;
+      if (resProfesores.data && resProfesores) {
+        if (Array.isArray(resProfesores.data)) {
+          nuevosProfesores = resProfesores.data;
+        } else if (Array.isArray(resProfesores)) {
+          nuevosProfesores = resProfesores;
         }
       }
 
