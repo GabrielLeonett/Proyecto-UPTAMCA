@@ -114,44 +114,68 @@ export default class HorarioService {
 
       // Usar los nombres correctos de las columnas según tu consulta SQL
       const {
-        nombre_pnf, // ← existe en tu SQL
-        codigo_pnf, // ← existe en tu SQL
-        valor_trayecto, // ← existe en tu SQL
-        id_trayecto, // ← existe en tu SQL
-        valor_seccion, // ← existe en tu SQL
-        id_seccion, // ← existe en tu SQL
-        nombre_turno, // ← CORREGIDO: era turno_nombre
-        turno_hora_inicio, // ← existe en tu SQL
-        turno_hora_fin, // ← existe en tu SQL
+        id_pnf,
+        nombre_pnf,
+        codigo_pnf,
+        valor_trayecto,
+        id_trayecto,
+        valor_seccion,
+        id_seccion,
+        nombre_turno,
+        turno_hora_inicio,
+        turno_hora_fin,
       } = rows[0];
 
-      // Procesar los días y clases - usando los nombres correctos de columnas
-      const diasUnicos = [...new Set(rows.map((d) => d.dia_semana))]; // ← CORREGIDO: era dia
+      // ✅ CORREGIDO: Filtrar solo filas que tengan datos reales de horarios
+      const filasConHorarios = rows.filter(
+        (row) => row.nombre_unidad_curricular && row.hora_inicio && row.hora_fin
+      );
 
-      const Horario = diasUnicos.map((dia) => ({
-        nombre: dia,
-        clases: rows
-          .filter((d) => d.dia_semana === dia) // ← CORREGIDO: era dia
-          .map((cl) => ({
-            nombre_unidad_curricular: cl.nombre_unidad_curricular, // ← CORREGIDO: era unidad_curricular
-            profesor: `${cl.nombres_profesor} ${cl.apellidos_profesor}`, // ← CORREGIDO: combinar nombre y apellido
-            aula: cl.codigo_aula, // ← CORREGIDO: era aula
-            horaInicio: cl.hora_inicio,
-            horaFin: cl.hora_fin,
-          })),
-      }));
+      let Horario = [];
+
+      // ✅ CORREGIDO: Solo procesar si hay horarios reales
+      if (filasConHorarios.length > 0) {
+        const diasUnicos = [
+          ...new Set(filasConHorarios.map((d) => d.dia_semana)),
+        ];
+
+        // ✅ CORREGIDO: Sintaxis del map corregida
+        Horario = diasUnicos.map((dia) => ({
+          nombre: dia,
+          clases: filasConHorarios
+            .filter((clase) => clase.dia_semana === dia)
+            .map((clase) => ({
+              id: clase.id_horario,
+              idProfesor: clase.id_profesor,
+              idAula: clase.id_aula,
+              idUnidadCurricular: clase.id_unidad_curricular,
+              nombreProfesor: clase.nombres_profesor,
+              codigoAula: clase.codigo_aula,
+              apellidoProfesor: clase.apellidos_profesor,
+              nombreUnidadCurricular: clase.nombre_unidad_curricular,
+              horaInicio: clase.hora_inicio,
+              horaFin: clase.hora_fin,
+              idSeccion: clase.id_seccion,
+              valorSeccion: clase.valor_seccion,
+              nombrePnf: clase.nombre_pnf,
+              diaSemana: clase.dia_semana,
+              nuevaClase: !clase.id_horario,
+            })),
+        }));
+      }
+      // ✅ Si no hay horarios reales, Horario será un array vacío []
 
       // Crear configuración con nombres consistentes
       const configuracion = {
-        PNF: { nombre_pnf, codigo_pnf },
+        PNF: { nombre_pnf, codigo_pnf, id_pnf },
         Trayecto: { id_trayecto, valor_trayecto },
         Seccion: { valor_seccion, id_seccion },
         Turno: {
-          nombre: nombre_turno, // ← CORREGIDO: era turno_nombre
+          nombre: nombre_turno,
           horaInicio: turno_hora_inicio || "07:00",
           horaFin: turno_hora_fin || "20:00",
         },
-        Horario,
+        Horario, // ✅ Ahora será [] cuando no haya horarios
       };
 
       console.log("✅ Configuración formateada:", configuracion.Horario);
@@ -340,7 +364,11 @@ export default class HorarioService {
           "Id del profesor inválido"
         );
       }
-      const dbResponse = await HorarioModel.obtenerAulasDisponibles(idSeccion, horasNecesarias, idProfesor);
+      const dbResponse = await HorarioModel.obtenerAulasDisponibles(
+        idSeccion,
+        horasNecesarias,
+        idProfesor
+      );
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);

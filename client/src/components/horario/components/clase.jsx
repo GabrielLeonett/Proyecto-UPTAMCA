@@ -5,6 +5,7 @@ export default function Clase({
   clase,
   isSelected,
   onMoveRequest,
+  onCancelMove,
 }) {
   const [activo, setActivo] = useState(false);
 
@@ -68,10 +69,21 @@ export default function Clase({
 
   const estilos = getEstilos();
 
+  const handleClick = (e) => {
+    if (e.detail === 1) {
+      // Click simple - Mover
+      onMoveRequest(clase);
+    } else if (e.detail === 2) {
+      // Doble click - Cancelar
+      onCancelMove(clase);
+    }
+  };
+  
   return (
     <Box
       className={`clase ${isSelected ? "selected" : ""}`}
-      onClick={() => onMoveRequest(clase)} // Doble click para mover
+      // En tu elemento:
+      onClick={handleClick}
       sx={{
         cursor: "pointer",
         display: "flex",
@@ -114,7 +126,7 @@ export default function Clase({
           fontSize: "0.65rem",
           opacity: 0.9,
         }}
-        >
+      >
         {nombre || apellido ? `Prof. ${nombre} ${apellido}` : "Sin profesor"}
       </Typography>
 
@@ -128,7 +140,7 @@ export default function Clase({
           opacity: 0.8,
           mt: 0.5,
         }}
-        >
+      >
         {clase.horaInicio} - {clase.horaFin}
       </Typography>
 
@@ -141,7 +153,7 @@ export default function Clase({
           fontSize: "0.65rem",
           opacity: 0.9,
         }}
-        >
+      >
         Aula: {clase.codigoAula}
       </Typography>
 

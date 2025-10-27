@@ -50,7 +50,7 @@ export default class UserService {
       // 3. Validar contraseña
       console.log("🔐 Validando contraseña...");
       console.log("📝 Contraseña ingresada:", datos.password);
-      console.log("📝 Contraseña almacenada", user.password )
+      console.log("📝 Contraseña almacenada", user.password);
       const validatePassword = await comparePassword(
         datos.password,
         user.password
@@ -71,7 +71,7 @@ export default class UserService {
           apellidos: user.apellidos,
           nombres: user.nombres,
           roles: user.roles,
-          password: user.password,
+          ...(user.id_pnf && { id_pnf: user.id_pnf }), // ✅ Solo agrega si existe
         },
       });
 
@@ -227,7 +227,7 @@ export default class UserService {
    */
   static async verificarSesion(user) {
     try {
-      if(!user){
+      if (!user) {
         FormatterResponseService.unauthorized("Usuario no autenticado");
       }
       return FormatterResponseService.success(

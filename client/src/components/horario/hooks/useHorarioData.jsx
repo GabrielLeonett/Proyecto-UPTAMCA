@@ -67,9 +67,15 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
     setProfesores,
     setProfesorHorario,
     setLoading,
+    setAulaHorario,
   } = stateSetters;
-  const { profesorSelected, unidadCurricularSelected, unidadesCurriculares, tableHorario } =
-    state;
+  const {
+    profesorSelected,
+    unidadCurricularSelected,
+    unidadesCurriculares,
+    tableHorario,
+    aulaSelected,
+  } = state;
   const { Trayecto, Seccion } = props;
 
   // Fetch de unidades curriculares CON useCallback
@@ -120,7 +126,13 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         setUnidadesCurriculares([]);
       }
     },
-    [Custom, Trayecto?.id_trayecto, axios, setUnidadesCurriculares, tableHorario]
+    [
+      Custom,
+      Trayecto?.id_trayecto,
+      axios,
+      setUnidadesCurriculares,
+      tableHorario,
+    ]
   );
 
   // Fetch de profesores CON useCallback
@@ -138,7 +150,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
     }
 
     if (!unidadCurricularSelected || !unidadCurricularSelected.horas_clase) {
-      console.log(unidadCurricularSelected);
       console.warn(
         "No hay unidad curricular seleccionada o no tiene horas_clase definidas"
       );
@@ -156,10 +167,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         {
           horasNecesarias: unidadCurricularSelected.horas_clase,
         }
-      );
-      console.log(
-        "Estos son los profesores que se pueden seleccionar:",
-        profesores
       );
       if (profesores && Array.isArray(profesores)) {
         setProfesores(profesores);
@@ -203,13 +210,8 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
 
       try {
         setLoading(true);
-        console.log(
-          `Obteniendo horario del profesor con cédula: ${cedulaProfesor}`
-        );
 
         const horario = await axios.get(`/horarios/profesor/${cedulaProfesor}`);
-
-        console.log("Horario del profesor obtenido:", horario);
 
         if (horario) {
           setProfesorHorario(horario);
@@ -249,7 +251,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
     }
 
     if (!Seccion?.idSeccion) {
-      console.log(Seccion);
       console.warn("Sección no está definida o no tiene idSeccion");
       return;
     }
@@ -294,7 +295,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
   // Efecto para cargar unidades curriculares automáticamente al inicio
   useEffect(() => {
     if (Custom && Trayecto?.id_trayecto && tableHorario) {
-      console.log("Cargando unidades curriculares iniciales...");
       fetchUnidadesCurriculares();
     }
   }, [Custom, Trayecto?.id_trayecto, tableHorario, fetchUnidadesCurriculares]);
@@ -302,7 +302,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
   // Efecto para cargar profesores automáticamente
   useEffect(() => {
     if (unidadCurricularSelected && unidadesCurriculares.length > 0) {
-      console.log("Unidad curricular seleccionada, cargando profesores...");
       fetchProfesores();
     }
   }, [unidadCurricularSelected, unidadesCurriculares, fetchProfesores]);
@@ -313,10 +312,90 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
       profesorSelected &&
       (profesorSelected.cedula || profesorSelected.cedula_profesor)
     ) {
-      console.log("Profesor seleccionado, cargando horario...");
       fetchProfesoresHorario(profesorSelected);
     }
   }, [profesorSelected, fetchProfesoresHorario]);
+
+  const fetchAulaHorario = useCallback(
+    async (aula) => {
+      if (!Custom) {
+        console.warn("Custom no está disponible");
+        return;
+      }
+
+      if (!aula) {
+        console.warn("No se proporcionó un aula para obtener el horario");
+        return;
+      }
+
+      // Obtener el ID del aula
+      const idAula = aula.id_aula || aula.idAula;
+
+      if (!idAula) {
+        console.warn("El aula no tiene ID definido");
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        // ✅ LLAMADA A TU ENDPOINT: /horarios/aula/:id_aula
+        const horario = await axios.get(`/horarios/aula/${idAula}`);
+
+        if (horario) {
+          setAulaHorario(horario);
+        } else {
+          console.error("Respuesta de horario del aula inválida:", horario);
+          setAulaHorario(null);
+        }
+      } catch (error) {
+        console.error("Error cargando horario del aula:", error);
+        setAulaHorario(null);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [Custom, axios, setAulaHorario, setLoading]
+  );
+
+  const fetchCambiosTableHorario = useCallback(async () => {
+    const promesas = [];
+
+    tableHorario.forEach((dia) => {
+      const horasObjeto = dia.horas;
+      Object.keys(horasObjeto).forEach((clave) => {
+        if (horasObjeto[clave] != null && horasObjeto[clave].bloque === 0) {
+          const datosClase = horasObjeto[clave].datosClase;
+          console.log(datosClase);
+          const datosNewHorario = {
+            idSeccion: Seccion.idSeccion,
+            idProfesor: datosClase.idProfesor,
+            idUnidadCurricular: datosClase.idUnidadCurricular,
+            idAula: datosClase.idAula,
+            diaSemana: dia.dia,
+            horaInicio: datosClase.horaInicio,
+          };
+
+          // Agregar la promesa al array
+          promesas.push(axios.post("/horarios", datosNewHorario));
+        }
+      });
+    });
+
+    try {
+      // Esperar a que todas las peticiones terminen
+      await Promise.all(promesas);
+      console.log("Todas las peticiones completadas");
+    } catch (error) {
+      console.error("Error en una o más peticiones:", error);
+    }
+  }, [tableHorario, axios, Seccion]);
+
+  useEffect(() => {
+    if (aulaSelected && (aulaSelected.cedula || aulaSelected.cedula_profesor)) {
+      fetchAulaHorario(aulaSelected);
+    }
+  }, [aulaSelected, fetchAulaHorario]);
 
   // Efecto para cargar aulas automáticamente
   useEffect(() => {
@@ -325,7 +404,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
       unidadCurricularSelected &&
       unidadesCurriculares.length > 0
     ) {
-      console.log("Profesor seleccionado, cargando aulas...");
       fetchAulas();
     }
   }, [
@@ -341,6 +419,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
     fetchAulas,
     fetchProfesores,
     fetchProfesoresHorario,
+    fetchCambiosTableHorario,
   };
 };
 

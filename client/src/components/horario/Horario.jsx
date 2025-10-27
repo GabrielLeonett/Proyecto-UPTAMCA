@@ -1,16 +1,5 @@
 import React, { useCallback } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  useTheme,
-  Alert,
-  CircularProgress,
-} from "@mui/material";
-import {
-  ConstructionOutlined,
-  Schedule as ScheduleIcon,
-} from "@mui/icons-material";
+import { Box, Container, useTheme } from "@mui/material";
 
 // Hooks
 import useHorarioState from "./hooks/useHorarioState";
@@ -22,12 +11,13 @@ import useHorarioEffects from "./hooks/useHorarioEffects";
 // Components
 import HorarioTable from "./components/HorarioTable";
 import ClassForm from "./components/ClassForm";
-import StatusMessages from "./components/StatusMessages";
 import TableOverlay from "./components/TableOverlay";
 
 // Utils
 import { UTILS } from "../../utils/utils";
 import useApi from "../../hook/useApi";
+import useSweetAlert from "../../hook/useSweetAlert";
+import useCoordinador from "../../hook/useCoordinador";
 
 const Horario = ({
   PNF,
@@ -35,11 +25,12 @@ const Horario = ({
   Seccion,
   Horario: initialHorario,
   Turno,
-  Custom = true,
 }) => {
   const theme = useTheme();
   const axios = useApi();
+  const alert = useSweetAlert();
 
+  const { isCustom } = useCoordinador(PNF?.id_pnf);
   // Props para pasar a los hooks
   const props = {
     PNF,
@@ -47,7 +38,7 @@ const Horario = ({
     Seccion,
     Horario: initialHorario,
     Turno,
-    Custom,
+    isCustom,
   };
 
   // 1. Estado principal
@@ -69,10 +60,16 @@ const Horario = ({
     // Agrupados
     state,
     stateSetters,
-  } = useHorarioState();
+  } = useHorarioState(props);
 
   // 2. Datos
-  useHorarioData(axios, props, state, stateSetters, Custom);
+  const { fetchCambiosTableHorario } = useHorarioData(
+    axios,
+    props,
+    state,
+    stateSetters,
+    isCustom
+  );
 
   // 3. Movimiento de clases
   const movementActions = useClassMovement(state, stateSetters, UTILS);
@@ -123,51 +120,42 @@ const Horario = ({
     [aulas, stateSetters]
   );
 
-  /*
-const handleSave = useCallback(async () => {
-  try {
-    setLoading(true);
-    // Aquí iría la lógica para guardar el horario
-    console.log("Guardando horario...", tableHorario);
-    // await dataFetchers.saveHorario(tableHorario);
-    alert("Horario guardado exitosamente");
-  } catch (error) {
-    console.error("Error guardando horario:", error);
-    alert("Error al guardar el horario");
-  } finally {
-    setLoading(false);
-  }
-}, [tableHorario, setLoading]);
-
-*/
-  /*const handleDelete = useCallback(() => {
-    if (
-      window.confirm("¿Estás seguro de que quieres eliminar el horario actual?")
-    ) {
-      setTableHorario(
-        ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"].map(
-          (dia) => ({ dia, horas: { ...initialHours } })
-        )
+  const handleCancel = useCallback(async () => {
+    try {
+      stateSetters.setLoading(true);
+      alert.success(
+        "Horario guardado exitosamente",
+        "Todos los cambios se han guardado perfectamente."
       );
-      setSelectedClass(null);
-      setClassToMove(null);
-      setAvailableSlots([]);
-      setNewClass({ profesor: null, unidad: null, aula: null });
-      alert("Horario eliminado");
+    } catch (error) {
+      alert.error(
+        "Error al guardar el horario",
+        "Lo sentimos a ocurrido un error."
+      );
+      console.error(error);
+    } finally {
+      stateSetters.setLoading(false);
     }
-  }, [
-    setTableHorario,
-    setSelectedClass,
-    setClassToMove,
-    setAvailableSlots,
-    setNewClass,
-  ]);*/
+  }, [stateSetters]);
 
-  const handleEditMode = useCallback(() => {
-    setOverlayVisible(false);
-    // Lógica adicional para modo edición si es necesaria
-    console.log("Activando modo edición");
-  }, [setOverlayVisible]);
+  const handleSave = useCallback(async () => {
+    try {
+      stateSetters.setLoading(true);
+      fetchCambiosTableHorario();
+      alert.success(
+        "Horario guardado exitosamente",
+        "Todos los cambios se han guardado perfectamente."
+      );
+    } catch (error) {
+      alert.error(
+        "Error al guardar el horario",
+        "Lo sentimos a ocurrido un error."
+      );
+      console.error(error);
+    } finally {
+      stateSetters.setLoading(false);
+    }
+  }, [stateSetters]);
 
   const handlePrint = useCallback(async () => {
     console.log("🖨 handlePrint ejecutado"); // <-- prueba directa
@@ -198,22 +186,6 @@ const handleSave = useCallback(async () => {
   const handleCloseOverlay = useCallback(() => {
     setOverlayVisible(false);
   }, [setOverlayVisible]);
-
-  // Handler para activar el overlay con botón
-  /*const handleShowOverlay = useCallback(() => {
-    if (Custom) {
-      console.log("🔘 Botón - mostrando overlay");
-      setOverlayVisible(true);
-    }
-  }, [Custom, setOverlayVisible]);
-
-  const handleClearSelection = useCallback(() => {
-    setSelectedClass(null);
-    setClassToMove(null);
-    setAvailableSlots([]);
-    setNewClass({ profesor: null, unidad: null, aula: null });
-  }, [setSelectedClass, setClassToMove, setAvailableSlots, setNewClass]);
-  */
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, position: "relative" }}>
@@ -249,30 +221,32 @@ const handleSave = useCallback(async () => {
               isSlotAvailable={slotActions.isSlotAvailable}
               handleSlotClick={slotActions.handleSlotClick}
               handleMoveRequest={movementActions.handleMoveRequest}
+              handleCancelMoveRequest={movementActions.handleCancelMoveRequest}
               selectedClass={selectedClass}
               classToMove={classToMove}
-              Custom={Custom}
+              isCustom={isCustom}
               PNF={PNF}
               Trayecto={Trayecto}
               Seccion={Seccion}
             />
 
             {/* Overlay */}
-            <TableOverlay
-              isVisible={overlayVisible}
-              Custom={Custom}
-              onEdit={handleEditMode}
-              onPrint={handlePrint}
-              onClose={handleCloseOverlay}
-              title={`Horario - ${PNF} ${
-                Trayecto ? `Trayecto ${Trayecto}` : ""
-              } ${Seccion?.seccion ? `Sección ${Seccion.seccion}` : ""}`}
-            />
+            {isCustom === false && (
+              <TableOverlay
+                isVisible={overlayVisible}
+                isCustom={isCustom}
+                onPrint={handlePrint}
+                onClose={handleCloseOverlay}
+                title={`${PNF.nombre_pnf} - ${
+                  Trayecto ? `Trayecto ${Trayecto.valor_trayecto}` : ""
+                } - ${Seccion?.seccion ? `Sección ${Seccion.seccion}` : ""}`}
+              />
+            )}
           </Box>
         </Box>
 
         {/* Formulario para nueva clase - SOLO UNA VEZ */}
-        {Custom && (
+        {isCustom && (
           <Box sx={{ mt: 3 }}>
             <ClassForm
               unidadesCurriculares={unidadesCurriculares}
@@ -284,9 +258,11 @@ const handleSave = useCallback(async () => {
               onUnidadChange={handleUnidadChange}
               onProfesorChange={handleProfesorChange}
               onAulaChange={handleAulaChange}
-              Custom={Custom}
+              isCustom={isCustom}
               loading={loading}
               errors={{}}
+              ButtonSave={handleSave}
+              ButtonCancel={handleCancel}
             />
           </Box>
         )}

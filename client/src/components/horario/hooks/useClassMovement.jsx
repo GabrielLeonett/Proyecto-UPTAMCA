@@ -6,8 +6,10 @@ import {
   liberarSlotOriginal,
   ocuparNuevoSlot,
 } from "../utils/movementUtils";
+import useSweetAlert from "../../../hook/useSweetAlert";
 
 const useClassMovement = (state, stateSetters, utils) => {
+  const alert = useSweetAlert();
   const {
     tableHorario,
     profesorSelected,
@@ -22,75 +24,15 @@ const useClassMovement = (state, stateSetters, utils) => {
     setOriginalSlot,
     setSelectedClass,
     setAvailableSlots,
-    setNewClass,
+    setAulaSelected,
+    setProfesorSelected,
+    setUnidadCurricularSelected,
   } = stateSetters;
 
   const { verificarDisponibilidadProfesor } = useProfessorAvailability();
-  
+
   const { procesarDisponibilidadDocente, validarDatosClase } =
     useSlotCalculations();
-
-  // Manejar solicitud de movimiento
-  const handleMoveRequest = useCallback(
-    (clase) => {
-      setClassToMove(clase);
-
-      const original = findOriginalSlot(clase, tableHorario);
-      setOriginalSlot(original);
-
-      if (original) {
-        setSelectedClass(clase);
-        calcularHorariosDisponibles(clase);
-      }
-    },
-    [tableHorario, setClassToMove, setOriginalSlot, setSelectedClass]
-  );
-
-  // Cancelar movimiento
-  const cancelarMovimiento = useCallback(() => {
-    setClassToMove(null);
-    setOriginalSlot(null);
-    setAvailableSlots([]);
-    setSelectedClass(null);
-  }, [setClassToMove, setOriginalSlot, setAvailableSlots, setSelectedClass]);
-
-  // Completar movimiento
-  const completarMovimiento = useCallback(
-    (nuevoSlot) => {
-      if (!classToMove) return;
-
-      setTableHorario((prev) => {
-        let nuevaMatriz = liberarSlotOriginal(originalSlot, prev);
-        nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-        return nuevaMatriz;
-      });
-
-      // Limpiar estados
-      setClassToMove(null);
-      setOriginalSlot(null);
-      setAvailableSlots([]);
-      setSelectedClass(null);
-      setNewClass({ profesor: null, unidad: null, aula: null });
-
-      // Mostrar mensaje de éxito
-      alert(
-        `Clase movida exitosamente a ${utils.obtenerDiaNombre(
-          nuevoSlot.diaIndex
-        )} ${utils.formatearHora(nuevoSlot.horaInicio)}`
-      );
-    },
-    [
-      classToMove,
-      originalSlot,
-      setTableHorario,
-      setClassToMove,
-      setOriginalSlot,
-      setAvailableSlots,
-      setSelectedClass,
-      setNewClass,
-      utils,
-    ]
-  );
 
   // Calcular horarios disponibles
   const calcularHorariosDisponibles = useCallback(
@@ -146,6 +88,11 @@ const useClassMovement = (state, stateSetters, utils) => {
         slotsDisponibles.push(...slots);
       });
 
+      console.log(
+        "Estos son los slots disponibles para poder hacer la insercion:",
+        slotsDisponibles
+      );
+
       setAvailableSlots(slotsDisponibles);
     },
     [
@@ -159,11 +106,91 @@ const useClassMovement = (state, stateSetters, utils) => {
     ]
   );
 
+  // Manejar solicitud de movimiento
+  const handleMoveRequest = useCallback(
+    (clase) => {
+      setClassToMove(clase);
+
+      const original = findOriginalSlot(clase, tableHorario);
+      setOriginalSlot(original);
+
+      if (original) {
+        setSelectedClass(clase);
+        calcularHorariosDisponibles(clase);
+      }
+    },
+    [
+      tableHorario,
+      setClassToMove,
+      setOriginalSlot,
+      setSelectedClass,
+      calcularHorariosDisponibles,
+    ]
+  );
+  const handleCancelMoveRequest = useCallback(() => {
+    setClassToMove({});
+    setSelectedClass({});
+    setOriginalSlot({});
+  }, [setClassToMove, setOriginalSlot, setSelectedClass]);
+
+  // Cancelar movimiento
+  const cancelarMovimiento = useCallback(() => {
+    setClassToMove(null);
+    setOriginalSlot(null);
+    setAvailableSlots([]);
+    setSelectedClass(null);
+  }, [setClassToMove, setOriginalSlot, setAvailableSlots, setSelectedClass]);
+
+  // Completar movimiento
+  const completarMovimiento = useCallback(
+    (nuevoSlot) => {
+      if (!classToMove) return;
+
+      setTableHorario((prev) => {
+        let nuevaMatriz = liberarSlotOriginal(originalSlot, prev);
+        nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
+        return nuevaMatriz;
+      });
+
+      // Limpiar estados
+      setClassToMove(null);
+      setOriginalSlot(null);
+      setAvailableSlots([]);
+      setSelectedClass(null);
+      setProfesorSelected({});
+      setUnidadCurricularSelected({});
+      setAulaSelected({});
+
+      // Mostrar mensaje de éxito
+      alert.success(
+        "Clase Movida",
+        `Clase movida exitosamente a ${utils.obtenerDiaNombre(
+          nuevoSlot.diaIndex
+        )} ${utils.formatearHora(nuevoSlot.horaInicio)}`
+      );
+    },
+    [
+      classToMove,
+      originalSlot,
+      setTableHorario,
+      setClassToMove,
+      setOriginalSlot,
+      setAvailableSlots,
+      setSelectedClass,
+      setAulaSelected,
+      setProfesorSelected,
+      setUnidadCurricularSelected,
+      utils,
+      alert,
+    ]
+  );
+
   return {
     handleMoveRequest,
     cancelarMovimiento,
     completarMovimiento,
     calcularHorariosDisponibles,
+    handleCancelMoveRequest,
     verificarDisponibilidadProfesor: (
       profesorId,
       diaIndex,

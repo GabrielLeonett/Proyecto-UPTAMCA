@@ -36,6 +36,7 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         `SELECT 
+          id_pnf,
           id_horario,
           id_profesor,
           id_trayecto,

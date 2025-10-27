@@ -74,11 +74,9 @@ export default function Notification({ userRoles, userID }) {
       }
 
       try {
-        console.log("📥 Cargando historial de notificaciones...");
         const history = await getNotificationHistory();
         setNotifications(history);
         setUpdateTrigger((prev) => prev + 1);
-        console.log(`✅ Cargadas ${history.length} notificaciones`);
       } catch (err) {
         console.error("❌ Error cargando historial:", err);
         setError("Error cargando notificaciones");
@@ -92,8 +90,6 @@ export default function Notification({ userRoles, userID }) {
 
   // ✅ MANEJADORES DE EVENTOS OPTIMIZADOS
   const handleNewNotification = useCallback((data) => {
-    console.log("🔔 Nueva notificación recibida:", data);
-
     let notificationData = data;
 
     // Si viene envuelta en data.data, extraerla
@@ -112,7 +108,6 @@ export default function Notification({ userRoles, userID }) {
   }, []);
 
   const handleConnect = useCallback(() => {
-    console.log("✅ Notificaciones: WebSocket CONECTADO");
     setSocketConnected(true);
     setLoading(false);
     setError(null);
@@ -121,7 +116,6 @@ export default function Notification({ userRoles, userID }) {
     if (!hasJoinedRoomsRef.current && userRoles?.length > 0) {
       userRoles.forEach((role) => {
         emit("join_role_room", role);
-        console.log(`✅ Notificaciones: Unido a sala de rol ${role}`);
       });
       hasJoinedRoomsRef.current = true;
     }
@@ -136,7 +130,6 @@ export default function Notification({ userRoles, userID }) {
   }, []);
 
   const handleDisconnect = useCallback(() => {
-    console.log("❌ Notificaciones: WebSocket DESCONECTADO");
     setSocketConnected(false);
     hasJoinedRoomsRef.current = false;
   }, []);
@@ -144,14 +137,10 @@ export default function Notification({ userRoles, userID }) {
   // ✅ CONFIGURAR WEBSOCKET - VERSIÓN MEJORADA
   useEffect(() => {
     if (!userID) {
-      console.log("⏸️ Notificaciones: No userID, esperando...");
       return;
     }
 
-    console.log("🚀 Notificaciones: INICIANDO CONEXIÓN WEBSOCKET...");
-
     // 1. CONFIGURAR EVENTOS PRIMERO (IMPORTANTE)
-    console.log("🔧 Notificaciones: Configurando event listeners...");
 
     on("connect", handleConnect);
     on("disconnect", handleDisconnect);
@@ -160,28 +149,21 @@ export default function Notification({ userRoles, userID }) {
 
     // 2. VERIFICAR SI YA ESTÁ CONECTADO INMEDIATAMENTE
     const socket = getSocket();
-    console.log("Socket actual:", socket);
-    console.log("¿Socket conectado?", socket?.connected);
 
     if (socket?.connected) {
-      console.log("✅ Notificaciones: Ya conectado, actualizando estado...");
       handleConnect(); // ✅ ACTUALIZAR ESTADO INMEDIATAMENTE
     } else {
       // 3. INTENTAR CONECTAR SOLO SI NO ESTÁ CONECTADO
-      console.log("🔌 Notificaciones: Intentando conectar...");
       setLoading(true);
       setError(null);
 
       const connectWebSocket = async () => {
         try {
-          console.log("🔄 Notificaciones: Llamando a connect()...");
           await connect(userID, userRoles);
-          console.log("✅ Notificaciones: Connect() completado");
 
           // ✅ VERIFICAR NUEVAMENTE DESPUÉS DE CONECTAR
           const newSocket = getSocket();
           if (newSocket?.connected && !socketConnected) {
-            console.log("✅ Forzando actualización de estado...");
             handleConnect();
           }
         } catch (err) {
@@ -196,7 +178,6 @@ export default function Notification({ userRoles, userID }) {
 
     // 4. CLEANUP
     return () => {
-      console.log("🧹 Notificaciones: Limpiando event listeners...");
       off("connect", handleConnect);
       off("disconnect", handleDisconnect);
       off("connect_error", handleConnectError);
@@ -214,30 +195,13 @@ export default function Notification({ userRoles, userID }) {
     handleDisconnect,
     handleConnectError,
     handleNewNotification,
+    socketConnected,
   ]);
-
-  // ✅ DEBUG EN TIEMPO REAL
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const socket = getSocket();
-      console.log("🔍 Notificaciones - Estado actual:", {
-        loading,
-        socketConnected,
-        socketConnectedActual: socket?.connected,
-        socketId: socket?.id,
-        notificationsCount: notifications.length,
-        unreadCount: notifications.filter((n) => !n.leida).length,
-      });
-    }, 10000); // Cada 10 segundos
-
-    return () => clearInterval(interval);
-  }, [loading, socketConnected, notifications, getSocket]);
 
   // 🔥 MEJORADO: Marcar notificación como leída
   const markAsRead = async (notificationId) => {
     if (socketConnected) {
       emit("mark_notification_read", { notificationId });
-      console.log("📝 Marcando notificación como leída:", notificationId);
     }
 
     // ✅ ACTUALIZAR ESTADO LOCAL INMEDIATAMENTE

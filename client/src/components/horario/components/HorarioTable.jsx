@@ -17,7 +17,7 @@ import {
   Schedule as ScheduleIcon,
   Class as ClassIcon,
 } from "@mui/icons-material";
-import Clase from "./clase";
+import Clase from "./Clase";
 import { UTILS } from "../../../utils/utils";
 
 // Solo la tabla del horario
@@ -26,6 +26,7 @@ const HorarioTable = ({
   isSlotAvailable,
   handleSlotClick,
   handleMoveRequest,
+  handleCancelMoveRequest,
   selectedClass,
   Custom,
   PNF,
@@ -218,6 +219,7 @@ const HorarioTable = ({
                           clase={celda.datosClase}
                           {...(Custom && {
                             onMoveRequest: handleMoveRequest,
+                            onCancelMove: handleCancelMoveRequest,
                             isSelected:
                               selectedClass?.id === celda.datosClase?.id,
                           })}

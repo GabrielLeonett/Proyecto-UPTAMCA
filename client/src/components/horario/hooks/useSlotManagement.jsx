@@ -15,6 +15,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
     setSelectedClass,
     setClassToMove,
     setAvailableSlots,
+    setAulaSelected,
+    setProfesorSelected,
+    setUnidadCurricularSelected,
     setTableHorario,
   } = stateSetters;
 
@@ -24,6 +27,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
   const MoverClassEnHorario = useCallback(
     (slot) => {
       const { diaIndex, horaInicio, bloquesNecesarios } = slot;
+      console.warn("Esto son los datos de el slot:", slot);
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -39,6 +43,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           ).padStart(2, "0")}`,
           horaFin: utils.sumar45Minutos(horaInicio, bloquesNecesarios),
         };
+        console.warn("Esto son los datos de la nueva clase:", nuevaClase);
 
         // Ocupar los bloques necesarios
         for (let i = 0; i < bloquesNecesarios; i++) {
@@ -64,10 +69,22 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       });
 
       // Limpiar selección después de agregar
-      setSelectedClass(null);
+      setProfesorSelected({});
+      setUnidadCurricularSelected({});
+      setAulaSelected({});
+      setSelectedClass([]);
       setAvailableSlots([]);
     },
-    [classToMove, setTableHorario, setSelectedClass, setAvailableSlots, utils]
+    [
+      classToMove,
+      setTableHorario,
+      setUnidadCurricularSelected,
+      setProfesorSelected,
+      setAulaSelected,
+      setSelectedClass,
+      setAvailableSlots,
+      utils,
+    ]
   );
 
   // Verificar si un slot está disponible
@@ -153,6 +170,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       idAula: aulaSelected.id_aula,
       idUnidadCurricular: unidadCurricularSelected.id_unidad_curricular,
       nombreProfesor: profesorSelected.nombres,
+      codigoAula: aulaSelected.codigo_aula,
       apellidoProfesor: profesorSelected.apellidos,
       nombreUnidadCurricular: unidadCurricularSelected.nombre_unidad_curricular,
       horasClase: unidadCurricularSelected.horas_clase,

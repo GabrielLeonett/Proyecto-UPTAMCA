@@ -19,58 +19,65 @@ const useHorarioInitialization = (props, stateSetters) => {
     return { horaInicioHHMM, horaFinHHMM };
   }, []);
 
-  const obtenerClases = useCallback((Dias, Turno) => {
-    const { horaInicioHHMM, horaFinHHMM } = obtenerTurno(Turno);
+  const obtenerClases = useCallback(
+    (Dias, Turno) => {
+      const { horaInicioHHMM, horaFinHHMM } = obtenerTurno(Turno);
 
-    // Filtrar horas dentro del turno
-    const horasFiltradas = {};
-    Object.keys(UTILS.initialHours).forEach((key) => {
-      const horaHHMM = Number(key);
-      if (horaHHMM >= horaInicioHHMM && horaHHMM <= horaFinHHMM) {
-        horasFiltradas[key] = UTILS.initialHours[key];
-      }
-    });
-
-    setTableHorario((prev) => {
-      const nuevaMatriz = prev.map((item) => ({
-        dia: item.dia,
-        horas: { ...horasFiltradas },
-      }));
-
-      Dias.forEach((dia) => {
-        if (dia.nombre === null) return;
-        let idDia = UTILS.obtenerDiaId(dia.nombre.toLowerCase());
-
-        if (idDia === -1) return;
-
-        dia.clases.forEach((clase) => {
-          const [hIni, mIni] = clase.horaInicio.split(":");
-          const [hFin, mFin] = clase.horaFin.split(":");
-          const inicio = UTILS.horasMinutos(hIni, mIni);
-          const fin = UTILS.horasMinutos(hFin, mFin);
-          const bloques = Math.ceil((fin - inicio) / 45);
-
-          for (let i = 0; i < bloques; i++) {
-            const minutosActual = inicio + i * 45;
-            const h = Math.floor(minutosActual / 60);
-            const m = minutosActual % 60;
-            const horaHHMM = h * 100 + m;
-
-            // Verificar si la hora existe en las horas filtradas
-            if (horasFiltradas[horaHHMM] !== undefined) {
-              nuevaMatriz[idDia].horas[horaHHMM] = {
-                ocupado: true,
-                datosClase: { ...clase, horasClase: bloques },
-                bloque: i,
-                bloquesTotales: bloques,
-              };
-            }
-          }
-        });
+      // Filtrar horas dentro del turno
+      const horasFiltradas = {};
+      Object.keys(UTILS.initialHours).forEach((key) => {
+        const horaHHMM = Number(key);
+        if (horaHHMM >= horaInicioHHMM && horaHHMM <= horaFinHHMM) {
+          horasFiltradas[key] = UTILS.initialHours[key];
+        }
       });
-      return nuevaMatriz;
-    });
-  }, [obtenerTurno, setTableHorario]);
+
+      setTableHorario((prev) => {
+        
+        const nuevaMatriz = prev.map((item) => ({
+          dia: item.dia,
+          horas: { ...horasFiltradas },
+        }));
+
+        Dias.forEach((dia) => {
+          if (dia.nombre === null) return;
+          let idDia = UTILS.obtenerDiaId(dia.nombre.toLowerCase());
+
+          if (idDia === -1) return;
+
+          console.log(idDia);
+
+          dia.clases.forEach((clase) => {
+            const [hIni, mIni] = clase.horaInicio.split(":");
+            const [hFin, mFin] = clase.horaFin.split(":");
+            const inicio = UTILS.horasMinutos(hIni, mIni);
+            const fin = UTILS.horasMinutos(hFin, mFin);
+            const bloques = Math.ceil((fin - inicio) / 45);
+
+            for (let i = 0; i < bloques; i++) {
+              const minutosActual = inicio + i * 45;
+              const h = Math.floor(minutosActual / 60);
+              const m = minutosActual % 60;
+              const horaHHMM = h * 100 + m;
+
+              // Verificar si la hora existe en las horas filtradas
+              if (horasFiltradas[horaHHMM] !== undefined) {
+                nuevaMatriz[idDia].horas[horaHHMM] = {
+                  ocupado: true,
+                  datosClase: { ...clase, horasClase: bloques },
+                  bloque: i,
+                  bloquesTotales: bloques,
+                };
+              }
+            }
+          });
+        });
+        console.log(nuevaMatriz);
+        return nuevaMatriz;
+      });
+    },
+    [obtenerTurno, setTableHorario]
+  );
 
   useEffect(() => {
     if (Horario && Turno) {
@@ -85,7 +92,11 @@ const useNewClassEffect = (state, actions) => {
   const { calcularHorariosDisponibles, crearClaseEnHorario } = actions;
 
   useEffect(() => {
-    if (unidadCurricularSelected && profesorSelected && aulaSelected) {
+    if (
+      unidadCurricularSelected?.horas_clase &&
+      profesorSelected.id_profesor &&
+      aulaSelected.codigo_aula
+    ) {
       calcularHorariosDisponibles({
         idProfesor: profesorSelected.id_profesor,
         horasClase: unidadCurricularSelected.horas_clase,
@@ -101,6 +112,7 @@ const useNewClassEffect = (state, actions) => {
     crearClaseEnHorario,
   ]);
 };
+
 // Efecto para recalcular cuando cambia clase seleccionada
 const useSelectedClassEffect = (state, actions) => {
   const { selectedClass, classToMove } = state;
@@ -112,7 +124,6 @@ const useSelectedClassEffect = (state, actions) => {
     }
   }, [selectedClass, classToMove, calcularHorariosDisponibles]);
 };
-
 
 // Hook principal de efectos
 const useHorarioEffects = (props, state, actions, stateSetters) => {

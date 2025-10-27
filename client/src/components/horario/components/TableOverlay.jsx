@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Box,
   Fade,
@@ -9,29 +8,22 @@ import {
   CardContent,
   useTheme,
   alpha,
-  Stack
-} from '@mui/material';
+  Stack,
+} from "@mui/material";
 import {
   Edit as EditIcon,
   Print as PrintIcon,
-  Close as CloseIcon
-} from '@mui/icons-material';
+  Close as CloseIcon,
+} from "@mui/icons-material";
 
-const TableOverlay = ({ 
-  isVisible, 
+const TableOverlay = ({
+  isVisible,
   Custom,
-  onEdit,
   onPrint,
   onClose,
-  title = "Opciones del Horario"
+  title = "Opciones del Horario",
 }) => {
   const theme = useTheme();
-
-  const handleEditClick = () => {
-    if (onEdit && Custom) {
-      onEdit();
-    }
-  };
 
   const handlePrintClick = () => {
     if (onPrint) {
@@ -39,51 +31,66 @@ const TableOverlay = ({
     }
   };
 
-  const ActionCard = ({ icon, title, description, onClick, disabled = false }) => (
-    <Card 
-      sx={{ 
+  const ActionCard = ({
+    icon,
+    title,
+    description,
+    onClick,
+    disabled = false,
+  }) => (
+    <Card
+      sx={{
         width: 200,
         height: 200,
-        transition: 'all 0.3s ease-in-out',
+        transition: "all 0.3s ease-in-out",
         border: `2px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-        '&:hover': !disabled ? {
-          transform: 'translateY(-4px)',
-          boxShadow: theme.shadows[8],
-          border: `2px solid ${theme.palette.primary.main}`,
-        } : {},
+        "&:hover": !disabled
+          ? {
+              transform: "translateY(-4px)",
+              boxShadow: theme.shadows[8],
+              border: `2px solid ${theme.palette.primary.main}`,
+            }
+          : {},
         opacity: disabled ? 0.5 : 1,
-        cursor: disabled ? 'not-allowed' : 'pointer'
+        cursor: disabled ? "not-allowed" : "pointer",
       }}
     >
-      <CardActionArea 
+      <CardActionArea
         onClick={onClick}
         disabled={disabled}
-        sx={{ 
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          p: 3
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 3,
         }}
       >
-        <CardContent sx={{ textAlign: 'center' }}>
-          <IconButton 
-            size="large" 
+        <CardContent sx={{ textAlign: "center" }}>
+          <IconButton
+            size="large"
             disabled={disabled}
-            sx={{ 
+            sx={{
               mb: 2,
               backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              '&:hover': !disabled ? {
-                backgroundColor: alpha(theme.palette.primary.main, 0.2),
-              } : {},
+              "&:hover": !disabled
+                ? {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                  }
+                : {},
               width: 80,
-              height: 80
+              height: 80,
             }}
           >
             {icon}
           </IconButton>
-          <Typography variant="h6" component="div" gutterBottom fontWeight="bold">
+          <Typography
+            variant="h6"
+            component="div"
+            gutterBottom
+            fontWeight="bold"
+          >
             {title}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -103,8 +110,8 @@ const TableOverlay = ({
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: alpha(theme.palette.background.paper, 0.10),
-          backdropFilter: 'blur(4px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.1),
+          backdropFilter: "blur(4px)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -116,14 +123,14 @@ const TableOverlay = ({
         }}
       >
         {/* Header */}
-        <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
-          <IconButton 
+        <Box sx={{ position: "absolute", top: 16, right: 16 }}>
+          <IconButton
             onClick={onClose}
             sx={{
               backgroundColor: alpha(theme.palette.grey[500], 0.1),
-              '&:hover': {
+              "&:hover": {
                 backgroundColor: alpha(theme.palette.grey[500], 0.2),
-              }
+              },
             }}
           >
             <CloseIcon />
@@ -131,10 +138,10 @@ const TableOverlay = ({
         </Box>
 
         {/* Title */}
-        <Typography 
-          variant="h4" 
-          component="h2" 
-          gutterBottom 
+        <Typography
+          variant="h4"
+          component="h2"
+          gutterBottom
           fontWeight="bold"
           color="primary"
           sx={{ mb: 4 }}
@@ -145,15 +152,22 @@ const TableOverlay = ({
         {/* Actions Grid */}
         <Stack direction="row" spacing={4} alignItems="center">
           <ActionCard
-            icon={<EditIcon sx={{ fontSize: "3rem", color: theme.palette.primary.main }} />}
+            icon={
+              <EditIcon
+                sx={{ fontSize: "3rem", color: theme.palette.primary.main }}
+              />
+            }
             title="Editar"
             description="Modificar horario existente"
-            onClick={handleEditClick}
             disabled={!Custom}
           />
 
           <ActionCard
-            icon={<PrintIcon sx={{ fontSize: "3rem", color: theme.palette.secondary.main }} />}
+            icon={
+              <PrintIcon
+                sx={{ fontSize: "3rem", color: theme.palette.secondary.main }}
+              />
+            }
             title="Imprimir"
             description="Generar PDF del horario"
             onClick={handlePrintClick}
@@ -161,16 +175,17 @@ const TableOverlay = ({
         </Stack>
 
         {/* Instructions */}
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ 
-            mt: 4, 
-            textAlign: 'center',
-            maxWidth: 400
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mt: 4,
+            textAlign: "center",
+            maxWidth: 400,
           }}
         >
-          {!Custom && "El modo de edición no está disponible en esta vista. Solo puedes imprimir el horario."}
+          {!Custom &&
+            "El modo de edición no está disponible en esta vista. Solo puedes imprimir el horario."}
         </Typography>
       </Box>
     </Fade>

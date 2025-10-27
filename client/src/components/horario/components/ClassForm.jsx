@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Box,
   Card,
@@ -10,7 +9,6 @@ import {
   Select,
   MenuItem,
   Alert,
-  Chip,
   Divider,
   useTheme,
 } from "@mui/material";
@@ -18,7 +16,10 @@ import {
   School as SchoolIcon,
   Person as PersonIcon,
   Room as RoomIcon,
+  Save as SaveIcon,
+  Cancel as CancelIcon
 } from "@mui/icons-material";
+import CustomButton from "../../customButton";
 
 // Formulario para crear nueva clase
 const ClassForm = ({
@@ -34,20 +35,14 @@ const ClassForm = ({
   Custom = true,
   loading = false,
   errors = {},
+  ButtonSave,
+  ButtonCancel,
 }) => {
   const theme = useTheme();
 
   if (!Custom) {
     return null;
   }
-
-  const getUnidadText = (unidad) => {
-    return `${unidad.nombre_unidad_curricular} (${unidad.horas_clase}h)`;
-  };
-
-  const getProfesorText = (profesor) => {
-    return `${profesor.nombres} ${profesor.apellidos}`;
-  };
 
   return (
     <Card
@@ -158,7 +153,8 @@ const ClassForm = ({
                       >
                         <Box>
                           <Typography variant="body1">
-                            {profesor.nombres.split(' ')[0]} {profesor.apellidos.split(' ')[0]}
+                            {profesor.nombres.split(" ")[0]}{" "}
+                            {profesor.apellidos.split(" ")[0]}
                           </Typography>
                         </Box>
                       </MenuItem>
@@ -234,57 +230,27 @@ const ClassForm = ({
           )}
         </Grid>
 
-        {/* Estado actual de la selección */}
-        {(unidadCurricularSelected || profesorSelected || aulaSelected) && (
-          <Box sx={{ mt: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
-            <Typography variant="subtitle2" gutterBottom color="primary">
-              Selección Actual:
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              {unidadCurricularSelected && (
-                <Chip
-                  icon={<SchoolIcon />}
-                  label={getUnidadText(unidadCurricularSelected)}
-                  variant="outlined"
-                  color="primary"
-                  size="small"
-                />
-              )}
-              {profesorSelected && (
-                <Chip
-                  icon={<PersonIcon />}
-                  label={getProfesorText(profesorSelected)}
-                  variant="outlined"
-                  color="secondary"
-                  size="small"
-                />
-              )}
-              {aulaSelected && (
-                <Chip
-                  icon={<RoomIcon />}
-                  label={aulaSelected.codigo_aula}
-                  variant="outlined"
-                  color="success"
-                  size="small"
-                />
-              )}
-            </Box>
-          </Box>
-        )}
-
-        {/* Mensajes de error */}
-        {Object.keys(errors).length > 0 && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            <Typography variant="subtitle2">
-              Errores en el formulario:
-            </Typography>
-            <ul style={{ margin: 0, paddingLeft: "20px" }}>
-              {Object.entries(errors).map(([key, error]) => (
-                <li key={key}>{error}</li>
-              ))}
-            </ul>
-          </Alert>
-        )}
+        <Grid sx={{ m: 3, gap: 3 }} container>
+          <CustomButton
+            tipo="success"
+            onClick={() => {
+              ButtonSave();
+            }}
+          >
+            <SaveIcon />
+            <Typography sx={{ ml: 1 }}>Guardar Cambios</Typography>
+          </CustomButton>
+          <CustomButton
+            tipo="error"
+            onClick={() => {
+              ButtonCancel();
+            }}
+          >
+            <CancelIcon /> {/* Icono diferente para cancelar */}
+            <Typography sx={{ ml: 1 }}>Cancelar Cambios</Typography>{" "}
+            {/* Texto diferente */}
+          </CustomButton>
+        </Grid>
 
         {/* Instrucciones */}
         {!unidadCurricularSelected && (

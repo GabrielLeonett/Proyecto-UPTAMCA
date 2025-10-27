@@ -7,12 +7,6 @@ const useHorarioState = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   // Estado de los Slots que están habilitados para un posible movimiento
   const [availableSlots, setAvailableSlots] = useState([]);
-  // Estado para la nueva clase que se pueda crear
-  const [newClass, setNewClass] = useState({
-    profesor: null,
-    unidad: null,
-    aula: null,
-  });
   // Estado para las unidades curriculares
   const [unidadesCurriculares, setUnidadesCurriculares] = useState([]);
   // Estado para los profesores
@@ -25,6 +19,8 @@ const useHorarioState = () => {
   const [profesorSelected, setProfesorSelected] = useState([]);
   // Estado para las aulas
   const [aulaSelected, setAulaSelected] = useState([]);
+  // Estado del horario de Aula
+  const [aulaHorario, setAulaHorario] = useState([]);
   // Estado para los horarios de los profesores
   const [profesorHorario, setProfesorHorario] = useState([]);
   // Estado para si se está ejecutando algo que utilice un cargador
@@ -38,17 +34,20 @@ const useHorarioState = () => {
 
   // Estado de la tabla de horario
   const [tableHorario, setTableHorario] = useState(
-    ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"].map(
+    ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"].map(
       (dia) => ({ dia, horas: { ...UTILS.initialHours } })
     )
   );
+
+  // Estado original de la tabla - mismo valor inicial
+  const [tableHorarioOriginal, setTableHorarioOriginal] =
+    useState(tableHorario);
 
   // Agrupar todos los setters para facilitar el paso a otros hooks
   const stateSetters = {
     setTableHorario,
     setSelectedClass,
     setAvailableSlots,
-    setNewClass,
     setUnidadesCurriculares,
     setProfesores,
     setAulas,
@@ -60,6 +59,8 @@ const useHorarioState = () => {
     setUnidadCurricularSelected,
     setAulaSelected,
     setProfesorSelected,
+    setAulaHorario,
+    setTableHorarioOriginal,
   };
 
   // Agrupar todos los estados para facilitar el acceso
@@ -67,7 +68,6 @@ const useHorarioState = () => {
     tableHorario,
     selectedClass,
     availableSlots,
-    newClass,
     unidadesCurriculares,
     profesores,
     aulas,
@@ -79,6 +79,8 @@ const useHorarioState = () => {
     unidadCurricularSelected,
     profesorSelected,
     aulaSelected,
+    aulaHorario,
+    tableHorarioOriginal,
   };
 
   return {
@@ -86,18 +88,7 @@ const useHorarioState = () => {
     ...state,
 
     // Setters individuales
-    setTableHorario,
-    setSelectedClass,
-    setAvailableSlots,
-    setNewClass,
-    setUnidadesCurriculares,
-    setProfesores,
-    setAulas,
-    setProfesorHorario,
-    setLoading,
-    setClassToMove,
-    setOriginalSlot,
-    setOverlayVisible,
+    ...stateSetters,
 
     // Agrupados para conveniencia
     state,

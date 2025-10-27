@@ -78,7 +78,10 @@ export const ocuparNuevoSlot = (nuevoSlot, classToMove, tableHorario) => {
             datosClase: {
               ...classToMove,
               horaInicio: UTILS.sumar45MinutosHHMM(horaInicio, 0),
-              horaFin: UTILS.sumar45MinutosHHMM(horaInicio, bloquesNecesarios),
+              horaFin: UTILS.sumar45MinutosHHMM(
+                horaInicio,
+                bloquesNecesarios - 1
+              ),
             },
             bloque: bloqueIndex,
             bloquesTotales: bloquesNecesarios,
