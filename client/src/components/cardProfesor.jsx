@@ -212,12 +212,7 @@ export default function CardProfesor({ profesor }) {
               </Typography>
               <Typography variant="body2">
                 <strong>Pos-Grado:</strong>{" "}
-                {profesor?.pos_grados || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                {profesorActual?.pos_grados || "No especificado"}
               </Typography>
             </AccordionDetails>
           </Accordion>
