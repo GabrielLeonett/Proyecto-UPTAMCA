@@ -1,7 +1,7 @@
 import z from "zod";
 
 const unidadcurricularSchema = z.object({
-  idTrayecto: z
+  id_trayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que se un numero",
       required_error: "El id de trayecto es obligatorio",
@@ -9,7 +9,7 @@ const unidadcurricularSchema = z.object({
     .positive("El id tiene que se positivo")
     .optional(),
 
-  nombreUnidadCurricular: z
+  nombre_unidad_curricular: z
     .string({
       invalid_type_error: "El nombre del Unidad Curricular debe ser un texto",
       required_error: "El nombre del Unidad Curricular es obligatorio",
@@ -21,7 +21,7 @@ const unidadcurricularSchema = z.object({
       "Solo se permiten letras, números, espacios y guiones"
     ),
 
-  descripcionUnidadCurricular: z
+  descripcion_unidad_curricular: z
     .string({
       invalid_type_error: "La descripción debe ser un texto",
       required_error: "La descripción es obligatoria",
@@ -29,7 +29,7 @@ const unidadcurricularSchema = z.object({
     .min(20, "La descripción debe tener al menos 20 caracteres")
     .max(200, "La descripción no puede exceder los 200 caracteres"),
 
-  cargaHorasAcademicas: z
+  carga_horas_academicas: z
     .number({
       invalid_type_error:
         "La carga de horas de la unidad curricular debe ser un numero",
@@ -39,16 +39,16 @@ const unidadcurricularSchema = z.object({
     .min(2, "Lo minimo son 2 horas de 45min.")
     .max(4, "Lo maximo son 5 horas de 45min.")
     .positive(
-      "La carga de horas de la unidad curricular debe ser un numero positivo"
+      "La carga de horas de la unidad curricular debe ser un número positivo"
     ),
 
-  codigoUnidadCurricular: z
+  codigo_unidad_curricular: z
     .string({
       invalid_type_error: "El código debe ser un texto",
       required_error: "El código del Unidad Curricular es obligatorio",
     })
-    .min(3, "El código debe tener mínimo 3 caracteres") // Corregido: mínimo 5
-    .max(7, "El código debe tener máximo 5 caracteres") // Corregido: máximo 5
+    .min(3, "El código debe tener mínimo 3 caracteres")
+    .max(7, "El código debe tener máximo 7 caracteres")
     .regex(/^[A-Z0-9-]{3,7}$/, "Formato inválido. Use AAA-AAA o AAA-913")
     .trim()
     .toUpperCase(),

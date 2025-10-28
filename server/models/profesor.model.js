@@ -121,6 +121,35 @@ export default class ProfesorModel {
   /**
    * @static
    * @async
+   * @method mostrarDisponibilidad
+   * @description Obtener todos los profesores de la base de datos
+   * @returns {Promise<Object>} Lista de profesores formateada
+   */
+  static async mostrarDisponibilidad(id_profesor) {
+    try {
+      const { rows } = await client.query(
+        "SELECT * FROM vista_disponibilidad_docente WHERE id_profesor = $1",
+        [id_profesor]
+      );
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.mostrarDisponiblidad",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los profesores"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method obtenerConFiltros
    * @description Obtener profesores con filtros específicos
    * @param {Object} filtros - Filtros de búsqueda
@@ -314,7 +343,7 @@ export default class ProfesorModel {
       const values = [usuarioId, nombre, tipo];
 
       const { rows } = await client.query(query, values);
-      console.log(rows)
+      console.log(rows);
 
       return FormatResponseModel.respuestaPostgres(
         rows,

@@ -19,7 +19,7 @@ import ResponsiveAppBar from "../../components/navbar";
 import CustomLabel from "../../components/customLabel";
 import CustomButton from "../../components/customButton";
 import useApi from "../../hook/useApi"; // Added import for axios
-import asignarCoordinadorSchema from "../../schemas/asignarCoordinador.Schema";
+import { asignarCoordinadorSchema } from "../../schemas/coordinador.schema";
 
 export default function AsignarCoordinador() {
   const axios = useApi();
@@ -35,8 +35,8 @@ export default function AsignarCoordinador() {
     resolver: zodResolver(asignarCoordinadorSchema),
     mode: "onChange",
     defaultValues: {
-      idProfesor: "",
-      idPnf: "",
+      id_profesor: "",
+      id_pnf: "",
     },
   });
 
@@ -66,8 +66,7 @@ export default function AsignarCoordinador() {
 
         // Para PNFs - ajusta según tu estructura real
         if (resPnfs.pnf) {
-          if (Array.isArray(resPnfs.pnf))
-            datosPnfs = resPnfs.pnf;
+          if (Array.isArray(resPnfs.pnf)) datosPnfs = resPnfs.pnf;
         }
 
         console.log("Todos los profesores:", datosProfesores);
@@ -89,8 +88,8 @@ export default function AsignarCoordinador() {
 
       // Asegúrate de que los nombres de los campos coincidan con tu backend
       const payload = {
-        idProfesor: data.idProfesor,
-        idPnf: data.idPnf,
+        id_profesor: data.id_profesor,
+        id_pnf: data.id_pnf,
       };
 
       console.log("Payload:", payload);
@@ -226,18 +225,18 @@ export default function AsignarCoordinador() {
                     {/* Select Profesor */}
                     <Grid item xs={12} md={6}>
                       <Controller
-                        name="idProfesor"
+                        name="id_profesor"
                         control={control}
                         render={({ field }) => (
                           <CustomLabel
                             select
                             fullWidth
-                            id="idProfesor"
+                            id="id_profesor"
                             label="Profesor"
                             {...field}
-                            error={!!errors.idProfesor}
+                            error={!!errors.id_profesor}
                             helperText={
-                              errors.idProfesor?.message ||
+                              errors.id_profesor?.message ||
                               "Seleccione un profesor"
                             }
                             size={isMobile ? "small" : "medium"}
@@ -265,18 +264,18 @@ export default function AsignarCoordinador() {
                     {/* Select PNF */}
                     <Grid item xs={12} md={6}>
                       <Controller
-                        name="idPnf"
+                        name="id_pnf"
                         control={control}
                         render={({ field }) => (
                           <CustomLabel
                             select
                             fullWidth
-                            id="idPnf"
+                            id="id_pnf"
                             label="Programa Nacional de Formación (PNF)"
                             {...field}
-                            error={!!errors.idPnf}
+                            error={!!errors.id_pnf}
                             helperText={
-                              errors.idPnf?.message || "Seleccione un PNF"
+                              errors.id_pnf?.message || "Seleccione un PNF"
                             }
                             size={isMobile ? "small" : "medium"}
                           >

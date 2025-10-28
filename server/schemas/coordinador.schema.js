@@ -5,21 +5,21 @@ import z from "zod";
 const coordinadorSchema = profesorSchema.extend({
   id_pnf: z
     .number({
-      invalid_type_error: "El ID del Pos-Grado debe ser un número",
-      required_error: "El ID del Pos-Grado es obligatorio",
+      invalid_type_error: "El ID del PNF debe ser un número",
+      required_error: "El ID del PNF es obligatorio",
     })
-    .positive("El ID del Pos-Grado debe ser un número positivo"),
+    .positive("El ID del PNF debe ser un número positivo"),
 });
 
 export const asignarCoordinadorSchema = z.object({
-  idProfesor: z
+  id_profesor: z
     .number({
       invalid_type_error: "Debe seleccionar un profesor válido",
       required_error: "El profesor es obligatorio",
     })
     .int(),
 
-  idPnf: z
+  id_pnf: z
     .number({
       invalid_type_error: "Debe seleccionar un PNF válido",
       required_error: "El PNF es obligatorio",

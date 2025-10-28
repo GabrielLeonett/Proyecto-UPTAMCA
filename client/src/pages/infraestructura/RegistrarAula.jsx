@@ -46,7 +46,7 @@ export default function RegistrarAula() {
       }
     };
     fetchSedes();
-  }, []);
+  }, [axios]);
 
   const onSubmit = async (data) => {
     setRegistering(true);

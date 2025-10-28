@@ -1,6 +1,10 @@
 import { z } from "zod";
 import userSchema from "./user.schema.js";
 
+// Regex común para validación de texto
+const textoRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s.,()\-]+$/;
+const soloLetrasRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/;
+
 // Esquema para Pre-Grados
 export const preGradoSchema = z.object({
   id_pre_grado: z
@@ -11,15 +15,25 @@ export const preGradoSchema = z.object({
     .positive("El ID del Pre-Grado debe ser un número positivo")
     .optional(),
 
-  nombre_pre_grado: z.string({
-    invalid_type_error: "El nombre del Pre-Grado debe ser texto",
-    required_error: "El nombre del Pre-Grado es obligatorio",
-  }),
+  nombre_pre_grado: z
+    .string({
+      invalid_type_error: "El nombre del Pre-Grado debe ser texto",
+      required_error: "El nombre del Pre-Grado es obligatorio",
+    })
+    .regex(textoRegex, {
+      message: "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos"
+    })
+    .optional(),
 
-  tipo_pre_grado: z.string({
-    invalid_type_error: "El tipo del Pre-Grado debe ser texto",
-    required_error: "El tipo del Pre-Grado es obligatorio",
-  }),
+  tipo_pre_grado: z
+    .string({
+      invalid_type_error: "El tipo del Pre-Grado debe ser texto",
+      required_error: "El tipo del Pre-Grado es obligatorio",
+    })
+    .regex(soloLetrasRegex, {
+      message: "El tipo del Pre-Grado solo puede contener letras y espacios"
+    })
+    .optional(),
 });
 
 // Esquema para Pos-Grados
@@ -32,15 +46,25 @@ export const posGradoSchema = z.object({
     .positive("El ID del Pos-Grado debe ser un número positivo")
     .optional(),
 
-  nombre_pos_grado: z.string({
-    invalid_type_error: "El nombre del Pos-Grado debe ser texto",
-    required_error: "El nombre del Pos-Grado es obligatorio",
-  }),
+  nombre_pos_grado: z
+    .string({
+      invalid_type_error: "El nombre del Pos-Grado debe ser texto",
+      required_error: "El nombre del Pos-Grado es obligatorio",
+    })
+    .regex(textoRegex, {
+      message: "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos"
+    })
+    .optional(),
 
-  tipo_pos_grado: z.string({
-    invalid_type_error: "El tipo del Pos-Grado debe ser texto",
-    required_error: "El tipo del Pos-Grado es obligatorio",
-  }),
+  tipo_pos_grado: z
+    .string({
+      invalid_type_error: "El tipo del Pos-Grado debe ser texto",
+      required_error: "El tipo del Pos-Grado es obligatorio",
+    })
+    .regex(soloLetrasRegex, {
+      message: "El tipo del Pos-Grado solo puede contener letras y espacios"
+    })
+    .optional(),
 });
 
 // Esquema para Áreas de Conocimiento
@@ -52,49 +76,79 @@ export const areaConocimientoSchema = z.object({
     })
     .positive("El ID del Área de Conocimiento debe ser un número positivo")
     .optional(),
-
-  area_conocimiento: z.string({
-    invalid_type_error: "El área de conocimiento debe ser texto",
-    required_error: "El área de conocimiento es obligatoria",
-  }),
+    
+  area_conocimiento: z
+    .string({
+      invalid_type_error: "El área de conocimiento debe ser texto",
+      required_error: "El área de conocimiento es obligatoria",
+    })
+    .regex(soloLetrasRegex, {
+      message: "El área de conocimiento solo puede contener letras y espacios",
+    })
+    .optional(),
 });
 
 // Esquema para crear nueva Área de Conocimiento (sin ID)
 export const nuevaAreaConocimientoSchema = z.object({
-  area_conocimiento: z.string({
-    invalid_type_error: "El área de conocimiento debe ser texto",
-    required_error: "El área de conocimiento es obligatoria",
-  }).min(1, "El área de conocimiento no puede estar vacía"),
+  area_conocimiento: z
+    .string({
+      invalid_type_error: "El área de conocimiento debe ser texto",
+      required_error: "El área de conocimiento es obligatoria",
+    })
+    .min(1, "El área de conocimiento no puede estar vacía")
+    .regex(soloLetrasRegex, {
+      message: "El área de conocimiento solo puede contener letras y espacios",
+    }),
 });
 
 // Esquema para crear nuevo Pregrado (sin ID)
 export const nuevoPregradoSchema = z.object({
-  nombre: z.string({
-    invalid_type_error: "El nombre del Pre-Grado debe ser texto",
-    required_error: "El nombre del Pre-Grado es obligatorio",
-  }).min(1, "El nombre del Pre-Grado no puede estar vacío"),
+  nombre: z
+    .string({
+      invalid_type_error: "El nombre del Pre-Grado debe ser texto",
+      required_error: "El nombre del Pre-Grado es obligatorio",
+    })
+    .min(1, "El nombre del Pre-Grado no puede estar vacío")
+    .regex(textoRegex, {
+      message: "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos"
+    }),
 
-  tipo: z.string({
-    invalid_type_error: "El tipo del Pre-Grado debe ser texto",
-    required_error: "El tipo del Pre-Grado es obligatorio",
-  }).min(1, "El tipo del Pre-Grado no puede estar vacío"),
+  tipo: z
+    .string({
+      invalid_type_error: "El tipo del Pre-Grado debe ser texto",
+      required_error: "El tipo del Pre-Grado es obligatorio",
+    })
+    .min(1, "El tipo del Pre-Grado no puede estar vacío")
+    .regex(soloLetrasRegex, {
+      message: "El tipo del Pre-Grado solo puede contener letras y espacios"
+    }),
 });
 
 // Esquema para crear nuevo Posgrado (sin ID)
 export const nuevoPosgradoSchema = z.object({
-  nombre: z.string({
-    invalid_type_error: "El nombre del Pos-Grado debe ser texto",
-    required_error: "El nombre del Pos-Grado es obligatorio",
-  }).min(1, "El nombre del Pos-Grado no puede estar vacío"),
+  nombre: z
+    .string({
+      invalid_type_error: "El nombre del Pos-Grado debe ser texto",
+      required_error: "El nombre del Pos-Grado es obligatorio",
+    })
+    .min(1, "El nombre del Pos-Grado no puede estar vacío")
+    .regex(textoRegex, {
+      message: "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos"
+    }),
 
-  tipo: z.string({
-    invalid_type_error: "El tipo del Pos-Grado debe ser texto",
-    required_error: "El tipo del Pos-Grado es obligatorio",
-  }).min(1, "El tipo del Pos-Grado no puede estar vacío"),
+  tipo: z
+    .string({
+      invalid_type_error: "El tipo del Pos-Grado debe ser texto",
+      required_error: "El tipo del Pos-Grado es obligatorio",
+    })
+    .min(1, "El tipo del Pos-Grado no puede estar vacío")
+    .regex(soloLetrasRegex, {
+      message: "El tipo del Pos-Grado solo puede contener letras y espacios"
+    }),
 });
 
 // Esquema principal para Profesores
-const profesorSchema = userSchema.extend({
+export const profesorSchema = userSchema.extend({
   fecha_ingreso: z
     .string({
       required_error: "La fecha de ingreso es obligatoria",
@@ -126,6 +180,8 @@ const profesorSchema = userSchema.extend({
       z.string({
         required_error: "El Área de conocimiento es requerida",
         invalid_type_error: "El área de conocimiento debe ser texto",
+      }).regex(soloLetrasRegex, {
+        message: "El área de conocimiento solo puede contener letras y espacios"
       }),
       { required_error: "El Área de conocimiento es requerida" }
     )
@@ -137,5 +193,3 @@ const profesorSchema = userSchema.extend({
 
   pos_grado: z.array(posGradoSchema).optional(),
 });
-
-export default profesorSchema;

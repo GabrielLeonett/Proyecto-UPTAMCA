@@ -20,6 +20,7 @@ const {
   registrarDisponibilidad,
   actualizarProfesor,
   destituirProfesor,
+  mostrarDisponibilidad,
 } = ProfesorController;
 
 // Creación del router para las rutas de profesores
@@ -196,6 +197,25 @@ profesorRouter.get(
 
 /**
  * @name POST /profesores/:id/disponibilidad
+ * @description Mostrar la disponibilidad horaria de un profesor
+ * @param {number} id - ID del profesor
+ * @body {Object} Datos de disponibilidad
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/profesores/:id/disponibilidad",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarDisponibilidad
+);
+
+/**
+ * @name POST /profesores/:id/disponibilidad
  * @description Registrar disponibilidad horaria de un profesor
  * @param {number} id - ID del profesor
  * @body {Object} Datos de disponibilidad
@@ -212,7 +232,6 @@ profesorRouter.post(
   ]),
   registrarDisponibilidad
 );
-
 
 /**
  * =============================================

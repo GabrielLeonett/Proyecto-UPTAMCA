@@ -13,21 +13,27 @@ const destitucionSchema = z.object({
   }),
   
   razon: z.string({
-    required_error: "La razón es requerida"
-  }).min(10, "La razón debe tener al menos 10 caracteres")
-    .max(1000, "La razón no puede exceder 1000 caracteres"),
+    required_error: "La razón es requerida",
+    invalid_type_error: "La razón debe ser un texto"
+  })
+  .min(10, "La razón debe tener al menos 10 caracteres")
+  .max(1000, "La razón no puede exceder 1000 caracteres"),
   
-  observaciones: z.string()
-    .max(2000, "Las observaciones no pueden exceder 2000 caracteres")
-    .optional()
-    .nullable()
-    .default(null),
+  observaciones: z.string({
+    invalid_type_error: "Las observaciones deben ser un texto"
+  })
+  .max(2000, "Las observaciones no pueden exceder 2000 caracteres")
+  .optional()
+  .nullable()
+  .default(null),
   
-  fecha_efectiva: z.string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
-    .optional()
-    .nullable()
-    .default(null)
+  fecha_efectiva: z.string({
+    invalid_type_error: "La fecha efectiva debe ser un texto"
+  })
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)")
+  .optional()
+  .nullable()
+  .default(null)
 });
 
 export default destitucionSchema;

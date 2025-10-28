@@ -19,7 +19,10 @@ export default class ProfesorService {
     let imagenPath = null;
 
     try {
-      console.log("🔍 [registrarProfesor] Iniciando registro de profesor...", datos.areas_de_conocimiento);
+      console.log(
+        "🔍 [registrarProfesor] Iniciando registro de profesor...",
+        datos.areas_de_conocimiento
+      );
       const Pregrados = parseJSONField(datos.pre_grado, "Pre-Grados");
       const Posgrado = parseJSONField(datos.pos_grado, "Pos-Grados");
       const Areasconocimiento = parseJSONField(
@@ -303,6 +306,86 @@ export default class ProfesorService {
   /**
    * @static
    * @async
+   * @method mostrarDisponibilidad
+   * @description Obtener la disponibilidad de un profesor con validación de parámetros
+   * @param {number|string} idProfesor - ID del profesor
+   * @returns {Object} Resultado de la operación
+   */
+  static async mostrarDisponibilidad(idProfesor) {
+    try {
+      // 1. Validar parámetro de entrada
+      if (!idProfesor) {
+        return FormatterResponseService.validationError(
+          ["El ID del profesor es requerido"],
+          "Error en el parámetro de entrada"
+        );
+      }
+
+      // 2. Validar formato del ID (asumiendo que validateId retorna { isValid: boolean, errors: array })
+      const validacion = ValidationService.validateId(
+        idProfesor,
+        "id de profesor"
+      );
+
+      // CORRECCIÓN: La lógica estaba invertida - si NO es válido, debe retornar error
+      if (!validacion.isValid) {
+        return FormatterResponseService.validationError(
+          validacion.errors,
+          "Error en el ID del profesor"
+        );
+      }
+
+      // 3. Obtener disponibilidad del modelo
+      const respuestaModel = await ProfesorModel.mostrarDisponibilidad(
+        idProfesor
+      );
+
+      // 4. Verificar si el modelo retornó un error
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // 5. Verificar si hay datos
+      if (!respuestaModel.data || respuestaModel.data.length === 0) {
+        return FormatterResponseService.success(
+          { disponibilidades: [] },
+          "No se encontró disponibilidad para el profesor",
+          {
+            status: 200,
+            title: "Disponibilidad del Profesor",
+          }
+        );
+      }
+
+      // 6. Retornar éxito con los datos
+      return FormatterResponseService.success(
+        {
+          disponibilidades: respuestaModel.data,
+        },
+        "Disponibilidad obtenida exitosamente",
+        {
+          status: 200,
+          title: "Disponibilidad del Profesor",
+        }
+      );
+    } catch (error) {
+      console.error("Error en servicio mostrarDisponibilidad:", error);
+
+      // Retornar error controlado en lugar de lanzar excepción
+      return FormatterResponseService.error(
+        "Error interno al obtener la disponibilidad",
+        {
+          status: 500,
+          title: "Error del Servidor",
+          details: error.message,
+        }
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method obtenerConFiltros
    * @description Obtener profesores con filtros validados
    * @param {Object} filtros - Filtros de búsqueda
@@ -578,7 +661,9 @@ export default class ProfesorService {
         titulo: "Sus Datos Han Sido Actualizados",
         tipo: "profesor_actualizado_propio",
         user_id: datos.cedula || idProfesor,
-        contenido: `Se han actualizado sus datos personales en el sistema. Campos modificados: ${camposActualizados.join(', ')}`,
+        contenido: `Se han actualizado sus datos personales en el sistema. Campos modificados: ${camposActualizados.join(
+          ", "
+        )}`,
         metadatos: {
           profesor_id: datos.id_profesor,
           campos_actualizados: camposActualizados,
@@ -694,8 +779,10 @@ export default class ProfesorService {
       // Enviar notificaciones de eliminación/destitución
       const notificationService = new NotificationService();
 
-      const accionTipo = datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido";
-      const accionContenido = datos.tipo_accion === "eliminar" ? "eliminado" : "destituido";
+      const accionTipo =
+        datos.tipo_accion === "eliminar" ? "Eliminado" : "Destituido";
+      const accionContenido =
+        datos.tipo_accion === "eliminar" ? "eliminado" : "destituido";
 
       // Notificación individual para el profesor afectado
       await notificationService.crearNotificacionIndividual({
@@ -736,8 +823,9 @@ export default class ProfesorService {
 
       return FormatterResponseService.success(
         {
-          message: `Profesor ${datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
-            } exitosamente`,
+          message: `Profesor ${
+            datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+          } exitosamente`,
           profesor: {
             id: datos.id_profesor,
             cedula: profesor.cedula,
@@ -745,7 +833,8 @@ export default class ProfesorService {
             accion: datos.tipo_accion,
           },
         },
-        `Profesor ${datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
+        `Profesor ${
+          datos.tipo_accion === "eliminar" ? "eliminado" : "destituido"
         } exitosamente`,
         {
           status: 200,

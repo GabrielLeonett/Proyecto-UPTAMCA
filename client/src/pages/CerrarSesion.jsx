@@ -42,9 +42,9 @@ export default function CerrarSesion() {
           <CustomButton
             variant="contained"
             className="h-12 w-full rounded-xl py-3 font-medium"
-            onClick={() => navigate("/iniciar-sesion") }
+            onClick={() => navigate("/")}
           >
-            Ir a Iniciar Sesión
+            Ir al Inicio
           </CustomButton>
         </Box>
       </Box>
