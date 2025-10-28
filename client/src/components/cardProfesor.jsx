@@ -7,32 +7,41 @@ import {
   AccordionSummary,
   AccordionDetails,
   AccordionActions,
-  Button,
   Snackbar,
   Alert,
-  IconButton
+  IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import EditIcon from "@mui/icons-material/Edit";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi";
 import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
-import EditIcon from "@mui/icons-material/Edit";
+import ModalEditarCampoProfesor from "../components/ModalEditarCampoProfesor.jsx";
+import CustomButton from "./customButton.jsx";
 
 export default function CardProfesor({ profesor }) {
   const axios = useApi(false);
   const theme = useTheme();
-  const [profesorOriginal, setProfesorOriginal] = useState(profesor);
-  const [profesorEdit, setProfesorEdit] = useState(); 
-  const [avatarUrl, setAvatarUrl] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
-  const [mensaje, setMensaje] = useState(null);
   const navigate = useNavigate();
+
+  const [profesorActual, setProfesorActual] = useState(profesor);
+  const [avatarUrl, setAvatarUrl] = useState(null);
+  const [openModalEliminar, setOpenModalEliminar] = useState(false);
+  const [openModalEditar, setOpenModalEditar] = useState(false);
+  const [campoEditando, setCampoEditando] = useState(null);
+  const [valorEditando, setValorEditando] = useState("");
+  const [profesorEditado, setProfesorEditado] = useState(false);
+  const [mensaje, setMensaje] = useState(null);
   const hasFetched = useRef(false);
 
-  // Cargar imagen
+  useEffect(() => {
+    console.log(profesorActual);
+  }, []);
+
+  // Cargar imagen del profesor
   useEffect(() => {
     if (hasFetched.current || !profesor?.cedula) return;
     const loadProfessorImage = async () => {
@@ -42,7 +51,6 @@ export default function CardProfesor({ profesor }) {
           `/profesores/${profesor.cedula}/imagen`,
           { responseType: "blob" }
         );
-        console.log(response.data);
         const imageUrl = URL.createObjectURL(response.data);
         setAvatarUrl(imageUrl);
       } catch (error) {
@@ -58,11 +66,38 @@ export default function CardProfesor({ profesor }) {
     };
   }, [avatarUrl]);
 
-  // Modal eliminar
-  const handleOpenModal = () => setOpenModal(true);
-  const handleCloseModal = () => setOpenModal(false);
+  // Abrir modal de edición
+  const handleOpenModalEditar = (campo, valorActual) => {
+    setCampoEditando(campo);
+    setValorEditando(valorActual || "");
+    setOpenModalEditar(true);
+  };
 
-  // Cuando se elimina correctamente → redirige a Profesores Eliminados
+  // Guardar el campo editado
+  const handleGuardarCampo = (campo, nuevoValor) => {
+    const actualizado = { ...profesorActual, [campo]: nuevoValor };
+    setProfesorActual(actualizado);
+    setProfesorEditado(true);
+    setMensaje(`Campo "${campo}" actualizado correctamente`);
+    setOpenModalEditar(false); // ✅ cerrar el modal después de guardar
+  };
+
+  // Guardar cambios en servidor
+  const handleGuardarCambiosServidor = async () => {
+    try {
+      await axios.put(
+        `/profesores/${profesorActual.id_profesor}`,
+        profesorActual
+      );
+      setProfesorEditado(false);
+      setMensaje("Cambios guardados correctamente");
+    } catch (error) {
+      console.error("Error al guardar cambios:", error);
+      setMensaje("Error al guardar cambios");
+    }
+  };
+
+  // Eliminar profesor
   const handleProfesorEliminado = () => {
     setMensaje("Profesor eliminado correctamente");
     setTimeout(() => {
@@ -70,7 +105,7 @@ export default function CardProfesor({ profesor }) {
     }, 1200);
   };
 
-  // Iniciales del avatar
+  // Iniciales del profesor
   const getInitials = () => {
     const firstname = profesor?.nombres?.charAt(0) || "N";
     const lastname = profesor?.apellidos?.charAt(0) || "E";
@@ -89,19 +124,19 @@ export default function CardProfesor({ profesor }) {
         overflow: "hidden",
       }}
     >
-      {/* Imagen */}
+      {/* Imagen del profesor */}
       <Box
         sx={{
           position: "relative",
-          overflow: "hidden",
           width: "100%",
           height: "300px",
+          overflow: "hidden",
         }}
       >
         <Avatar
           variant="square"
           src={avatarUrl || undefined}
-          alt={`${profesor?.nombres} ${profesor?.apellidos}`}
+          alt={`${profesorActual?.nombres} ${profesorActual?.apellidos}`}
           sx={{
             width: "100%",
             height: "100%",
@@ -112,7 +147,6 @@ export default function CardProfesor({ profesor }) {
             color: "white",
           }}
           onError={(e) => {
-            console.log("Error cargando imagen, mostrando iniciales");
             setAvatarUrl(null);
             e.target.style.display = "none";
           }}
@@ -128,7 +162,7 @@ export default function CardProfesor({ profesor }) {
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)",
+              "linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent)",
           }}
         />
         <Typography
@@ -140,15 +174,14 @@ export default function CardProfesor({ profesor }) {
             color: "white",
             fontWeight: "bold",
             textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-            zIndex: 1,
           }}
         >
-          {profesor?.nombres?.split(" ")[0] || "No"}{" "}
-          {profesor?.apellidos?.split(" ")[0] || "Especificado"}
+          {profesorActual?.nombres?.split(" ")[0] || "No"}{" "}
+          {profesorActual?.apellidos?.split(" ")[0] || "Especificado"}
         </Typography>
       </Box>
 
-      {/* Contenido */}
+      {/* Información */}
       <Box
         sx={{
           padding: "20px",
@@ -157,134 +190,204 @@ export default function CardProfesor({ profesor }) {
           gap: 2,
         }}
       >
-        {/* Acordeones */}
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-          <Accordion sx={{ "&:before": { display: "none" } }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">Información Personal</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="body2">
-                <strong>Cédula:</strong> {profesor?.cedula || "No especificado"}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Género:</strong> {profesor?.genero || "No especificado"}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Fecha Nac.:</strong>{" "}
-                {profesor?.fecha_nacimiento
-                  ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
-                  : "No especificado"}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Email:</strong> {profesor?.email || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+        {/* Información Personal */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Información Personal</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography>
+              <strong>Cédula:</strong>{" "}
+              {profesorActual?.cedula || "No especificado"}
+            </Typography>
+            <Typography>
+              <strong>Género:</strong>{" "}
+              {profesorActual?.genero || "No especificado"}
+            </Typography>
+            <Typography>
+              <strong>Fecha Nac.:</strong>{" "}
+              {profesor?.fecha_nacimiento
+                ? dayjs(profesor.fecha_nacimiento).format("DD/MM/YYYY")
+                : "No especificado"}
+            </Typography>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Email:</strong>{" "}
+              {profesorActual?.email || "No especificado"}
+              <Tooltip title="Editar email" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar("email", profesorActual.email)
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
 
-          <Accordion sx={{ "&:before": { display: "none" } }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">Información Educativa</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="body2">
-                <strong>Áreas:</strong>{" "}
-                {profesor?.areas_de_conocimiento || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
-              <Typography variant="body2">
-                <strong>Pre-Grado:</strong>{" "}
-                {profesor?.pre_grados || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
-              <Typography variant="body2">
-                <strong>Pos-Grado:</strong>{" "}
-                {profesorActual?.pos_grados || "No especificado"}
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+        {/* Información Educativa */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Información Educativa</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Áreas:</strong>{" "}
+              {profesorActual?.areas_de_conocimiento || "No especificado"}
+              <Tooltip title="Editar áreas" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar(
+                      "areas_de_conocimiento",
+                      profesorActual.areas_de_conocimiento
+                    )
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Pre-Grados:</strong>{" "}
+              {profesorActual?.pre_grados || "No especificado"}
+              <Tooltip title="Editar pregrado" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar(
+                      "pre_grados",
+                      profesorActual.pre_grados
+                    )
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Pos-Grados:</strong>{" "}
+              {profesorActual?.pos_grados || "No especificado"}
+              <Tooltip title="Editar pregrado" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar(
+                      "pos_grados",
+                      profesorActual.pos_grados
+                    )
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
 
-          <Accordion sx={{ "&:before": { display: "none" } }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1">
-                Información Profesional
-              </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="body2">
-                <strong>Fecha Ingreso:</strong>{" "}
-                {profesor?.fecha_ingreso
-                  ? dayjs(profesor.fecha_ingreso).format("DD/MM/YYYY")
-                  : "No especificado"}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Categoría:</strong>{" "}
-                {profesor?.categoria || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
-              <Typography variant="body2">
-                <strong>Dedicación:</strong>{" "}
-                {profesor?.dedicacion || "No especificado"}
-                <Tooltip title="Editar email" arrow>
-                  <IconButton size="small" sx={{ padding: "4px" }}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Typography>
-            </AccordionDetails>
-          </Accordion>
+        {/* Información Profesional */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Información Profesional</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Categoría:</strong>{" "}
+              {profesorActual?.categoria || "No especificado"}
+              <Tooltip title="Editar categoría" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar("categoria", profesorActual.categoria)
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+            <Typography sx={{ display: "flex", alignItems: "center" }}>
+              <strong>Dedicación:</strong>{" "}
+              {profesorActual?.dedicacion || "No especificado"}
+              <Tooltip title="Editar dedicación" arrow>
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    handleOpenModalEditar(
+                      "dedicacion",
+                      profesorActual.dedicacion
+                    )
+                  }
+                >
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
 
-          {/* Eliminar profesor */}
-          <Accordion sx={{ "&:before": { display: "none" } }}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography variant="subtitle1" color="error">
-                Eliminar Profesor
-              </Typography>
-            </AccordionSummary>
-            <AccordionActions>
-              <Button
-                variant="contained"
-                color="error"
-                onClick={handleOpenModal}
-                fullWidth
-                size="small"
-              >
-                Eliminar
-              </Button>
-            </AccordionActions>
-          </Accordion>
-        </Box>
+        {/* Acciones */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1" color="primary">
+              Acciones Profesor
+            </Typography>
+          </AccordionSummary>
+          <AccordionActions>
+            <CustomButton
+              tipo="error"
+              onClick={() => setOpenModalEliminar(true)}
+              fullWidth
+            >
+              Eliminar
+            </CustomButton>
+            <CustomButton
+              variant="contained"
+              fullWidth
+              onClick={() =>
+                navigate("/academico/profesores/disponibilidad", {
+                  state: { idProfesor: profesorActual.id_profesor },
+                })
+              }
+            >
+              Disponibilidad
+            </CustomButton>
+          </AccordionActions>
+        </Accordion>
+
+        {profesorEditado && (
+          <CustomButton
+            tipo="success"
+            variant="contained"
+            onClick={handleGuardarCambiosServidor}
+          >
+            Guardar Cambios
+          </CustomButton>
+        )}
       </Box>
+
+      {/* ✅ Modal editar campo */}
+      <ModalEditarCampoProfesor
+        open={openModalEditar}
+        onClose={() => setOpenModalEditar(false)}
+        campo={campoEditando}
+        valorActual={valorEditando}
+        onGuardar={handleGuardarCampo}
+      />
 
       {/* Modal eliminar */}
       <ModalEliminarProfe
-        profesor={profesor}
-        open={openModal}
-        onClose={handleCloseModal}
-        onEliminado={handleProfesorEliminado} // 🔹 Nuevo callback
+        profesor={profesorActual}
+        open={openModalEliminar}
+        onClose={() => setOpenModalEliminar(false)}
+        onEliminado={handleProfesorEliminado}
       />
 
       {/* Snackbar */}
       <Snackbar
         open={!!mensaje}
-        autoHideDuration={2000}
+        autoHideDuration={2500}
         onClose={() => setMensaje(null)}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
