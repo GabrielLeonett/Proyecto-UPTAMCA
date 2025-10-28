@@ -75,42 +75,42 @@ export default function RegisterSede() {
             <Box className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6">
               <CustomLabel
                 id="nombre de la sede"
-                name="nombreSede"
+                name="nombre_sede"
                 label="Nombre de la Sede"
                 type="text"
                 variant="outlined"
-                {...register("nombreSede")}
-                error={!!errors.nombreSede}
+                {...register("nombre_sede")}
+                error={!!errors.nombre_sede}
                 helperText={
-                  errors.nombreSede?.message ||
+                  errors.nombre_sede?.message ||
                   "Ingrese el nombre de la sede completos"
                 }
               />
 
               <CustomLabel
                 id="ubicacion de la sede"
-                name="ubicacionSede"
+                name="ubicacion_sede"
                 label="Ubicación de la Sede"
                 type="text"
                 variant="outlined"
-                {...register("UbicacionSede")}
-                error={!!errors.UbicacionSede}
+                {...register("ubicacion_sede")}
+                error={!!errors.ubicacion_sede}
                 helperText={
-                  errors.UbicacionSede?.message ||
+                  errors.ubicacion_sede?.message ||
                   "Ingrese la ubicación de la sede completas"
                 }
               />
 
               <CustomLabel
                 id="enlace google maps"
-                name="GoogleSede"
-                label="GoogleSede"
+                name="google_sede"
+                label="google_sede"
                 type="text"
                 variant="outlined"
-                {...register("GoogleSede")}
-                error={!!errors.direccion}
+                {...register("google_sede")}
+                error={!!errors.google_sede}
                 helperText={
-                  errors.direccion?.message ||
+                  errors.google_sede?.message ||
                   "Ingrese el enlace de Google Maps"
                 }
               />

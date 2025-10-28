@@ -291,9 +291,9 @@ class DocumentServices {
 
     // Crear fila de información (PNF, Trayecto, Sección)
     const crearFilaInformacion = (numColumnas) => {
-      const textoInformacion = `PNF EN ${PNF.toUpperCase()} TRAVECTO ${Trayecto} SECCIÓN ${
-        Seccion
-      }`;
+      const textoInformacion = `PNF EN ${PNF.nombre_pnf.toUpperCase()} TRAYECTO ${
+        Trayecto.valor_trayecto
+      } SECCIÓN ${Seccion.seccion}`;
 
       return new TableRow({
         children: [
@@ -392,25 +392,31 @@ class DocumentServices {
           const celdaInfo = dia.horas[hora];
           const rowSpanInfo = rowSpansActivos[diaIndex];
 
-          // Si hay un rowSpan activo, decrementar y saltar esta celda
           if (rowSpanInfo.activo) {
             rowSpanInfo.filasRestantes--;
             if (rowSpanInfo.filasRestantes === 0) {
               rowSpanInfo.activo = false;
             }
-            return; // No agregar celda para este día
-          }
-
-          if (celdaInfo?.esContinuacion) {
-            // No hacer nada - la celda ya está cubierta por rowSpan
-            return;
+            // Agregar celda placeholder para mantener la estructura
+            celdas.push(
+              DocumentServices.crearCeldaEstilizada([
+                DocumentServices.crearParrafoEstilizado(""),
+              ])
+            );
+          } else if (celdaInfo?.esContinuacion) {
+            // No hacer nada - ya está cubierto
+            celdas.push(
+              DocumentServices.crearCeldaEstilizada([
+                DocumentServices.crearParrafoEstilizado(""),
+              ])
+            );
           } else if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
             // Nueva clase que ocupa múltiples filas
             const clase = celdaInfo.datosClase;
             const contenido = [
               DocumentServices.crearParrafoEstilizado(
                 DocumentServices.crearTextoEstilizado(
-                  clase.nombre_unidad_curricular || clase.materia || "Clase",
+                  clase.nombreUnidadCurricular || clase.materia || "Clase",
                   { bold: true, size: ESTILOS.tamanos.contenido }
                 )
               ),
@@ -424,11 +430,11 @@ class DocumentServices {
                     ),
                   ]
                 : []),
-              ...(clase.aula
+              ...(clase.codigoAula
                 ? [
                     DocumentServices.crearParrafoEstilizado(
                       DocumentServices.crearTextoEstilizado(
-                        `Aula: ${clase.aula}`,
+                        `Aula: ${clase.codigoAula}`,
                         {
                           size: ESTILOS.tamanos.detalle,
                         }
@@ -572,7 +578,7 @@ class DocumentServices {
     const [horaFin, minFin] = turno.horaFin.split(":");
 
     const MinutosInicio = UTILS.horasMinutos(horaInicio, minInicio);
-    const MinutosFin = UTILS.horasMinutos(horaFin, minFin);
+    const MinutosFin = UTILS.horasMinutos(horaFin, minFin); // ← ¿hay un typo aquí? debería ser horasMinutos
 
     const horaInicioHHMM = UTILS.calcularHorasHHMM(MinutosInicio);
     const horaFinHHMM = UTILS.calcularHorasHHMM(MinutosFin);
@@ -581,13 +587,13 @@ class DocumentServices {
     let horaActual = horaInicioHHMM;
 
     while (horaActual <= horaFinHHMM) {
+      // ← Este es el problema principal
       horas.push(horaActual);
       const horasActual = Math.floor(horaActual / 100);
       const minutosActual = horaActual % 100;
       const minutosTotales = horasActual * 60 + minutosActual + 45;
       horaActual = UTILS.calcularHorasHHMM(minutosTotales);
     }
-
     return horas;
   }
 }

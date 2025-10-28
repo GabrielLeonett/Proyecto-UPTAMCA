@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const sedeSchema = z.object({
-  nombreSede: z
+  nombre_sede: z
     .string({
       invalid_type_error: "El nombre de la sede debe ser un texto",
       required_error: "El nombre de la sede es obligatorio",
@@ -12,7 +12,7 @@ const sedeSchema = z.object({
     .max(100, {
       message: "El nombre de la sede debe tener como máximo 100 caracteres",
     }),
-  UbicacionSede: z
+  ubicacion_sede: z
     .string({
       invalid_type_error: "La ubicación de la sede debe ser un texto",
       required_error: "La ubicación de la sede es obligatoria",
@@ -23,7 +23,7 @@ const sedeSchema = z.object({
     .max(200, {
       message: "La ubicación de la sede debe tener como máximo 200 caracteres",
     }),
-  GoogleSede: z
+  google_sede: z
     .string({
       invalid_type_error: "El enlace de Google Maps debe ser un texto",
       required_error: "El enlace de Google Maps es obligatorio",
@@ -32,7 +32,7 @@ const sedeSchema = z.object({
     .max(300, {
       message: "El enlace de Google Maps debe tener como máximo 300 caracteres",
     }),
-  CiudadSede: z.enum(["Los Teques", "Carrizal", "San Antonio de los Altos"], {
+  ciudad_sede: z.enum(["Los Teques", "Carrizal", "San Antonio de los Altos"], {
     invalid_type_error:
       "La ciudad de la sede debe ser una de las opciones predefinidas",
     required_error: "La ciudad de la sede es obligatoria",

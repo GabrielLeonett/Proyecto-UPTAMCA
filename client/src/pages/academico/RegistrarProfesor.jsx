@@ -9,7 +9,7 @@ import CustomButton from "../../components/customButton";
 import ResponsiveAppBar from "../../components/navbar";
 import MenuItem from "@mui/material/MenuItem";
 import { zodResolver } from "@hookform/resolvers/zod";
-import profesorSchema from "../../schemas/profesor.schema";
+import { profesorSchema } from "../../schemas/profesor.schema";
 import dayjs from "dayjs";
 import DeletableChips from "../../components/ui/customChip";
 import { Autocomplete, TextField } from "@mui/material";
@@ -792,6 +792,7 @@ export default function FormRegister() {
                         variant="contained"
                         className="h-12 w-32 rounded-xl font-medium"
                         tipo="primary"
+                        disabled={!isValid || isSubmitting}
                       >
                         {isSubmitting ? "Registrando..." : "Registrar"}
                       </CustomButton>

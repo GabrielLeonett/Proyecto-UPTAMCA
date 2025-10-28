@@ -2,10 +2,12 @@ import { z } from "zod";
 
 const aulaSchema = z.object({
   codigo: z
-    .string()
+    .string({
+      invalid_type_error: "El código debe ser un texto",
+      required_error: "El código es obligatorio"
+    })
     .min(3, { message: "El código debe tener al menos 3 caracteres" })
     .max(10, { message: "El código no puede tener más de 10 caracteres" })
-    .nonempty({ message: "El código es obligatorio" })
     .regex(/^[A-Z0-9\-_]+$/, {
       message:
         "El código solo puede contener letras mayúsculas, números, guiones y underscores",
@@ -13,18 +15,20 @@ const aulaSchema = z.object({
 
   tipo: z.enum(
     ["Convencional", "Interactiva", "Computación", "Exterior", "Laboratorio"],
-    { message: "Debe seleccionar un tipo de aula válido" }
+    { 
+      required_error: "El tipo de aula es obligatorio",
+      invalid_type_error: "Debe seleccionar un tipo de aula válido" 
+    }
   ),
 
   id_sede: z
     .number({
-      invalid_type_error: "Debe seleccionar una sede válida",
+      invalid_type_error: "El ID de la sede debe ser un número",
       required_error: "La sede es obligatoria",
     })
-    .int({ message: "El id de la sede debe ser un número entero" })
-    .positive({ message: "El id de la sede debe ser un número positivo" }),
+    .int({ message: "El ID de la sede debe ser un número entero" })
+    .positive({ message: "El ID de la sede debe ser un número positivo" }),
 
-  // ✅ AGREGAR: Validación para capacidad_aula
   capacidad: z
     .number({
       invalid_type_error: "La capacidad debe ser un número",

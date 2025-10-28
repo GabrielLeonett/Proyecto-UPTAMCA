@@ -122,6 +122,20 @@ export default class ProfesorController {
   }
 
   /**
+   * @name mostrarDisponibilidad
+   * @description Obtener disponibilida de un profesor 
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarDisponibilidad(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.mostrarDisponibilidad(req.params.id)
+    );
+  }
+
+  /**
    * @name buscarProfesor
    * @description Buscar profesores según criterios específicos
    * @param {Object} req - Objeto de solicitud Express

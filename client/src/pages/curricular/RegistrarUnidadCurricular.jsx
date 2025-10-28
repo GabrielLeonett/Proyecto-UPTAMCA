@@ -72,10 +72,10 @@ export default function RegistrarUnidadCurricular() {
                   fullWidth
                   label="Nombre de la Unidad Curricular"
                   variant="outlined"
-                  {...register("nombreUnidadCurricular")}
-                  error={!!errors.nombreUnidadCurricular}
+                  {...register("nombre_unidad_curricular")}
+                  error={!!errors.nombre_unidad_curricular}
                   helperText={
-                    errors.nombreUnidadCurricular?.message ||
+                    errors.nombre_unidad_curricular?.message ||
                     "Ingrese el nombre de la unidad curricular"
                   }
                   inputProps={{ "aria-required": "true" }}
@@ -85,10 +85,10 @@ export default function RegistrarUnidadCurricular() {
                   fullWidth
                   label="Código de la Unidad Curricular"
                   variant="outlined"
-                  {...register("codigoUnidadCurricular")}
-                  error={!!errors.codigoUnidadCurricular}
+                  {...register("codigo_unidad_curricular")}
+                  error={!!errors.codigo_unidad_curricular}
                   helperText={
-                    errors.codigoUnidadCurricular?.message ||
+                    errors.codigo_unidad_curricular?.message ||
                     "Código único de la unidad curricular"
                   }
                   inputProps={{ "aria-required": "true" }}
@@ -103,9 +103,9 @@ export default function RegistrarUnidadCurricular() {
                   variant="outlined"
                   multiline
                   rows={3}
-                  {...register("descripcionUnidadCurricular")}
-                  error={!!errors.descripcionUnidadCurricular}
-                  helperText={errors.descripcionUnidadCurricular?.message}
+                  {...register("descripcion_unidad_curricular")}
+                  error={!!errors.descripcion_unidad_curricular}
+                  helperText={errors.descripcion_unidad_curricular?.message}
                 />
 
                 <CustomLabel
@@ -113,7 +113,7 @@ export default function RegistrarUnidadCurricular() {
                   label="Carga Horas Académicas"
                   variant="outlined"
                   type="number"
-                  {...register("cargaHorasAcademicas", {
+                  {...register("carga_horas_academicas", {
                     valueAsNumber: true,
                     required: "Este campo es requerido",
                     min: {
@@ -121,8 +121,8 @@ export default function RegistrarUnidadCurricular() {
                       message: "La carga horaria no puede ser negativa",
                     },
                   })}
-                  error={!!errors.cargaHorasAcademicas}
-                  helperText={errors.cargaHorasAcademicas?.message}
+                  error={!!errors.carga_horas_academicas}
+                  helperText={errors.carga_horas_academicas?.message}
                   inputProps={{
                     "aria-required": "true",
                   }}

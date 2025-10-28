@@ -46,7 +46,7 @@ export default function CambiarContraseña() {
 
   // Observar los valores para mostrar feedback en tiempo real
   const passwordValue = watch("password");
-  const repetirPasswordValue = watch("repetirPassword");
+  const repetirPasswordValue = watch("repetir_password");
 
   return (
     <>
@@ -92,14 +92,14 @@ export default function CambiarContraseña() {
           >
             <CustomLabel
               fullWidth
-              id="antiguaPassword"
+              id="antigua_password"
               label="Antigua Contraseña"
               type="password"
               variant="outlined"
-              {...register("antiguaPassword")}
-              error={!!errors.antiguaPassword}
+              {...register("antigua_password")}
+              error={!!errors.antigua_password}
               helperText={
-                errors.antiguaPassword?.message ||
+                errors.antigua_password?.message ||
                 "Mínimo 8 caracteres alfanuméricos"
               }
             />
@@ -119,14 +119,14 @@ export default function CambiarContraseña() {
 
             <CustomLabel
               fullWidth
-              id="repetirPassword"
+              id="repetir_password"
               label="Repetir Contraseña"
               type="password"
               variant="outlined"
-              {...register("repetirPassword")}
-              error={!!errors.repetirPassword}
+              {...register("repetir_password")}
+              error={!!errors.repetir_password}
               helperText={
-                errors.repetirPassword?.message ||
+                errors.repetir_password?.message ||
                 "Confirma tu nueva contraseña"
               }
             />

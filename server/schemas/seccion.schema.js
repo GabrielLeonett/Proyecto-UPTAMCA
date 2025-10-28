@@ -1,21 +1,21 @@
 import z from "zod";
 
 const seccionSchema = z.object({
-    idTrayecto: z
+    id_trayecto: z
     .number({
       invalid_type_error: "El id de trayecto tiene que ser un numero",
       required_error: "El id de trayecto es obligatorio",
     })
     .positive("El id de trayecto tiene que se positivo"),
     
-    idTurno: z
+    id_turno: z
     .number({
       invalid_type_error: "El id de turno tiene que ser un numero",
       required_error: "El id de turno es obligatorio",
     })
     .positive("El id de turno tiene que se positivo").optional(),
 
-    poblacionEstudiantil: z.number({
+    poblacion_estudiantil: z.number({
       invalid_type_error: "La poblacion estudiantil tiene que ser un numero.",
       required_error: "La poblacion estudiantil es obligatoria",
     })

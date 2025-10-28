@@ -13,8 +13,9 @@ const disponibilidaddocenteSchema = z.object({
   dia_semana: z.enum(
     ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
     {
-      message: "Debe seleccionar un día de la semana válido",
-      errorMap: () => ({
+      required_error: "El día de la semana es obligatorio",
+      invalid_type_error: "Debe seleccionar un día de la semana válido",
+      error_map: () => ({
         message:
           "Días válidos: Lunes, Martes, Miércoles, Jueves, Viernes, Sábado",
       }),
@@ -22,16 +23,22 @@ const disponibilidaddocenteSchema = z.object({
   ),
 
   hora_inicio: z
-    .string()
-    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, {
-      message: "La hora de inicio debe tener formato HH:MM:SS(24 horas)",
+    .string({
+      invalid_type_error: "La hora de inicio debe ser un texto",
+      required_error: "La hora de inicio es obligatoria",
     })
-    .nonempty({ message: "La hora de inicio es obligatoria" }),
+    .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, {
+      message: "La hora de inicio debe tener formato HH:MM:SS (24 horas)",
+    }),
+
   hora_fin: z
-    .string()
+    .string({
+      invalid_type_error: "La hora de fin debe ser un texto",
+      required_error: "La hora de fin es obligatoria",
+    })
     .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, {
       message: "La hora de fin debe tener formato HH:MM:SS (24 horas)",
-    })
-    .nonempty({ message: "La hora de fin es obligatoria" }),
+    }),
 });
+
 export default disponibilidaddocenteSchema;

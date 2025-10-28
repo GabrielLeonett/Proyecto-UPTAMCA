@@ -24,10 +24,10 @@ export default function PnfForm() {
     resolver: zodResolver(pnfSchema),
     mode: "onChange",
     defaultValues: {
-      nombrePNF: "",
-      codigoPNF: "",
-      descripcionPNF: "",
-      sedePNF: "", // debe ser string vacío, no undefined
+      nombre_pnf: "",
+      codigo_pnf: "",
+      descripcion_pnf: "",
+      sede_pnf: "", // debe ser string vacío, no undefined
     },
   });
 
@@ -41,7 +41,7 @@ export default function PnfForm() {
     };
 
     fetchSedes();
-  }, []);
+  }, [axios]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -91,10 +91,10 @@ export default function PnfForm() {
                   fullWidth
                   label="Nombre del PNF"
                   variant="outlined"
-                  {...register("nombrePNF")}
-                  error={!!errors.nombrePNF}
+                  {...register("nombre_pnf")}
+                  error={!!errors.nombre_pnf}
                   helperText={
-                    errors.nombrePNF?.message || "Colocar el nombre del PNF"
+                    errors.nombre_pnf?.message || "Colocar el nombre del PNF"
                   }
                   inputProps={{ "aria-required": "true" }}
                 />
@@ -104,12 +104,12 @@ export default function PnfForm() {
                   type="number"
                   label="Número de trayectos"
                   variant="outlined"
-                  {...register("duracionTrayectosPNF", {
+                  {...register("duracion_trayectos_pnf", {
                     valueAsNumber: true, // convierte el valor automáticamente a número
                   })}
-                  error={!!errors.duracionTrayectosPNF}
+                  error={!!errors.duracion_trayectos_pnf}
                   helperText={
-                    errors.duracionTrayectosPNF?.message ||
+                    errors.duracion_trayectos_pnf?.message ||
                     "Colocar el número de trayectos"
                   }
                   inputProps={{
@@ -128,10 +128,10 @@ export default function PnfForm() {
                   fullWidth
                   label="Codigo de PNF"
                   variant="outlined"
-                  {...register("codigoPNF")}
-                  error={!!errors.codigoPNF}
+                  {...register("codigo_pnf")}
+                  error={!!errors.codigo_pnf}
                   helperText={
-                    errors.codigoPNF?.message || "Código único del PNF"
+                    errors.codigo_pnf?.message || "Código único del PNF"
                   }
                   inputProps={{ "aria-required": "true" }}
                 />
@@ -144,9 +144,9 @@ export default function PnfForm() {
                   variant="outlined"
                   multiline
                   rows={3}
-                  {...register("descripcionPNF")}
-                  error={!!errors.descripcionPNF}
-                  helperText={errors.descripcionPNF?.message}
+                  {...register("descripcion_pnf")}
+                  error={!!errors.descripcion_pnf}
+                  helperText={errors.descripcion_pnf?.message}
                 />
 
                 <CustomLabel
@@ -154,9 +154,9 @@ export default function PnfForm() {
                   fullWidth
                   label="Sede"
                   variant="outlined"
-                  {...register("sedePNF")}
-                  error={!!errors.sedePNF}
-                  helperText={errors.sedePNF?.message || "Seleccione una sede"}
+                  {...register("sede_pnf")}
+                  error={!!errors.sede_pnf}
+                  helperText={errors.sede_pnf?.message || "Seleccione una sede"}
                 >
                   {sedes.length > 0 ? (
                     sedes.map((sede) => (
