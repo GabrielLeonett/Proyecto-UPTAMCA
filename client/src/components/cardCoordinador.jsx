@@ -13,9 +13,6 @@ import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
-import coordinadorSchema from "../schemas/coordinador.schema";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 export function CardCoordinador({ coordinador }) {
   const theme = useTheme();

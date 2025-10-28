@@ -1,5 +1,5 @@
 import {
-  Grid,
+  Tooltip,
   Avatar,
   Typography,
   Box,
@@ -10,6 +10,7 @@ import {
   Button,
   Snackbar,
   Alert,
+  IconButton
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
@@ -18,10 +19,13 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi";
 import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
+import EditIcon from "@mui/icons-material/Edit";
 
 export default function CardProfesor({ profesor }) {
   const axios = useApi(false);
   const theme = useTheme();
+  const [profesorOriginal, setProfesorOriginal] = useState(profesor);
+  const [profesorEdit, setProfesorEdit] = useState(); 
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [mensaje, setMensaje] = useState(null);
@@ -38,7 +42,7 @@ export default function CardProfesor({ profesor }) {
           `/profesores/${profesor.cedula}/imagen`,
           { responseType: "blob" }
         );
-        console.log(response.data)
+        console.log(response.data);
         const imageUrl = URL.createObjectURL(response.data);
         setAvatarUrl(imageUrl);
       } catch (error) {
@@ -174,6 +178,11 @@ export default function CardProfesor({ profesor }) {
               </Typography>
               <Typography variant="body2">
                 <strong>Email:</strong> {profesor?.email || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
             </AccordionDetails>
           </Accordion>
@@ -186,14 +195,29 @@ export default function CardProfesor({ profesor }) {
               <Typography variant="body2">
                 <strong>Áreas:</strong>{" "}
                 {profesor?.areas_de_conocimiento || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
               <Typography variant="body2">
                 <strong>Pre-Grado:</strong>{" "}
                 {profesor?.pre_grados || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
               <Typography variant="body2">
                 <strong>Pos-Grado:</strong>{" "}
                 {profesor?.pos_grados || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
             </AccordionDetails>
           </Accordion>
@@ -214,10 +238,20 @@ export default function CardProfesor({ profesor }) {
               <Typography variant="body2">
                 <strong>Categoría:</strong>{" "}
                 {profesor?.categoria || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
               <Typography variant="body2">
                 <strong>Dedicación:</strong>{" "}
                 {profesor?.dedicacion || "No especificado"}
+                <Tooltip title="Editar email" arrow>
+                  <IconButton size="small" sx={{ padding: "4px" }}>
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Typography>
             </AccordionDetails>
           </Accordion>

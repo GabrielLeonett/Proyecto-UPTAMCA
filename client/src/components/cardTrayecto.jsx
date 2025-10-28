@@ -1,6 +1,8 @@
-import { Typography, Grid } from "@mui/material";
+import { Typography, Grid, Tooltip, IconButton} from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom"; // ✅ corregido
+import EditIcon from "@mui/icons-material/Edit";
+
 
 export default function CardTrayecto({ Trayecto, codigoPNF }) {
   const theme = useTheme();
@@ -28,7 +30,10 @@ export default function CardTrayecto({ Trayecto, codigoPNF }) {
         },
       }}
       onClick={() => {
-        navigate(`/formacion/programas/${codigoPNF}/trayecto/${Trayecto?.valor_trayecto}`, {state:{idTrayecto: Trayecto.id_trayecto}});
+        navigate(
+          `/formacion/programas/${codigoPNF}/trayecto/${Trayecto?.valor_trayecto}`,
+          { state: { idTrayecto: Trayecto.id_trayecto } }
+        );
       }}
     >
       <Typography
@@ -45,6 +50,14 @@ export default function CardTrayecto({ Trayecto, codigoPNF }) {
 
       <Typography variant="body2" sx={{ fontSize: 15 }} color="text.secondary">
         Población estudiantil: {Trayecto?.poblacion_estudiantil || 0}
+      </Typography>
+      <Typography variant="body" sx={{ fontSize: 15 }} color="text.secondary">
+        Población estudiantil: {Trayecto?.descripcion_trayecto || 0}
+        <Tooltip title="Editar email" arrow>
+          <IconButton size="small" sx={{ padding: "4px" }}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       </Typography>
     </Grid>
   );
