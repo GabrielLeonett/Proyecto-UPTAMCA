@@ -20,13 +20,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 export function CardCoordinador({ coordinador }) {
   const theme = useTheme();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    resolver: zodResolver(coordinadorSchema),
-  });
   return (
     <Box
       sx={{
