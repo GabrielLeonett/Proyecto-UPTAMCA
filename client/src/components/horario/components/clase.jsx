@@ -72,8 +72,10 @@ export default function Clase({
   const handleClick = (e) => {
     if (e.detail === 1) {
       // Click simple - Mover
+      console.log(clase)
       onMoveRequest(clase);
     } else if (e.detail === 2) {
+      console.log(clase)
       // Doble click - Cancelar
       onCancelMove(clase);
     }

@@ -525,30 +525,10 @@ export default class HorarioService {
       // 4️ Generar documento
       const buffer = await DocumentServices.generarDocumentoHorario(data);
 
-      // Notificación para el usuario que generó el documento
-      console.log("🔔 Enviando notificación de generación de documento...");
-      const notificationService = new NotificationService();
-
-      await notificationService.crearNotificacionIndividual({
-        titulo: "Documento de Horario Generado",
-        tipo: "documento_horario_generado",
-        user_id: usuario_accion.id,
-        contenido: `Se ha generado exitosamente el documento del horario para la sección ${data.Seccion} del PNF ${data.PNF}`,
-        metadatos: {
-          seccion_id: idSeccion,
-          pnf: data.PNF,
-          trayecto: data.Trayecto,
-          seccion: data.Seccion,
-          fecha_generacion: new Date().toISOString(),
-          nombre_archivo: `Horario${data.PNF}-${data.Trayecto}-${data.Seccion}.docx`,
-          url_action: `/horarios/seccion/${idSeccion}`,
-        },
-      });
-
       return FormatterResponseService.success(
         {
           buffer,
-          fileName: `Horario${data.PNF}-${data.Trayecto}-${data.Seccion}.docx`,
+          fileName: `Horario${data.PNF.nombre_pnf.toLowerCase()}-${data.Trayecto.valor_trayecto}-${data.Seccion.seccion}.docx`,
         },
         "Documento de horario generado exitosamente"
       );
