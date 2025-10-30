@@ -90,7 +90,7 @@ export default class CurricularModel {
         datos.codigoPNF || null,
         datos.nombrePNF || null,
         datos.descripcionPNF || null,
-        datos.duracionTrayectosPNF || null,
+        datos.duracionTrayectos || null,
         datos.poblacionEstudiantilPNF || null,
         datos.sedePNF || null,
         datos.activo || null,

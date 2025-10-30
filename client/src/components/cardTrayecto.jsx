@@ -1,41 +1,89 @@
-import { Typography, Grid, Tooltip, IconButton} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom"; // ✅ corregido
+import {
+  Typography,
+  Grid,
+  Tooltip,
+  IconButton,
+  Snackbar,
+  Alert,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
+import { useTheme } from "@mui/material/styles";
+import { useState, useEffect } from "react";
+import useApi from "../hook/useApi";
+import CustomButton from "./customButton";
+import ModalEditarCampoTrayecto from "./ModalEditarCampoTrayecto";
 
-
-export default function CardTrayecto({ Trayecto, codigoPNF }) {
+export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
   const theme = useTheme();
-  const navigate = useNavigate(); // ✅ función de navegación
+  const axios = useApi(false);
+
+  // Estados
+  const [trayectoActual, setTrayectoActual] = useState(Trayecto);
+  const [trayectoEditado, setTrayectoEditado] = useState(false);
+  const [openModalEditar, setOpenModalEditar] = useState(false);
+  const [campoEditando, setCampoEditando] = useState(null);
+  const [valorEditando, setValorEditando] = useState("");
+  const [mensaje, setMensaje] = useState(null);
+
+  useEffect(() => {
+    setTrayectoActual(Trayecto);
+  }, [Trayecto]);
+
+  // Abrir modal de edición
+  const handleOpenModalEditar = (campo, valorActual) => {
+    setCampoEditando(campo);
+    setValorEditando(valorActual || "");
+    setOpenModalEditar(true);
+  };
+
+  // Guardar el campo en memoria
+  const handleGuardarCampo = (campo, nuevoValor) => {
+    const actualizado = { ...trayectoActual, [campo]: nuevoValor };
+    setTrayectoActual(actualizado);
+    setTrayectoEditado(true);
+    setMensaje(`Campo "${campo}" actualizado localmente`);
+    setOpenModalEditar(false);
+  };
+
+  // Guardar los cambios en el servidor
+  const handleGuardarCambiosServidor = async () => {
+    try {
+      console.log(trayectoEditado, trayectoActual)
+      await axios.put(
+        `/trayectos/${trayectoActual.id_trayecto}/descripcion`,
+        trayectoActual
+      );
+      setTrayectoEditado(false);
+      setMensaje("Cambios guardados correctamente");
+
+      if (onActualizar) onActualizar(); // Actualizar lista si el padre lo pasa
+    } catch (error) {
+      console.error("Error al guardar cambios:", error);
+      setMensaje("Error al guardar los cambios");
+    }
+  };
 
   return (
     <Grid
-      key={Trayecto?.id_trayecto}
+      key={trayectoActual?.id_trayecto}
       sx={{
         maxWidth: "1100px",
         width: "100%",
         mx: "auto",
         mt: 5,
-        p: 4,
-        borderRadius: 4,
+        p: 3,
+        borderRadius: 3,
         backgroundColor: theme.palette.background.paper,
-        boxShadow: 5,
+        boxShadow: 4,
         border: `1px solid ${theme.palette.divider}`,
-        transition: "all 0.3s ease",
-        cursor: "pointer",
-        "&:hover": {
-          boxShadow: 8,
-          transform: "scale(1.01)",
-          borderColor: theme.palette.primary.main,
-        },
-      }}
-      onClick={() => {
-        navigate(
-          `/formacion/programas/${codigoPNF}/trayecto/${Trayecto?.valor_trayecto}`,
-          { state: { idTrayecto: Trayecto.id_trayecto } }
-        );
       }}
     >
+      {/* Título principal */}
       <Typography
         component="h2"
         variant="h5"
@@ -45,20 +93,74 @@ export default function CardTrayecto({ Trayecto, codigoPNF }) {
           color: theme.palette.primary.main,
         }}
       >
-        Trayecto: {Trayecto?.valor_trayecto || "Valor del trayecto"}
+        Trayecto: {trayectoActual?.valor_trayecto || "No definido"}
       </Typography>
 
-      <Typography variant="body2" sx={{ fontSize: 15 }} color="text.secondary">
-        Población estudiantil: {Trayecto?.poblacion_estudiantil || 0}
-      </Typography>
-      <Typography variant="body" sx={{ fontSize: 15 }} color="text.secondary">
-        Población estudiantil: {Trayecto?.descripcion_trayecto || 0}
-        <Tooltip title="Editar email" arrow>
-          <IconButton size="small" sx={{ padding: "4px" }}>
-            <EditIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      </Typography>
+      {/* Información general */}
+      <Box sx={{ mt: 2 }}>
+        <Typography sx={{ display: "flex", alignItems: "center" }}>
+          <strong>Población estudiantil:</strong>{" "}
+          {trayectoActual?.poblacion_estudiantil || "0"}
+        </Typography>
+
+        <Typography sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+          <strong>Descripción:</strong>{" "}
+          {trayectoActual?.descripcion_trayecto || "Sin descripción"}
+          <Tooltip title="Editar descripción del trayecto" arrow>
+            <IconButton
+              size="small"
+              sx={{ ml: 1 }}
+              onClick={() =>
+                handleOpenModalEditar(
+                  "descripcion_trayecto",
+                  trayectoActual.descripcion_trayecto
+                )
+              }
+            >
+              <EditIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Typography>
+
+        {/* Acciones */}
+        {trayectoEditado && (
+          <CustomButton
+            tipo="success"
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={handleGuardarCambiosServidor}
+          >
+            Guardar Cambios
+          </CustomButton>
+        )}
+      </Box>
+
+      {/* Modal para editar campos */}
+      <ModalEditarCampoTrayecto
+        open={openModalEditar}
+        onClose={() => setOpenModalEditar(false)}
+        campo={campoEditando}
+        valorActual={valorEditando}
+        onGuardar={handleGuardarCampo}
+      />
+
+      {/* Snackbar de notificaciones */}
+      <Snackbar
+        open={!!mensaje}
+        autoHideDuration={2500}
+        onClose={() => setMensaje(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={
+            mensaje?.toLowerCase().includes("error") ? "error" : "success"
+          }
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {mensaje}
+        </Alert>
+      </Snackbar>
     </Grid>
   );
 }

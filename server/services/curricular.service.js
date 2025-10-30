@@ -1015,11 +1015,11 @@ export default class CurricularService {
           "ID de usuario inválido"
         );
       }
-
+      console.log(datos)
       // 3. Validar descripción
       if (
-        !datos.descripcionTrayecto ||
-        datos.descripcionTrayecto.trim() === ""
+        !datos.descripcion_trayecto ||
+        datos.descripcion_trayecto.trim() === ""
       ) {
         return FormatterResponseService.error(
           "Descripción requerida",
@@ -1029,7 +1029,7 @@ export default class CurricularService {
         );
       }
 
-      const descripcionLimpia = datos.descripcionTrayecto.trim();
+      const descripcionLimpia = datos.descripcion_trayecto.trim();
 
       if (descripcionLimpia.length < 10) {
         return FormatterResponseService.error(

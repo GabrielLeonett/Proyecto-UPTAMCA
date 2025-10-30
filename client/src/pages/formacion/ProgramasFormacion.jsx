@@ -36,12 +36,7 @@ export default function ProgramasFormacion() {
             {PNFS.map((PNF) => (
               <CardPNF
                 key={PNF.codigo_pnf} // Asegúrate de tener una key única
-                pnf={{
-                  name: PNF.nombre_pnf,
-                  codigo: PNF.codigo_pnf,
-                  poblacion: PNF.poblacion_estudiantil_pnf,
-                  descripcion: PNF.descripcion_pnf,
-                }}
+                PNF={PNF}
               />
             ))}
           </Box>
