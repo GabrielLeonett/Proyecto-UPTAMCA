@@ -22,6 +22,7 @@ const {
   destituirProfesor,
   reingresoProfesor,
   mostrarDisponibilidad,
+  mostrarProfesoresEliminados,
 } = ProfesorController;
 
 // Creación del router para las rutas de profesores
@@ -148,6 +149,22 @@ profesorRouter.delete(
     "Coordinador",
   ]),
   destituirProfesor
+);
+
+/**
+ * @name GET /profesores/:id
+ * @description Mostrar profesores eliminados
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.get(
+  "/profesores/eliminados",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  mostrarProfesoresEliminados
 );
 
 /**

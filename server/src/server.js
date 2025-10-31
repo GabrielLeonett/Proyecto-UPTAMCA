@@ -2,7 +2,6 @@
 import dotenv from "dotenv";
 
 const envFile = `.env.${process.env.NODE_ENV || "development"}`;
-
 dotenv.config({ path: envFile });
 
 // Importación de dependencias
@@ -26,18 +25,18 @@ import { AulaRouter } from "./routes/aula.routes.js";
 import { coordinadorRouter } from "./routes/coordinador.routes.js";
 import { NotificationRouter } from "./routes/notification.routes.js";
 
-// Creación del servidor
+// ✅ CREAR app y server SIN inicializar sockets inmediatamente
 const app = express();
 export const server = createServer(app);
 
-// Middleware de seguridad
+// Configuración básica de Express (esto es seguro)
 app.use(securityMiddleware);
 app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(jsonSyntaxErrorHandler);
 
-//Rutas del sistema
+// Rutas del sistema
 app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);
@@ -47,51 +46,66 @@ app.use("", SedesRouter);
 app.use("", coordinadorRouter);
 app.use("", NotificationRouter);
 
-//Configuración de WebSocke
-const servicioSocket = new SocketServices();
-const io = servicioSocket.initializeService();
+// ✅ MOVER la inicialización de sockets a una función
+export function initializeSocketServices() {
+  console.log("🔧 Inicializando servicios de Socket...");
+  
+  const servicioSocket = new SocketServices();
+  const io = servicioSocket.initializeService();
 
-let monitoringInterval = null;
-let superAdminCount = 0;
+  let monitoringInterval = null;
+  let superAdminCount = 0;
 
-io.on("connection", (socket) => {
-  console.log("Nuevo cliente conectado:", socket.id);
-
-  if (socket.user && socket.user.roles.includes("SuperAdmin")) {
-    superAdminCount++;
-    console.log(`SuperAdmin conectado. Total: ${superAdminCount}`);
-
-    // 🔥 Iniciar monitoreo SOLO si es el primer SuperAdmin
-    if (superAdminCount === 1 && !monitoringInterval) {
-      console.log("🚀 Iniciando monitoreo del sistema...");
-      monitoringInterval = SystemMonitor.iniciarMonitoreoTiempoReal(5000);
-    }
-
-    // Unir al socket a la sala de SuperAdmin
-    socket.join("role_SuperAdmin");
-  }
-
-  socket.on("disconnect", (reason) => {
-    console.log("Cliente desconectado:", socket.id, "Razón:", reason);
+  io.on("connection", (socket) => {
+    console.log("Nuevo cliente conectado:", socket.id);
 
     if (socket.user && socket.user.roles.includes("SuperAdmin")) {
-      superAdminCount--;
-      console.log(`SuperAdmin desconectado. Total: ${superAdminCount}`);
+      superAdminCount++;
+      console.log(`SuperAdmin conectado. Total: ${superAdminCount}`);
 
-      // 🔥 Detener monitoreo si no hay más SuperAdmins conectados
-      if (superAdminCount === 0 && monitoringInterval) {
-        console.log("⏹️ Deteniendo monitoreo del sistema...");
-        clearInterval(monitoringInterval);
-        monitoringInterval = null;
+      // 🔥 Iniciar monitoreo SOLO si es el primer SuperAdmin
+      if (superAdminCount === 1 && !monitoringInterval) {
+        console.log("🚀 Iniciando monitoreo del sistema...");
+        monitoringInterval = SystemMonitor.iniciarMonitoreoTiempoReal(5000);
       }
-    }
-  });
-});
 
-// Encendido del servidor
-server.listen(process.env.SERVER_PORT, () => {
-  console.log(`Servidor corriendo en el puerto ${process.env.SERVER_PORT}`);
-  console.log(
-    `Notificaciones WebSocket configuradas en puerto ${process.env.SERVER_PORT}`
-  );
-});
+      // Unir al socket a la sala de SuperAdmin
+      socket.join("role_SuperAdmin");
+    }
+
+    socket.on("disconnect", (reason) => {
+      console.log("Cliente desconectado:", socket.id, "Razón:", reason);
+
+      if (socket.user && socket.user.roles.includes("SuperAdmin")) {
+        superAdminCount--;
+        console.log(`SuperAdmin desconectado. Total: ${superAdminCount}`);
+
+        // 🔥 Detener monitoreo si no hay más SuperAdmins conectados
+        if (superAdminCount === 0 && monitoringInterval) {
+          console.log("⏹️ Deteniendo monitoreo del sistema...");
+          clearInterval(monitoringInterval);
+          monitoringInterval = null;
+        }
+      }
+    });
+  });
+
+  return { io, servicioSocket };
+}
+
+// ✅ SOLO ejecutar si es el archivo principal (para ES6 modules)
+export function startServer(port = process.env.SERVER_PORT) {
+  console.log(`🚀 Iniciando servidor en puerto ${port}...`);
+  
+  // Inicializar sockets
+  initializeSocketServices();
+  
+  // Iniciar servidor
+  server.listen(port, () => {
+    console.log(`✅ Servidor corriendo en el puerto ${port}`);
+    console.log(`📡 Notificaciones WebSocket configuradas en puerto ${port}`);
+  });
+}
+
+// Exportar para usar en otros archivos (como tests)
+export default app;

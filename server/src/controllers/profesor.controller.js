@@ -122,6 +122,20 @@ export default class ProfesorController {
   }
 
   /**
+   * @name mostrarProfesoresEliminados
+   * @description Obtener listado de profesores eliminados para interfaz web
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarProfesoresEliminados(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.mostrarProfesoresEliminados(req.query)
+    );
+  }
+
+  /**
    * @name mostrarDisponibilidad
    * @description Obtener disponibilida de un profesor 
    * @param {Object} req - Objeto de solicitud Express

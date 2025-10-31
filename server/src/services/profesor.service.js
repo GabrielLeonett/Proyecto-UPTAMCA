@@ -322,6 +322,71 @@ export default class ProfesorService {
   /**
    * @static
    * @async
+   * @method mostrarProfesoresEliminados
+   * @description Obtener todos los profesores con validación de parámetros
+   * @param {Object} queryParams - Parámetros de consulta
+   * @returns {Object} Resultado de la operación
+   */
+  static async mostrarProfesoresEliminados(queryParams = {}) {
+    try {
+      // Validar parámetros de consulta
+      const allowedParams = ["page", "limit", "sort", "order"];
+      const queryValidation = ValidationService.validateQueryParams(
+        queryParams,
+        allowedParams
+      );
+
+      if (!queryValidation.isValid) {
+        return FormatterResponseService.validationError(
+          queryValidation.errors,
+          "Error de validación en parámetros de consulta"
+        );
+      }
+
+      const respuestaModel = await ProfesorModel.mostrarProfesoresEliminados();
+
+      // Parsear los campos JSON en cada profesor
+      const profesoresProcesados = respuestaModel.data.map((profesor) => ({
+        ...profesor,
+        areas_de_conocimiento: profesor.areas_de_conocimiento
+          ? JSON.parse(profesor.areas_de_conocimiento)
+          : [],
+        disponibilidad: profesor.disponibilidad
+          ? JSON.parse(profesor.disponibilidad)
+          : [],
+        pre_grados: profesor.pre_grados ? JSON.parse(profesor.pre_grados) : [],
+        pos_grados: profesor.pos_grados ? JSON.parse(profesor.pos_grados) : [],
+      }));
+
+      // Reemplazar los datos en la respuesta
+      respuestaModel.data = profesoresProcesados;
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      return FormatterResponseService.success(
+        {
+          profesoresEliminados: respuestaModel.data,
+          total: respuestaModel.data.length,
+          page: parseInt(queryParams.page) || 1,
+          limit: parseInt(queryParams.limit) || respuestaModel.data.length,
+        },
+        "Profesores obtenidos exitosamente",
+        {
+          status: 200,
+          title: "Lista de Profesores",
+        }
+      );
+    } catch (error) {
+      console.error("Error en servicio obtener todos los profesores:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method mostrarDisponibilidad
    * @description Obtener la disponibilidad de un profesor con validación de parámetros
    * @param {number|string} idProfesor - ID del profesor

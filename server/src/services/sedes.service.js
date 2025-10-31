@@ -463,20 +463,6 @@ export default class SedeService {
 
       const sede = sedeExistente.data[0];
 
-      // 4. Verificar que la sede no tenga dependencias (aulas, etc.)
-      console.log("🔍 Verificando dependencias de la sede...");
-      const tieneDependencias = await this.verificarDependenciasSede(id);
-      if (tieneDependencias) {
-        console.error("❌ La sede tiene dependencias activas:", id);
-        return FormatterResponseService.error(
-          "No se puede eliminar la sede",
-          "La sede tiene aulas u otras dependencias asociadas. Elimine primero las dependencias.",
-          409,
-          "SEDE_CON_DEPENDENCIAS",
-          { sede_id: id, sede_nombre: sede.nombre_sede }
-        );
-      }
-
       // 5. Eliminar sede en el modelo
       console.log("🗑️ Eliminando sede de base de datos...");
       const respuestaModel = await SedeModel.eliminarSede(id, user_action.id);
@@ -522,27 +508,6 @@ export default class SedeService {
     } catch (error) {
       console.error("💥 Error en servicio eliminar sede:", error);
       throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method verificarDependenciasSede
-   * @description Verificar si una sede tiene dependencias activas
-   * @param {number} sedeId - ID de la sede
-   * @returns {boolean} True si tiene dependencias, false si no
-   */
-  static async verificarDependenciasSede(sedeId) {
-    try {
-      // Aquí implementarías la lógica para verificar dependencias
-      // Por ejemplo: aulas, horarios, profesores asociados a esta sede
-      // Por ahora retornamos false como placeholder
-      return false;
-    } catch (error) {
-      console.error("Error verificando dependencias de sede:", error);
-      // En caso de error, asumimos que tiene dependencias por seguridad
-      return true;
     }
   }
 }
