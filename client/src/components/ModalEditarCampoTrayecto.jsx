@@ -42,7 +42,7 @@ export default function ModalEditarCampoTrayecto({
     };
 
     fetchPnfs();
-  }, []);
+  }, [axios]);
 
   // 💾 Guardar cambios con validación
   const handleGuardar = () => {
@@ -82,7 +82,7 @@ export default function ModalEditarCampoTrayecto({
     }
 
     // Si el campo es numérico (por ejemplo duración o número)
-    if (["numero_trayecto", "duracion"].includes(campo)) {
+    if (["numero_trayecto", "duracion_trayectos"].includes(campo)) {
       return (
         <CustomLabel
           fullWidth

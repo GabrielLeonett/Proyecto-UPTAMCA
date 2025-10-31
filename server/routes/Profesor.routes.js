@@ -20,6 +20,7 @@ const {
   registrarDisponibilidad,
   actualizarProfesor,
   destituirProfesor,
+  reingresoProfesor,
   mostrarDisponibilidad,
 } = ProfesorController;
 
@@ -147,6 +148,23 @@ profesorRouter.delete(
     "Coordinador",
   ]),
   destituirProfesor
+);
+
+/**
+ * @name POST /profesores/:id/reingresar
+ * @description Reingresar/habilitar un profesor previamente eliminado
+ * @param {number} id - ID del profesor a reingresar
+ * @middleware Requiere autenticación y rol autorizado
+ */
+profesorRouter.post(
+  "/profesores/reingresar",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+  ]),
+  reingresoProfesor
 );
 
 /**

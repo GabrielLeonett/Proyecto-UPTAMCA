@@ -5,6 +5,7 @@ import coordinadorSchema, {
   asignarCoordinadorSchema,
 } from "../schemas/coordinador.schema.js";
 import destitucionSchema from "../schemas/destitucion.schema.js";
+import reingresoSchema from "../schemas/reingreso.schema.js";
 import disponibilidadDocenteSchema from "../schemas/disponiblidaddocente.schema.js";
 import loginSchema from "../schemas/login.schema.js";
 import pnfSchema from "../schemas/pnf.schema.js";
@@ -315,6 +316,46 @@ export default class ValidationService {
    */
   static validatePartialDestitucion(data, options = {}) {
     const validationResult = destitucionSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA REINGRESO
+  // =============================================
+
+  /**
+   * @name validateReingreso
+   * @description Valida los datos completos de una reingreso
+   * @param {Object} data - Datos de la reingreso a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validateReingreso(data, options = {}) {
+    const validationResult = reingresoSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validatePartialDestitucion
+   * @description Valida datos parciales de una reingreso (para updates)
+   * @param {Object} data - Datos parciales de la reingreso
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePartialDestitucion(data, options = {}) {
+    const validationResult = reingresoSchema.partial().safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

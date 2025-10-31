@@ -82,17 +82,18 @@ export default class CurricularModel {
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
       )
     `;
+    console.log(datos)
 
       const valores = [
         null, // p_resultado (OUT parameter)
         usuarioId,
         idPNF,
-        datos.codigoPNF || null,
-        datos.nombrePNF || null,
-        datos.descripcionPNF || null,
-        datos.duracionTrayectos || null,
-        datos.poblacionEstudiantilPNF || null,
-        datos.sedePNF || null,
+        datos.codigo_pnf || null,
+        datos.nombre_pnf || null,
+        datos.descripcion_pnf || null,
+        datos.duracion_trayectos || null,
+        datos.poblacion_estudiantil_pnf || null,
+        datos.id_sede || null,
         datos.activo || null,
       ];
 

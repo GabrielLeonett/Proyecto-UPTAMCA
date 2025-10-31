@@ -280,6 +280,22 @@ export default class ProfesorService {
 
       const respuestaModel = await ProfesorModel.obtenerTodos();
 
+      // Parsear los campos JSON en cada profesor
+      const profesoresProcesados = respuestaModel.data.map((profesor) => ({
+        ...profesor,
+        areas_de_conocimiento: profesor.areas_de_conocimiento
+          ? JSON.parse(profesor.areas_de_conocimiento)
+          : [],
+        disponibilidad: profesor.disponibilidad
+          ? JSON.parse(profesor.disponibilidad)
+          : [],
+        pre_grados: profesor.pre_grados ? JSON.parse(profesor.pre_grados) : [],
+        pos_grados: profesor.pos_grados ? JSON.parse(profesor.pos_grados) : [],
+      }));
+
+      // Reemplazar los datos en la respuesta
+      respuestaModel.data = profesoresProcesados;
+
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
@@ -589,7 +605,7 @@ export default class ProfesorService {
       ...data,
       id_profesor: parseInt(idProfesor),
     };
-    console.log("📥 Datos recibidos:", datos);
+    console.log("📥 Datos recibidos:", datos.pos_grados);
 
     try {
       // Validar datos parciales del profesor
@@ -723,7 +739,7 @@ export default class ProfesorService {
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async eliminar(datos, usuarioId) {
+  static async destituirProfesor(datos, user_action) {
     try {
       // Validar datos de eliminación
       const requiredValidation = ValidationService.validateRequiredFields(
@@ -739,7 +755,10 @@ export default class ProfesorService {
       }
 
       // Validar ID de usuario
-      const idValidation = ValidationService.validateId(usuarioId, "usuario");
+      const idValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
       if (!idValidation.isValid) {
         return FormatterResponseService.validationError(
           idValidation.errors,
@@ -770,7 +789,10 @@ export default class ProfesorService {
       }
 
       // Eliminar profesor
-      const respuestaModel = await ProfesorModel.eliminar(datos, usuarioId);
+      const respuestaModel = await ProfesorModel.eliminar(
+        datos,
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -796,7 +818,7 @@ export default class ProfesorService {
           razon: datos.razon,
           observaciones: datos.observaciones,
           fecha_efectiva: datos.fecha_efectiva,
-          usuario_ejecutor: usuarioId,
+          usuario_ejecutor: user_action.id,
           fecha_ejecucion: new Date().toISOString(),
         },
       });
@@ -814,11 +836,11 @@ export default class ProfesorService {
           razon: datos.razon,
           observaciones: datos.observaciones,
           fecha_efectiva: datos.fecha_efectiva,
-          usuario_ejecutor: usuarioId,
+          usuario_ejecutor: user_action.id,
           fecha_ejecucion: new Date().toISOString(),
         },
         roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
-        users_ids: [usuarioId],
+        users_ids: [user_action.id],
       });
 
       return FormatterResponseService.success(
@@ -843,6 +865,156 @@ export default class ProfesorService {
       );
     } catch (error) {
       console.error("Error en servicio eliminar profesor:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method reingresoProfesor
+   * @description Reingresar/habilitar un profesor con validación y notificación
+   * @param {Object} datos - Datos del reingreso
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async reingresoProfesor(datos, user_action) {
+    try {
+      // Validar datos de reingreso
+      const requiredValidation = ValidationService.validateRequiredFields(
+        datos,
+        ["id_profesor", "tipo_reingreso", "motivo_reingreso"]
+      );
+
+      if (!requiredValidation.isValid) {
+        return FormatterResponseService.validationError(
+          requiredValidation.errors,
+          "Campos requeridos faltantes para reingreso"
+        );
+      }
+
+      // Validar ID de usuario
+      const idValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!idValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // Validar ID de profesor
+      const profesorIdValidation = ValidationService.validateId(
+        datos.id_profesor,
+        "profesor"
+      );
+      if (!profesorIdValidation.isValid) {
+        return FormatterResponseService.validationError(
+          profesorIdValidation.errors,
+          "ID de profesor inválido"
+        );
+      }
+
+      // Verificar que el profesor existe y está inactivo
+      const profesores = await ProfesorModel.obtenerTodos();
+      const profesor = profesores.data.find(
+        (p) => p.id_profesor === datos.id_profesor
+      );
+
+      if (!profesor) {
+        return FormatterResponseService.notFound("Profesor", datos.id_profesor);
+      }
+
+      // Verificar que el profesor está inactivo
+      if (profesor.activo) {
+        return FormatterResponseService.badRequest(
+          "El profesor ya se encuentra activo en el sistema"
+        );
+      }
+
+      // Reingresar profesor
+      const respuestaModel = await ProfesorModel.reingresar(
+        datos,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Enviar notificaciones de reingreso
+      const notificationService = new NotificationService();
+
+      const tipoReingresoMap = {
+        REINGRESO: "Reingresado",
+        REINCORPORACION: "Reincorporado",
+        REINTEGRO: "Reintegrado",
+      };
+
+      const accionTipo =
+        tipoReingresoMap[datos.tipo_reingreso] || "Reingresado";
+      const accionContenido = datos.tipo_reingreso.toLowerCase();
+
+      // Notificación individual para el profesor afectado
+      await notificationService.crearNotificacionIndividual({
+        titulo: `Usted Ha Sido ${accionTipo}`,
+        tipo: `profesor_reingreso_propio`,
+        user_id: profesor.cedula,
+        contenido: `Usted ha sido ${accionContenido} en el sistema. Motivo: ${datos.motivo_reingreso}`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          tipo_reingreso: datos.tipo_reingreso,
+          motivo_reingreso: datos.motivo_reingreso,
+          observaciones: datos.observaciones,
+          fecha_efectiva: datos.fecha_efectiva,
+          registro_anterior_id: datos.registro_anterior_id,
+          usuario_solicitante: user_action.id,
+          fecha_reingreso: new Date().toISOString(),
+        },
+      });
+
+      // Notificación masiva para roles administrativos
+      await notificationService.crearNotificacionMasiva({
+        titulo: `Profesor ${accionTipo}`,
+        tipo: `profesor_reingreso`,
+        contenido: `Se ha ${accionContenido} al profesor ${profesor.nombres} ${profesor.apellidos} (${profesor.cedula})`,
+        metadatos: {
+          profesor_id: datos.id_profesor,
+          profesor_cedula: profesor.cedula,
+          profesor_nombre: `${profesor.nombres} ${profesor.apellidos}`,
+          tipo_reingreso: datos.tipo_reingreso,
+          motivo_reingreso: datos.motivo_reingreso,
+          observaciones: datos.observaciones,
+          fecha_efectiva: datos.fecha_efectiva,
+          registro_anterior_id: datos.registro_anterior_id,
+          usuario_solicitante: user_action.id,
+          fecha_reingreso: new Date().toISOString(),
+        },
+        roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
+        users_ids: [user_action.id],
+      });
+
+      return FormatterResponseService.success(
+        {
+          message: `Profesor ${accionContenido} exitosamente`,
+          profesor: {
+            id: datos.id_profesor,
+            cedula: profesor.cedula,
+            nombre: `${profesor.nombres} ${profesor.apellidos}`,
+            accion: datos.tipo_reingreso,
+            activo: true,
+          },
+        },
+        `Profesor ${accionContenido} exitosamente`,
+        {
+          status: 200,
+          title: `Profesor ${accionTipo}`,
+        }
+      );
+    } catch (error) {
+      console.error("Error en servicio reingresar profesor:", error);
       throw error;
     }
   }

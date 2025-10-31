@@ -1,6 +1,6 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
-import { Box, Typography, Chip } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
 import CustomCalendar from "../../components/customCalendar";
 import { Controller, useForm } from "react-hook-form";
@@ -79,7 +79,7 @@ export default function FormRegister() {
     };
 
     fetchData();
-  }, []);
+  }, [axios]);
   // Observar campos individuales
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -168,6 +168,7 @@ export default function FormRegister() {
         "Ya puede verlo en la lista."
       );
     } catch (error) {
+      console.log(error);
       alert.error(
         "No se ha registrado el profesor",
         "Por favor, intente nuevamente."

@@ -161,7 +161,7 @@ export default function CardPNF({ PNF, onActualizar }) {
               sx={{ ml: 1 }}
               onClick={() =>
                 handleOpenModalEditar(
-                  "duracion_trayectos_pnf",
+                  "duracion_trayectos",
                   pnfActual.duracion_trayectos
                 )
               }

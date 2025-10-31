@@ -21,6 +21,7 @@ import useApi from "../hook/useApi";
 import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
 import ModalEditarCampoProfesor from "../components/ModalEditarCampoProfesor.jsx";
 import CustomButton from "./customButton.jsx";
+import CustomChip from "./CustomChip.jsx";
 
 export default function CardProfesor({ profesor }) {
   const axios = useApi(false);
@@ -85,10 +86,12 @@ export default function CardProfesor({ profesor }) {
   // Guardar cambios en servidor
   const handleGuardarCambiosServidor = async () => {
     try {
-      await axios.put(
-        `/profesores/${profesorActual.id_profesor}`,
+      console.log(profesorActual);
+      const respuesta = await axios.put(
+        `/profesores/${profesorActual.cedula}`,
         profesorActual
       );
+      console.log(respuesta);
       setProfesorEditado(false);
       setMensaje("Cambios guardados correctamente");
     } catch (error) {
@@ -233,60 +236,160 @@ export default function CardProfesor({ profesor }) {
             <Typography variant="subtitle1">Información Educativa</Typography>
           </AccordionSummary>
           <AccordionDetails>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Áreas:</strong>{" "}
-              {profesorActual?.areas_de_conocimiento || "No especificado"}
-              <Tooltip title="Editar áreas" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar(
-                      "areas_de_conocimiento",
-                      profesorActual.areas_de_conocimiento
-                    )
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Pre-Grados:</strong>{" "}
-              {profesorActual?.pre_grados || "No especificado"}
-              <Tooltip title="Editar pregrado" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar(
-                      "pre_grados",
-                      profesorActual.pre_grados
-                    )
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
-              <strong>Pos-Grados:</strong>{" "}
-              {profesorActual?.pos_grados || "No especificado"}
-              <Tooltip title="Editar pregrado" arrow>
-                <IconButton
-                  size="small"
-                  onClick={() =>
-                    handleOpenModalEditar(
-                      "pos_grados",
-                      profesorActual.pos_grados
-                    )
-                  }
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Typography>
+            {/* Áreas de Conocimiento */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ minWidth: 120, fontWeight: "bold" }}
+              >
+                Áreas:
+              </Typography>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                {profesorActual?.areas_de_conocimiento &&
+                profesorActual.areas_de_conocimiento.length > 0 ? (
+                  <>
+                    {profesorActual.areas_de_conocimiento.map((area, index) => (
+                      <CustomChip
+                        key={area.id_area_conocimiento || index}
+                        label={area.nombre_area_conocimiento}
+                        color="primary"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No especificado
+                  </Typography>
+                )}
+                <Tooltip title="Editar áreas" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleOpenModalEditar(
+                        "areas_de_conocimiento",
+                        profesorActual?.areas_de_conocimiento || []
+                      )
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+
+            {/* Pre-Grados */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ minWidth: 120, fontWeight: "bold" }}
+              >
+                Pre-Grados:
+              </Typography>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                {profesorActual?.pre_grados &&
+                profesorActual.pre_grados.length > 0 ? (
+                  <>
+                    {profesorActual.pre_grados.map((pregrado, index) => (
+                      <CustomChip
+                        key={pregrado.id_pre_grado || index}
+                        label={`${pregrado.tipo_pre_grado} ${pregrado.nombre_pre_grado}`}
+                        color="secondary"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No especificado
+                  </Typography>
+                )}
+                <Tooltip title="Editar pre-grados" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleOpenModalEditar(
+                        "pre_grados",
+                        profesorActual?.pre_grados || []
+                      )
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+
+            {/* Pos-Grados */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ minWidth: 120, fontWeight: "bold" }}
+              >
+                Pos-Grados:
+              </Typography>
+              <Box
+                sx={{
+                  flex: 1,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                {profesorActual?.pos_grados &&
+                profesorActual.pos_grados.length > 0 ? (
+                  <>
+                    {profesorActual.pos_grados.map((posgrado, index) => (
+                      <CustomChip
+                        key={posgrado.id_pos_grado || index}
+                        label={`${posgrado.tipo_pos_grado} ${posgrado.nombre_pos_grado}`}
+                        color="success"
+                        variant="outlined"
+                        size="small"
+                      />
+                    ))}
+                  </>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No especificado
+                  </Typography>
+                )}
+                <Tooltip title="Editar pos-grados" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleOpenModalEditar(
+                        "pos_grados",
+                        profesorActual?.pos_grados || []
+                      )
+                    }
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
           </AccordionDetails>
         </Accordion>
-
         {/* Información Profesional */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -383,18 +486,6 @@ export default function CardProfesor({ profesor }) {
         onClose={() => setOpenModalEliminar(false)}
         onEliminado={handleProfesorEliminado}
       />
-
-      {/* Snackbar */}
-      <Snackbar
-        open={!!mensaje}
-        autoHideDuration={2500}
-        onClose={() => setMensaje(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert severity="success" variant="filled" sx={{ width: "100%" }}>
-          {mensaje}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

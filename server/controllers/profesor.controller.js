@@ -274,4 +274,18 @@ export default class ProfesorController {
       ProfesorService.destituirProfesor(req.body, req.user)
     );
   }
+
+  /**
+   * @name reingresoProfesor
+   * @description Destituir/eliminar un profesor
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async reingresoProfesor(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      ProfesorService.reingresoProfesor(req.body, req.user)
+    );
+  }
 }

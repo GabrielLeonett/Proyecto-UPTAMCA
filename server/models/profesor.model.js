@@ -464,6 +464,7 @@ export default class ProfesorModel {
       );
     }
   }
+
   /**
    * @static
    * @async
@@ -486,11 +487,11 @@ export default class ProfesorModel {
         telefono_local,
         fecha_nacimiento,
         genero,
-        nombre_categoria,
-        nombre_dedicacion,
-        pre_grado,
-        pos_grado,
-        area_de_conocimiento,
+        categoria,
+        dedicacion,
+        pre_grados,
+        pos_grados,
+        areas_de_conocimiento,
         imagen,
         municipio,
         fecha_ingreso,
@@ -511,19 +512,17 @@ export default class ProfesorModel {
         telefono_local,
         fecha_nacimiento,
         genero,
-        nombre_categoria,
-        nombre_dedicacion,
-        pre_grado,
-        pos_grado,
-        area_de_conocimiento,
+        categoria,
+        dedicacion,
+        pre_grados,
+        pos_grados,
+        areas_de_conocimiento,
         imagen,
         municipio,
         fecha_ingreso,
       ];
-
+      console.log(datos);
       const { rows } = await client.query(query, values);
-      console.log(rows);
-
       return FormatResponseModel.respuestaPostgres(
         rows,
         "Profesor actualizado exitosamente"
@@ -565,6 +564,7 @@ export default class ProfesorModel {
         observaciones,
         fecha_efectiva,
       ];
+      console.log(values, datos);
 
       const { rows } = await client.query(query, values);
 
@@ -581,6 +581,57 @@ export default class ProfesorModel {
       throw FormatResponseModel.respuestaError(
         error,
         "Error al eliminar/destituir el profesor"
+      );
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method reingresar
+   * @description Reingresar/habilitar un profesor previamente eliminado
+   * @param {Object} datos - Datos del reingreso
+   * @param {number} usuarioId - ID del usuario que realiza la acción
+   * @returns {Promise<Object>} Resultado de la operación en la base de datos
+   */
+  static async reingresar(datos, usuarioId) {
+    try {
+      const {
+        id_profesor,
+        tipo_reingreso,
+        motivo_reingreso,
+        observaciones,
+        fecha_efectiva,
+        registro_anterior_id,
+      } = datos;
+
+      const query =
+        "CALL reingresar_profesor(NULL, $1, $2, $3, $4, $5, $6, $7)";
+      const values = [
+        usuarioId,
+        id_profesor,
+        tipo_reingreso,
+        motivo_reingreso,
+        observaciones,
+        fecha_efectiva,
+        registro_anterior_id,
+      ];
+      console.log(values, datos);
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesor reingresado exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.reingresar",
+        usuario_id: usuarioId,
+        id_profesor: datos.id_profesor,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al reingresar el profesor"
       );
     }
   }

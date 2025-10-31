@@ -21,7 +21,8 @@ export const preGradoSchema = z.object({
       required_error: "El nombre del Pre-Grado es obligatorio",
     })
     .regex(textoRegex, {
-      message: "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos"
+      message:
+        "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos",
     })
     .optional(),
 
@@ -31,7 +32,7 @@ export const preGradoSchema = z.object({
       required_error: "El tipo del Pre-Grado es obligatorio",
     })
     .regex(soloLetrasRegex, {
-      message: "El tipo del Pre-Grado solo puede contener letras y espacios"
+      message: "El tipo del Pre-Grado solo puede contener letras y espacios",
     })
     .optional(),
 });
@@ -52,7 +53,8 @@ export const posGradoSchema = z.object({
       required_error: "El nombre del Pos-Grado es obligatorio",
     })
     .regex(textoRegex, {
-      message: "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos"
+      message:
+        "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos",
     })
     .optional(),
 
@@ -62,7 +64,7 @@ export const posGradoSchema = z.object({
       required_error: "El tipo del Pos-Grado es obligatorio",
     })
     .regex(soloLetrasRegex, {
-      message: "El tipo del Pos-Grado solo puede contener letras y espacios"
+      message: "El tipo del Pos-Grado solo puede contener letras y espacios",
     })
     .optional(),
 });
@@ -76,8 +78,8 @@ export const areaConocimientoSchema = z.object({
     })
     .positive("El ID del Área de Conocimiento debe ser un número positivo")
     .optional(),
-    
-  area_conocimiento: z
+
+  nombre_area_conocimiento: z
     .string({
       invalid_type_error: "El área de conocimiento debe ser texto",
       required_error: "El área de conocimiento es obligatoria",
@@ -110,7 +112,8 @@ export const nuevoPregradoSchema = z.object({
     })
     .min(1, "El nombre del Pre-Grado no puede estar vacío")
     .regex(textoRegex, {
-      message: "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos"
+      message:
+        "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos",
     }),
 
   tipo: z
@@ -120,7 +123,7 @@ export const nuevoPregradoSchema = z.object({
     })
     .min(1, "El tipo del Pre-Grado no puede estar vacío")
     .regex(soloLetrasRegex, {
-      message: "El tipo del Pre-Grado solo puede contener letras y espacios"
+      message: "El tipo del Pre-Grado solo puede contener letras y espacios",
     }),
 });
 
@@ -133,7 +136,8 @@ export const nuevoPosgradoSchema = z.object({
     })
     .min(1, "El nombre del Pos-Grado no puede estar vacío")
     .regex(textoRegex, {
-      message: "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos"
+      message:
+        "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos",
     }),
 
   tipo: z
@@ -143,7 +147,7 @@ export const nuevoPosgradoSchema = z.object({
     })
     .min(1, "El tipo del Pos-Grado no puede estar vacío")
     .regex(soloLetrasRegex, {
-      message: "El tipo del Pos-Grado solo puede contener letras y espacios"
+      message: "El tipo del Pos-Grado solo puede contener letras y espacios",
     }),
 });
 
@@ -176,16 +180,10 @@ export const profesorSchema = userSchema.extend({
   ),
 
   areas_de_conocimiento: z
-    .array(
-      z.string({
-        required_error: "El Área de conocimiento es requerida",
-        invalid_type_error: "El área de conocimiento debe ser texto",
-      }).regex(soloLetrasRegex, {
-        message: "El área de conocimiento solo puede contener letras y espacios"
-      }),
-      { required_error: "El Área de conocimiento es requerida" }
-    )
-    .nonempty("Debe tener al menos un área de conocimiento"),
+    .array(areaConocimientoSchema, {
+      required_error: "Las areas de conocimiento son requeridas",
+    })
+    .nonempty("Debe tener al menos un area de conocimiento"),
 
   pre_grado: z
     .array(preGradoSchema, { required_error: "El Pre-Grado es requerido" })
