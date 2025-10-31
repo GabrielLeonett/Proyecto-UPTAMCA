@@ -26,6 +26,7 @@ export function loadEnv() {
     throw result.error;
   }
 }
+
 /**
  * Convierte una variable a string en minúsculas si es de tipo string
  * @param {*} variable - Variable a convertir

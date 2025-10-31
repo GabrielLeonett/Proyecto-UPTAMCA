@@ -1,3 +1,5 @@
+import { jest } from "@jest/globals";
+
 import UserService from "../../src/services/user.service.js";
 import ValidationService from "../../src/services/validation.service.js";
 import UserModel from "../../src/models/user.model.js";
