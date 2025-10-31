@@ -29,6 +29,7 @@ export default function FormRegister() {
     control,
     handleSubmit,
     trigger,
+    watch,
   } = useForm({
     resolver: zodResolver(profesorSchema),
     defaultValues: {
@@ -192,6 +193,7 @@ export default function FormRegister() {
       2: ["areas_de_conocimiento", "pre_grado", "pos_grado"],
       3: ["categoria", "fecha_ingreso", "dedicacion"],
     };
+    console.log(errors);
     const isValid = await trigger(fieldSets[step] || []);
     if (isValid) {
       setDirection(1);
@@ -312,31 +314,51 @@ export default function FormRegister() {
           }
         />
 
-        <CustomLabel
-          select
-          id="municipio"
-          label="Municipio"
-          variant="outlined"
-          {...register("municipio", { required: true })}
-          error={!!errors.municipio}
-          helperText={errors.municipio?.message || "Seleccione su municipio"}
-        >
-          <MenuItem value="">Seleccione</MenuItem>
-          <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
-          <MenuItem value="Los Salias">Los Salias</MenuItem>
-          <MenuItem value="Carrizal">Carrizal</MenuItem>
-        </CustomLabel>
+        {/* MUNICIPIO */}
+        <Controller
+          name="municipio"
+          control={control}
+          defaultValue=""
+          rules={{ required: "Seleccione su municipio" }}
+          render={({ field, fieldState: { error } }) => (
+            <CustomLabel
+              select
+              id="municipio"
+              label="Municipio"
+              variant="outlined"
+              {...field} // incluye onChange, value, name, ref
+              error={!!error}
+              helperText={error?.message || "Seleccione su municipio"}
+            >
+              <MenuItem value="">Seleccione</MenuItem>
+              <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
+              <MenuItem value="Los Salias">Los Salias</MenuItem>
+              <MenuItem value="Carrizal">Carrizal</MenuItem>
+            </CustomLabel>
+          )}
+        />
 
-        <CustomLabel
-          select
-          label="Género"
-          {...register("genero", { required: true })}
-          error={!!errors.genero}
-          helperText={errors.genero?.message || "Seleccione su género"}
-        >
-          <MenuItem value="masculino">Masculino</MenuItem>
-          <MenuItem value="femenino">Femenino</MenuItem>
-        </CustomLabel>
+        {/* GÉNERO */}
+        <Controller
+          name="genero"
+          control={control}
+          defaultValue="masculino" // o "" si prefieres forzar selección
+          rules={{ required: "Seleccione su género" }}
+          render={({ field, fieldState: { error } }) => (
+            <CustomLabel
+              select
+              id="genero"
+              label="Género"
+              variant="outlined"
+              {...field}
+              error={!!error}
+              helperText={error?.message || "Seleccione su género"}
+            >
+              <MenuItem value="masculino">Masculino</MenuItem>
+              <MenuItem value="femenino">Femenino</MenuItem>
+            </CustomLabel>
+          )}
+        />
 
         <Controller
           name="fecha_nacimiento"
@@ -384,7 +406,7 @@ export default function FormRegister() {
                   if (value === "Otro") {
                     setOpenModalArea(true);
                   } else if (value && !field.value.includes(value)) {
-                    field.onChange([...field.value, value]);
+                      field.onChange([...field.value, value]);
                   }
                 }}
                 value=""

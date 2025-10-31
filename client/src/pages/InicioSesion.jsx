@@ -15,6 +15,7 @@ export default function InicioSesion() {
   const theme = useTheme();
   const [processing, setProcessing] = useState(false);
 
+  
   const {
     register,
     handleSubmit,
@@ -25,9 +26,9 @@ export default function InicioSesion() {
     mode: "onChange",
     shouldFocusError: true,
   });
-
+  
   const { login } = useAuth();
-
+  
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
     setProcessing(true);

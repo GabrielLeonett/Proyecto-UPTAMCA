@@ -7,6 +7,7 @@ import sedeSchema from "../../schemas/sede.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import CustomButton from "../../components/customButton"; // 👈 Importamos tu botón
 import useApi from "../../hook/useApi"; // Added import for axios
+import useSweetAlert from "../../hook/useSweetAlert";
 
 export default function RegisterSede() {
   const pages = [{ name: "Inicio", link: "/Profesores" }];
@@ -22,13 +23,16 @@ export default function RegisterSede() {
     shouldFocusError: true,
   });
   const axios = useApi();
+  const alert = useSweetAlert();
 
   const onSubmit = async (data) => {
     try {
       await axios.post("/Sede/create", data);
+      alert.success();
 
       reset(); // 👈 Limpia el formulario después de registrar
     } catch (error) {
+      alert.error();
       console.error("Error al registrar la sede:", error);
     }
   };

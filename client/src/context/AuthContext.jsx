@@ -1,10 +1,13 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
+import useSweetAlert from "../hook/useSweetAlert";
+
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const alert = useSweetAlert();
   const axios = useApi(true);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -16,6 +19,7 @@ export function AuthProvider({ children }) {
       try {
         const { user } = await axios.post("/auth/login", userData);
         if (user) {
+          alert.success("¡Inicio de sesión exitoso!", "Bienvenido al sistema" )
           setUser(user);
           setIsAuthenticated(true);
 
