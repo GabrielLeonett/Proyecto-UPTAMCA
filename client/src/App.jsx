@@ -22,6 +22,7 @@ import DeclaracionAccesibilidad from "./pages/DeclaracionAccesibilidad";
 import GestionProfesores from "./pages/academico/GestionProfesores";
 import RegistrarProfesor from "./pages/academico/RegistrarProfesor";
 import DisponibilidadProfesor from "./pages/academico/DisponibilidadProfesor";
+import ProfesoresEliminados from './pages/academico/ProfesoresEliminados'
 
 // Gestión de Coordinación
 import GestionCoordinadores from "./pages/coordinacion/GestionCoordinadores";
@@ -68,7 +69,6 @@ import BotonCambiarTema from "./components/BotonCambiarTema";
 //Imporatacion de Componente que Protege las vistas
 import ProtectedViews from "./security/ProtectedViews";
 
-import ProfesoresEliminados from "./pages/academico/eliminarProfesor";
 import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";

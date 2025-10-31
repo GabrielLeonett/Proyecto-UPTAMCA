@@ -170,3 +170,21 @@ export const UTILS = {
     return horas * 100 + minutos;
   },
 };
+
+
+import dns from 'dns/promises';
+
+/**
+ * Verifica si hay conexión a internet
+ * @returns {Promise<boolean>} True si hay conexión, false si no
+ */
+export async function verificarConexionInternet() {
+  try {
+    // Intentar resolver un dominio confiable
+    await dns.resolve('google.com');
+    return true;
+  } catch (error) {
+    console.error('❌ Sin conexión a internet:', error.message);
+    return false;
+  }
+}

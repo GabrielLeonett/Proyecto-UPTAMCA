@@ -121,6 +121,33 @@ export default class ProfesorModel {
   /**
    * @static
    * @async
+   * @method mostrarProfesoresEliminados
+   * @description Obtener todos los profesores de la base de datos
+   * @returns {Promise<Object>} Lista de profesores formateada
+   */
+  static async mostrarProfesoresEliminados() {
+    try {
+      const query = "SELECT * FROM vista_profesores_eliminados";
+      const { rows } = await client.query(query);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores obtenidos exitosamente"
+      );
+    } catch (error) {
+      error.details = {
+        path: "ProfesorModel.obtenerTodos",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los profesores"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method mostrarDisponibilidad
    * @description Obtener todos los profesores de la base de datos
    * @returns {Promise<Object>} Lista de profesores formateada
