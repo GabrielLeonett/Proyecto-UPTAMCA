@@ -1,6 +1,14 @@
 import ResponsiveAppBar from "../../components/navbar";
 import CardProfesor from "../../components/cardProfesor";
-import { Typography, Box, Grid, CircularProgress } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Grid,
+  CircularProgress,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../hook/useApi";
 import { useParams } from "react-router-dom";
@@ -9,7 +17,8 @@ export default function GestionProfesores() {
   const axios = useApi(false);
 
   const [profesores, setProfesores] = useState([]);
-  const [profesorEspecifico, setProfesorEspecifico] = useState(null);
+  const [profesorEspecifico, setProfesorEspecifico] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const params = useParams();
@@ -87,6 +96,25 @@ export default function GestionProfesores() {
         <Typography variant="h3" component="h1" gutterBottom sx={{ mb: 4 }}>
           Profesores
         </Typography>
+
+        {/* 🔍 Barra de búsqueda */}
+        <Box display="flex"  mb={3}>
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="Buscar profesor..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: { xs: "100%", sm: "300px" } }}
+          />
+        </Box>
 
         {loading ? (
           <Box display="flex" justifyContent="center" my={4}>

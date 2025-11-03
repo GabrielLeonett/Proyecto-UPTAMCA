@@ -6,26 +6,30 @@ import {
   Stack,
   Snackbar,
   Alert,
+  TextField,
+  InputAdornment,
   useTheme,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../hook/useApi";
 import CardProfesorEliminado from "../../components/CardProfesorEliminado";
+
 export default function ProfesoresEliminados() {
   const [profesores, setProfesores] = useState([]);
+  const [profesoresFiltrados, setProfesoresFiltrados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensaje, setMensaje] = useState(null);
+  const [busqueda, setBusqueda] = useState("");
   const axios = useApi();
   const theme = useTheme();
 
   const fetchEliminados = useCallback(async () => {
     setLoading(true);
     try {
-      const { profesoresEliminados } = await axios.get(
-        "/profesores/eliminados"
-      );
-      console.log(profesoresEliminados);
+      const { profesoresEliminados } = await axios.get("/profesores/eliminados");
       setProfesores(profesoresEliminados || []);
+      setProfesoresFiltrados(profesoresEliminados || []);
     } catch (error) {
       console.error(error);
     } finally {
@@ -36,6 +40,22 @@ export default function ProfesoresEliminados() {
   useEffect(() => {
     fetchEliminados();
   }, [fetchEliminados]);
+
+  const handleBuscar = (e) => {
+    const valor = e.target.value.toLowerCase();
+    setBusqueda(valor);
+
+    if (valor === "") {
+      setProfesoresFiltrados(profesores);
+    } else {
+      const filtrados = profesores.filter(
+        (p) =>
+          p.nombre?.toLowerCase().includes(valor) ||
+          p.cedula?.toLowerCase().includes(valor)
+      );
+      setProfesoresFiltrados(filtrados);
+    }
+  };
 
   return (
     <>
@@ -53,20 +73,39 @@ export default function ProfesoresEliminados() {
           py: 3,
         }}
       >
-        <Typography variant="h2" component={"h2"} sx={{ px: 2 }}>
+        <Typography variant="h2" component="h2" sx={{ px: 2 }}>
           Profesores Eliminados
         </Typography>
+
+        {/* 🔍 Barra de búsqueda */}
+        <Box sx={{ maxWidth: 400, px: 2, mt: 2 }}>
+          <TextField
+            fullWidth
+            placeholder="Buscar profesor por nombre o cédula..."
+            value={busqueda}
+            onChange={handleBuscar}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
 
         {loading ? (
           <Box display="flex" justifyContent="center" my={6}>
             <CircularProgress />
           </Box>
-        ) : profesores.length === 0 ? (
-          <Typography>No hay profesores eliminados actualmente.</Typography>
+        ) : profesoresFiltrados.length === 0 ? (
+          <Typography sx={{ px: 2, mt: 3 }}>
+            No hay profesores eliminados que coincidan con la búsqueda.
+          </Typography>
         ) : (
           <Stack spacing={2} mt={3} sx={{ px: 2 }}>
-            {profesores.map((prof) => (
-              <CardProfesorEliminado prof={prof} />
+            {profesoresFiltrados.map((prof) => (
+              <CardProfesorEliminado key={prof.id} prof={prof} />
             ))}
           </Stack>
         )}
