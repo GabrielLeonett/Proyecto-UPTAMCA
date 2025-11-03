@@ -174,12 +174,12 @@ export default function Footer() {
             </Typography>
             <Stack spacing={1}>
               {[
-                { text: "Política de privacidad", href: "/politicaPrivacidad" },
+                { text: "Política de privacidad", href: "/politica-privacidad" },
                 {
                   text: "Términos y condiciones",
-                  href: "/TerminosCondiciones",
+                  href: "/terminos-condiciones",
                 },
-                { text: "Accesibilidad", href: "/Accesibilidad" },
+                { text: "Accesibilidad", href: "/accesibilidad" },
               ].map((item) => (
                 <Link
                   key={item.text}

@@ -1,13 +1,14 @@
 import ResponsiveAppBar from "../../components/navbar";
 import { CardCoordinador } from "../../components/cardCoordinador";
-import { Typography, Box, CircularProgress } from "@mui/material";
+import { Typography, Box, CircularProgress, TextField } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import useApi from "../../hook/useApi"; // Added import for axios
+import useApi from "../../hook/useApi";
 
 export default function Coordinadores() {
   const axios = useApi();
   const [coordinadores, setCoordinadores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
 
   // Función para buscar coordinadores
   const fetchCoordinadores = useCallback(async () => {
@@ -20,12 +21,20 @@ export default function Coordinadores() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [axios]);
 
   // Efecto inicial
   useEffect(() => {
     fetchCoordinadores();
   }, [fetchCoordinadores]);
+
+  // ✅ Filtrado de coordinadores según búsqueda
+  const coordinadoresFiltrados = coordinadores.filter(
+    (coord) =>
+      coord.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      coord.apellido?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      coord.cedula?.toString().includes(busqueda)
+  );
 
   return (
     <>
@@ -34,6 +43,17 @@ export default function Coordinadores() {
         <Typography variant="h3" component="h1" gutterBottom sx={{ mb: 4 }}>
           Coordinadores
         </Typography>
+
+        {/* 🔍 Campo de búsqueda */}
+        <Box sx={{ maxWidth: 400, mb: 3 }}>
+          <TextField
+            fullWidth
+            variant="outlined"
+            placeholder="Buscar por nombre, apellido o cédula..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+          />
+        </Box>
 
         {/* Lista de coordinadores */}
         <Box
@@ -47,13 +67,13 @@ export default function Coordinadores() {
             <Box display="flex" justifyContent="center" my={4}>
               <CircularProgress />
             </Box>
-          ) : coordinadores.length === 0 ? (
+          ) : coordinadoresFiltrados.length === 0 ? (
             <Typography textAlign="center" my={4}>
               No se encontraron coordinadores con los filtros seleccionados
             </Typography>
           ) : (
-            coordinadores.map((coordinador) => (
-              <CardCoordinador coordinador={coordinador} />
+            coordinadoresFiltrados.map((coordinador) => (
+              <CardCoordinador key={coordinador.cedula} coordinador={coordinador} />
             ))
           )}
         </Box>

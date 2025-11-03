@@ -1,6 +1,14 @@
 import ResponsiveAppBar from "../../components/navbar";
 import CardProfesor from "../../components/cardProfesor";
-import { Typography, Box, Grid, CircularProgress } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Grid,
+  CircularProgress,
+  TextField,
+  InputAdornment,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../hook/useApi";
 
@@ -8,10 +16,11 @@ export default function GestionProfesores() {
   const axios = useApi(false);
 
   const [profesores, setProfesores] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Función para buscar profesores - SIMPLIFICADA
+  // Función para buscar profesores
   const fetchProfesores = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -23,24 +32,25 @@ export default function GestionProfesores() {
       let profesoresData = data.profesores || [];
 
       setProfesores(profesoresData);
+    } catch (err) {
+      console.error("❌ Error al cargar profesores:", err);
+      setError("Error al cargar los profesores.");
     } finally {
       setLoading(false);
     }
-  }, [axios]); // ✅ Solo axios como dependencia
+  }, [axios]);
 
-  // Efecto inicial para cargar profesores - SOLO UNA VEZ
+  // Cargar profesores una sola vez
   useEffect(() => {
     fetchProfesores();
-  }, []); // ✅ Array de dependencias VACÍO - se ejecuta solo una vez
+  }, []);
 
-  // Debug: ver qué está pasando
-  useEffect(() => {
-    console.log("📈 Estado actual:", {
-      loading,
-      error: error?.substring(0, 50) + "...",
-      cantidadProfesores: profesores.length,
-    });
-  }, [loading, error, profesores.length]);
+  // Filtrar profesores según búsqueda
+  const profesoresFiltrados = profesores.filter((prof) =>
+    `${prof.nombre || ""} ${prof.apellido || ""} ${prof.cedula || ""}`
+      .toLowerCase()
+      .includes(busqueda.toLowerCase())
+  );
 
   return (
     <>
@@ -51,6 +61,25 @@ export default function GestionProfesores() {
           Profesores
         </Typography>
 
+        {/* 🔍 Barra de búsqueda */}
+        <Box display="flex"  mb={3}>
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="Buscar profesor..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+            sx={{ width: { xs: "100%", sm: "300px" } }}
+          />
+        </Box>
+
         {loading ? (
           <Box display="flex" justifyContent="center" my={4}>
             <CircularProgress />
@@ -60,9 +89,9 @@ export default function GestionProfesores() {
           <Typography color="error" textAlign="center" my={4}>
             {error}
           </Typography>
-        ) : profesores.length === 0 ? (
+        ) : profesoresFiltrados.length === 0 ? (
           <Typography textAlign="center" my={4}>
-            No hay profesores registrados
+            No se encontraron profesores
           </Typography>
         ) : (
           <Grid
@@ -73,13 +102,13 @@ export default function GestionProfesores() {
               margin: 0,
             }}
           >
-            {profesores.map((profesor) => (
+            {profesoresFiltrados.map((profesor) => (
               <Grid
                 item
-                xs={12} // 1 columna en móvil
-                sm={6} // 2 columnas en tablet
-                md={4} // 3 columnas en desktop
-                lg={3} // 4 columnas en large
+                xs={12}
+                sm={6}
+                md={4}
+                lg={3}
                 key={profesor.cedula}
               >
                 <CardProfesor profesor={profesor} />

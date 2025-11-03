@@ -72,6 +72,7 @@ import ProtectedViews from "./security/ProtectedViews";
 import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
+import AsignarAdministradores from "./pages/AsignarAdministradores"
 
 
 // Roles comunes para reutilización
@@ -312,6 +313,14 @@ export default function App() {
                 }
               />
               <Route path="/aulas/editar/:id" element={<EditarAula />} />
+              <Route
+                path="/Asignar-Administradores"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <AsignarAdministradores />
+                  </ProtectedViews>
+                }
+              />
 
 
             </Routes>
