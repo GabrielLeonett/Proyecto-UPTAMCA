@@ -18,7 +18,8 @@ import {
 
 const TableOverlay = ({
   isVisible,
-  Custom,
+  isCustom,
+  setCustom,
   onPrint,
   onClose,
   title = "Opciones del Horario",
@@ -158,8 +159,13 @@ const TableOverlay = ({
               />
             }
             title="Editar"
+            onClick={() => {
+              setCustom((prev) => {
+                return !prev;
+              });
+            }}
             description="Modificar horario existente"
-            disabled={!Custom}
+            disabled={!isCustom}
           />
 
           <ActionCard
@@ -184,7 +190,7 @@ const TableOverlay = ({
             maxWidth: 400,
           }}
         >
-          {!Custom &&
+          {!isCustom &&
             "El modo de edición no está disponible en esta vista. Solo puedes imprimir el horario."}
         </Typography>
       </Box>

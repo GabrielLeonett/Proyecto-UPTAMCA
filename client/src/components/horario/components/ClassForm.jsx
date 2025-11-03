@@ -17,7 +17,8 @@ import {
   Person as PersonIcon,
   Room as RoomIcon,
   Save as SaveIcon,
-  Cancel as CancelIcon
+  Cancel as CancelIcon,
+  Logout as LogoutIcon,
 } from "@mui/icons-material";
 import CustomButton from "../../customButton";
 
@@ -37,6 +38,7 @@ const ClassForm = ({
   errors = {},
   ButtonSave,
   ButtonCancel,
+  ButtonExitModeCustom,
 }) => {
   const theme = useTheme();
 
@@ -248,6 +250,16 @@ const ClassForm = ({
           >
             <CancelIcon /> {/* Icono diferente para cancelar */}
             <Typography sx={{ ml: 1 }}>Cancelar Cambios</Typography>{" "}
+            {/* Texto diferente */}
+          </CustomButton>
+          <CustomButton
+            tipo="error"
+            onClick={() => {
+              ButtonExitModeCustom();
+            }}
+          >
+            <LogoutIcon /> {/* Icono diferente para cancelar */}
+            <Typography sx={{ ml: 1 }}>Salir del Modo Custom</Typography>{" "}
             {/* Texto diferente */}
           </CustomButton>
         </Grid>

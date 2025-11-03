@@ -80,7 +80,7 @@ export default class UserService {
         user.nombres,
         user.apellidos
       );
-
+      
       // 5. Preparar respuesta exitosa
       return FormatterResponseService.success(
         {
@@ -91,6 +91,7 @@ export default class UserService {
             nombres: user.nombres,
             primera_vez: user.primera_vez,
             roles: user.roles,
+            ...(user.id_pnf && { id_pnf: user.id_pnf }), // ✅ Solo agrega si existe
           },
         },
         "Inicio de sesión exitoso",
@@ -159,7 +160,7 @@ export default class UserService {
       // 2. Validar contraseña actual
       console.log("🔐 Validando contraseña actual...");
       const validatePassword = await comparePassword(
-        datos.antiguaPassword,
+        datos.antigua_password,
         password
       );
 

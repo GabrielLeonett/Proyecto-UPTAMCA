@@ -1,5 +1,6 @@
 // Funcion para generar reportes en caso de errores internos
 import generateReport from "./generateReport.js";
+import logger from "../config/winston.config.js"; // Importar Winston
 
 /**
  * @class FormatterResponseController
@@ -37,7 +38,7 @@ export default class FormatterResponseController {
         status: serviceResponse.status || 200,
         title: metadataTitle || serviceResponse.title || "Éxito",
         message: message,
-        data: data, // Usar data directamente sin anidar innecesariamente
+        data: data,
         ...(Object.keys(cleanMetadata).length > 0 && {
           metadata: cleanMetadata,
         }),
@@ -48,9 +49,24 @@ export default class FormatterResponseController {
         response.pagination = metadata.pagination;
       }
 
-      //console.log("✅ Respuesta exitosa optimizada:", response);
+      // Log con Winston - nivel info para respuestas exitosas
+      logger.info("✅ Respuesta exitosa", {
+        status: response.status,
+        title: response.title,
+        message: response.message,
+        hasData: !!data,
+        timestamp: new Date().toISOString()
+      });
+
       return res.status(response.status).json(response);
     } catch (error) {
+      // Log con Winston - nivel error
+      logger.error("💥 Error al procesar respuesta exitosa", {
+        error: error.message,
+        stack: error.stack,
+        serviceResponse: serviceResponse
+      });
+
       return this.respuestaError(res, {
         status: 500,
         title: "Error del Controlador",
@@ -59,6 +75,7 @@ export default class FormatterResponseController {
       });
     }
   }
+
   /**
    * @static
    * @method respuestaError
@@ -71,25 +88,28 @@ export default class FormatterResponseController {
     try {
       // DETECCIÓN MEJORADA DE ERRORES 4xx
       const isClientError =
-        // Por código de estado
         (serviceResponse.status >= 400 && serviceResponse.status < 500) ||
-        // Por códigos de error específicos
         serviceResponse.error?.code === "UNAUTHORIZED" ||
         serviceResponse.error?.code === "VALIDATION_ERROR" ||
         serviceResponse.error?.code?.includes("NOT_FOUND") ||
         serviceResponse.error?.code?.includes("NO_") ||
         serviceResponse.error?.code?.includes("INVALID_") ||
-        // Por títulos
         serviceResponse.title?.includes("No Autorizado") ||
         serviceResponse.title?.includes("Validación") ||
         serviceResponse.title?.includes("No Encontrado") ||
-        // Mensajes comunes
         serviceResponse.message?.includes("inválid") ||
         serviceResponse.message?.includes("incorrect") ||
         serviceResponse.message?.includes("no encontrado");
 
       if (isClientError) {
-        //console.log("✅ Identificado como error del cliente (4xx)");
+        // Log con Winston - nivel warn para errores del cliente
+        logger.warn("⚠️ Error del cliente (4xx)", {
+          status: serviceResponse.status,
+          title: serviceResponse.title,
+          message: serviceResponse.message,
+          errorCode: serviceResponse.error?.code,
+          timestamp: new Date().toISOString()
+        });
 
         // Caso específico: Validación
         if (
@@ -107,21 +127,20 @@ export default class FormatterResponseController {
           status: status,
           title: serviceResponse.title || this.getDefaultTitle(status),
           message: serviceResponse.message || "Error en la solicitud",
-          error: {
-            code: serviceResponse.error?.code || this.getErrorCode(status),
-            ...(serviceResponse.error?.details && {
-              details: serviceResponse.error.details,
-            }),
-          },
+          error: serviceResponse.error?.details || {},
         };
 
-        //console.log("❌ Error del cliente formateado:", response);
         return res.status(status).json(response);
       }
 
       // Si es una instancia de Error nativa
       if (serviceResponse instanceof Error) {
-        //console.log("🔍 Es una instancia de Error nativa");
+        logger.error("🔍 Error nativo capturado", {
+          message: serviceResponse.message,
+          stack: serviceResponse.stack,
+          name: serviceResponse.name
+        });
+
         return this.respuestaError(res, {
           status: 500,
           title: "Error Interno",
@@ -140,7 +159,15 @@ export default class FormatterResponseController {
 
       // Para errores 500 (sin detalles al usuario)
       if (serviceResponse.status === 500 || !serviceResponse.status) {
-        //console.log("🔍 Identificado como error del servidor (5xx)");
+        // Log con Winston - nivel error para errores del servidor
+        logger.error("🚨 Error del servidor (5xx)", {
+          status: 500,
+          title: serviceResponse.title,
+          message: serviceResponse.message,
+          errorCode: serviceResponse.error?.code,
+          stack: serviceResponse.error?.details?.stack,
+          timestamp: new Date().toISOString()
+        });
 
         await generateReport({
           status: 500,
@@ -164,33 +191,42 @@ export default class FormatterResponseController {
           },
         };
 
-        //console.log("❌ Respuesta de error 500 optimizada");
         return res.status(500).json(response);
       }
 
       // Caso por defecto (otros errores)
-      const defaultStatus = 500; // Estado de fallback
+      const defaultStatus = 500;
       const status =
         (typeof serviceResponse.status === "number" &&
           serviceResponse.status) ||
-        defaultStatus; // <--- AQUI LA CLAVE: Se asegura que sea número, o usa 500.
+        defaultStatus;
+      
+      // Log con Winston - nivel error para otros errores
+      logger.error("❌ Error genérico del servidor", {
+        status: status,
+        title: serviceResponse.title,
+        message: serviceResponse.message,
+        errorDetails: serviceResponse.error?.details,
+        timestamp: new Date().toISOString()
+      });
+
       const response = {
         success: false,
         status: status,
         title: serviceResponse.title || this.getDefaultTitle(status),
         message: serviceResponse.message || "Error interno del servidor",
-        error: {
-          code: serviceResponse.error?.code || this.getErrorCode(status),
-          ...(serviceResponse.error?.details && {
-            details: serviceResponse.error.details,
-          }),
-        },
+        error: serviceResponse.error.details,
       };
 
-      //console.log("❌ Respuesta de error genérica:", response);
       return res.status(status).json(response);
     } catch (internalError) {
-      console.error("💥 ERROR CRÍTICO en respuestaError:", internalError);
+      // Log con Winston - nivel error para errores críticos
+      logger.error("💥 ERROR CRÍTICO en respuestaError", {
+        error: internalError.message,
+        stack: internalError.stack,
+        serviceResponse: serviceResponse,
+        timestamp: new Date().toISOString()
+      });
 
       await generateReport({
         status: 500,
@@ -227,7 +263,6 @@ export default class FormatterResponseController {
     // EXTRAER validationErrors DE FORMA MÁS ROBUSTA
     let validationErrors = [];
 
-    // Buscar validationErrors en diferentes ubicaciones posibles
     if (errorInfo.details?.validationErrors) {
       validationErrors = errorInfo.details.validationErrors;
     } else if (serviceResponse.validationErrors) {
@@ -246,16 +281,21 @@ export default class FormatterResponseController {
         serviceResponse.message || "Los datos proporcionados son inválidos",
       data: null,
       error: {
-        code: "VALIDATION_ERROR", // SIEMPRE usar este código para validación
-        details: {
-          validationErrors: this.formatValidationErrors(validationErrors),
-          totalErrors: validationErrors.length,
-        },
-        timestamp: errorInfo.timestamp || new Date().toISOString(),
+        validationErrors: this.formatValidationErrors(validationErrors),
+        totalErrors: validationErrors.length,
       },
     };
 
-    //console.log("❌ Error de validación formateado:", response);
+    // Log con Winston - nivel warn para errores de validación
+    logger.warn("📝 Error de validación", {
+      status: 400,
+      title: response.title,
+      message: response.message,
+      totalErrors: validationErrors.length,
+      validationErrors: validationErrors,
+      timestamp: new Date().toISOString()
+    });
+
     return res.status(400).json(response);
   }
 
@@ -303,6 +343,7 @@ export default class FormatterResponseController {
   static respuestaServicio(res, serviceResponse) {
     try {
       if (!serviceResponse) {
+        logger.error("❌ Servicio no devolvió respuesta válida");
         return this.respuestaError(res, {
           status: 500,
           title: "Error del Servicio",
@@ -317,6 +358,11 @@ export default class FormatterResponseController {
         return this.respuestaError(res, serviceResponse);
       }
     } catch (error) {
+      logger.error("💥 Error al procesar respuesta del servicio", {
+        error: error.message,
+        stack: error.stack
+      });
+
       return this.respuestaError(res, {
         status: 500,
         title: "Error del Controlador",
@@ -338,6 +384,7 @@ export default class FormatterResponseController {
     try {
       const resultado = await servicioPromise;
       if (resultado === undefined || resultado === null) {
+        logger.error("❌ Servicio devolvió resultado nulo o indefinido");
         return this.respuestaError(res, {
           status: 500,
           title: "Error del Servicio",
@@ -350,7 +397,10 @@ export default class FormatterResponseController {
       }
       return this.respuestaExito(res, resultado);
     } catch (error) {
-      console.log(error)
+      logger.error("💥 Error en manejarServicio", {
+        error: error.message,
+        stack: error.stack
+      });
       return this.respuestaError(res, error);
     }
   }
@@ -365,6 +415,13 @@ export default class FormatterResponseController {
    * @returns {Object} Respuesta estructurada
    */
   static respuestaDatos(res, data, metadata = {}) {
+    // Log con Winston - nivel info para respuestas de datos
+    logger.info("📊 Respuesta de datos exitosa", {
+      dataType: typeof data,
+      hasMetadata: Object.keys(metadata).length > 0,
+      timestamp: new Date().toISOString()
+    });
+
     return this.respuestaExito(res, {
       status: 200,
       success: true,
@@ -390,6 +447,13 @@ export default class FormatterResponseController {
     pagination,
     message = "Datos paginados obtenidos exitosamente"
   ) {
+    // Log con Winston - nivel info para respuestas paginadas
+    logger.info("📄 Respuesta paginada exitosa", {
+      dataCount: data?.length || 0,
+      pagination: pagination,
+      timestamp: new Date().toISOString()
+    });
+
     return this.respuestaExito(res, {
       status: 200,
       success: true,

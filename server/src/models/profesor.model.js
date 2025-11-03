@@ -26,7 +26,10 @@ export default class ProfesorModel {
   static async crear(datos, usuarioId) {
     try {
       console.log("🔍 [ProfesorModel.crear] Iniciando creación de profesor...");
-      console.log("Datos recibidos:", datos);
+      const Areasconocimiento = datos.areas_de_conocimiento.map((area) => {
+        return area.nombre_area_conocimiento;
+      });
+      console.log(Areasconocimiento)
       const {
         cedula,
         nombres,
@@ -41,7 +44,6 @@ export default class ProfesorModel {
         dedicacion,
         categoria,
         municipio,
-        areas_de_conocimiento,
         pre_grado,
         pos_grado,
         password,
@@ -66,13 +68,12 @@ export default class ProfesorModel {
         dedicacion,
         pre_grado,
         pos_grado,
-        convertToPostgresArray(areas_de_conocimiento),
+        convertToPostgresArray(Areasconocimiento),
         imagen,
         municipio,
         fecha_ingreso,
       ];
 
-      console.log(values);
       const { rows } = await client.query(query, values);
 
       return FormatResponseModel.respuestaPostgres(
@@ -129,6 +130,7 @@ export default class ProfesorModel {
     try {
       const query = "SELECT * FROM vista_profesores_eliminados";
       const { rows } = await client.query(query);
+      console.log(rows);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -364,10 +366,10 @@ export default class ProfesorModel {
    */
   static async crearPregrado(datos, usuarioId) {
     try {
-      const { nombre, tipo } = datos;
+      const { nombre_pre_grado, tipo_pre_grado } = datos;
 
       const query = "CALL registrar_pre_grado($1, $2, $3, NULL)";
-      const values = [usuarioId, nombre, tipo];
+      const values = [usuarioId, nombre_pre_grado, tipo_pre_grado];
 
       const { rows } = await client.query(query, values);
       console.log(rows);
@@ -399,10 +401,10 @@ export default class ProfesorModel {
    */
   static async crearPosgrado(datos, usuarioId) {
     try {
-      const { nombre, tipo } = datos;
+      const { nombre_pos_grado, tipo_pos_grado } = datos;
 
       const query = "CALL registrar_pos_grado($1, $2, $3, NULL)";
-      const values = [usuarioId, nombre, tipo];
+      const values = [usuarioId, nombre_pos_grado, tipo_pos_grado];
 
       const { rows } = await client.query(query, values);
 

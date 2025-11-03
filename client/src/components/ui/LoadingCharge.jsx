@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 import LogoSimple from "./logoSimple";
-export default function LoadingCharge(charge) {
+export default function LoadingCharge({charge}) {
   return (
     <Box
       sx={{

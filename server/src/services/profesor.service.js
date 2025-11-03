@@ -547,8 +547,8 @@ export default class ProfesorService {
 
       const profesor = respuesta.data[0];
 
-      if (!profesor.imagen) {
-        return FormatterResponseService.error(
+      if (profesor.imagen === null) {
+        throw FormatterResponseService.error(
           "Imagen no encontrada",
           "El profesor no tiene una imagen registrada en el sistema",
           404,

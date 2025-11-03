@@ -2,7 +2,7 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
 import useSweetAlert from "../hook/useSweetAlert";
-
+import LoadingCharge from "../components/ui/LoadingCharge.jsx";
 
 export const AuthContext = createContext();
 
@@ -11,26 +11,44 @@ export function AuthProvider({ children }) {
   const axios = useApi(true);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Nuevo estado de carga
+  const [isLoading, setIsLoading] = useState(true); // Para verificación inicial
+  const [isLoggingIn, setIsLoggingIn] = useState(false); // Estado específico para login
   const navigate = useNavigate();
 
   const login = useCallback(
     async (userData) => {
       try {
+        // Usar el estado específico para login
+        setIsLoggingIn(true);
+
         const { user } = await axios.post("/auth/login", userData);
+        console.log(user);
         if (user) {
-          alert.success("¡Inicio de sesión exitoso!", "Bienvenido al sistema" )
           setUser(user);
           setIsAuthenticated(true);
 
-          // Redirección con React Router
+          /*
+          alert
+            .success("¡Inicio de sesión exitoso!", "Bienvenido al sistema")
+            .then((result) => {
+              if (result.isConfirmed) {
+                if (user.primera_vez) {
+                  navigate("/cambiar-contraseña");
+                } else {
+                  navigate("/");
+                }
+              }
+            });
+            */
           setTimeout(() => {
-            if (user.primera_vez) {
-              navigate("/cambiar-contraseña");
-            } else {
-              navigate("/");
-            }
+            setIsLoggingIn(false);
           }, 3000);
+
+          if (user.primera_vez) {
+            navigate("/cambiar-contraseña");
+          } else {
+            navigate("/");
+          }
         } else {
           throw new Error("Respuesta del servidor incompleta");
         }
@@ -38,33 +56,29 @@ export function AuthProvider({ children }) {
         console.error(e);
         setUser(null);
         setIsAuthenticated(false);
+        setIsLoggingIn(false);
+        alert.error("Error", "Credenciales incorrectas");
       }
     },
-    [navigate]
+    [navigate, alert, axios]
   );
 
   const logout = useCallback(async () => {
     try {
-      // Hacer petición de logout al backend
-      console.log("Cerrando la session...");
+      console.log("Cerrando la sesión...");
       await axios.get("/auth/logout");
       console.log("Cierre exitoso");
 
-      // Limpiar el estado local
       setUser(null);
       setIsAuthenticated(false);
-
-      // Redirigir a la página de cerrar-session
       navigate("/cerrar-sesion");
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-
-      // Aunque falle la petición, limpiar el estado local y redirigir
       setUser(null);
       setIsAuthenticated(false);
       navigate("/cerrar-sesion");
     }
-  }, [navigate]);
+  }, [navigate, axios]);
 
   const verifyAuth = useCallback(async () => {
     setIsLoading(true);
@@ -74,10 +88,14 @@ export function AuthProvider({ children }) {
         setUser(verifiedData);
         setIsAuthenticated(true);
       }
+    } catch (error) {
+      console.error("Error verificando autenticación:", error);
+      setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [axios]);
 
   const checkUserAccess = useCallback(
     (requiredRoles) => {
@@ -91,6 +109,11 @@ export function AuthProvider({ children }) {
     verifyAuth();
   }, [verifyAuth]);
 
+  // Si está cargando la verificación inicial, mostrar LoadingCharge
+  if (isLoading) {
+    return <LoadingCharge charge={true} text="Verificando autenticación..." />;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -98,11 +121,18 @@ export function AuthProvider({ children }) {
         login,
         logout,
         isAuthenticated,
-        isLoading, // Exportamos el estado de carga
+        isLoading,
+        isLoggingIn, // Exportamos el estado de login
         checkUserAccess,
       }}
     >
-      {children}
+      {/* Mostrar LoadingCharge global durante el login */}
+      {isLoggingIn && (
+        <LoadingCharge charge={true} text="Iniciando sesión..." />
+      )}
+
+      {/* Renderizar children solo cuando no esté haciendo login */}
+      {!isLoggingIn && children}
     </AuthContext.Provider>
   );
 }

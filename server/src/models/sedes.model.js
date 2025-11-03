@@ -22,12 +22,12 @@ export default class SedeModel {
     try {
       console.log("💾 [crearSede] Insertando sede en BD...");
 
-      const { nombreSede, UbicacionSede, GoogleSede, CiudadSede } = datos;
+      const { nombre_sede, ubicacion_sede, google_sede, ciudad_sede } = datos;
 
       // Insertar sede usando el procedimiento almacenado
       const { rows } = await pg.query(
         "CALL public.registrar_sede_completo($1, $2, $3, $4, $5, NULL)",
-        [usuarioId, nombreSede, UbicacionSede, GoogleSede || null, CiudadSede]
+        [usuarioId, nombre_sede, ubicacion_sede, google_sede || null, ciudad_sede]
       );
 
       console.log("✅ Sede insertada en BD:", rows);

@@ -105,7 +105,7 @@ export const nuevaAreaConocimientoSchema = z.object({
 
 // Esquema para crear nuevo Pregrado (sin ID)
 export const nuevoPregradoSchema = z.object({
-  nombre: z
+  nombre_pre_grado: z
     .string({
       invalid_type_error: "El nombre del Pre-Grado debe ser texto",
       required_error: "El nombre del Pre-Grado es obligatorio",
@@ -116,7 +116,7 @@ export const nuevoPregradoSchema = z.object({
         "El nombre del Pre-Grado solo puede contener letras, espacios y caracteres básicos",
     }),
 
-  tipo: z
+  tipo_pre_grado: z
     .string({
       invalid_type_error: "El tipo del Pre-Grado debe ser texto",
       required_error: "El tipo del Pre-Grado es obligatorio",
@@ -129,7 +129,7 @@ export const nuevoPregradoSchema = z.object({
 
 // Esquema para crear nuevo Posgrado (sin ID)
 export const nuevoPosgradoSchema = z.object({
-  nombre: z
+  nombre_pos_grado: z
     .string({
       invalid_type_error: "El nombre del Pos-Grado debe ser texto",
       required_error: "El nombre del Pos-Grado es obligatorio",
@@ -140,7 +140,7 @@ export const nuevoPosgradoSchema = z.object({
         "El nombre del Pos-Grado solo puede contener letras, espacios y caracteres básicos",
     }),
 
-  tipo: z
+  tipo_pos_grado: z
     .string({
       invalid_type_error: "El tipo del Pos-Grado debe ser texto",
       required_error: "El tipo del Pos-Grado es obligatorio",

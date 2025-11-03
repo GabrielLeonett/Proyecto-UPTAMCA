@@ -11,10 +11,12 @@ import { useTheme } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi"; // Added import for axios
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function CambiarContraseña() {
   const axios = useApi();
   const theme = useTheme();
+  const alert = useSweetAlert();
   const navigate = useNavigate();
   const [processing, setProcessing] = useState(false);
 
@@ -23,7 +25,6 @@ export default function CambiarContraseña() {
     handleSubmit,
     formState: { errors, isValid },
     trigger,
-    watch,
   } = useForm({
     resolver: zodResolver(ContraseñaSchema),
     mode: "onChange",
@@ -33,8 +34,12 @@ export default function CambiarContraseña() {
   const onSubmit = async (formData) => {
     try {
       setProcessing(true);
-
       await axios.put("/auth/password", formData);
+      alert.success(
+        "Cambio de contraseña Exitoso",
+        "Se ha realizado el cambio de contraseña"
+      );
+      navigate("/");
     } finally {
       setProcessing(false);
     }
@@ -43,10 +48,6 @@ export default function CambiarContraseña() {
   const handleCancelar = () => {
     navigate(-1); // Volver a la página anterior
   };
-
-  // Observar los valores para mostrar feedback en tiempo real
-  const passwordValue = watch("password");
-  const repetirPasswordValue = watch("repetir_password");
 
   return (
     <>
@@ -63,7 +64,7 @@ export default function CambiarContraseña() {
             boxShadow: 3,
             borderRadius: 2,
           }}
-          autoComplete="off"
+          autoComplete="on"
         >
           <Typography
             variant="h4"
@@ -130,24 +131,6 @@ export default function CambiarContraseña() {
                 "Confirma tu nueva contraseña"
               }
             />
-
-            {/* Mostrar coincidencia de contraseñas en tiempo real */}
-            {passwordValue && repetirPasswordValue && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color:
-                    passwordValue === repetirPasswordValue
-                      ? theme.palette.success.main
-                      : theme.palette.warning.main,
-                  textAlign: "center",
-                }}
-              >
-                {passwordValue === repetirPasswordValue
-                  ? "✓ Las contraseñas coinciden"
-                  : "⚠ Las contraseñas no coinciden"}
-              </Typography>
-            )}
           </Box>
 
           {errors.root && (

@@ -7,8 +7,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   AccordionActions,
-  Snackbar,
-  Alert,
   IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
@@ -23,7 +21,7 @@ import ModalEditarCampoProfesor from "../components/ModalEditarCampoProfesor.jsx
 import CustomButton from "./customButton.jsx";
 import CustomChip from "./CustomChip.jsx";
 
-export default function CardProfesor({ profesor }) {
+export default function CardProfesor({ profesor, isSearch }) {
   const axios = useApi(false);
   const theme = useTheme();
   const navigate = useNavigate();
@@ -35,12 +33,24 @@ export default function CardProfesor({ profesor }) {
   const [campoEditando, setCampoEditando] = useState(null);
   const [valorEditando, setValorEditando] = useState("");
   const [profesorEditado, setProfesorEditado] = useState(false);
-  const [mensaje, setMensaje] = useState(null);
+  const [isTitileando, setIsTitileando] = useState(false);
   const hasFetched = useRef(false);
 
   useEffect(() => {
     console.log(profesorActual);
-  }, []);
+  }, [profesorActual]);
+
+  // Efecto de titileo cuando isSearch es true
+  useEffect(() => {
+    if (isSearch) {
+      setIsTitileando(true);
+      const timer = setTimeout(() => {
+        setIsTitileando(false);
+      }, 5000); // Titileo durante 2 segundos
+
+      return () => clearTimeout(timer);
+    }
+  }, [isSearch]);
 
   // Cargar imagen del profesor
   useEffect(() => {
@@ -79,8 +89,7 @@ export default function CardProfesor({ profesor }) {
     const actualizado = { ...profesorActual, [campo]: nuevoValor };
     setProfesorActual(actualizado);
     setProfesorEditado(true);
-    setMensaje(`Campo "${campo}" actualizado correctamente`);
-    setOpenModalEditar(false); // ✅ cerrar el modal después de guardar
+    setOpenModalEditar(false);
   };
 
   // Guardar cambios en servidor
@@ -93,16 +102,13 @@ export default function CardProfesor({ profesor }) {
       );
       console.log(respuesta);
       setProfesorEditado(false);
-      setMensaje("Cambios guardados correctamente");
     } catch (error) {
       console.error("Error al guardar cambios:", error);
-      setMensaje("Error al guardar cambios");
     }
   };
 
   // Eliminar profesor
   const handleProfesorEliminado = () => {
-    setMensaje("Profesor eliminado correctamente");
     setTimeout(() => {
       navigate("/profesores/eliminados");
     }, 1200);
@@ -123,8 +129,24 @@ export default function CardProfesor({ profesor }) {
         width: "100%",
         maxWidth: "400px",
         margin: "0 auto",
-        boxShadow: 2,
+        boxShadow: isTitileando ? 6 : 2,
         overflow: "hidden",
+        transform: isTitileando ? "scale(1.02)" : "scale(1)",
+        border: isTitileando 
+          ? `2px solid ${theme.palette.primary.main}`
+          : "none",
+        animation: isTitileando ? "titileo 0.5s ease-in-out infinite alternate" : "none",
+        transition: "all 0.3s ease-in-out",
+        "@keyframes titileo": {
+          "0%": {
+            boxShadow: `0 0 10px ${theme.palette.primary.main}`,
+            transform: "scale(1.02)",
+          },
+          "100%": {
+            boxShadow: `0 0 20px ${theme.palette.primary.main}, 0 0 30px ${theme.palette.primary.light}`,
+            transform: "scale(1.03)",
+          }
+        }
       }}
     >
       {/* Imagen del profesor */}
@@ -390,6 +412,7 @@ export default function CardProfesor({ profesor }) {
             </Box>
           </AccordionDetails>
         </Accordion>
+
         {/* Información Profesional */}
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>

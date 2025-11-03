@@ -3,6 +3,8 @@ import { UTILS } from "../../../utils/utils";
 
 // Todos los estados del componente
 const useHorarioState = () => {
+  //Estado que hara que el componente pase a estado Custom
+  const [Custom, setCustom] = useState(false);
   // Estado de la clase seleccionada
   const [selectedClass, setSelectedClass] = useState(null);
   // Estado de los Slots que están habilitados para un posible movimiento
@@ -61,6 +63,7 @@ const useHorarioState = () => {
     setProfesorSelected,
     setAulaHorario,
     setTableHorarioOriginal,
+    setCustom,
   };
 
   // Agrupar todos los estados para facilitar el acceso
@@ -81,6 +84,7 @@ const useHorarioState = () => {
     aulaSelected,
     aulaHorario,
     tableHorarioOriginal,
+    Custom,
   };
 
   return {

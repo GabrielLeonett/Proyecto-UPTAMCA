@@ -131,7 +131,7 @@ export default function App() {
 
               {/* === GESTIÓN DE PERSONAL ACADÉMICO === */}
               <Route
-                path="/academico/profesores"
+                path="/academico/profesores/:id_profesor?"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionProfesores />

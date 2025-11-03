@@ -92,7 +92,7 @@ export default class CoordinadorService {
           usuario_asignador: user_action.id,
           fecha_asignacion: new Date().toISOString(),
         },
-        roles_ids: [1, 2, 3], // IDs de roles administrativos
+        roles_ids: [7, 8, 9, 10], // IDs de roles administrativos
         users_ids: [user_action.id, datos.cedula_profesor],
       });
 
@@ -356,7 +356,7 @@ export default class CoordinadorService {
           usuario_actualizador: user_action.id,
           fecha_actualizacion: new Date().toISOString(),
         },
-        roles_ids: [1, 2, 3],
+        roles_ids: [7, 8, 9, 10],
         users_ids: [user_action.id, coordinadorExistente.data[0].cedula],
       });
 
@@ -464,7 +464,7 @@ export default class CoordinadorService {
           usuario_ejecutor: user_action.id,
           fecha_destitucion: new Date().toISOString(),
         },
-        roles_ids: [1, 2, 3],
+        roles_ids: [7, 8, 9, 10],
         users_ids: [user_action.id, coordinador.cedula],
       });
 

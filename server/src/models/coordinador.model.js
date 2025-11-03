@@ -22,7 +22,7 @@ export default class CoordinadorModel {
   static async asignarCoordinador(datos, id_usuario) {
     try {
       const query = `CALL asignar_coordinador($1, $2, $3)`;
-      const params = [id_usuario, datos.idProfesor, datos.idPnf];
+      const params = [id_usuario, datos.id_profesor, datos.id_pnf];
       console.log(params);
       const { rows } = await pg.query(query, params);
 

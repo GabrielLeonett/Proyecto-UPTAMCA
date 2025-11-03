@@ -23,10 +23,10 @@ export default class CurricularModel {
    * @description Registra un nuevo Programa Nacional de Formación (PNF)
    * @param {Object} params - Parámetros del registro
    * @param {Object} params.datos - Datos del PNF a registrar
-   * @param {string} params.datos.nombrePNF - Nombre del PNF
-   * @param {string} params.datos.descripcionPNF - Descripción del PNF
-   * @param {string} params.datos.codigoPNF - Código único del PNF
-   * @param {string} params.datos.sedePNF - Sede donde se imparte el PNF
+   * @param {string} params.datos.nombre_pnf - Nombre del PNF
+   * @param {string} params.datos.descripcion_pnf - Descripción del PNF
+   * @param {string} params.datos.codigo_pnf - Código único del PNF
+   * @param {string} params.datos.sede_pnf - Sede donde se imparte el PNF
    * @param {number} usuario_accion - Usuario que ejecuta la acción
    * @returns {Promise<Object>} Resultado del registro
    */
@@ -34,21 +34,21 @@ export default class CurricularModel {
     try {
       console.log("Datos para registrar PNF:", datos);
       const {
-        nombrePNF,
-        descripcionPNF,
-        codigoPNF,
-        duracionTrayectosPNF,
-        sedePNF,
+        nombre_pnf,
+        descripcion_pnf,
+        codigo_pnf,
+        duracion_trayectos_pnf,
+        sede_pnf,
       } = datos;
 
       const query = `CALL public.registrar_pnf_completo($1, $2, $3, $4, $5, $6, NULL)`;
       const params = [
         usuario_accion,
-        nombrePNF,
-        descripcionPNF,
-        codigoPNF,
-        sedePNF,
-        duracionTrayectosPNF,
+        nombre_pnf,
+        descripcion_pnf,
+        codigo_pnf,
+        sede_pnf,
+        duracion_trayectos_pnf,
       ];
 
       const { rows } = await pg.query(query, params);
@@ -300,13 +300,13 @@ export default class CurricularModel {
    * @async
    * @method mostrarTrayectos
    * @description Obtiene trayectos y su relación con el PNF
-   * @param {string} [codigoPNF] - Código del PNF para filtrar (opcional)
+   * @param {string} [codigo_pnf] - Código del PNF para filtrar (opcional)
    * @returns {Promise<Object>} Resultado de la consulta
    */
-  static async mostrarTrayectos(codigoPNF) {
+  static async mostrarTrayectos(codigo_pnf) {
     try {
       let rows;
-      if (codigoPNF) {
+      if (codigo_pnf) {
         ({ rows } = await pg.query(
           `
           SELECT 
@@ -321,7 +321,7 @@ export default class CurricularModel {
           JOIN pnfs p ON t.id_pnf = p.id_pnf
           WHERE p.codigo_pnf = $1 AND t.activo = true AND p.activo = true
           ORDER BY t.valor_trayecto ASC`,
-          [codigoPNF]
+          [codigo_pnf]
         ));
       } else {
         ({ rows } = await pg.query(`
@@ -359,14 +359,14 @@ export default class CurricularModel {
    * @async
    * @method mostrarSeccionesByPnfAndValueTrayecto
    * @description Obtiene secciones por PNF y valor de trayecto
-   * @param {string} codigoPNF - Código del PNF para filtrar
+   * @param {string} codigo_pnf - Código del PNF para filtrar
    * @param {string|number} valorTrayecto - Valor del trayecto para filtrar
    * @returns {Promise<Object>} Resultado de la consulta
    */
-  static async mostrarSeccionesByPnfAndValueTrayecto(codigoPNF, valorTrayecto) {
+  static async mostrarSeccionesByPnfAndValueTrayecto(codigo_pnf, valorTrayecto) {
     try {
       console.log("📊 [Model] Obteniendo secciones...", {
-        codigoPNF,
+        codigo_pnf,
         valorTrayecto,
       });
 
@@ -388,7 +388,7 @@ export default class CurricularModel {
       WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
       ORDER BY s.valor_seccion ASC;
       `,
-        [codigoPNF, valorTrayecto]
+        [codigo_pnf, valorTrayecto]
       );
 
       console.log(`📊 [Model] ${rows.length} secciones obtenidas`);
@@ -401,7 +401,7 @@ export default class CurricularModel {
       console.error("❌ Error en modelo mostrar secciones:", error);
       error.details = {
         path: "CurricularModel.mostrarSeccionesByPnfAndValueTrayecto",
-        codigoPNF,
+        codigo_pnf,
         valorTrayecto,
       };
       throw FormatterResponseModel.respuestaError(
@@ -416,17 +416,17 @@ export default class CurricularModel {
    * @async
    * @method mostrarSeccionesByPnfAndValueUnidadCurricular
    * @description Obtiene unidades curriculares por PNF y valor de trayecto
-   * @param {string} codigoPNF - Código del PNF para filtrar
+   * @param {string} codigo_pnf - Código del PNF para filtrar
    * @param {string|number} valorTrayecto - Valor del trayecto para filtrar
    * @returns {Promise<Object>} Resultado de la consulta
    */
   static async mostrarSeccionesByPnfAndValueUnidadCurricular(
-    codigoPNF,
+    codigo_pnf,
     valorTrayecto
   ) {
     try {
       console.log("📊 [Model] Obteniendo unidades curriculares...", {
-        codigoPNF,
+        codigo_pnf,
         valorTrayecto,
       });
 
@@ -445,11 +445,11 @@ export default class CurricularModel {
       WHERE p.codigo_pnf = $1 AND tr.valor_trayecto = $2
       ORDER BY uc.id_unidad_curricular ASC;
       `,
-        [codigoPNF, valorTrayecto]
+        [codigo_pnf, valorTrayecto]
       );
       console.log(
         "Se filtro por el siguiente codigo PNF: " +
-          codigoPNF +
+          codigo_pnf +
           " y su trayecto:" +
           valorTrayecto
       );
@@ -465,7 +465,7 @@ export default class CurricularModel {
       console.error("❌ Error en modelo mostrar unidades curriculares:", error);
       error.details = {
         path: "CurricularModel.mostrarSeccionesByPnfAndValueUnidadCurricular",
-        codigoPNF,
+        codigo_pnf,
         valorTrayecto,
       };
       throw FormatterResponseModel.respuestaError(

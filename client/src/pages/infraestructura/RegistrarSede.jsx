@@ -1,5 +1,5 @@
 import { useTheme } from "@mui/material/styles";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, MenuItem } from "@mui/material";
 import { useForm } from "react-hook-form";
 import CustomLabel from "../../components/customLabel";
 import ResponsiveAppBar from "../../components/navbar";
@@ -8,15 +8,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import CustomButton from "../../components/customButton"; // 👈 Importamos tu botón
 import useApi from "../../hook/useApi"; // Added import for axios
 import useSweetAlert from "../../hook/useSweetAlert";
+import { useState } from "react";
 
 export default function RegisterSede() {
-  const pages = [{ name: "Inicio", link: "/Profesores" }];
   const theme = useTheme();
   const {
     register,
-    formState: { errors },
+    formState: { errors, isValid },
     handleSubmit,
     reset, // 👈 aquí está el reset de react-hook-form
+    watch,
   } = useForm({
     resolver: zodResolver(sedeSchema),
     mode: "onChange",
@@ -24,22 +25,27 @@ export default function RegisterSede() {
   });
   const axios = useApi();
   const alert = useSweetAlert();
+  const [isSubiting, setIsSubiting] = useState(false);
 
+  console.log(watch(), errors);
   const onSubmit = async (data) => {
+    setIsSubiting(true);
     try {
-      await axios.post("/Sede/create", data);
-      alert.success();
+      await axios.post("/sedes", data);
+      alert.success("Sede Creada", "Se ha creado la sede existosamente");
 
       reset(); // 👈 Limpia el formulario después de registrar
     } catch (error) {
       alert.error();
       console.error("Error al registrar la sede:", error);
+    } finally {
+      setIsSubiting(false);
     }
   };
 
   return (
     <>
-      <ResponsiveAppBar pages={pages} backgroundColor />
+      <ResponsiveAppBar backgroundColor />
 
       <Box
         className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
@@ -92,6 +98,26 @@ export default function RegisterSede() {
               />
 
               <CustomLabel
+                select
+                id="ciudad de la sede"
+                name="ciudad_sede"
+                label="Ciudad de la Sede"
+                type="text"
+                variant="outlined"
+                {...register("ciudad_sede")}
+                error={!!errors.ciudad_sede}
+                helperText={
+                  errors.ciudad_sede?.message ||
+                  "Seleccione la ciudad donde estara la sede"
+                }
+              >
+                <MenuItem value='Los Teques'>Los Teques</MenuItem>
+                <MenuItem value='San antonio'>San Antonio</MenuItem>
+                <MenuItem value='Carrizal'>Carrizal</MenuItem>
+                <MenuItem value='San Diego'>San Diego</MenuItem>
+              </CustomLabel>
+
+              <CustomLabel
                 id="ubicacion de la sede"
                 name="ubicacion_sede"
                 label="Ubicación de la Sede"
@@ -108,7 +134,7 @@ export default function RegisterSede() {
               <CustomLabel
                 id="enlace google maps"
                 name="google_sede"
-                label="google_sede"
+                label="Google Sede"
                 type="text"
                 variant="outlined"
                 {...register("google_sede")}
@@ -135,6 +161,7 @@ export default function RegisterSede() {
                 type="submit"
                 variant="contained"
                 color="primary"
+                disabled={!isValid && isSubiting}
                 onClick={handleSubmit(onSubmit)}
               >
                 Registrar

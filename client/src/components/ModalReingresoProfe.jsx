@@ -7,45 +7,69 @@ import {
   Backdrop,
 } from "@mui/material";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import CustomButton from "./customButton.jsx";
-import CustomLabel from "./customLabel.jsx"; // ✅ tu componente personalizado
+import CustomLabel from "./customLabel.jsx";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useApi from "../hook/useApi.jsx";
+import reingresoSchema from "../schemas/reingreso.schema.js"; // Asegúrate de importar tu schema
 
-export default function ModalReingresoProfe({ open, onClose }) {
+export default function ModalReingresoProfe({ open, onClose, profesor }) {
   const navigate = useNavigate();
   const axios = useApi();
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, handleSubmit, reset } = useForm({
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = useForm({
+    resolver: zodResolver(reingresoSchema),
     defaultValues: {
-      tipo_accion: "",
-      razon: "",
+      id_profesor: profesor?.id || "",
+      tipo_reingreso: "REINGRESO",
+      motivo_reingreso: "",
       observaciones: "",
       fecha_efectiva: "",
+      registro_anterior_id: profesor?.registro_anterior_id || "",
     },
   });
 
-  const onSubmit = async () => {
+  const onSubmit = async (data) => {
     try {
       setIsLoading(true);
-      await axios.delete("/Profesores/Delete");
+
+      // Convertir datos según el schema
+      const formData = {
+        ...data,
+        fecha_efectiva: data.fecha_efectiva || null,
+        observaciones: data.observaciones || null,
+      };
+      await axios.post("/profesores/reingresar", formData); // Cambiado a POST para reingreso
       reset();
-      onClose(); // cerrar modal
-      navigate("/profesores/eliminados");
+      onClose();
+
+      // Redirigir a donde necesites después del reingreso
+      navigate("/profesores"); // O la ruta que corresponda
     } catch (error) {
-      console.error("Error eliminando profesor:", error);
-      alert("Ocurrió un error al eliminar el profesor.");
+      console.error("Error en reingreso de profesor:", error);
+      alert("Ocurrió un error al procesar el reingreso del profesor.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   return (
     <Modal
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       closeAfterTransition
       slots={{ backdrop: Backdrop }}
       slotProps={{ backdrop: { timeout: 300 } }}
@@ -64,42 +88,63 @@ export default function ModalReingresoProfe({ open, onClose }) {
             p: 4,
             borderRadius: 3,
             width: 450,
+            maxWidth: "90vw",
+            maxHeight: "90vh",
+            overflow: "auto",
             display: "flex",
             flexDirection: "column",
             gap: 2,
           }}
         >
           <Typography variant="h5" fontWeight="bold">
-            Motivo de eliminación
+            Reingreso de Profesor
           </Typography>
 
+          {/* ID del profesor (oculto o deshabilitado) */}
           <CustomLabel
-            label="Tipo de acción"
-            name="tipo_accion"
+            label="ID Profesor"
+            name="id_profesor"
+            type="number"
+            required
+            disabled
+            {...register("id_profesor", { valueAsNumber: true })}
+            error={!!errors.id_profesor}
+            helperText={errors.id_profesor?.message}
+          />
+
+          {/* ID del registro anterior (oculto) */}
+          <input
+            type="hidden"
+            {...register("registro_anterior_id", { valueAsNumber: true })}
+          />
+
+          <CustomLabel
+            label="Tipo de Reingreso"
+            name="tipo_reingreso"
             select
             required
-            {...register("tipo_accion", { required: true })}
+            {...register("tipo_reingreso")}
+            error={!!errors.tipo_reingreso}
+            helperText={errors.tipo_reingreso?.message}
           >
-            {[
-              "DESTITUCION",
-              "ELIMINACION",
-              "RENUNCIA",
-              "RETIRO",
-              "FALLECIDO",
-            ].map((tipo) => (
-              <MenuItem key={tipo} value={tipo}>
-                {tipo}
-              </MenuItem>
-            ))}
+            <MenuItem value="REINGRESO">REINGRESO</MenuItem>
+            <MenuItem value="REINCORPORACION">REINCORPORACIÓN</MenuItem>
+            <MenuItem value="REINTEGRO">REINTEGRO</MenuItem>
           </CustomLabel>
 
           <CustomLabel
-            label="Razón"
-            name="razon"
+            label="Motivo de Reingreso"
+            name="motivo_reingreso"
             multiline
-            rows={2}
+            rows={3}
             required
-            {...register("razon", { required: true })}
+            {...register("motivo_reingreso")}
+            error={!!errors.motivo_reingreso}
+            helperText={errors.motivo_reingreso?.message}
+            inputProps={{
+              minLength: 10,
+              maxLength: 1000,
+            }}
           />
 
           <CustomLabel
@@ -108,25 +153,39 @@ export default function ModalReingresoProfe({ open, onClose }) {
             multiline
             rows={2}
             {...register("observaciones")}
+            error={!!errors.observaciones}
+            helperText={errors.observaciones?.message}
+            inputProps={{
+              maxLength: 2000,
+            }}
           />
 
           <CustomLabel
-            label="Fecha efectiva"
+            label="Fecha Efectiva"
             name="fecha_efectiva"
             type="date"
             InputLabelProps={{ shrink: true }}
-            required
-            {...register("fecha_efectiva", { required: true })}
+            {...register("fecha_efectiva")}
+            error={!!errors.fecha_efectiva}
+            helperText={errors.fecha_efectiva?.message}
           />
 
           <Box
             sx={{ display: "flex", justifyContent: "flex-end", gap: 2, mt: 1 }}
           >
-            <CustomButton onClick={onClose} tipo="secondary">
+            <CustomButton
+              onClick={handleClose}
+              tipo="secondary"
+              disabled={isLoading}
+            >
               Cancelar
             </CustomButton>
-            <CustomButton tipo="primary" disabled={isLoading} type="submit">
-              {isLoading ? "Eliminando..." : "Confirmar eliminación"}
+            <CustomButton
+              tipo="primary"
+              disabled={!isValid && isLoading}
+              type="submit"
+            >
+              {isLoading ? "Procesando..." : "Confirmar Reingreso"}
             </CustomButton>
           </Box>
         </Box>

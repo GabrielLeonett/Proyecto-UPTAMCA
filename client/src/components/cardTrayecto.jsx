@@ -1,19 +1,19 @@
 import {
   Typography,
-  Grid,
   Tooltip,
   IconButton,
   Snackbar,
   Alert,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Box,
+  Card,
+  CardHeader,
+  CardContent,
 } from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility"; // Icono de ojo
 import { useTheme } from "@mui/material/styles";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 import useApi from "../hook/useApi";
 import CustomButton from "./customButton";
 import ModalEditarCampoTrayecto from "./ModalEditarCampoTrayecto";
@@ -21,6 +21,7 @@ import ModalEditarCampoTrayecto from "./ModalEditarCampoTrayecto";
 export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
   const theme = useTheme();
   const axios = useApi(false);
+  const navigate = useNavigate(); // Hook para navegación
 
   // Estados
   const [trayectoActual, setTrayectoActual] = useState(Trayecto);
@@ -33,6 +34,15 @@ export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
   useEffect(() => {
     setTrayectoActual(Trayecto);
   }, [Trayecto]);
+
+  // Función para navegar al detalle del trayecto
+  const handleVerDetalle = () => {
+    if (codigoPNF && trayectoActual?.valor_trayecto) {
+      navigate(`/formacion/programas/${codigoPNF}/trayecto/${trayectoActual.valor_trayecto}`, {state: {idTrayecto: trayectoActual.id_trayecto}});
+    } else {
+      console.warn("Faltan datos para navegar:", { codigoPNF, valorTrayecto: trayectoActual?.valor_trayecto });
+    }
+  };
 
   // Abrir modal de edición
   const handleOpenModalEditar = (campo, valorActual) => {
@@ -69,71 +79,95 @@ export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
   };
 
   return (
-    <Grid
-      key={trayectoActual?.id_trayecto}
+    <Card
       sx={{
         maxWidth: "1100px",
         width: "100%",
         mx: "auto",
         mt: 5,
-        p: 3,
         borderRadius: 3,
         backgroundColor: theme.palette.background.paper,
         boxShadow: 4,
         border: `1px solid ${theme.palette.divider}`,
       }}
     >
-      {/* Título principal */}
-      <Typography
-        component="h2"
-        variant="h5"
-        gutterBottom
-        sx={{
-          fontWeight: "bold",
-          color: theme.palette.primary.main,
-        }}
-      >
-        Trayecto: {trayectoActual?.valor_trayecto || "No definido"}
-      </Typography>
-
-      {/* Información general */}
-      <Box sx={{ mt: 2 }}>
-        <Typography sx={{ display: "flex", alignItems: "center" }}>
-          <strong>Población estudiantil:</strong>{" "}
-          {trayectoActual?.poblacion_estudiantil || "0"}
-        </Typography>
-
-        <Typography sx={{ display: "flex", alignItems: "center", mt: 1 }}>
-          <strong>Descripción:</strong>{" "}
-          {trayectoActual?.descripcion_trayecto || "Sin descripción"}
-          <Tooltip title="Editar descripción del trayecto" arrow>
-            <IconButton
-              size="small"
-              sx={{ ml: 1 }}
-              onClick={() =>
-                handleOpenModalEditar(
-                  "descripcion_trayecto",
-                  trayectoActual.descripcion_trayecto
-                )
-              }
+      {/* Header con título y botón de ver detalle */}
+      <CardHeader
+        title={
+          <Typography
+            component="h2"
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              color: theme.palette.primary.main,
+            }}
+          >
+            Trayecto: {trayectoActual?.valor_trayecto || "No definido"}
+          </Typography>
+        }
+        action={
+          <Tooltip title="Ver detalles del trayecto" arrow>
+            <IconButton 
+              onClick={handleVerDetalle}
+              sx={{
+                color: theme.palette.primary.main,
+                '&:hover': {
+                  backgroundColor: theme.palette.primary.light,
+                  color: 'white',
+                }
+              }}
             >
-              <EditIcon fontSize="small" />
+              <VisibilityIcon />
             </IconButton>
           </Tooltip>
-        </Typography>
+        }
+        sx={{
+          pb: 1,
+          borderBottom: `1px solid ${theme.palette.divider}`
+        }}
+      />
 
-        {/* Acciones */}
-        {trayectoEditado && (
-          <CustomButton
-            tipo="success"
-            variant="contained"
-            sx={{ mt: 2 }}
-            onClick={handleGuardarCambiosServidor}
-          >
-            Guardar Cambios
-          </CustomButton>
-        )}
-      </Box>
+      {/* Contenido de la card */}
+      <CardContent sx={{ pt: 2 }}>
+        {/* Información general */}
+        <Box sx={{ mt: 1 }}>
+          <Typography sx={{ display: "flex", alignItems: "center" }}>
+            <strong>Población estudiantil:</strong>{" "}
+            {trayectoActual?.poblacion_estudiantil || "0"}
+          </Typography>
+
+          <Typography sx={{ display: "flex", alignItems: "center", mt: 1 }}>
+            <strong>Descripción:</strong>{" "}
+            {trayectoActual?.descripcion_trayecto || "Sin descripción"}
+            <Tooltip title="Editar descripción del trayecto" arrow>
+              <IconButton
+                size="small"
+                sx={{ ml: 1 }}
+                onClick={() =>
+                  handleOpenModalEditar(
+                    "descripcion_trayecto",
+                    trayectoActual.descripcion_trayecto
+                  )
+                }
+              >
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Typography>
+
+          {/* Acciones */}
+          {trayectoEditado && (
+            <CustomButton
+              tipo="success"
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={handleGuardarCambiosServidor}
+            >
+              Guardar Cambios
+            </CustomButton>
+          )}
+        </Box>
+      </CardContent>
 
       {/* Modal para editar campos */}
       <ModalEditarCampoTrayecto
@@ -161,6 +195,6 @@ export default function CardTrayecto({ Trayecto, codigoPNF, onActualizar }) {
           {mensaje}
         </Alert>
       </Snackbar>
-    </Grid>
+    </Card>
   );
 }

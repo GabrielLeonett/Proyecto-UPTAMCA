@@ -18,6 +18,7 @@ import { UTILS } from "../../utils/utils";
 import useApi from "../../hook/useApi";
 import useSweetAlert from "../../hook/useSweetAlert";
 import useCoordinador from "../../hook/useCoordinador";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 const Horario = ({
   PNF,
@@ -53,9 +54,11 @@ const Horario = ({
     loading,
     classToMove,
     overlayVisible,
+    Custom,
 
     // Setters individuales
     setOverlayVisible,
+    setCustom,
 
     // Agrupados
     state,
@@ -136,7 +139,11 @@ const Horario = ({
     } finally {
       stateSetters.setLoading(false);
     }
-  }, [stateSetters]);
+  }, [stateSetters, alert]);
+
+  const handleExitModeCustom = useCallback(async () => {
+    setCustom(false);
+  }, [stateSetters, alert]);
 
   const handleSave = useCallback(async () => {
     try {
@@ -155,7 +162,7 @@ const Horario = ({
     } finally {
       stateSetters.setLoading(false);
     }
-  }, [stateSetters]);
+  }, [stateSetters, alert, fetchCambiosTableHorario]);
 
   const handlePrint = useCallback(async () => {
     console.log("🖨 handlePrint ejecutado"); // <-- prueba directa
@@ -224,17 +231,18 @@ const Horario = ({
               handleCancelMoveRequest={movementActions.handleCancelMoveRequest}
               selectedClass={selectedClass}
               classToMove={classToMove}
-              isCustom={isCustom}
+              Custom={Custom}
               PNF={PNF}
               Trayecto={Trayecto}
               Seccion={Seccion}
             />
 
             {/* Overlay */}
-            {isCustom === false && (
+            {Custom === false && (
               <TableOverlay
                 isVisible={overlayVisible}
                 isCustom={isCustom}
+                setCustom={setCustom}
                 onPrint={handlePrint}
                 onClose={handleCloseOverlay}
                 title={`${PNF.nombre_pnf} - ${
@@ -246,7 +254,7 @@ const Horario = ({
         </Box>
 
         {/* Formulario para nueva clase - SOLO UNA VEZ */}
-        {isCustom && (
+        {Custom && (
           <Box sx={{ mt: 3 }}>
             <ClassForm
               unidadesCurriculares={unidadesCurriculares}
@@ -258,11 +266,12 @@ const Horario = ({
               onUnidadChange={handleUnidadChange}
               onProfesorChange={handleProfesorChange}
               onAulaChange={handleAulaChange}
-              isCustom={isCustom}
+              isCustom={Custom}
               loading={loading}
               errors={{}}
               ButtonSave={handleSave}
               ButtonCancel={handleCancel}
+              ButtonExitModeCustom={handleExitModeCustom}
             />
           </Box>
         )}

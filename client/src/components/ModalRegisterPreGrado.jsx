@@ -46,8 +46,8 @@ export default function ModalRegisterPreGrado({ open, onClose, setState }) {
     try {
       setIsLoading(true);
       const payload = {
-        tipo: data.tipo,
-        nombre: data.nombre,
+        tipo_pre_grado: data.tipo,
+        nombre_pre_grado: data.nombre,
       };
 
       await axios.post("/catalogos/pregrados", payload);

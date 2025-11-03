@@ -402,6 +402,7 @@ CurricularRouter.post(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
+    "Coordinador"
   ]),
   CrearSecciones
 );
@@ -424,6 +425,7 @@ CurricularRouter.put(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
+    "Coordinador"
   ]),
   asignacionTurnoSeccion
 );
