@@ -1,4 +1,4 @@
-import ResponsiveAppBar from "../../components/navbar";
+import ResponsiveAppBar from "../../../components/navbar";
 import {
   Typography,
   Box,
@@ -12,8 +12,8 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useState, useEffect, useCallback } from "react";
-import useApi from "../../hook/useApi";
-import CardProfesorEliminado from "../../components/CardProfesorEliminado";
+import useApi from "../../../hook/useApi";
+import CardProfesorEliminado from "../../../components/CardProfesorEliminado";
 
 export default function ProfesoresEliminados() {
   const [profesores, setProfesores] = useState([]);

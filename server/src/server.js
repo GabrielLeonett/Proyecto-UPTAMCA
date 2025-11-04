@@ -16,6 +16,7 @@ import SocketServices from "./services/socket.service.js";
 import SystemMonitor from "./services/systemMonitor.service.js";
 
 // Importaciones de Rutas
+import { adminRouter} from "./routes/Admin.routes.js";
 import { profesorRouter } from "./routes/profesor.routes.js";
 import { CurricularRouter } from "./routes/curricular.routes.js";
 import { UserRouter } from "./routes/user.routes.js";
@@ -37,6 +38,7 @@ app.use(cookieParser());
 app.use(jsonSyntaxErrorHandler);
 
 // Rutas del sistema
+app.use("", adminRouter);
 app.use("", profesorRouter);
 app.use("", CurricularRouter);
 app.use("", UserRouter);

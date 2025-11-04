@@ -1,5 +1,3 @@
-// Funcion para generar reportes en caso de errores internos
-import generateReport from "./generateReport.js";
 
 /**
  * @class FormatterResponseModel

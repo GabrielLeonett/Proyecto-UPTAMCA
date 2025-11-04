@@ -1,8 +1,8 @@
-import ResponsiveAppBar from "../../components/navbar";
-import { CardCoordinador } from "../../components/cardCoordinador";
+import ResponsiveAppBar from "../../../components/navbar";
+import { CardCoordinador } from "../../../components/cardCoordinador";
 import { Typography, Box, CircularProgress, TextField } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import useApi from "../../hook/useApi";
+import useApi from "../../../hook/useApi";
 
 export default function Coordinadores() {
   const axios = useApi();

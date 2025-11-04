@@ -16,11 +16,20 @@ export default class UserService {
    * @method login
    * @description Iniciar sesión de usuario
    * @param {Object} datos - Datos de login
+   * @param {Object} usuario - Usuario para no crear de nuevo la session
    * @returns {Object} Resultado de la operación
    */
-  static async login(datos) {
+  static async login(datos, usuario) {
     try {
       console.log("🔍 [login] Iniciando proceso de login...");
+
+      if (usuario.id) {
+        FormatterResponseService.error(
+          "Ya hay una sesion iniciada",
+          "No se puede crear una sesion si ya existe una",
+          404
+        );
+      }
 
       // 1. Validar datos de entrada
       const validacion = ValidationService.validateLogin(datos);
@@ -80,7 +89,7 @@ export default class UserService {
         user.nombres,
         user.apellidos
       );
-      
+
       // 5. Preparar respuesta exitosa
       return FormatterResponseService.success(
         {

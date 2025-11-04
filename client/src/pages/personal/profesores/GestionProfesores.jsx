@@ -1,5 +1,5 @@
-import ResponsiveAppBar from "../../components/navbar";
-import CardProfesor from "../../components/cardProfesor";
+import ResponsiveAppBar from "../../../components/navbar";
+import CardProfesor from "../../../components/cardProfesor";
 import {
   Typography,
   Box,
@@ -7,14 +7,17 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
+  Tooltip,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Search as SearchIcon, Add as AddIcon } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
-import useApi from "../../hook/useApi";
-import { useParams } from "react-router-dom";
+import useApi from "../../../hook/useApi";
+import { useNavigate, useParams } from "react-router-dom";
+import CustomButton from "../../../components/customButton";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
+  const navigate = useNavigate();
 
   const [profesores, setProfesores] = useState([]);
   const [profesorEspecifico, setProfesorEspecifico] = useState([]);
@@ -29,30 +32,32 @@ export default function GestionProfesores() {
     setLoading(true);
     setError(null);
     setProfesorEspecifico(null); // Resetear profesor específico
-    
+
     try {
       const endpoint = "/profesores";
       const data = await axios.get(endpoint);
       console.log("🔍 Profesores obtenidos:", data);
-      
+
       let profesoresData = data.profesores || [];
 
       // Si hay un id_profesor, buscar y separar ese profesor
       if (id_profesor) {
         console.log("🎯 Buscando profesor específico:", id_profesor);
-        
+
         // Buscar el profesor específico
         const profesorEncontrado = profesoresData.find(
-          profesor => profesor.cedula === id_profesor || profesor.id === id_profesor
+          (profesor) =>
+            profesor.cedula === id_profesor || profesor.id === id_profesor
         );
 
         if (profesorEncontrado) {
           console.log("✅ Profesor específico encontrado:", profesorEncontrado);
           setProfesorEspecifico(profesorEncontrado);
-          
+
           // Filtrar los demás profesores (excluir el específico)
           const otrosProfesores = profesoresData.filter(
-            profesor => profesor.cedula !== id_profesor && profesor.id !== id_profesor
+            (profesor) =>
+              profesor.cedula !== id_profesor && profesor.id !== id_profesor
           );
           setProfesores(otrosProfesores);
         } else {
@@ -98,7 +103,7 @@ export default function GestionProfesores() {
         </Typography>
 
         {/* 🔍 Barra de búsqueda */}
-        <Box display="flex"  mb={3}>
+        <Box display="flex" mb={3}>
           <TextField
             variant="outlined"
             size="small"
@@ -130,13 +135,18 @@ export default function GestionProfesores() {
             {/* SECCIÓN DEL PROFESOR ESPECÍFICO (si existe) */}
             {profesorEspecifico && (
               <Box sx={{ mb: 4 }}>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3, color: "primary.main" }}>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  gutterBottom
+                  sx={{ mb: 3, color: "primary.main" }}
+                >
                   Profesor Seleccionado
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item>
-                    <CardProfesor 
-                      profesor={profesorEspecifico} 
+                    <CardProfesor
+                      profesor={profesorEspecifico}
                       isSearch={true}
                       highlight={true} // Puedes agregar esta prop para destacarlo
                     />
@@ -148,10 +158,17 @@ export default function GestionProfesores() {
             {/* SECCIÓN DE LOS DEMÁS PROFESORES */}
             {(profesores.length > 0 || !profesorEspecifico) && (
               <Box>
-                <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3 }}>
-                  {profesorEspecifico ? "Otros Profesores" : "Todos los Profesores"}
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  gutterBottom
+                  sx={{ mb: 3 }}
+                >
+                  {profesorEspecifico
+                    ? "Otros Profesores"
+                    : "Todos los Profesores"}
                 </Typography>
-                
+
                 {profesores.length === 0 ? (
                   <Typography textAlign="center" my={4}>
                     No hay más profesores registrados
@@ -167,8 +184,8 @@ export default function GestionProfesores() {
                   >
                     {profesores.map((profesor) => (
                       <Grid item key={profesor.cedula || profesor.id}>
-                        <CardProfesor 
-                          profesor={profesor} 
+                        <CardProfesor
+                          profesor={profesor}
                           isSearch={!!id_profesor}
                         />
                       </Grid>
@@ -179,6 +196,29 @@ export default function GestionProfesores() {
             )}
           </>
         )}
+        <Tooltip title={"Registrar Profesor"} placement="left-start">
+          <CustomButton
+            onClick={() => {
+              navigate('/academico/profesores/registrar');
+            }}
+            sx={{
+              position: "fixed",
+              bottom: 78,
+              right: 24,
+              minWidth: "auto",
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label={"Registrar Profesor"}
+          >
+            <AddIcon />
+          </CustomButton>
+        </Tooltip>
       </Box>
     </>
   );

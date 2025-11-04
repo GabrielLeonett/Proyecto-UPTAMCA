@@ -1,4 +1,5 @@
 import horarioSchema from "../schemas/horario.schema.js";
+import adminSchema from "../schemas/admin.schema.js";
 import aulaSchema from "../schemas/aula.schema.js";
 import contraseniaSchema from "../schemas/contrasenia.schema.js";
 import coordinadorSchema, {
@@ -833,6 +834,46 @@ export default class ValidationService {
    */
   static validatePartialUnidadCurricular(data, options = {}) {
     const validationResult = unidadCurricularSchema.partial().safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  // =============================================
+  // MÉTODOS DE VALIDACIÓN PARA ADMINS
+  // =============================================
+
+  /**
+   * @name validateAdmins
+   * @description Valida los datos completos de un Admin
+   * @param {Object} data - Datos de la unidad curricular a validar
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validateAdmins(data, options = {}) {
+    const validationResult = adminSchema.safeParse(data);
+    const errors = this.formatValidationErrors(validationResult, options);
+
+    return {
+      isValid: errors === true,
+      errors: errors === true ? [] : errors,
+      data: validationResult.success ? validationResult.data : null,
+    };
+  }
+
+  /**
+   * @name validatePartialAdmins
+   * @description Valida datos parciales de un Admin (para updates)
+   * @param {Object} data - Datos parciales de la unidad curricular
+   * @param {Object} [options] - Opciones de formato de errores
+   * @returns {Object} Resultado de la validación
+   */
+  static validatePartialAdmins(data, options = {}) {
+    const validationResult = adminSchema.partial().safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

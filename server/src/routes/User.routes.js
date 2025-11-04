@@ -25,7 +25,7 @@ export const UserRouter = Router();
  * @body {string} body.email - Correo electrónico
  * @body {string} body.password - Contraseña
  */
-UserRouter.post("/auth/login", login);
+UserRouter.post("/auth/login", middlewareAuth(null), login);
 
 /**
  * =============================================

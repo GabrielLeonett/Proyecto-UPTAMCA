@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Button, Typography, Paper } from "@mui/material";
-import ResponsiveAppBar from "../../components/navbar";
-import useApi from "../../hook/useApi";
-import useSweetAlert from "../../hook/useSweetAlert";
+import ResponsiveAppBar from "../../../components/navbar";
+import useApi from "../../../hook/useApi";
+import useSweetAlert from "../../../hook/useSweetAlert";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];

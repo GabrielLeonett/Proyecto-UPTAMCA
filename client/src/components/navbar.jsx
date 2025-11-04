@@ -9,7 +9,6 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import * as React from "react";
 import LogoSimple from "./ui/logoSimple";
 import LogoTexto from "./ui/logoTexto";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
@@ -124,15 +123,6 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Registrar Profesor",
-          url: "/academico/profesores/registrar",
-          roles: [
-            "Vicerrector",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
           name: "Profesores Eliminados",
           url: "/academico/profesores/eliminados",
           roles: [
@@ -154,11 +144,10 @@ function ResponsiveAppBar({ backgroundColor }) {
           ],
         },
         {
-          name: "Asignar Coordinador",
-          url: "/coordinacion/coordinadores/asignar",
+          name: "Gestión de Usuarios",
+          url: "/administradores",
           roles: [
             "Vicerrector",
-            "Director General de Gestión Curricular",
             "SuperAdmin",
           ],
         },
@@ -185,15 +174,6 @@ function ResponsiveAppBar({ backgroundColor }) {
             "SuperAdmin",
           ],
         },
-        {
-          name: "Registrar Programa",
-          url: "/formacion/programas/registrar",
-          roles: [
-            "Vicerrector",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
       ],
     },
     {
@@ -206,16 +186,6 @@ function ResponsiveAppBar({ backgroundColor }) {
         "SuperAdmin",
       ],
       submenu: [
-        {
-          name: "Gestión de Secciones",
-          url: "/secciones",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
         {
           name: "Gestión de Horarios",
           url: "/horarios",
@@ -230,26 +200,6 @@ function ResponsiveAppBar({ backgroundColor }) {
         {
           name: "Gestión de Sedes",
           url: "/infraestructura/sedes",
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Registrar Sede", // <-- NUEVO
-          url: "/infraestructura/sedes/registrar", // <-- ruta que ya tienes en App.jsx
-          roles: [
-            "Vicerrector",
-            "Coordinador",
-            "Director General de Gestión Curricular",
-            "SuperAdmin",
-          ],
-        },
-        {
-          name: "Gestión de Aulas",
-          url: "/infraestructura/aulas",
           roles: [
             "Vicerrector",
             "Coordinador",

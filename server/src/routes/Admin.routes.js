@@ -3,6 +3,9 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import AdminController from "../controllers/admin.controller.js";
 import fs from "fs";
 
+import multer from "multer";
+import path from "path";
+
 // Destructuración de los métodos del controlador de administradores
 const {
   registrarAdmin,
@@ -11,9 +14,35 @@ const {
   actualizarAdmin,
   desactivarAdmin,
   cambiarRolAdmin,
+  asignarRolAdmin,
   getProfile,
   updateProfile,
 } = AdminController;
+
+/**
+ * =============================================
+ * CONFIGURACIÓN MULTER PARA SUBIDA DE ARCHIVOS
+ * =============================================
+ */
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "src/uploads/administradores/");
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = Array.from({ length: 12 }, () =>
+      Math.floor(Math.random() * 16).toString(16)
+    ).join("");
+    const fileExtension = path.extname(file.originalname);
+    const newFileName = uniqueName + fileExtension;
+    file.originalname = newFileName;
+    cb(null, newFileName);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 // Creación del router para las rutas de administradores
 export const adminRouter = Router();
@@ -32,11 +61,7 @@ export const adminRouter = Router();
  * @query {string} [fecha_registro] - Filtro por fecha de registro
  * @middleware Requiere autenticación y rol SuperAdmin
  */
-adminRouter.get(
-  "/admins",
-  middlewareAuth(["SuperAdmin"]),
-  mostrarAdmin
-);
+adminRouter.get("/admins", middlewareAuth(["SuperAdmin"]), mostrarAdmin);
 
 /**
  * @name POST /admins
@@ -47,6 +72,7 @@ adminRouter.get(
 adminRouter.post(
   "/admins",
   middlewareAuth(["SuperAdmin"]),
+  upload.single("imagen"),
   registrarAdmin
 );
 
@@ -57,11 +83,7 @@ adminRouter.post(
  * @body {Object} Datos actualizados del administrador
  * @middleware Requiere autenticación y rol SuperAdmin
  */
-adminRouter.put(
-  "/admins/:id",
-  middlewareAuth(["SuperAdmin"]),
-  actualizarAdmin
-);
+adminRouter.put("/admins/:id", middlewareAuth(["SuperAdmin"]), actualizarAdmin);
 
 /**
  * @name DELETE /admins/:id
@@ -87,10 +109,19 @@ adminRouter.delete(
  * @query {string} busqueda - Término de búsqueda
  * @middleware Requiere autenticación y rol SuperAdmin
  */
-adminRouter.get(
-  "/admins/search",
+adminRouter.get("/admins/search", middlewareAuth(["SuperAdmin"]), buscarAdmin);
+
+/**
+ * @name POST /admins/:id/rol
+ * @description Asignar el rol de un administrador
+ * @param {number} id - ID del administrador
+ * @body {string} rol - Nuevo rol a asignar
+ * @middleware Requiere autenticación y rol SuperAdmin
+ */
+adminRouter.post(
+  "/admins/:id/rol",
   middlewareAuth(["SuperAdmin"]),
-  buscarAdmin
+  asignarRolAdmin
 );
 
 /**
@@ -121,9 +152,9 @@ adminRouter.get(
   "/admin/profile",
   middlewareAuth([
     "SuperAdmin",
-    "Vicerrector", 
+    "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   getProfile
 );
@@ -140,7 +171,7 @@ adminRouter.put(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   updateProfile
 );
@@ -192,7 +223,7 @@ adminRouter.get(
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
-    "Director General de Gestión Curricular"
+    "Director General de Gestión Curricular",
   ]),
   (req, res) => {
     // Lógica para obtener estadísticas
@@ -220,15 +251,11 @@ adminRouter.get(
  * @query {string} [accion] - Filtro por tipo de acción
  * @middleware Requiere autenticación y rol SuperAdmin
  */
-adminRouter.get(
-  "/admin/logs",
-  middlewareAuth(["SuperAdmin"]),
-  (req, res) => {
-    // Lógica para obtener logs del sistema
-    res.json({
-      logs: [],
-      total: 0,
-      pagina: 1
-    });
-  }
-);
+adminRouter.get("/admin/logs", middlewareAuth(["SuperAdmin"]), (req, res) => {
+  // Lógica para obtener logs del sistema
+  res.json({
+    logs: [],
+    total: 0,
+    pagina: 1,
+  });
+});

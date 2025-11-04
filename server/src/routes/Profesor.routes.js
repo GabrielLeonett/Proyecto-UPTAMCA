@@ -35,7 +35,7 @@ export const profesorRouter = Router();
  */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/profesores/");
+    cb(null, "src/uploads/profesores/");
   },
   filename: (req, file, cb) => {
     const uniqueName = Array.from({ length: 12 }, () =>

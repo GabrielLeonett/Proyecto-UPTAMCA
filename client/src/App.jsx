@@ -19,26 +19,27 @@ import PoliticaPrivacidad from "./pages/PoliticaPrivacidad";
 import DeclaracionAccesibilidad from "./pages/DeclaracionAccesibilidad";
 
 // Gestión de Personal Académico
-import GestionProfesores from "./pages/academico/GestionProfesores";
-import RegistrarProfesor from "./pages/academico/RegistrarProfesor";
-import DisponibilidadProfesor from "./pages/academico/DisponibilidadProfesor";
-import ProfesoresEliminados from './pages/academico/ProfesoresEliminados'
+import GestionProfesores from "./pages/personal/profesores/GestionProfesores.jsx";
+import DisponibilidadProfesor from "./pages/personal/profesores/DisponibilidadProfesor.jsx";
+import ProfesoresEliminados from "./pages/personal/profesores/ProfesoresEliminados.jsx";
+import RegistrarProfesor from "./pages/personal/profesores/RegistrarProfesor.jsx";
 
 // Gestión de Coordinación
-import GestionCoordinadores from "./pages/coordinacion/GestionCoordinadores";
-import AsignarCoordinador from "./pages/coordinacion/AsignarCoordinador";
+import GestionCoordinadores from "./pages/personal/coordinador/GestionCoordinadores";
+import AsignarCoordinador from "./pages/personal/coordinador/AsignarCoordinador";
+
+// Gestión de Administradores
+import GestionAdministradores from "./pages/personal/administradores/GestionAdministradores.jsx";
+import RegistrarAdministrador from "./pages/personal/administradores/RegistrarAdministrador.jsx";
 
 // Gestión de Programas de Formación
 import ProgramasFormacion from "./pages/formacion/ProgramasFormacion";
 import RegistrarPrograma from "./pages/formacion/RegistrarPrograma";
 import GestionTrayectos from "./pages/formacion/GestionTrayectos";
 import GestionTrayecto from "./pages/formacion/GestionTrayecto";
-
-// Gestión Curricular
-import RegistrarUnidadCurricular from "./pages/curricular/RegistrarUnidadCurricular";
+import RegistrarUnidadCurricular from "./pages/formacion/RegistrarUnidadCurricular";
 
 // Gestión de Secciones y Horarios
-import GestionSecciones from "./pages/secciones/GestionSecciones";
 import GestionHorarios from "./pages/horarios/GestionHorarios";
 
 // Gestión de Infraestructura
@@ -72,8 +73,6 @@ import ProtectedViews from "./security/ProtectedViews";
 import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
-import AsignarAdministradores from "./pages/AsignarAdministradores"
-
 
 // Roles comunes para reutilización
 const ROLES = {
@@ -164,7 +163,6 @@ export default function App() {
                 }
               />
 
-
               {/* === GESTIÓN DE COORDINACIÓN === */}
               <Route
                 path="/coordinacion/coordinadores"
@@ -226,15 +224,6 @@ export default function App() {
                 }
               />
 
-              {/* === GESTIÓN DE SECCIONES Y HORARIOS === */}
-              <Route
-                path="/secciones"
-                element={
-                  <ProtectedViews allowedRoles={ROLES.COORDINADORES}>
-                    <GestionSecciones />
-                  </ProtectedViews>
-                }
-              />
               <Route
                 path="/horarios"
                 element={
@@ -314,15 +303,21 @@ export default function App() {
               />
               <Route path="/aulas/editar/:id" element={<EditarAula />} />
               <Route
-                path="/Asignar-Administradores"
+                path="/administradores"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
-                    <AsignarAdministradores />
+                    <GestionAdministradores />
                   </ProtectedViews>
                 }
               />
-
-
+              <Route
+                path="/administradores/crear"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <RegistrarAdministrador />
+                  </ProtectedViews>
+                }
+              />
             </Routes>
           </AuthProvider>
         </Router>

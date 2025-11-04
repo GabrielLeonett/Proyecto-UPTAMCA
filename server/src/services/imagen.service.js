@@ -7,7 +7,7 @@ import fs from "fs";
 
 export default class ImagenService {
   constructor(storage) {
-    this.storageImage = "uploads/" + storage;
+    this.storageImage = "src/uploads/" + storage;
   }
 
   async validateImage(originalName, options = {}) {

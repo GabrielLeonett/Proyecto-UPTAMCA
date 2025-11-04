@@ -5,7 +5,6 @@ import Slider from "../components/slider";
 import { useScrollDetection } from "../hook/useScrollDetection";
 import imageEstudiantes from "../assets/estudiantes.jpg";
 import Footer from "../components/footer";
-import Nucleos from "../components/ubiSedes";
 
 export default function Inicio() {
   const [scrolled, setScrolled] = useState(false);
@@ -52,7 +51,6 @@ export default function Inicio() {
           Núcleos de Nuestra Institución
         </Typography>
 
-        <Nucleos />
       </div>
       {/* Footer */}
       <Footer

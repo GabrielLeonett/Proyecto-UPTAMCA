@@ -167,10 +167,10 @@ export default class CurricularModel {
    * @param {Object} params - Parámetros del registro
    * @param {Object} params.datos - Datos de la Unidad Curricular
    * @param {number} idTrayecto - ID del trayecto al que pertenece
-   * @param {string} params.datos.nombreUnidadCurricular - Nombre de la unidad curricular
-   * @param {string} params.datos.descripcionUnidadCurricular - Descripción de la unidad
-   * @param {number} params.datos.cargaHorasAcademicas - Carga horaria total
-   * @param {string} params.datos.codigoUnidadCurricular - Código único de la unidad
+   * @param {string} params.datos.nombre_unidad_curricular - Nombre de la unidad curricular
+   * @param {string} params.datos.descripcion_unidad_curricular - Descripción de la unidad
+   * @param {number} params.datos.carga_horas_academicas - Carga horaria total
+   * @param {string} params.datos.codigo_unidad_curricular - Código único de la unidad
    * @param {number} usuario_accion - Usuario que realiza la acción
    * @returns {Promise<Object>} Resultado del registro
    */
@@ -178,20 +178,20 @@ export default class CurricularModel {
     try {
       console.log("Datos para registrar Unidad Curricular:", datos);
       const {
-        nombreUnidadCurricular,
-        descripcionUnidadCurricular,
-        cargaHorasAcademicas,
-        codigoUnidadCurricular,
+        nombre_unidad_curricular,
+        descripcion_unidad_curricular,
+        carga_horas_academicas,
+        codigo_unidad_curricular,
       } = datos;
 
       const query = `CALL public.registrar_unidad_curricular_completo($1, $2, $3, $4, $5, $6, NULL)`;
       const params = [
         usuario_accion,
         idTrayecto,
-        nombreUnidadCurricular,
-        descripcionUnidadCurricular,
-        cargaHorasAcademicas,
-        codigoUnidadCurricular,
+        nombre_unidad_curricular,
+        descripcion_unidad_curricular,
+        carga_horas_academicas,
+        codigo_unidad_curricular,
       ];
 
       const { rows } = await pg.query(query, params);

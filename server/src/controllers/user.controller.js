@@ -15,7 +15,7 @@ export default class UserController {
    */
   static async login(req, res) {
     try {
-      const resultado = await UserService.login(req.body);
+      const resultado = await UserService.login(req.body, usuario);
 
       // Configurar cookie si el login fue exitoso
       if (resultado.success != undefined) {

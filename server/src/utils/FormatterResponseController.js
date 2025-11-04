@@ -1,5 +1,4 @@
 // Funcion para generar reportes en caso de errores internos
-import generateReport from "./generateReport.js";
 import logger from "../config/winston.config.js"; // Importar Winston
 
 /**
@@ -55,7 +54,7 @@ export default class FormatterResponseController {
         title: response.title,
         message: response.message,
         hasData: !!data,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       return res.status(response.status).json(response);
@@ -64,7 +63,7 @@ export default class FormatterResponseController {
       logger.error("💥 Error al procesar respuesta exitosa", {
         error: error.message,
         stack: error.stack,
-        serviceResponse: serviceResponse
+        serviceResponse: serviceResponse,
       });
 
       return this.respuestaError(res, {
@@ -108,7 +107,7 @@ export default class FormatterResponseController {
           title: serviceResponse.title,
           message: serviceResponse.message,
           errorCode: serviceResponse.error?.code,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
 
         // Caso específico: Validación
@@ -138,7 +137,7 @@ export default class FormatterResponseController {
         logger.error("🔍 Error nativo capturado", {
           message: serviceResponse.message,
           stack: serviceResponse.stack,
-          name: serviceResponse.name
+          name: serviceResponse.name,
         });
 
         return this.respuestaError(res, {
@@ -166,17 +165,6 @@ export default class FormatterResponseController {
           message: serviceResponse.message,
           errorCode: serviceResponse.error?.code,
           stack: serviceResponse.error?.details?.stack,
-          timestamp: new Date().toISOString()
-        });
-
-        await generateReport({
-          status: 500,
-          state: "critical",
-          title: serviceResponse.title || "Error Interno del Servidor",
-          message: serviceResponse.message || "Error interno no especificado",
-          stack: serviceResponse.error?.details?.stack,
-          details: serviceResponse.error?.details,
-          originalError: serviceResponse,
           timestamp: new Date().toISOString(),
         });
 
@@ -200,14 +188,14 @@ export default class FormatterResponseController {
         (typeof serviceResponse.status === "number" &&
           serviceResponse.status) ||
         defaultStatus;
-      
+
       // Log con Winston - nivel error para otros errores
       logger.error("❌ Error genérico del servidor", {
         status: status,
         title: serviceResponse.title,
         message: serviceResponse.message,
         errorDetails: serviceResponse.error?.details,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
 
       const response = {
@@ -225,15 +213,6 @@ export default class FormatterResponseController {
         error: internalError.message,
         stack: internalError.stack,
         serviceResponse: serviceResponse,
-        timestamp: new Date().toISOString()
-      });
-
-      await generateReport({
-        status: 500,
-        state: "critical",
-        title: "Error en el manejador de errores del controlador",
-        message: internalError.message,
-        stack: internalError.stack,
         timestamp: new Date().toISOString(),
       });
 
@@ -293,7 +272,7 @@ export default class FormatterResponseController {
       message: response.message,
       totalErrors: validationErrors.length,
       validationErrors: validationErrors,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return res.status(400).json(response);
@@ -360,7 +339,7 @@ export default class FormatterResponseController {
     } catch (error) {
       logger.error("💥 Error al procesar respuesta del servicio", {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
 
       return this.respuestaError(res, {
@@ -399,7 +378,7 @@ export default class FormatterResponseController {
     } catch (error) {
       logger.error("💥 Error en manejarServicio", {
         error: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       return this.respuestaError(res, error);
     }
@@ -419,7 +398,7 @@ export default class FormatterResponseController {
     logger.info("📊 Respuesta de datos exitosa", {
       dataType: typeof data,
       hasMetadata: Object.keys(metadata).length > 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return this.respuestaExito(res, {
@@ -451,7 +430,7 @@ export default class FormatterResponseController {
     logger.info("📄 Respuesta paginada exitosa", {
       dataCount: data?.length || 0,
       pagination: pagination,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return this.respuestaExito(res, {

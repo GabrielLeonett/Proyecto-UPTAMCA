@@ -2,7 +2,7 @@ import Button from "@mui/material/Button";
 import { useTheme } from "@mui/material/styles";
 import { styled } from "@mui/material/styles";
 
-// Versión con styled components para mejor performance
+// Versión con styled components
 const StyledButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== "tipo",
 })(({ theme, tipo = "primary" }) => {
@@ -39,20 +39,11 @@ const StyledButton = styled(Button, {
           backgroundColor: theme.palette.primary.dark,
           boxShadow: theme.shadows[4],
         },
-        "&:active": {
-          backgroundColor: theme.palette.primary.dark,
-        },
       },
       secondary: {
-        backgroundColor: theme.palette.secondary.light,
-        color: theme.palette.secondary.dark,
-        border: `1.5px solid ${theme.palette.secondary.main}`,
+        backgroundColor: theme.palette.secondary.main,
+        color: theme.palette.secondary.contrastText,
         "&:hover": {
-          backgroundColor: theme.palette.secondary.main,
-          color: theme.palette.secondary.contrastText,
-          borderColor: theme.palette.secondary.dark,
-        },
-        "&:active": {
           backgroundColor: theme.palette.secondary.dark,
         },
       },
@@ -63,6 +54,19 @@ const StyledButton = styled(Button, {
         "&:hover": {
           backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
+        },
+      },
+      // ✅ NUEVA VARIANTE FILLED
+      filled: {
+        backgroundColor: theme.palette.grey[100],
+        color: theme.palette.text.primary,
+        border: `1px solid ${theme.palette.divider}`,
+        "&:hover": {
+          backgroundColor: theme.palette.grey[200],
+          borderColor: theme.palette.grey[400],
+        },
+        "&:active": {
+          backgroundColor: theme.palette.grey[300],
         },
       },
       text: {
@@ -112,7 +116,7 @@ const StyledButton = styled(Button, {
   return getButtonStyles();
 });
 
-// Versión con sx prop (alternativa)
+// Versión con sx prop
 export default function CustomButton({ tipo = "primary", sx = {}, ...props }) {
   const theme = useTheme();
 
@@ -151,13 +155,10 @@ export default function CustomButton({ tipo = "primary", sx = {}, ...props }) {
         },
       },
       secondary: {
-        backgroundColor: theme.palette.secondary.light,
-        color: theme.palette.secondary.dark,
-        border: `1.5px solid ${theme.palette.secondary.main}`,
+        backgroundColor: theme.palette.secondary.main,
+        color: theme.palette.secondary.contrastText,
         "&:hover": {
-          backgroundColor: theme.palette.secondary.main,
-          color: theme.palette.secondary.contrastText,
-          borderColor: theme.palette.secondary.dark,
+          backgroundColor: theme.palette.secondary.dark,
         },
       },
       outlined: {
@@ -167,6 +168,20 @@ export default function CustomButton({ tipo = "primary", sx = {}, ...props }) {
         "&:hover": {
           backgroundColor: theme.palette.primary.main,
           color: theme.palette.primary.contrastText,
+        },
+      },
+      // ✅ NUEVA VARIANTE FILLED
+      filled: {
+        backgroundColor: theme.palette.grey[100],
+        color: theme.palette.text.primary,
+        border: `1px solid ${theme.palette.divider}`,
+        "&:hover": {
+          backgroundColor: theme.palette.grey[200],
+          borderColor: theme.palette.grey[400],
+          boxShadow: theme.shadows[1],
+        },
+        "&:active": {
+          backgroundColor: theme.palette.grey[300],
         },
       },
       text: {
@@ -215,12 +230,6 @@ export default function CustomButton({ tipo = "primary", sx = {}, ...props }) {
   };
 
   // Elige una versión:
-
-  // Versión 1: Con styled components (recomendado para performance)
   // return <StyledButton tipo={tipo} sx={sx} {...props} />;
-
-  // Versión 2: Con sx prop
   return <Button sx={getButtonStyles()} {...props} />;
 }
-
-

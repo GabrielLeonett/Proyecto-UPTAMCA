@@ -2,21 +2,21 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
 import { Box, Typography } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import CustomCalendar from "../../components/customCalendar";
+import CustomCalendar from "../../../components/customCalendar";
 import { Controller, useForm } from "react-hook-form";
-import CustomLabel from "../../components/customLabel";
-import CustomButton from "../../components/customButton";
-import ResponsiveAppBar from "../../components/navbar";
+import CustomLabel from "../../../components/customLabel";
+import CustomButton from "../../../components/customButton";
+import ResponsiveAppBar from "../../../components/navbar";
 import MenuItem from "@mui/material/MenuItem";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { profesorSchema } from "../../schemas/profesor.schema";
+import { profesorSchema } from "../../../schemas/profesor.schema";
 import dayjs from "dayjs";
-import ModalRegisterAreaConocimiento from "../../components/ModalRegisterAreaConocimiento";
-import ModalRegisterPreGrado from "../../components/ModalRegisterPreGrado";
-import ModalRegisterPosGrado from "../../components/ModalRegisterPosgrado";
-import CustomChip from "../../components/CustomChip";
-import useApi from "../../hook/useApi";
-import useSweetAlert from "../../hook/useSweetAlert";
+import ModalRegisterAreaConocimiento from "../../../components/ModalRegisterAreaConocimiento";
+import ModalRegisterPreGrado from "../../../components/ModalRegisterPreGrado";
+import ModalRegisterPosGrado from "../../../components/ModalRegisterPosgrado";
+import CustomChip from "../../../components/CustomChip";
+import useApi from "../../../hook/useApi";
+import useSweetAlert from "../../../hook/useSweetAlert";
 
 export default function FormRegister() {
   const axios = useApi(false);
@@ -194,7 +194,6 @@ export default function FormRegister() {
       2: ["areas_de_conocimiento", "pre_grado", "pos_grado"],
       3: ["categoria", "fecha_ingreso", "dedicacion"],
     };
-    console.log(errors);
     const isValid = await trigger(fieldSets[step] || []);
     if (isValid) {
       setDirection(1);

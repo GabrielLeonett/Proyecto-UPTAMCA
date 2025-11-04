@@ -240,6 +240,130 @@ export default class EmailService {
 
   /**
    * @private
+   * @method validarEmailLocal
+   * @description Validación local de email cuando la API no está disponible
+   * Realiza una verificación básica de formato y dominios comunes
+   * @param {string} email - Dirección de correo a validar
+   * @returns {Object} Resultado de la validación local
+   */
+  validarEmailLocal(email) {
+    // Validación básica de formato
+    const emailRegex =
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+    if (!emailRegex.test(email)) {
+      return {
+        existe: false,
+        valido: false,
+        calidad: 0,
+        mensaje: "Formato de email inválido",
+        verificadoCon: "validacion_local",
+      };
+    }
+
+    // Extraer dominio del email
+    const dominio = email.split("@")[1]?.toLowerCase();
+
+    if (!dominio) {
+      return {
+        existe: false,
+        valido: false,
+        calidad: 0,
+        mensaje: "Dominio de email inválido",
+        verificadoCon: "validacion_local",
+      };
+    }
+
+    // Lista de dominios de email desechables/temporales comunes
+    const dominiosDesechables = [
+      "tempmail.com",
+      "guerrillamail.com",
+      "mailinator.com",
+      "10minutemail.com",
+      "yopmail.com",
+      "throwawaymail.com",
+      "fakeinbox.com",
+      "temp-mail.org",
+      "trashmail.com",
+      "disposablemail.com",
+      "getairmail.com",
+      "tmpmail.org",
+    ];
+
+    // Verificar si es un dominio desechable
+    const esDesechable = dominiosDesechables.some(
+      (dom) => dominio.includes(dom) || dominio.endsWith(dom)
+    );
+
+    if (esDesechable) {
+      return {
+        existe: false,
+        valido: false,
+        calidad: 0.1,
+        mensaje: "Email desechable (temporal) detectado",
+        verificadoCon: "validacion_local",
+      };
+    }
+
+    // Lista de dominios de proveedores legítimos comunes
+    const dominiosLegitimos = [
+      "gmail.com",
+      "yahoo.com",
+      "hotmail.com",
+      "outlook.com",
+      "aol.com",
+      "icloud.com",
+      "protonmail.com",
+      "live.com",
+      "msn.com",
+      "ymail.com",
+    ];
+
+    // Verificar si es un dominio legítimo conocido
+    const esLegitimo = dominiosLegitimos.some((dom) => dominio === dom);
+
+    // Calcular puntuación de calidad basada en el dominio
+    let calidad = 0.5; // Puntuación base para dominios desconocidos
+
+    if (esLegitimo) {
+      calidad = 0.8; // Puntuación alta para proveedores conocidos
+    }
+
+    // Verificación adicional de estructura del dominio
+    const partesDominio = dominio.split(".");
+    const tieneExtensionValida =
+      partesDominio.length >= 2 &&
+      partesDominio[partesDominio.length - 1].length >= 2;
+
+    if (!tieneExtensionValida) {
+      return {
+        existe: false,
+        valido: false,
+        calidad: 0.1,
+        mensaje: "Extensión de dominio inválida",
+        verificadoCon: "validacion_local",
+      };
+    }
+
+    return {
+      existe: true, // Asumimos que existe (no podemos verificarlo localmente)
+      valido: true,
+      calidad: calidad,
+      mensaje: esLegitimo
+        ? "Email válido y de proveedor confiable"
+        : "Email válido (verificación limitada sin API)",
+      verificadoCon: "validacion_local",
+      detalles: {
+        dominio: dominio,
+        esDesechable: esDesechable,
+        esLegitimo: esLegitimo,
+        extensionValida: tieneExtensionValida,
+      },
+    };
+  }
+
+  /**
+   * @private
    * @method generarMensajeReputacion
    * @description Genera un mensaje descriptivo basado en la respuesta de Email Reputation API
    * @param {Object} data - Datos de la API

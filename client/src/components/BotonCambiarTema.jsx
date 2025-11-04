@@ -39,7 +39,7 @@ export default function BotonCambiarTema({ setMode, mode }) {
   const tooltipText = mode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro';
 
   return (
-    <Tooltip title={tooltipText}>
+    <Tooltip title={tooltipText} placement='left-start'>
       <Button
         onClick={handleThemeToggle}
         sx={{

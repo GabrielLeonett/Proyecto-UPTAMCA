@@ -107,32 +107,40 @@ const StyledDatePicker = styled(DatePicker)(({ theme, error }) => ({
 }));
 
 // Componente principal
-const CustomCalendar = ({
-  label = "Seleccionar fecha",
-  disabled = false,
-  readOnly = false,
-  error = false,
-  helperText,
-  minDate,
-  maxDate = dayjs(), // No permite fechas futuras por defecto
-  sx = {},
-  ...props
-}) => {
+const CustomCalendar = ({ error = false, helperText, sx = {}, ...props }) => {
   const theme = useTheme();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
       <StyledDatePicker
-        maxDate={maxDate}
-        minDate={minDate}
-        label={label}
-        format="DD/MM/YYYY"
-        disabled={disabled}
-        readOnly={readOnly}
+        {...props}
+        error={error}
+        localeText={{
+          // Botones de acción
+          todayButtonLabel: "Hoy",
+          clearButtonLabel: "Limpiar",
+          cancelButtonLabel: "Cancelar",
+          okButtonLabel: "Aceptar",
+
+          // Placeholders como funciones (para versiones más recientes)
+          fieldMonthPlaceholder: () => "MM",
+          fieldDayPlaceholder: () => "DD", 
+          fieldYearPlaceholder: () => "AAAA",
+
+          // Navegación
+          previousMonth: "Mes anterior",
+          nextMonth: "Mes siguiente",
+
+          // Funciones
+          calendarViewSwitchingButtonAriaLabel: (view) =>
+            view === "year"
+              ? "la vista de año está abierta, cambie a la vista de calendario"
+              : "la vista de calendario está abierta, cambie a la vista de año",
+        }}
         slotProps={{
           textField: {
-            error,
-            helperText,
+            error: error,
+            helperText: helperText,
             fullWidth: true,
             sx: {
               "& .MuiFormHelperText-root": {
@@ -146,7 +154,7 @@ const CustomCalendar = ({
             },
           },
           actionBar: {
-            actions: ["today", "accept", "cancel", "clear"],
+            actions: ["today", "clear"],
           },
         }}
         sx={{
@@ -154,20 +162,14 @@ const CustomCalendar = ({
           "& .MuiOutlinedInput-input": {
             padding: theme.spacing(1.5, 2),
             fontSize: theme.typography.body1.fontSize,
-            color: theme.palette.text.primary,
-            "&::placeholder": {
-              color: theme.palette.text.disabled,
-              opacity: 1,
-            },
           },
         }}
-        {...props}
       />
     </LocalizationProvider>
   );
 };
 
-// Versión alternativa con sx prop
+// Versión alternativa SIN localeText (más segura)
 export function CustomCalendarSX({ sx = {}, ...props }) {
   const theme = useTheme();
 
@@ -238,7 +240,7 @@ export function CustomCalendarSX({ sx = {}, ...props }) {
             fullWidth: true,
           },
           actionBar: {
-            actions: ["today", "accept", "cancel"],
+            actions: ["today", "clear"],
           },
         }}
         {...props}
@@ -246,6 +248,5 @@ export function CustomCalendarSX({ sx = {}, ...props }) {
     </LocalizationProvider>
   );
 }
-
 
 export default CustomCalendar;

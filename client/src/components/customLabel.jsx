@@ -4,6 +4,8 @@ import { styled } from "@mui/material/styles";
 
 // Versión con styled components (recomendada)
 const StyledTextField = styled(TextField)(({ theme }) => ({
+  width: "100%",
+  maxWidth: "100%",
   "& .MuiInputLabel-root": {
     color: theme.palette.text.secondary,
     fontWeight: theme.typography.fontWeightMedium,
@@ -15,6 +17,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     },
   },
   "& .MuiOutlinedInput-root": {
+    width: "100%", // ← IMPORTANTE
     borderRadius: "10px",
     backgroundColor: theme.palette.background.paper,
 
@@ -54,6 +57,7 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
     },
   },
   "& .MuiOutlinedInput-input": {
+    width: "100%", // ← IMPORTANTE
     color: theme.palette.text.primary,
     padding: theme.spacing(1.5, 2),
     fontSize: theme.typography.body1.fontSize,

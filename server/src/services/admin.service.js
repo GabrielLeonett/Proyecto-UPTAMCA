@@ -1,8 +1,11 @@
+import AdminModel from "../models/admin.model.js";
 import ValidationService from "./validation.service.js";
 import NotificationService from "./notification.service.js";
-import AdminModel from "../models/admin.model.js";
+import ImagenService from "./imagen.service.js";
+import EmailService from "./email.service.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
-import { loadEnv } from "../utils/utilis.js";
+import { loadEnv, parseJSONField } from "../utils/utilis.js";
+import { generarPassword, hashPassword } from "../utils/encrypted.js";
 
 loadEnv();
 
@@ -17,23 +20,22 @@ export default class AdminService {
    * @method registrarAdmin
    * @description Registrar un nuevo administrador con validación y notificación
    * @param {Object} datos - Datos del administrador a registrar
+   * @param {object} imagen - Imagen del administrador (opcional)
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async registrarAdmin(datos, user_action) {
+  static async registrarAdmin(datos, imagen, user_action) {
+    const imagenService = new ImagenService("administradores");
+    let imagenPath = null;
+
     try {
       console.log("🔍 [registrarAdmin] Iniciando registro de administrador...");
-      console.log("🏷️ Datos del admin a registrar:", datos);
-      if (process.env.MODE === "DEVELOPMENT") {
-        console.log("📝 Datos recibidos:", {
-          datos: JSON.stringify(datos, null, 2),
-          user_action: user_action,
-        });
-      }
-
+      //Formateo de los datos para el ingreso
+      const roles = parseJSONField(datos.roles, "Roles");
+      datos = { ...datos, cedula: parseInt(datos.cedula), roles };
       // 1. Validar datos del administrador
       console.log("✅ Validando datos del administrador...");
-      const validation = ValidationService.validateAdmin(datos);
+      const validation = ValidationService.validateAdmins(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
@@ -58,33 +60,88 @@ export default class AdminService {
         );
       }
 
-      // 3. Verificar si ya existe un administrador con la misma cédula o email
-      console.log("🔎 Verificando duplicados...");
-      const adminExistente = await AdminModel.buscarPorCedulaOEmail(
-        datos.cedula,
+      // 3. Validar imagen (solo si se proporciona)
+      if (imagen && imagen.originalname) {
+        console.log("🖼️ Validando imagen...");
+        const validationImage = await imagenService.validateImage(
+          imagen.originalname,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            maxSize: 5 * 1024 * 1024,
+            quality: 85,
+            format: "webp",
+          }
+        );
+
+        if (!validationImage.isValid) {
+          console.error(
+            "❌ Validación de imagen fallida:",
+            validationImage.error
+          );
+          return FormatterResponseService.validationError(
+            [{ path: "imagen", message: validationImage.error }],
+            "Error de validación de imagen"
+          );
+        }
+
+        console.log("✅ Imagen válida:", validationImage.message);
+
+        // Guardar imagen y obtener la ruta
+        console.log("💾 Procesando y guardando imagen...");
+        imagenPath = await imagenService.processAndSaveImage(
+          imagen.originalname,
+          {
+            maxWidth: 1920,
+            maxHeight: 1080,
+            quality: 85,
+            format: "webp",
+          }
+        );
+
+        if (process.env.MODE === "DEVELOPMENT") {
+          console.log("📁 Ruta de imagen guardada:", imagenPath);
+        }
+      } else {
+        console.log("ℹ️ No se proporcionó imagen, continuando sin ella...");
+      }
+
+      // 4. Validar email
+      console.log("📧 Validando email...");
+      const emailService = new EmailService();
+      const validationEmail = await emailService.verificarEmailConAPI(
         datos.email
       );
 
-      if (adminExistente.data && adminExistente.data.length > 0) {
-        const adminDuplicado = adminExistente.data[0];
+      if (!validationEmail.existe) {
+        console.error("❌ Validación de email fallida:", validationEmail);
         return FormatterResponseService.error(
-          "Administrador ya existe",
-          "Ya existe un administrador con la misma cédula o email",
-          409,
-          "ADMIN_DUPLICADO",
+          "El email proporcionado no es válido o no existe",
+          "Lo sentimos, el email proporcionado no es válido o no existe",
+          400,
+          "INVALID_EMAIL",
           {
-            admin_existente: {
-              id: adminDuplicado.id_admin,
-              cedula: adminDuplicado.cedula,
-              email: adminDuplicado.email,
-            },
+            email: datos.email,
           }
         );
       }
 
-      // 4. Crear administrador en el modelo
+      // 5. Generar contraseña y hash
+      const contrasenia = await generarPassword();
+      console.log("🔐 Contraseña generada:", contrasenia);
+      const hash = await hashPassword(contrasenia);
+      console.log("✅ Contraseña hasheada");
+
+      // 6. Crear administrador en el modelo
       console.log("👨‍💼 Creando administrador en base de datos...");
-      const respuestaModel = await AdminModel.crear(datos, user_action.id);
+      const respuestaModel = await AdminModel.crear(
+        {
+          ...datos,
+          imagen: imagenPath ? imagenPath.fileName : null,
+          password: hash,
+        },
+        user_action.id
+      );
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -94,18 +151,71 @@ export default class AdminService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      // 5. Enviar notificación solo a Vicerrector y SuperAdmin
-      console.log("🔔 Enviando notificaciones a Vicerrector y SuperAdmin...");
+      // 7. Enviar email de bienvenida
+      const Correo = {
+        asunto:
+          "Bienvenido/a al Sistema Académico - Credenciales de Administrador",
+        html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2 style="color: #2c3e50;">¡Bienvenido/a, ${datos.nombre}!</h2>
+          <p>Es un placer darle la bienvenida a nuestra plataforma académica como administrador.</p>
+          <p>Sus credenciales de acceso son:</p>
+          <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
+            <p><strong>Usuario:</strong> ${datos.email}</p>
+            <p><strong>Contraseña temporal:</strong> ${contrasenia}</p>
+          </div>
+          <p><strong>Instrucciones importantes:</strong></p>
+          <ul>
+            <li>Cambie su contraseña después del primer acceso</li>
+            <li>Esta contraseña es temporal y de uso personal</li>
+            <li>Guarde esta información en un lugar seguro</li>
+            <li>Su rol en el sistema es: <strong>${datos.rol}</strong></li>
+          </ul>
+          <p>Si tiene alguna duda, contacte al departamento de soporte técnico.</p>
+        </div>
+        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
+          <a href="${process.env.ORIGIN_FRONTEND}/inicio-sesion" style="display: inline-block; background-color: #1C75BA; color: white; 
+                    padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
+              Acceder a la plataforma
+          </a>
+        </div>
+      `,
+      };
+
+      const resultadoEmail = await emailService.enviarEmail({
+        Destinatario: datos.email,
+        Correo: Correo,
+        verificarEmail: false,
+      });
+      console.log("📧 Email enviado:", resultadoEmail);
+
+      // 8. Enviar notificaciones
+      console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
+
+      // Notificación individual para el administrador creado (solo él la ve)
+      await notificationService.crearNotificacionIndividual({
+        titulo: "Bienvenido al Sistema como Administrador",
+        tipo: "admin_registro_exitoso",
+        user_id: datos.cedula,
+        contenido: `¡Bienvenido ${datos.nombre} ${datos.apellido}! Su registro como administrador ha sido exitoso.`,
+        metadatos: {
+          admin_cedula: datos.cedula,
+          admin_nombre: `${datos.nombre} ${datos.apellido}`,
+          admin_rol: datos.rol,
+          fecha_registro: new Date().toISOString(),
+          url_action: `/administracion/administradores`,
+        },
+      });
+
+      // Notificación masiva para roles administrativos superiores
       await notificationService.crearNotificacionMasiva({
         titulo: "Nuevo Administrador Registrado",
         tipo: "admin_creado",
-        contenido: `Se ha registrado el administrador ${datos.nombre} ${datos.apellido} (${datos.cedula}) con rol: ${datos.rol}`,
+        contenido: `Se ha registrado al administrador ${datos.nombre} ${datos.apellido} (${datos.cedula}) con rol: ${datos.rol}`,
         metadatos: {
-          admin_id: respuestaModel.data?.id_admin,
           admin_cedula: datos.cedula,
-          admin_nombre: datos.nombre,
-          admin_apellido: datos.apellido,
+          admin_nombre: `${datos.nombre} ${datos.apellido}`,
           admin_email: datos.email,
           admin_rol: datos.rol,
           usuario_creador: user_action.id,
@@ -122,12 +232,12 @@ export default class AdminService {
         {
           message: "Administrador creado exitosamente",
           admin: {
-            id: respuestaModel.data?.id_admin,
             cedula: datos.cedula,
             nombre: datos.nombre,
             apellido: datos.apellido,
             email: datos.email,
             rol: datos.rol,
+            imagen: imagenPath,
             estado: "activo",
           },
         },
@@ -139,6 +249,10 @@ export default class AdminService {
       );
     } catch (error) {
       console.error("💥 Error en servicio registrar administrador:", error);
+      // Limpiar imagen si se guardó y hubo error
+      if (imagenPath != null) {
+        imagenService.deleteImage(imagenPath.fileName);
+      }
       throw error;
     }
   }
@@ -677,6 +791,172 @@ export default class AdminService {
 
       // Cambiar rol
       const respuestaModel = await AdminModel.cambiarRol(
+        id_admin,
+        nuevoRol,
+        user_action.id
+      );
+
+      if (FormatterResponseService.isError(respuestaModel)) {
+        return respuestaModel;
+      }
+
+      // Enviar notificación solo a Vicerrector y SuperAdmin
+      const notificationService = new NotificationService();
+      await notificationService.crearNotificacionMasiva({
+        titulo: "Rol de Administrador Cambiado",
+        tipo: "admin_rol_cambiado",
+        contenido: `Se ha cambiado el rol de ${admin.nombre} ${admin.apellido} de "${admin.rol}" a "${nuevoRol}"`,
+        metadatos: {
+          admin_id: id_admin,
+          admin_cedula: admin.cedula,
+          admin_nombre: admin.nombre,
+          admin_apellido: admin.apellido,
+          rol_anterior: admin.rol,
+          rol_nuevo: nuevoRol,
+          usuario_ejecutor: user_action.id,
+          fecha_cambio: new Date().toISOString(),
+          url_action: `/administracion/administradores/${id_admin}`,
+        },
+        roles_ids: [10, 20], // Solo Vicerrector (10) y SuperAdmin (20)
+        users_ids: [user_action.id], // Usuario que cambió el rol
+      });
+
+      console.log("✅ Rol de administrador cambiado exitosamente");
+
+      return FormatterResponseService.success(
+        {
+          message: "Rol de administrador cambiado exitosamente",
+          admin: {
+            id: id_admin,
+            cedula: admin.cedula,
+            nombre: admin.nombre,
+            apellido: admin.apellido,
+            rol_anterior: admin.rol,
+            rol_nuevo: nuevoRol,
+          },
+        },
+        "Rol de administrador cambiado exitosamente",
+        {
+          status: 200,
+          title: "Rol Cambiado",
+        }
+      );
+    } catch (error) {
+      console.error(
+        "💥 Error en servicio cambiar rol de administrador:",
+        error
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method asignarRolAdmin
+   * @description Cambiar el rol de un administrador con validación y notificación
+   * @param {number} id_admin - ID del administrador
+   * @param {string} nuevoRol - Nuevo rol a asignar
+   * @param {object} user_action - Usuario que realiza la acción
+   * @returns {Object} Resultado de la operación
+   */
+  static async asignarRolAdmin(id_admin, nuevoRol, user_action) {
+    try {
+      console.log(
+        `🔍 [asignarRolAdmin] Asignado rol del admin ID: ${id_admin} a ${nuevoRol}`
+      );
+
+      // Validar ID del administrador
+      const idValidation = ValidationService.validateId(
+        id_admin,
+        "administrador"
+      );
+      if (!idValidation.isValid) {
+        return FormatterResponseService.validationError(
+          idValidation.errors,
+          "ID de administrador inválido"
+        );
+      }
+
+      // Validar nuevo rol
+      const rolesValidos = [
+        { id_rol: 7, nombre_rol: "Director General de Gestión Curricular" },
+        {
+          id_rol: 8,
+          nombre_rol: "Director General de Gestión Permanente y Docente",
+        },
+        { id_rol: 9, nombre_rol: "Secretario de Vicerrector" },
+      ];
+
+      // Obtener solo los IDs válidos para la validación
+      const idsValidos = rolesValidos.map((rol) => rol.id_rol);
+
+      // Validar que el nuevo rol esté en la lista de IDs válidos
+      if (!nuevoRol || !idsValidos.includes(parseInt(nuevoRol))) {
+        // Crear mensaje con los nombres de roles válidos
+        const nombresValidos = rolesValidos
+          .map((rol) => rol.nombre_rol)
+          .join(", ");
+
+        return FormatterResponseService.error(
+          "Error de validación en asignar de rol",
+          `Rol inválido. Los roles válidos son: ${nombresValidos}`,
+          401
+        );
+      }
+
+      // Validar ID de usuario
+      const userValidation = ValidationService.validateId(
+        user_action.id,
+        "usuario"
+      );
+      if (!userValidation.isValid) {
+        return FormatterResponseService.validationError(
+          userValidation.errors,
+          "ID de usuario inválido"
+        );
+      }
+
+      // Verificar que el administrador existe
+      const adminExistente = await AdminModel.buscarPorId(id_admin);
+      if (
+        FormatterResponseService.isError(adminExistente) ||
+        !adminExistente.data ||
+        adminExistente.data.length === 0
+      ) {
+        return FormatterResponseService.notFound("Administrador", id_admin);
+      }
+
+      const admin = adminExistente.data[0];
+
+      // No permitir cambiar el rol de sí mismo
+      if (parseInt(id_admin) === parseInt(user_action.id)) {
+        return FormatterResponseService.error(
+          "Acción no permitida",
+          "No puedes cambiar tu propio rol",
+          403,
+          "SELF_ROLE_CHANGE_NOT_ALLOWED"
+        );
+      }
+
+      // Verificar si es el último SuperAdmin y quiere cambiar su rol
+      if (admin.rol === "SuperAdmin" && nuevoRol !== "SuperAdmin") {
+        const superAdminsActivos = await AdminModel.contarPorRolYEstado(
+          "SuperAdmin",
+          "activo"
+        );
+        if (superAdminsActivos.data <= 1) {
+          return FormatterResponseService.error(
+            "Acción no permitida",
+            "No se puede asignar el rol del último SuperAdmin del sistema",
+            403,
+            "LAST_SUPERADMIN_ROLE_CHANGE_NOT_ALLOWED"
+          );
+        }
+      }
+
+      // Cambiar rol
+      const respuestaModel = await AdminModel.asignarRolAdmin(
         id_admin,
         nuevoRol,
         user_action.id

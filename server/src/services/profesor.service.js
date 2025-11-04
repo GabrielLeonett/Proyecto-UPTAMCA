@@ -15,7 +15,7 @@ loadEnv();
  */
 export default class ProfesorService {
   static async registrarProfesor(datos, imagen, user_action) {
-    const imagenService = new ImagenService("Profesores");
+    const imagenService = new ImagenService("profesores");
     let imagenPath = null;
 
     try {
