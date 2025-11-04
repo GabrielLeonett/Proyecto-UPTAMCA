@@ -384,7 +384,7 @@ export default class AdminModel {
         "telefono_local",
         "fecha_nacimiento",
         "genero",
-        "activo"
+        "activo",
       ];
 
       for (const [campo, valor] of Object.entries(datos)) {
@@ -442,12 +442,12 @@ export default class AdminModel {
 
       // Campos permitidos para actualización de perfil
       const camposPermitidos = [
-        "nombres", 
-        "apellidos", 
+        "nombres",
+        "apellidos",
         "email",
         "direccion",
         "telefono_movil",
-        "telefono_local"
+        "telefono_local",
       ];
 
       for (const [campo, valor] of Object.entries(datos)) {
@@ -558,66 +558,37 @@ export default class AdminModel {
    * @static
    * @async
    * @method cambiarRol
-   * @description Cambiar el rol de un administrador
+   * @description Actualizar los roles de un administrador usando el nuevo procedimiento
    * @param {number} cedula - Cédula del administrador
-   * @param {number} nuevo_rol_id - Nuevo ID de rol a asignar
+   * @param {number[]} nuevos_roles_ids - Array de IDs de roles a asignar
    * @param {number} id_usuario - ID del usuario que realiza la acción
    * @returns {Promise<Object>} Resultado de la operación
    */
-  static async cambiarRol(cedula, nuevo_rol_id, id_usuario) {
+  static async cambiarRol(cedula, nuevos_roles_ids, id_usuario) {
     try {
-      // Primero eliminar todos los roles actuales
-      const deleteQuery = `DELETE FROM public.usuario_rol WHERE usuario_id = ?`;
-      await pg.query(deleteQuery, [cedula]);
-
-      // Luego insertar el nuevo rol
-      const insertQuery = `
-        INSERT INTO public.usuario_rol (usuario_id, rol_id) 
-        VALUES (?, ?)
+      // Usar el nuevo procedimiento con array de roles
+      const query = `
+        CALL public.actualizar_roles_administrador_usuario($1, $2, $3, NULL)
       `;
-      const params = [cedula, nuevo_rol_id];
 
-      const { rows } = await pg.query(insertQuery, params);
-
-      return FormatterResponseModel.respuestaPostgres(
-        rows,
-        "Rol de administrador cambiado exitosamente"
-      );
-    } catch (error) {
-      error.details = { path: "AdminModel.cambiarRol" };
-      throw FormatterResponseModel.respuestaError(
-        error,
-        "Error al cambiar rol de administrador"
-      );
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method asignarRolAdmin
-   * @description Agregar un rol adicional a un administrador
-   * @param {number} cedula - Cédula del administrador
-   * @param {number} rol_id - ID del rol a agregar
-   * @param {number} id_usuario - ID del usuario que realiza la acción
-   * @returns {Promise<Object>} Resultado de la operación
-   */
-  static async asignarRolAdmin(cedula, rol_id, id_usuario) {
-    try {
-      const query = `CALL asignar_rol_administrador_usuario($1, $2, $3, NULL);`;
-      const params = [id_usuario, cedula, rol_id];
+      const params = [id_usuario, cedula, nuevos_roles_ids];
 
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Rol agregado exitosamente"
+        "Roles de administrador actualizados exitosamente"
       );
     } catch (error) {
-      error.details = { path: "AdminModel.agregarRol" };
+      error.details = {
+        path: "AdminModel.cambiarRol",
+        cedula,
+        nuevos_roles_ids,
+        id_usuario,
+      };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al agregar rol al administrador"
+        "Error al actualizar roles de administrador"
       );
     }
   }

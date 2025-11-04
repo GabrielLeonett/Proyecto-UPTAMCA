@@ -882,7 +882,7 @@ export default class ValidationService {
       data: validationResult.success ? validationResult.data : null,
     };
   }
-
+  
   // =============================================
   // MÉTODOS DE VALIDACIÓN PARA USER
   // =============================================

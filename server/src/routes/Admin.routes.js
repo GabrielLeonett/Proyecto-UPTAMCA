@@ -14,7 +14,6 @@ const {
   actualizarAdmin,
   desactivarAdmin,
   cambiarRolAdmin,
-  asignarRolAdmin,
   getProfile,
   updateProfile,
 } = AdminController;
@@ -111,18 +110,6 @@ adminRouter.delete(
  */
 adminRouter.get("/admins/search", middlewareAuth(["SuperAdmin"]), buscarAdmin);
 
-/**
- * @name POST /admins/:id/rol
- * @description Asignar el rol de un administrador
- * @param {number} id - ID del administrador
- * @body {string} rol - Nuevo rol a asignar
- * @middleware Requiere autenticación y rol SuperAdmin
- */
-adminRouter.post(
-  "/admins/:id/rol",
-  middlewareAuth(["SuperAdmin"]),
-  asignarRolAdmin
-);
 
 /**
  * @name PATCH /admins/:id/rol

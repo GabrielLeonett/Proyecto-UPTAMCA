@@ -88,29 +88,11 @@ export default class AdminController {
       res,
       AdminService.cambiarRolAdmin(
         parseInt(req.params.id),
-        req.body.rol,
+        req.body.roles,
         req.user
       )
     );
   }
-  /**
-   * @name cambiarRolAdmin
-   * @description Cambiar el rol de un administrador
-   * @param {Object} req - Objeto de solicitud Express
-   * @param {Object} res - Objeto de respuesta Express
-   * @returns {void}
-   */
-  static async asignarRolAdmin(req, res) {
-    return FormatResponseController.manejarServicio(
-      res,
-      AdminService.asignarRolAdmin(
-        parseInt(req.params.id),
-        req.body.id_rol,
-        req.user
-      )
-    );
-  }
-
   /**
    * @name getProfile
    * @description Obtener el perfil del administrador autenticado

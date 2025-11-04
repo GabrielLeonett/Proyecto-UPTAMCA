@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -25,25 +25,26 @@ export default function GestionAdministradores() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroRol, setFiltroRol] = useState("todos");
 
-  useEffect(() => {
-    const pedirUsuario = async () => {
-      try {
-        const { administradores } = await axios.get("/admins");
-        console.log(administradores)
-        setUsuarios(administradores || []);
-      } catch (error) {
-        console.log("❌ Error completo:", error);
-        if (error.error?.totalErrors > 0) {
-          error.error.validationErrors.forEach((error_validacion) => {
-            alert.toast(error_validacion.field, error_validacion.message);
-          });
-        } else {
-          alert.error(error.title, error.message);
-        }
+  const pedirUsuario = useCallback(async () => {
+    try {
+      const { administradores } = await axios.get("/admins");
+      console.log(administradores);
+      setUsuarios(administradores || []);
+    } catch (error) {
+      console.log("❌ Error completo:", error);
+      if (error.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((error_validacion) => {
+          alert.toast(error_validacion.field, error_validacion.message);
+        });
+      } else {
+        alert.error(error.title, error.message);
       }
-    };
-    pedirUsuario();
+    }
   }, [axios, alert]);
+
+  useEffect(() => {
+    pedirUsuario();
+  }, []);
 
   // Filtrado
   const usuariosFiltrados = usuarios.filter((u) => {
@@ -104,7 +105,7 @@ export default function GestionAdministradores() {
         {/* Tarjetas de usuario */}
         <Grid container spacing={3}>
           {usuariosFiltrados.map((usuario) => (
-            <Grid item xs={12} sm={6} md={4} key={usuario.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={usuario.id}>
               <CardAdmin usuario={usuario} />
             </Grid>
           ))}

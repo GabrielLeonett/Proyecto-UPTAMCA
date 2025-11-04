@@ -12,6 +12,8 @@ const rolSchema = z.object({
   }).min(1, 'El nombre del rol no puede estar vacío')
 });
 
+
+
 const adminSchema = userSchema.extend({
   roles: z.array(rolSchema).min(1, 'Debe tener al menos un rol')
 });

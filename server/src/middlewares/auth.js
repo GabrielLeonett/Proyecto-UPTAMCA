@@ -9,47 +9,69 @@ import jwt from "jsonwebtoken";
  * // Uso básico:
  * router.get('/ruta-protegida', middlewareAuth(['admin', 'editor']), handler);
  *
+ * // Ruta opcionalmente protegida:
+ * router.get('/ruta-opcional', middlewareAuth([], { required: false }), handler);
+ *
  * @param {string[]} [requiredRoles] - Roles requeridos para acceder (opcional).
+ * @param {Object} [options] - Opciones adicionales
+ * @param {boolean} [options.required=true] - Si la autenticación es requerida
  *
  * @returns {import('express').RequestHandler} Middleware de Express
  *
  * @throws {401} Si no hay token presente
  * @throws {403} Si el token es inválido/expirado o faltan permisos
  *
- * @version 2.0.0
+ * @version 2.1.0
  * @since 1.0.0
  */
-export const middlewareAuth = (requiredRoles, options = {}) => {
+export const middlewareAuth = (requiredRoles = [], options = {}) => {
+  const { required = true } = options;
+
   return (req, res, next) => {
     // 1. Verificación de token presente
-    //console.log("Cookies recibido en middlewareAuth:", req.cookies);
-    const token = req.cookies?.autorization;
-    //console.log("Token recibido en middlewareAuth:", token);
-    
+    const token = req.cookies?.autorization; // Nota: 'autorization' parece typo, debería ser 'authorization'
+
+    // Si no es requerido y no hay token, continuar sin autenticación
+    if (!required && !token) {
+      return next();
+    }
+
+    // Si es requerido y no hay token, denegar acceso
     if (!token) {
       return res
-      .status(401)
-      .json({ error: "Acceso denegado: Se requiere autenticación" });
+        .status(401)
+        .json({ error: "Acceso denegado: Se requiere autenticación" });
     }
-    
+
     // 2. Verificación de validez del token
     jwt.verify(token, process.env.AUTH_SECRET_KEY, (error, decoded) => {
       if (error) {
+        // Si no es requerido y el token es inválido, continuar sin autenticación
+        if (!required) {
+          return next();
+        }
+
         // Manejo específico de errores de token
         return res.status(403).json({
           error:
-          error.name === "TokenExpiredError"
-          ? "Token expirado, por favor inicie sesión nuevamente"
-          : "Token inválido",
+            error.name === "TokenExpiredError"
+              ? "Token expirado, por favor inicie sesión nuevamente"
+              : "Token inválido",
         });
       }
-      
+
       // Adjunta la información del usuario decodificada a la solicitud
       req.user = decoded;
-      //console.log("Datos extraidos del middleware:", decoded);
-      
+
       // 3. Verificación de roles (si se especificaron roles requeridos)
-      if (requiredRoles) {
+      if (requiredRoles && requiredRoles.length > 0) {
+        // Verificar que el usuario tenga roles
+        if (!req.user.roles || !Array.isArray(req.user.roles)) {
+          return res.status(403).json({
+            error: "Acceso denegado: Información de roles incompleta",
+          });
+        }
+
         // Lógica corregida: SuperAdmin tiene acceso completo O el usuario tiene alguno de los roles requeridos
         const hasPermission = req.user.roles.some(
           (role) => role === "SuperAdmin" || requiredRoles.includes(role)
@@ -141,6 +163,6 @@ function validateRoles(socket, requiredRoles, next) {
       return next(new Error("Acceso denegado: Privilegios insuficientes"));
     }
   }
-  
+
   next();
 }

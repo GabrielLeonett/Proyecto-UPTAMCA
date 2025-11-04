@@ -15,7 +15,8 @@ export default class UserController {
    */
   static async login(req, res) {
     try {
-      const resultado = await UserService.login(req.body, usuario);
+      console.log(req.body, req.user);
+      const resultado = await UserService.login(req.body, req.user);
 
       // Configurar cookie si el login fue exitoso
       if (resultado.success != undefined) {
@@ -74,7 +75,7 @@ export default class UserController {
         status: 500,
         title: "Error del Controlador",
         message: "Error al cerrar sesión",
-        error: error.message
+        error: error.message,
       });
     }
   }

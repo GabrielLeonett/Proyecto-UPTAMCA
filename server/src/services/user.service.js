@@ -4,6 +4,7 @@ import { comparePassword, hashPassword } from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
+import { throws } from "node:assert";
 
 /**
  * @class UserService
@@ -23,8 +24,8 @@ export default class UserService {
     try {
       console.log("🔍 [login] Iniciando proceso de login...");
 
-      if (usuario.id) {
-        FormatterResponseService.error(
+      if (usuario) {
+        throw FormatterResponseService.error(
           "Ya hay una sesion iniciada",
           "No se puede crear una sesion si ya existe una",
           404

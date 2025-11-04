@@ -694,16 +694,17 @@ export default class AdminService {
    * @static
    * @async
    * @method cambiarRolAdmin
-   * @description Cambiar el rol de un administrador con validación y notificación
+   * @description Actualizar los roles de un administrador con validación y notificación
    * @param {number} id_admin - ID del administrador
-   * @param {string} nuevoRol - Nuevo rol a asignar
+   * @param {object[]} nuevos_roles - Array de objetos de roles {id_rol, nombre_rol}
    * @param {object} user_action - Usuario que realiza la acción
    * @returns {Object} Resultado de la operación
    */
-  static async cambiarRolAdmin(id_admin, nuevoRol, user_action) {
+  static async cambiarRolAdmin(id_admin, nuevos_roles, user_action) {
     try {
       console.log(
-        `🔍 [cambiarRolAdmin] Cambiando rol del admin ID: ${id_admin} a ${nuevoRol}`
+        `🔍 [cambiarRolAdmin] Actualizando roles del admin ID: ${id_admin} a`,
+        nuevos_roles
       );
 
       // Validar ID del administrador
@@ -718,25 +719,32 @@ export default class AdminService {
         );
       }
 
-      // Validar nuevo rol
-      const rolesValidos = [
-        "SuperAdmin",
-        "Vicerrector",
-        "Director General de Gestión Curricular",
-        "Coordinador",
-      ];
-      if (!nuevoRol || !rolesValidos.includes(nuevoRol)) {
+      // Validar array de roles
+      if (!Array.isArray(nuevos_roles)) {
         return FormatterResponseService.validationError(
           [
             {
-              path: "rol",
-              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(
-                ", "
-              )}`,
+              path: "roles",
+              message: "Los roles deben ser un array de objetos",
             },
           ],
-          "Error de validación en cambio de rol"
+          "Formato de roles inválido"
         );
+      }
+
+      // Validar estructura de cada rol
+      for (const rol of nuevos_roles) {
+        if (!rol.id_rol || !rol.nombre_rol) {
+          return FormatterResponseService.validationError(
+            [
+              {
+                path: "roles",
+                message: "Cada rol debe tener id_rol y nombre_rol",
+              },
+            ],
+            "Estructura de roles inválida"
+          );
+        }
       }
 
       // Validar ID de usuario
@@ -763,202 +771,103 @@ export default class AdminService {
 
       const admin = adminExistente.data[0];
 
-      // No permitir cambiar el rol de sí mismo
+      // No permitir cambiar los roles de sí mismo
       if (parseInt(id_admin) === parseInt(user_action.id)) {
         return FormatterResponseService.error(
           "Acción no permitida",
-          "No puedes cambiar tu propio rol",
+          "No puedes cambiar tus propios roles",
           403,
           "SELF_ROLE_CHANGE_NOT_ALLOWED"
         );
       }
 
-      // Verificar si es el último SuperAdmin y quiere cambiar su rol
-      if (admin.rol === "SuperAdmin" && nuevoRol !== "SuperAdmin") {
-        const superAdminsActivos = await AdminModel.contarPorRolYEstado(
-          "SuperAdmin",
-          "activo"
-        );
-        if (superAdminsActivos.data <= 1) {
-          return FormatterResponseService.error(
-            "Acción no permitida",
-            "No se puede cambiar el rol del último SuperAdmin del sistema",
-            403,
-            "LAST_SUPERADMIN_ROLE_CHANGE_NOT_ALLOWED"
-          );
-        }
-      }
+      // 1. SEPARAR ROLES MODIFICABLES Y NO MODIFICABLES
+      const rolesNoModificables = [1, 2, 10, 20]; // Profesor, Coordinador, Vicerrector, SuperAdmin
+      const rolesModificables = [7, 8, 9]; // Director Curricular, Director Docente, Secretario
 
-      // Cambiar rol
-      const respuestaModel = await AdminModel.cambiarRol(
-        id_admin,
-        nuevoRol,
-        user_action.id
+      // 2. Obtener roles actuales del admin
+      const rolesActuales = admin.roles || admin.id_roles || [];
+      const nombresRolesActuales = admin.nombre_roles || [];
+
+      // 3. Extraer roles no modificables actuales (si los tiene)
+      const rolesNoModificablesActuales = rolesActuales.filter((rolId) =>
+        rolesNoModificables.includes(rolId)
       );
 
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
+      // 4. Extraer IDs de roles modificables de los nuevos roles
+      const nuevosRolesModificablesIds = nuevos_roles
+        .map((rol) => rol.id_rol)
+        .filter((rolId) => rolesModificables.includes(rolId));
 
-      // Enviar notificación solo a Vicerrector y SuperAdmin
-      const notificationService = new NotificationService();
-      await notificationService.crearNotificacionMasiva({
-        titulo: "Rol de Administrador Cambiado",
-        tipo: "admin_rol_cambiado",
-        contenido: `Se ha cambiado el rol de ${admin.nombre} ${admin.apellido} de "${admin.rol}" a "${nuevoRol}"`,
-        metadatos: {
-          admin_id: id_admin,
-          admin_cedula: admin.cedula,
-          admin_nombre: admin.nombre,
-          admin_apellido: admin.apellido,
-          rol_anterior: admin.rol,
-          rol_nuevo: nuevoRol,
-          usuario_ejecutor: user_action.id,
-          fecha_cambio: new Date().toISOString(),
-          url_action: `/administracion/administradores/${id_admin}`,
-        },
-        roles_ids: [10, 20], // Solo Vicerrector (10) y SuperAdmin (20)
-        users_ids: [user_action.id], // Usuario que cambió el rol
-      });
-
-      console.log("✅ Rol de administrador cambiado exitosamente");
-
-      return FormatterResponseService.success(
-        {
-          message: "Rol de administrador cambiado exitosamente",
-          admin: {
-            id: id_admin,
-            cedula: admin.cedula,
-            nombre: admin.nombre,
-            apellido: admin.apellido,
-            rol_anterior: admin.rol,
-            rol_nuevo: nuevoRol,
-          },
-        },
-        "Rol de administrador cambiado exitosamente",
-        {
-          status: 200,
-          title: "Rol Cambiado",
-        }
-      );
-    } catch (error) {
-      console.error(
-        "💥 Error en servicio cambiar rol de administrador:",
-        error
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method asignarRolAdmin
-   * @description Cambiar el rol de un administrador con validación y notificación
-   * @param {number} id_admin - ID del administrador
-   * @param {string} nuevoRol - Nuevo rol a asignar
-   * @param {object} user_action - Usuario que realiza la acción
-   * @returns {Object} Resultado de la operación
-   */
-  static async asignarRolAdmin(id_admin, nuevoRol, user_action) {
-    try {
-      console.log(
-        `🔍 [asignarRolAdmin] Asignado rol del admin ID: ${id_admin} a ${nuevoRol}`
-      );
-
-      // Validar ID del administrador
-      const idValidation = ValidationService.validateId(
-        id_admin,
-        "administrador"
-      );
-      if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de administrador inválido"
-        );
-      }
-
-      // Validar nuevo rol
-      const rolesValidos = [
-        { id_rol: 7, nombre_rol: "Director General de Gestión Curricular" },
-        {
-          id_rol: 8,
-          nombre_rol: "Director General de Gestión Permanente y Docente",
-        },
-        { id_rol: 9, nombre_rol: "Secretario de Vicerrector" },
+      // 5. COMBINAR: roles no modificables actuales + nuevos roles modificables
+      const rolesFinales = [
+        ...rolesNoModificablesActuales,
+        ...nuevosRolesModificablesIds,
       ];
 
-      // Obtener solo los IDs válidos para la validación
-      const idsValidos = rolesValidos.map((rol) => rol.id_rol);
+      console.log("🔄 Procesamiento de roles:", {
+        rolesActuales,
+        rolesNoModificablesActuales,
+        nuevosRolesModificablesIds,
+        rolesFinales,
+      });
 
-      // Validar que el nuevo rol esté en la lista de IDs válidos
-      if (!nuevoRol || !idsValidos.includes(parseInt(nuevoRol))) {
-        // Crear mensaje con los nombres de roles válidos
-        const nombresValidos = rolesValidos
-          .map((rol) => rol.nombre_rol)
-          .join(", ");
+      // 6. Validar que solo haya un rol administrativo a la vez
+      const rolesAdministrativosSeleccionados =
+        nuevosRolesModificablesIds.filter((id) => [7, 8, 9].includes(id));
 
-        return FormatterResponseService.error(
-          "Error de validación en asignar de rol",
-          `Rol inválido. Los roles válidos son: ${nombresValidos}`,
-          401
-        );
-      }
-
-      // Validar ID de usuario
-      const userValidation = ValidationService.validateId(
-        user_action.id,
-        "usuario"
-      );
-      if (!userValidation.isValid) {
+      if (rolesAdministrativosSeleccionados.length > 1) {
         return FormatterResponseService.validationError(
-          userValidation.errors,
-          "ID de usuario inválido"
+          [
+            {
+              path: "roles",
+              message:
+                "Solo se puede asignar un rol administrativo a la vez (Director Curricular, Director Docente o Secretario)",
+            },
+          ],
+          "Múltiples roles administrativos no permitidos"
         );
       }
 
-      // Verificar que el administrador existe
-      const adminExistente = await AdminModel.buscarPorId(id_admin);
-      if (
-        FormatterResponseService.isError(adminExistente) ||
-        !adminExistente.data ||
-        adminExistente.data.length === 0
-      ) {
-        return FormatterResponseService.notFound("Administrador", id_admin);
-      }
+      // 7. Verificar si es el último SuperAdmin y quiere quitar el rol de SuperAdmin
+      const tieneSuperAdminActual = rolesActuales.includes(20); // 20 = SuperAdmin
+      const tieneSuperAdminFinal = rolesFinales.includes(20);
 
-      const admin = adminExistente.data[0];
-
-      // No permitir cambiar el rol de sí mismo
-      if (parseInt(id_admin) === parseInt(user_action.id)) {
-        return FormatterResponseService.error(
-          "Acción no permitida",
-          "No puedes cambiar tu propio rol",
-          403,
-          "SELF_ROLE_CHANGE_NOT_ALLOWED"
-        );
-      }
-
-      // Verificar si es el último SuperAdmin y quiere cambiar su rol
-      if (admin.rol === "SuperAdmin" && nuevoRol !== "SuperAdmin") {
+      if (tieneSuperAdminActual && !tieneSuperAdminFinal) {
         const superAdminsActivos = await AdminModel.contarPorRolYEstado(
-          "SuperAdmin",
+          20, // SuperAdmin ID
           "activo"
         );
         if (superAdminsActivos.data <= 1) {
           return FormatterResponseService.error(
             "Acción no permitida",
-            "No se puede asignar el rol del último SuperAdmin del sistema",
+            "No se puede quitar el rol de SuperAdmin del último SuperAdmin del sistema",
             403,
             "LAST_SUPERADMIN_ROLE_CHANGE_NOT_ALLOWED"
           );
         }
       }
 
-      // Cambiar rol
-      const respuestaModel = await AdminModel.asignarRolAdmin(
+      // 8. Mapear nombres de roles para la notificación
+      const mapeoRoles = {
+        1: "Profesor",
+        2: "Coordinador",
+        7: "Director/a de gestión Curricular",
+        8: "Director/a de Gestión Permanente y Docente",
+        9: "Secretari@ Vicerrect@r",
+        10: "Vicerrector",
+        20: "SuperAdmin",
+      };
+
+      const rolesAnterioresNombres = nombresRolesActuales.join(", ");
+      const rolesFinalesNombres = rolesFinales
+        .map((id) => mapeoRoles[id] || `Rol ${id}`)
+        .join(", ");
+
+      // 9. Actualizar roles usando el nuevo método (pasar solo los IDs)
+      const respuestaModel = await AdminModel.cambiarRol(
         id_admin,
-        nuevoRol,
+        rolesFinales,
         user_action.id
       );
 
@@ -966,50 +875,61 @@ export default class AdminService {
         return respuestaModel;
       }
 
-      // Enviar notificación solo a Vicerrector y SuperAdmin
+      // 10. Enviar notificación solo a Vicerrector y SuperAdmin
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Rol de Administrador Cambiado",
-        tipo: "admin_rol_cambiado",
-        contenido: `Se ha cambiado el rol de ${admin.nombre} ${admin.apellido} de "${admin.rol}" a "${nuevoRol}"`,
+        titulo: "Roles de Administrador Actualizados",
+        tipo: "admin_roles_actualizados",
+        contenido: `Se han actualizado los roles de ${admin.nombres} ${admin.apellidos} de "${rolesAnterioresNombres}" a "${rolesFinalesNombres}"`,
         metadatos: {
           admin_id: id_admin,
           admin_cedula: admin.cedula,
-          admin_nombre: admin.nombre,
-          admin_apellido: admin.apellido,
-          rol_anterior: admin.rol,
-          rol_nuevo: nuevoRol,
+          admin_nombres: admin.nombres,
+          admin_apellidos: admin.apellidos,
+          roles_anteriores: rolesAnterioresNombres,
+          roles_nuevos: rolesFinalesNombres,
+          roles_ids_anteriores: rolesActuales,
+          roles_ids_nuevos: rolesFinales,
           usuario_ejecutor: user_action.id,
           fecha_cambio: new Date().toISOString(),
           url_action: `/administracion/administradores/${id_admin}`,
         },
         roles_ids: [10, 20], // Solo Vicerrector (10) y SuperAdmin (20)
-        users_ids: [user_action.id], // Usuario que cambió el rol
+        users_ids: [user_action.id], // Usuario que cambió los roles
       });
 
-      console.log("✅ Rol de administrador cambiado exitosamente");
+      console.log("✅ Roles de administrador actualizados exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: "Rol de administrador cambiado exitosamente",
+          message: "Roles de administrador actualizados exitosamente",
           admin: {
             id: id_admin,
             cedula: admin.cedula,
-            nombre: admin.nombre,
-            apellido: admin.apellido,
-            rol_anterior: admin.rol,
-            rol_nuevo: nuevoRol,
+            nombres: admin.nombres,
+            apellidos: admin.apellidos,
+            roles_anteriores: rolesAnterioresNombres,
+            roles_nuevos: rolesFinalesNombres,
+            roles_ids_anteriores: rolesActuales,
+            roles_ids_nuevos: rolesFinales,
+          },
+          cambios: {
+            roles_mantenidos: rolesNoModificablesActuales,
+            roles_agregados: nuevosRolesModificablesIds,
+            roles_eliminados: rolesActuales.filter(
+              (rol) => !rolesFinales.includes(rol)
+            ),
           },
         },
-        "Rol de administrador cambiado exitosamente",
+        "Roles de administrador actualizados exitosamente",
         {
           status: 200,
-          title: "Rol Cambiado",
+          title: "Roles Actualizados",
         }
       );
     } catch (error) {
       console.error(
-        "💥 Error en servicio cambiar rol de administrador:",
+        "💥 Error en servicio cambiar roles de administrador:",
         error
       );
       throw error;

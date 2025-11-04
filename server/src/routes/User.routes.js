@@ -3,12 +3,8 @@ import { middlewareAuth } from "../middlewares/auth.js";
 import UserController from "../controllers/user.controller.js";
 import fs from "node:fs";
 
-const {
-  login,
-  verificarUsers,
-  closeSession,
-  cambiarContraseña,
-} = UserController;
+const { login, verificarUsers, closeSession, cambiarContraseña } =
+  UserController;
 
 export const UserRouter = Router();
 
@@ -25,7 +21,7 @@ export const UserRouter = Router();
  * @body {string} body.email - Correo electrónico
  * @body {string} body.password - Contraseña
  */
-UserRouter.post("/auth/login", middlewareAuth(null), login);
+UserRouter.post("/auth/login", middlewareAuth([], { required: false }), login);
 
 /**
  * =============================================
@@ -61,10 +57,10 @@ UserRouter.put(
   "/auth/password",
   middlewareAuth([
     "Profesor",
-    "SuperAdmin", 
+    "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
-    "Coordinador"
+    "Coordinador",
   ]),
   cambiarContraseña
 );
