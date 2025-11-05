@@ -251,7 +251,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/infraestructura/aulas"
+                path="/infraestructura/sedes/:id_sede/aulas"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionAulas />

@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { Add, Edit, Delete, Search } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import ResponsiveAppBar from "../../components/navbar";
 import CustomButton from "../../components/customButton";
 import useApi from "../../hook/useApi";
@@ -26,6 +26,8 @@ export default function GestionAulas() {
   const theme = useTheme();
   const axios = useApi();
   const navigate = useNavigate();
+  const parametros = useParams();
+  const { id_sede } = parametros;
 
   const [aulas, setAulas] = useState([]);
   const [filteredAulas, setFilteredAulas] = useState([]);
@@ -36,7 +38,7 @@ export default function GestionAulas() {
   useEffect(() => {
     const fetchAulas = async () => {
       try {
-        const response = await axios.get("/aulas");
+        const response = await axios.get(`/aulas/sede/${id_sede}`);
         const data = response.aulas || [];
         setAulas(data);
         setFilteredAulas(data);
@@ -97,7 +99,7 @@ export default function GestionAulas() {
             variant="contained"
             color="primary"
             startIcon={<Add />}
-            onClick={() => navigate("/aulas/registrar")}
+            onClick={() => navigate("/infraestructura/aulas/registrar")}
           >
             Registrar Aula
           </CustomButton>

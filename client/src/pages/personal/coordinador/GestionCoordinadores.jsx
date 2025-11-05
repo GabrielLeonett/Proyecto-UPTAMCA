@@ -1,10 +1,14 @@
 import ResponsiveAppBar from "../../../components/navbar";
 import { CardCoordinador } from "../../../components/cardCoordinador";
-import { Typography, Box, CircularProgress, TextField } from "@mui/material";
+import { Typography, Box, CircularProgress, TextField, Tooltip } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
+import CustomButton from "../../../components/customButton";
+import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
 
 export default function Coordinadores() {
+  const navigate = useNavigate();
   const axios = useApi();
   const [coordinadores, setCoordinadores] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -77,6 +81,29 @@ export default function Coordinadores() {
             ))
           )}
         </Box>
+        <Tooltip title={"Registrar Coodinador"} placement="left-start">
+          <CustomButton
+            onClick={() => {
+              navigate('/coordinacion/coordinadores/asignar');
+            }}
+            sx={{
+              position: "fixed",
+              bottom: 78,
+              right: 24,
+              minWidth: "auto",
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label={"Registrar Coodinador"}
+          >
+            <AddIcon />
+          </CustomButton>
+        </Tooltip>
       </Box>
     </>
   );

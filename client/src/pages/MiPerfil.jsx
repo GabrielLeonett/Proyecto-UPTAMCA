@@ -70,23 +70,7 @@ const Miuser = () => {
           label: "Datos Personales",
           path: "/datos-personales",
           icon: <Person />,
-        },
-        {
-          label: "Carga Académica",
-          path: "/carga-academica",
-          icon: <Assignment />,
-        },
-        {
-          label: "Notificaciones",
-          path: "/notificaciones",
-          icon: <Notifications />,
-        },
-        { label: "Tickets", path: "/tickets", icon: <Assignment /> },
-        {
-          label: "Registrar Disponibilidad",
-          path: "/academico/profesores/disponibilidad",
-          icon: <Schedule />,
-        },
+        }
       ],
     },
     Coordinador: {
@@ -95,11 +79,6 @@ const Miuser = () => {
           label: "Gestionar Horarios",
           path: "/gestion-horarios",
           icon: <Schedule />,
-        },
-        {
-          label: "Asignar Profesores",
-          path: "/asignar-profesores",
-          icon: <Groups />,
         },
         {
           label: "Gestionar Profesores",
@@ -115,17 +94,12 @@ const Miuser = () => {
     },
     "Director General de Gestión Curricular": {
       actions: [
-        {
-          label: "Supervisar Planificaciones",
-          path: "/planificaciones",
-          icon: <Dashboard />,
-        },
+        
         {
           label: "Gestionar Profesores",
           path: "/profesores",
           icon: <Groups />,
-        },
-        { label: "Ver Reportes", path: "/reportes", icon: <BarChart /> },
+        }
       ],
     },
     Vicerrector: {

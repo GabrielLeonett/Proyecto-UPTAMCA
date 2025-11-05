@@ -554,45 +554,7 @@ export default class AulaService {
     try {
       console.log(`🔍 [obtenerAulasPorSede] Filtrando aulas por sede: ${sede}`);
 
-      // Validar sede
-      if (!sede || typeof sede !== "string" || sede.trim().length === 0) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "sede",
-              message: "La sede es requerida y debe ser una cadena no vacía",
-            },
-          ],
-          "Error de validación en filtro por sede"
-        );
-      }
-
-      const sedeLimpia = sede.trim().toUpperCase();
-
-      // Validar que la sede sea válida
-      const sedesValidas = [
-        "PRINCIPAL",
-        "NORTE",
-        "SUR",
-        "ESTE",
-        "OESTE",
-        "CENTRO",
-      ];
-      if (!sedesValidas.includes(sedeLimpia)) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "sede",
-              message: `Sede inválida. Las sedes válidas son: ${sedesValidas.join(
-                ", "
-              )}`,
-            },
-          ],
-          "Sede no válida"
-        );
-      }
-
-      const respuestaModel = await AulaModel.filtrarPorSede(sedeLimpia);
+      const respuestaModel = await AulaModel.filtrarPorSede(sede);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
@@ -602,12 +564,11 @@ export default class AulaService {
         {
           aulas: respuestaModel.data,
           total: respuestaModel.data.length,
-          sede: sedeLimpia,
         },
-        `Aulas de la sede ${sedeLimpia} obtenidas exitosamente`,
+        `Aulas de la sede ${sede} obtenidas exitosamente`,
         {
           status: 200,
-          title: `Aulas - Sede ${sedeLimpia}`,
+          title: `Aulas - Sede ${sede}`,
         }
       );
     } catch (error) {
@@ -665,7 +626,7 @@ export default class AulaService {
       throw error;
     }
   }
-  
+
   /**
    * @static
    * @async

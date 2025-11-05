@@ -190,6 +190,7 @@ export default class ProfesorService {
         Correo: Correo,
         verificarEmail: false,
       });
+      
       console.log("📧 Email enviado:", Resultado);
 
       // 6. Enviar notificaciones
