@@ -12,6 +12,8 @@ const {
   obtenerHorariosPorAula,
   actualizarHorario,
   eliminarHorario,
+  mostrarProfesorCambiarHorario,
+  mostrarAulaCambiarHorario,
 } = HorarioController;
 
 export const HorarioRouter = Router();
@@ -92,7 +94,7 @@ HorarioRouter.get(
 );
 
 /**
- * @name POST /profesores/to/seccion/:idSeccion
+ * @name POST /profesores/to/seccion/:id_seccion
  * @description Obtener información de profesores para la creación de un nuevo horario.
  * @middleware Requiere uno de estos roles:
  *   - SuperAdmin
@@ -102,7 +104,51 @@ HorarioRouter.get(
  *   - Profesor
  */
 HorarioRouter.post(
-  "/profesores/to/seccion/:idSeccion",
+  "/profesor/cambiar/horario/:id_profesor",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarProfesorCambiarHorario
+);
+
+/**
+ * @name POST /profesores/to/seccion/:id_seccion
+ * @description Obtener información de profesores para la creación de un nuevo horario.
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ *   - Profesor
+ */
+HorarioRouter.post(
+  "/aula/cambiar/horario/:id_aula",
+  middlewareAuth([
+    "SuperAdmin",
+    "Vicerrector",
+    "Director General de Gestión Curricular",
+    "Coordinador",
+    "Profesor",
+  ]),
+  mostrarAulaCambiarHorario
+);
+
+/**
+ * @name POST /profesores/to/seccion/:id_seccion
+ * @description Obtener información de profesores para la creación de un nuevo horario.
+ * @middleware Requiere uno de estos roles:
+ *   - SuperAdmin
+ *   - Vicerrector
+ *   - Director General de Gestión Curricular
+ *   - Coordinador
+ *   - Profesor
+ */
+HorarioRouter.post(
+  "/profesores/to/seccion/:id_seccion",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -124,7 +170,7 @@ HorarioRouter.post(
  *   - Profesor
  */
 HorarioRouter.post(
-  "/aulas/to/seccion/:idSeccion",
+  "/aulas/to/seccion/:id_seccion",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
@@ -146,10 +192,7 @@ HorarioRouter.post(
  *   - Coordinador
  *   - Profesor
  */
-HorarioRouter.get(
-  "/exportar/seccion/:id_seccion",
-  exportarHorarioWord
-);
+HorarioRouter.get("/exportar/seccion/:id_seccion", exportarHorarioWord);
 
 /**
  * =============================================
@@ -162,7 +205,7 @@ HorarioRouter.get(
  * @description Crear un nuevo horario académico.
  * @body {Object} datos del nuevo horario:
  * {
- *    "idSeccion": 2,
+ *    "id_seccion": 2,
  *    "idProfesor": 1,
  *    "idUnidadCurricular": 1,
  *    "idAula": 1,
@@ -233,7 +276,7 @@ HorarioRouter.put(
  *   - Coordinador
  */
 HorarioRouter.delete(
-  "/horarios/:id",
+  "/horarios/:id_horario",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",

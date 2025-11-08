@@ -40,7 +40,9 @@ import GestionTrayecto from "./pages/formacion/GestionTrayecto";
 import RegistrarUnidadCurricular from "./pages/formacion/RegistrarUnidadCurricular";
 
 // Gestión de Secciones y Horarios
-import GestionHorarios from "./pages/horarios/GestionHorarios";
+import GestionHorariosSecciones from "./pages/horarios/GestionHorariosSecciones.jsx";
+import GestionHorariosAulas from "./pages/horarios/GestionHorariosAulas.jsx";
+import GestionHorariosProfesores from "./pages/horarios/GestionHorariosProfesores.jsx";
 
 // Gestión de Infraestructura
 import GestionSedes from "./pages/infraestructura/GestionSedes";
@@ -147,7 +149,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/academico/profesores/disponibilidad"
+                path="/academico/profesores/disponibilidad/:id_profesor"
                 element={
                   <ProtectedViews allowedRoles={ROLES.PERSONAL_ACADEMICO}>
                     <DisponibilidadProfesor />
@@ -225,10 +227,27 @@ export default function App() {
               />
 
               <Route
-                path="/horarios"
+                path="/horarios/secciones"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
-                    <GestionHorarios />
+                    <GestionHorariosSecciones />
+                  </ProtectedViews>
+                }
+              />
+              <Route
+                path="/horarios/aulas"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionHorariosAulas />
+                  </ProtectedViews>
+                }
+              />
+
+              <Route
+                path="/horarios/profesores/:id_profesor"
+                element={
+                  <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
+                    <GestionHorariosProfesores />
                   </ProtectedViews>
                 }
               />

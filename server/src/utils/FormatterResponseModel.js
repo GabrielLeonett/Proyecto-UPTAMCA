@@ -1,4 +1,3 @@
-
 /**
  * @class FormatterResponseModel
  * @description Clase utilitaria para estandarizar las respuestas de la API y el manejo de datos desde PostgreSQL.
@@ -96,17 +95,6 @@ export default class FormatterResponseModel {
     } catch (error) {
       console.error("💥 Error crítico en respuestaError:", error);
 
-      // Generar reporte del error interno
-      generateReport({
-        status: 500,
-        state: "critical",
-        title: "Error en el formateador de errores del modelo",
-        message: error.message,
-        stack: error.stack,
-        originalError: error,
-        timestamp: new Date().toISOString(),
-      });
-
       // Lanzar error interno formateado
       throw {
         status: 500,
@@ -139,7 +127,7 @@ export default class FormatterResponseModel {
     try {
       return {
         status: rows.metadata?.status_code || 200,
-        state: "success",
+        state: rows.metadata?.status_code >= 400 ? "error" : "success",
         title: title,
         message: rows.message,
         ...(rows?.data && { data: rows.data }),

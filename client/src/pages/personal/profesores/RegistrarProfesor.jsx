@@ -1,22 +1,36 @@
 import { useEffect, useState } from "react";
 import { useTheme } from "@mui/material/styles";
-import { Box, Typography } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  Paper,
+  MenuItem,
+  IconButton,
+  Avatar,
+  Step,
+  Stepper,
+  StepLabel,
+  LinearProgress,
+} from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import CustomCalendar from "../../../components/customCalendar";
 import { Controller, useForm } from "react-hook-form";
-import CustomLabel from "../../../components/customLabel";
-import CustomButton from "../../../components/customButton";
-import ResponsiveAppBar from "../../../components/navbar";
-import MenuItem from "@mui/material/MenuItem";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { profesorSchema } from "../../../schemas/profesor.schema";
+import PersonIcon from "@mui/icons-material/Person";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import ClearIcon from "@mui/icons-material/Clear";
 import dayjs from "dayjs";
+import CustomCalendar from "../../../components/customCalendar";
+import { profesorSchema } from "../../../schemas/profesor.schema";
 import ModalRegisterAreaConocimiento from "../../../components/ModalRegisterAreaConocimiento";
 import ModalRegisterPreGrado from "../../../components/ModalRegisterPreGrado";
 import ModalRegisterPosGrado from "../../../components/ModalRegisterPosgrado";
 import CustomChip from "../../../components/CustomChip";
 import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
+import CustomLabel from "../../../components/customLabel";
+import CustomButton from "../../../components/customButton";
+import ResponsiveAppBar from "../../../components/navbar";
 
 export default function FormRegister() {
   const axios = useApi(false);
@@ -209,177 +223,226 @@ export default function FormRegister() {
   // Step components
   const Step1PersonalData = () => (
     <>
-      <Typography component="h3" variant="h3" className="self-start">
+      <Typography component="h3" variant="h4" fontWeight="bold" gutterBottom>
         Datos Personales
       </Typography>
+      <Typography variant="body1" color="text.secondary" mb={2}>
+        Ingresar datos Personales
+      </Typography>
 
-      <Box className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full px-10 py-6">
-        <CustomLabel
-          id="nombres"
-          label="Nombres"
-          type="text"
-          variant="outlined"
-          {...register("nombres")}
-          error={!!errors.nombres}
-          helperText={
-            errors.nombres?.message || "Ingrese sus nombres completos"
-          }
-        />
-
-        <CustomLabel
-          id="apellidos"
-          label="Apellidos"
-          type="text"
-          variant="outlined"
-          {...register("apellidos")}
-          error={!!errors.apellidos}
-          helperText={
-            errors.apellidos?.message || "Ingrese sus apellidos completos"
-          }
-        />
-
-        <CustomLabel
-          id="email"
-          label="Email"
-          type="email"
-          variant="outlined"
-          {...register("email")}
-          error={!!errors.email}
-          helperText={errors.email?.message || "Ejemplo: usuario@dominio.com"}
-        />
-
-        <CustomLabel
-          id="cedula"
-          name="cedula"
-          label="Cédula"
-          type="text"
-          variant="outlined"
-          {...register("cedula", {
-            setValueAs: (value) => {
-              if (value === "" || value === undefined) return "";
-
-              const numericValue = value.toString().replace(/\D/g, "");
-              if (numericValue === "") return "";
-
-              const num = parseInt(numericValue, 10);
-              return isNaN(num) ? "" : num;
-            },
-          })}
-          error={!!errors.cedula}
-          helperText={
-            errors.cedula?.message || "Solo números, sin guiones ni puntos"
-          }
-          inputProps={{
-            inputMode: "numeric",
-            pattern: "[0-9]*",
-            maxLength: 8,
-          }}
-          onChange={(e) => {
-            const value = e.target.value.replace(/\D/g, "");
-            e.target.value = value;
-          }}
-        />
-
-        <CustomLabel
-          id="telefono_movil"
-          label="Teléfono Móvil"
-          type="tel"
-          variant="outlined"
-          {...register("telefono_movil")}
-          error={!!errors.telefono_movil}
-          helperText={errors.telefono_movil?.message || "Ejemplo: 04121234567"}
-        />
-
-        <CustomLabel
-          id="telefono_local"
-          label="Teléfono Local"
-          type="tel"
-          variant="outlined"
-          {...register("telefono_local")}
-          error={!!errors.telefono_local}
-          helperText={
-            errors.telefono_local?.message || "Opcional - Ejemplo: 02121234567"
-          }
-        />
-
-        <CustomLabel
-          id="direccion"
-          label="Dirección de habitación"
-          type="text"
-          variant="outlined"
-          {...register("direccion")}
-          error={!!errors.direccion}
-          helperText={
-            errors.direccion?.message || "Dirección completa de residencia"
-          }
-        />
-
-        {/* MUNICIPIO */}
-        <Controller
-          name="municipio"
-          control={control}
-          defaultValue=""
-          rules={{ required: "Seleccione su municipio" }}
-          render={({ field, fieldState: { error } }) => (
+      <Grid container rowSpacing={2} columnSpacing={3} p={2}>
+        {/* Nombres y Apellidos - En una fila en desktop, en columnas en mobile */}
+        <Grid container spacing={2} size={12}>
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
             <CustomLabel
-              select
-              id="municipio"
-              label="Municipio"
+              id="nombres"
+              label="Nombres"
+              type="text"
               variant="outlined"
-              {...field} // incluye onChange, value, name, ref
-              error={!!error}
-              helperText={error?.message || "Seleccione su municipio"}
-            >
-              <MenuItem value="">Seleccione</MenuItem>
-              <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
-              <MenuItem value="Los Salias">Los Salias</MenuItem>
-              <MenuItem value="Carrizal">Carrizal</MenuItem>
-            </CustomLabel>
-          )}
-        />
+              fullWidth
+              {...register("nombres")}
+              error={!!errors.nombres}
+              helperText={
+                errors.nombres?.message || "Ingrese sus nombres completos"
+              }
+            />
+          </Grid>
 
-        {/* GÉNERO */}
-        <Controller
-          name="genero"
-          control={control}
-          defaultValue="masculino" // o "" si prefieres forzar selección
-          rules={{ required: "Seleccione su género" }}
-          render={({ field, fieldState: { error } }) => (
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
             <CustomLabel
-              select
-              id="genero"
-              label="Género"
+              id="apellidos"
+              label="Apellidos"
+              type="text"
               variant="outlined"
-              {...field}
-              error={!!error}
-              helperText={error?.message || "Seleccione su género"}
-            >
-              <MenuItem value="masculino">Masculino</MenuItem>
-              <MenuItem value="femenino">Femenino</MenuItem>
-            </CustomLabel>
-          )}
-        />
+              fullWidth
+              {...register("apellidos")}
+              error={!!errors.apellidos}
+              helperText={
+                errors.apellidos?.message || "Ingrese sus apellidos completos"
+              }
+            />
+          </Grid>
+        </Grid>
 
-        <Controller
-          name="fecha_nacimiento"
-          control={control}
-          render={({ field, fieldState: { error } }) => (
-            <CustomCalendar
-              label="Fecha de Nacimiento"
-              value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
-              onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
-              maxDate={dayjs().subtract(18, "year")} // ⭐ Máxima fecha: hoy - 18 años
-              slotProps={{
-                textField: {
-                  helperText:
-                    error?.message || "Selecciona tu fecha de nacimiento",
-                  error: !!error,
+        {/* Email y Cédula */}
+        <Grid container spacing={2} size={12}>
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <CustomLabel
+              id="email"
+              label="Email"
+              type="email"
+              variant="outlined"
+              fullWidth
+              {...register("email")}
+              error={!!errors.email}
+              helperText={
+                errors.email?.message || "Ejemplo: usuario@dominio.com"
+              }
+            />
+          </Grid>
+
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <CustomLabel
+              id="cedula"
+              name="cedula"
+              label="Cédula"
+              type="text"
+              variant="outlined"
+              fullWidth
+              {...register("cedula", {
+                setValueAs: (value) => {
+                  if (value === "" || value === undefined) return "";
+                  const numericValue = value.toString().replace(/\D/g, "");
+                  if (numericValue === "") return "";
+                  const num = parseInt(numericValue, 10);
+                  return isNaN(num) ? "" : num;
                 },
+              })}
+              error={!!errors.cedula}
+              helperText={
+                errors.cedula?.message || "Solo números, sin guiones ni puntos"
+              }
+              inputProps={{
+                inputMode: "numeric",
+                pattern: "[0-9]*",
+                maxLength: 8,
+              }}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "");
+                e.target.value = value;
               }}
             />
-          )}
-        />
-      </Box>
+          </Grid>
+        </Grid>
+
+        {/* Teléfonos */}
+        <Grid container spacing={2} size={12}>
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <CustomLabel
+              id="telefono_movil"
+              label="Teléfono Móvil"
+              type="tel"
+              variant="outlined"
+              fullWidth
+              {...register("telefono_movil")}
+              error={!!errors.telefono_movil}
+              helperText={
+                errors.telefono_movil?.message || "Ejemplo: 04121234567"
+              }
+            />
+          </Grid>
+
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <CustomLabel
+              id="telefono_local"
+              label="Teléfono Local"
+              type="tel"
+              variant="outlined"
+              fullWidth
+              {...register("telefono_local")}
+              error={!!errors.telefono_local}
+              helperText={
+                errors.telefono_local?.message ||
+                "Opcional - Ejemplo: 02121234567"
+              }
+            />
+          </Grid>
+        </Grid>
+
+        {/* Dirección y Municipio */}
+        <Grid container spacing={2} size={12}>
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <CustomLabel
+              id="direccion"
+              label="Dirección de habitación"
+              type="text"
+              variant="outlined"
+              fullWidth
+              {...register("direccion")}
+              error={!!errors.direccion}
+              helperText={
+                errors.direccion?.message || "Dirección completa de residencia"
+              }
+            />
+          </Grid>
+
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <Controller
+              name="municipio"
+              control={control}
+              defaultValue=""
+              rules={{ required: "Seleccione su municipio" }}
+              render={({ field, fieldState: { error } }) => (
+                <CustomLabel
+                  select
+                  id="municipio"
+                  label="Municipio"
+                  variant="outlined"
+                  fullWidth
+                  {...field}
+                  error={!!error}
+                  helperText={error?.message || "Seleccione su municipio"}
+                >
+                  <MenuItem value="">Seleccione</MenuItem>
+                  <MenuItem value="Guaicaipuro">Guaicaipuro</MenuItem>
+                  <MenuItem value="Los Salias">Los Salias</MenuItem>
+                  <MenuItem value="Carrizal">Carrizal</MenuItem>
+                </CustomLabel>
+              )}
+            />
+          </Grid>
+        </Grid>
+
+        {/* Género y Fecha de Nacimiento */}
+        <Grid container spacing={2} size={12}>
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <Controller
+              name="genero"
+              control={control}
+              defaultValue="masculino"
+              rules={{ required: "Seleccione su género" }}
+              render={({ field, fieldState: { error } }) => (
+                <CustomLabel
+                  select
+                  id="genero"
+                  label="Género"
+                  variant="outlined"
+                  fullWidth
+                  {...field}
+                  error={!!error}
+                  helperText={error?.message || "Seleccione su género"}
+                >
+                  <MenuItem value="masculino">Masculino</MenuItem>
+                  <MenuItem value="femenino">Femenino</MenuItem>
+                </CustomLabel>
+              )}
+            />
+          </Grid>
+
+          <Grid size={{ lg: 6, md: 6, sm: 12 }}>
+            <Controller
+              name="fecha_nacimiento"
+              control={control}
+              rules={{ required: "Seleccione su fecha de nacimiento" }}
+              render={({ field, fieldState: { error } }) => (
+                <CustomCalendar
+                  label="Fecha de Nacimiento"
+                  value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
+                  onChange={(date) =>
+                    field.onChange(date?.format("DD-MM-YYYY"))
+                  }
+                  maxDate={dayjs().subtract(18, "year")}
+                  helperText={
+                    error?.message || "Selecciona tu fecha de nacimiento"
+                  }
+                  error={!!error}
+                  fullWidth
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
+      </Grid>
     </>
   );
 
@@ -411,254 +474,266 @@ export default function FormRegister() {
 
     return (
       <>
-        <Typography component="h3" variant="h3" className="self-start">
-          Información Educativa
+        <Typography component="h3" variant="h4" fontWeight="bold" gutterBottom>
+          Datos Educativos
+        </Typography>
+        <Typography variant="body1" color="text.secondary" mb={2}>
+          Seleccionar Areas de Conocimiento, Pre-Grados, Pos-Grados(Opcional)
         </Typography>
 
-        <Box className="grid grid-cols-1 gap-8 w-full px-10 py-6">
+        <Grid container rowSpacing={2} columnSpacing={3} p={2}>
           {/* Área de Conocimiento */}
-          <Controller
-            name="areas_de_conocimiento"
-            control={control}
-            render={({ field }) => (
-              <>
-                <CustomLabel
-                  select
-                  label="Áreas de Conocimiento"
-                  fullWidth
-                  onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    if (selectedValue === "Otro") {
-                      setOpenModalArea(true);
-                    } else if (selectedValue) {
-                      const exists = areasValor.some(
-                        (item) =>
-                          item.nombre_area_conocimiento === selectedValue
-                      );
-                      if (!exists) {
-                        const areaCompleta = areas.find(
-                          (a) => a.nombre_area_conocimiento === selectedValue
+          <Grid spacing={2} size={12}>
+            <Controller
+              name="areas_de_conocimiento"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <CustomLabel
+                    select
+                    label="Áreas de Conocimiento"
+                    fullWidth
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue === "Otro") {
+                        setOpenModalArea(true);
+                      } else if (selectedValue) {
+                        const exists = areasValor.some(
+                          (item) =>
+                            item.nombre_area_conocimiento === selectedValue
                         );
-                        if (areaCompleta) {
-                          const newAreas = [...areasValor, areaCompleta];
-                          setAreasValor(newAreas);
-                          field.onChange(newAreas);
+                        if (!exists) {
+                          const areaCompleta = areas.find(
+                            (a) => a.nombre_area_conocimiento === selectedValue
+                          );
+                          if (areaCompleta) {
+                            const newAreas = [...areasValor, areaCompleta];
+                            setAreasValor(newAreas);
+                            field.onChange(newAreas);
+                          }
                         }
                       }
-                    }
-                    e.target.value = ""; // Resetear el select
-                  }}
-                  value=""
-                >
-                  <MenuItem value="">Seleccione un área</MenuItem>
-                  {Array.isArray(areas) &&
-                    areas.map((a) => (
-                      <MenuItem
-                        key={a.id_area_conocimiento}
-                        value={a.nombre_area_conocimiento}
-                      >
-                        {a.nombre_area_conocimiento}
-                      </MenuItem>
-                    ))}
-                  <MenuItem value="Otro">Otro</MenuItem>
-                </CustomLabel>
-
-                {/* CustomChips para áreas seleccionadas */}
-                {areasValor.length > 0 && (
-                  <Box
-                    sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                      e.target.value = ""; // Resetear el select
+                    }}
+                    value=""
                   >
-                    {areasValor.map((area, index) => (
-                      <CustomChip
-                        variant="outlined"
-                        key={area.id_area_conocimiento || index}
-                        label={area.nombre_area_conocimiento}
-                        color="primary"
-                        size="small"
-                        deletable
-                        onDelete={() => handleDeleteArea(index)}
-                      />
-                    ))}
-                  </Box>
-                )}
-              </>
-            )}
-          />
+                    <MenuItem value="">Seleccione un área</MenuItem>
+                    {Array.isArray(areas) &&
+                      areas.map((a) => (
+                        <MenuItem
+                          key={a.id_area_conocimiento}
+                          value={a.nombre_area_conocimiento}
+                        >
+                          {a.nombre_area_conocimiento}
+                        </MenuItem>
+                      ))}
+                    <MenuItem value="Otro">Otro</MenuItem>
+                  </CustomLabel>
 
-          {/* Modal Área */}
-          <ModalRegisterAreaConocimiento
-            open={openModalArea}
-            onClose={() => setOpenModalArea(false)}
-            setState={setAreas}
-          />
+                  {/* CustomChips para áreas seleccionadas */}
+                  {areasValor.length > 0 && (
+                    <Box
+                      sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                    >
+                      {areasValor.map((area, index) => (
+                        <CustomChip
+                          variant="outlined"
+                          key={area.id_area_conocimiento || index}
+                          label={area.nombre_area_conocimiento}
+                          color="primary"
+                          size="small"
+                          deletable
+                          onDelete={() => handleDeleteArea(index)}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                </>
+              )}
+            />
 
-          {/* Pregrado */}
-          <Controller
-            name="pre_grado"
-            control={control}
-            render={({ field }) => (
-              <>
-                <CustomLabel
-                  select
-                  label="Pre Grados"
-                  fullWidth
-                  onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    if (selectedValue === "Otro") {
-                      setOpenModalPregrado(true);
-                    } else if (selectedValue) {
-                      const exists = pregradosValor.some(
-                        (item) => item.nombre_pre_grado === selectedValue
-                      );
-                      if (!exists) {
-                        const pregradoCompleto = pregrados.find(
-                          (pg) => pg.nombre_pre_grado === selectedValue
+            {/* Modal Área */}
+            <ModalRegisterAreaConocimiento
+              open={openModalArea}
+              onClose={() => setOpenModalArea(false)}
+              setState={setAreas}
+            />
+          </Grid>
+
+          <Grid spacing={2} size={12}>
+            {/* Pregrado */}
+            <Controller
+              name="pre_grado"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <CustomLabel
+                    select
+                    label="Pre Grados"
+                    fullWidth
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue === "Otro") {
+                        setOpenModalPregrado(true);
+                      } else if (selectedValue) {
+                        const exists = pregradosValor.some(
+                          (item) => item.nombre_pre_grado === selectedValue
                         );
-                        if (pregradoCompleto) {
-                          const newPregrados = [
-                            ...pregradosValor,
-                            pregradoCompleto,
-                          ];
-                          setPregradosValor(newPregrados);
-                          field.onChange(newPregrados);
+                        if (!exists) {
+                          const pregradoCompleto = pregrados.find(
+                            (pg) => pg.nombre_pre_grado === selectedValue
+                          );
+                          if (pregradoCompleto) {
+                            const newPregrados = [
+                              ...pregradosValor,
+                              pregradoCompleto,
+                            ];
+                            setPregradosValor(newPregrados);
+                            field.onChange(newPregrados);
+                          }
                         }
                       }
-                    }
-                    e.target.value = ""; // Resetear el select
-                  }}
-                  value=""
-                >
-                  <MenuItem value="">Seleccione un pregrado</MenuItem>
-                  {Array.isArray(pregrados) &&
-                    pregrados.map((pg) => (
-                      <MenuItem
-                        key={pg.id_pre_grado}
-                        value={pg.nombre_pre_grado}
-                      >
-                        {pg.tipo_pre_grado} {pg.nombre_pre_grado}
-                      </MenuItem>
-                    ))}
-                  <MenuItem value="Otro">Otro</MenuItem>
-                </CustomLabel>
-
-                {/* CustomChips para mostrar seleccionados */}
-                {pregradosValor.length > 0 && (
-                  <Box
-                    sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                      e.target.value = ""; // Resetear el select
+                    }}
+                    value=""
                   >
-                    {pregradosValor.map((pregrado, index) => (
-                      <CustomChip
-                        key={pregrado.id_pre_grado || index}
-                        label={`${pregrado.tipo_pre_grado} ${pregrado.nombre_pre_grado}`}
-                        color="primary"
-                        deletable
-                        variant="outlined"
-                        onDelete={() => handleDeletePregrado(index)}
-                        size="small"
-                      />
-                    ))}
-                  </Box>
-                )}
-              </>
-            )}
-          />
+                    <MenuItem value="">Seleccione un pregrado</MenuItem>
+                    {Array.isArray(pregrados) &&
+                      pregrados.map((pg) => (
+                        <MenuItem
+                          key={pg.id_pre_grado}
+                          value={pg.nombre_pre_grado}
+                        >
+                          {pg.tipo_pre_grado} {pg.nombre_pre_grado}
+                        </MenuItem>
+                      ))}
+                    <MenuItem value="Otro">Otro</MenuItem>
+                  </CustomLabel>
 
-          {/* Modal Pregrado */}
-          <ModalRegisterPreGrado
-            open={openModalPregrado}
-            onClose={() => setOpenModalPregrado(false)}
-            setState={setPregrados}
-          />
+                  {/* CustomChips para mostrar seleccionados */}
+                  {pregradosValor.length > 0 && (
+                    <Box
+                      sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                    >
+                      {pregradosValor.map((pregrado, index) => (
+                        <CustomChip
+                          key={pregrado.id_pre_grado || index}
+                          label={`${pregrado.tipo_pre_grado} ${pregrado.nombre_pre_grado}`}
+                          color="primary"
+                          deletable
+                          variant="outlined"
+                          onDelete={() => handleDeletePregrado(index)}
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                  )}
+                </>
+              )}
+            />
+
+            {/* Modal Pregrado */}
+            <ModalRegisterPreGrado
+              open={openModalPregrado}
+              onClose={() => setOpenModalPregrado(false)}
+              setState={setPregrados}
+            />
+          </Grid>
 
           {/* Posgrado */}
-          <Controller
-            name="pos_grado"
-            control={control}
-            render={({ field }) => (
-              <>
-                <CustomLabel
-                  select
-                  label="Pos Grados"
-                  fullWidth
-                  onChange={(e) => {
-                    const selectedValue = e.target.value;
-                    if (selectedValue === "Otro") {
-                      setOpenModalPosgrado(true);
-                    } else if (selectedValue) {
-                      const exists = posgradosValor.some(
-                        (item) => item.nombre_pos_grado === selectedValue
-                      );
-                      if (!exists) {
-                        const posgradoCompleto = postgrados.find(
-                          (pg) => pg.nombre_pos_grado === selectedValue
+          <Grid spacing={2} size={12}>
+            <Controller
+              name="pos_grado"
+              control={control}
+              render={({ field }) => (
+                <>
+                  <CustomLabel
+                    select
+                    label="Pos Grados"
+                    fullWidth
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue === "Otro") {
+                        setOpenModalPosgrado(true);
+                      } else if (selectedValue) {
+                        const exists = posgradosValor.some(
+                          (item) => item.nombre_pos_grado === selectedValue
                         );
-                        if (posgradoCompleto) {
-                          const newPosgrados = [
-                            ...posgradosValor,
-                            posgradoCompleto,
-                          ];
-                          setPosgradosValor(newPosgrados);
-                          field.onChange(newPosgrados);
+                        if (!exists) {
+                          const posgradoCompleto = postgrados.find(
+                            (pg) => pg.nombre_pos_grado === selectedValue
+                          );
+                          if (posgradoCompleto) {
+                            const newPosgrados = [
+                              ...posgradosValor,
+                              posgradoCompleto,
+                            ];
+                            setPosgradosValor(newPosgrados);
+                            field.onChange(newPosgrados);
+                          }
                         }
                       }
-                    }
-                    e.target.value = ""; // Resetear el select
-                  }}
-                  value=""
-                >
-                  <MenuItem value="">Seleccione un posgrado</MenuItem>
-                  {Array.isArray(postgrados) &&
-                    postgrados.map((pg) => (
-                      <MenuItem
-                        key={pg.id_pos_grado}
-                        value={pg.nombre_pos_grado}
-                      >
-                        {pg.tipo_pos_grado} {pg.nombre_pos_grado}
-                      </MenuItem>
-                    ))}
-                  <MenuItem value="Otro">Otro</MenuItem>
-                </CustomLabel>
-
-                {/* CustomChips para posgrados seleccionados */}
-                {posgradosValor.length > 0 && (
-                  <Box
-                    sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                      e.target.value = ""; // Resetear el select
+                    }}
+                    value=""
                   >
-                    {posgradosValor.map((posgrado, index) => (
-                      <CustomChip
-                        variant="outlined"
-                        key={posgrado.id_pos_grado || index}
-                        label={`${posgrado.tipo_pos_grado} ${posgrado.nombre_pos_grado}`}
-                        color="primary"
-                        deletable
-                        onDelete={() => handleDeletePosgrado(index)}
-                        size="small"
-                      />
-                    ))}
-                  </Box>
-                )}
-              </>
-            )}
-          />
+                    <MenuItem value="">Seleccione un posgrado</MenuItem>
+                    {Array.isArray(postgrados) &&
+                      postgrados.map((pg) => (
+                        <MenuItem
+                          key={pg.id_pos_grado}
+                          value={pg.nombre_pos_grado}
+                        >
+                          {pg.tipo_pos_grado} {pg.nombre_pos_grado}
+                        </MenuItem>
+                      ))}
+                    <MenuItem value="Otro">Otro</MenuItem>
+                  </CustomLabel>
 
-          {/* Modal Posgrado */}
-          <ModalRegisterPosGrado
-            open={openModalPosgrado}
-            onClose={() => setOpenModalPosgrado(false)}
-            setState={setPostgrados}
-          />
-        </Box>
+                  {/* CustomChips para posgrados seleccionados */}
+                  {posgradosValor.length > 0 && (
+                    <Box
+                      sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                    >
+                      {posgradosValor.map((posgrado, index) => (
+                        <CustomChip
+                          variant="outlined"
+                          key={posgrado.id_pos_grado || index}
+                          label={`${posgrado.tipo_pos_grado} ${posgrado.nombre_pos_grado}`}
+                          color="primary"
+                          deletable
+                          onDelete={() => handleDeletePosgrado(index)}
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                  )}
+                </>
+              )}
+            />
+
+            {/* Modal Posgrado */}
+            <ModalRegisterPosGrado
+              open={openModalPosgrado}
+              onClose={() => setOpenModalPosgrado(false)}
+              setState={setPostgrados}
+            />
+          </Grid>
+        </Grid>
       </>
     );
   };
 
   const Step3ProfessionalInfo = () => (
     <>
-      <Typography component="h3" variant="h3" className="self-start mb-6">
-        Información Profesional
+      <Typography component="h3" variant="h4" fontWeight="bold" gutterBottom>
+        Datos Profesional
+      </Typography>
+      <Typography variant="body1" color="text.secondary" mb={2}>
+        Seleccionar Fecha de ingreso a la institucion, Dedicación y Categoria
       </Typography>
 
-      <Box className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full px-4 md:px-10 py-4">
+      <Grid container rowSpacing={2} columnSpacing={3} p={2}>
         <CustomLabel
           select
           id="categoria"
@@ -666,7 +741,9 @@ export default function FormRegister() {
           variant="outlined"
           {...register("categoria")}
           error={!!errors.categoria}
-          helperText={errors.categoria?.message}
+          helperText={
+            errors.categoria?.message || "Seleccione la categoría del profesor"
+          }
           fullWidth
         >
           <MenuItem value="Instructor">Instructor</MenuItem>
@@ -679,19 +756,17 @@ export default function FormRegister() {
         <Controller
           name="fecha_ingreso"
           control={control}
-          render={({ field }) => (
+          render={({ field, fieldState: { error } }) => (
             <CustomCalendar
+              label="Fecha de Ingreso"
               value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
               onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
-              slotProps={{
-                textField: {
-                  helperText:
-                    errors.fecha_ingreso?.message ||
-                    "Selecciona una fecha válida",
-                  error: !!errors.fecha_ingreso,
-                  variant: "outlined",
-                },
-              }}
+              helperText={
+                error?.message ||
+                "Selecciona tu fecha de ingreso a la institución"
+              }
+              error={!!error}
+              fullWidth
             />
           )}
         />
@@ -703,7 +778,7 @@ export default function FormRegister() {
           variant="outlined"
           {...register("dedicacion")}
           error={!!errors.dedicacion}
-          helperText={errors.dedicacion?.message}
+          helperText={errors.dedicacion?.message || "Seleccionar la dedicación"}
           fullWidth
         >
           <MenuItem value="Convencional">Convencional</MenuItem>
@@ -711,72 +786,151 @@ export default function FormRegister() {
           <MenuItem value="Tiempo Completo">Tiempo Completo</MenuItem>
           <MenuItem value="Exclusivo">Exclusivo</MenuItem>
         </CustomLabel>
-      </Box>
+      </Grid>
     </>
   );
 
   const Step4ImageUpload = () => (
     <>
-      <Typography component="h3" variant="h3" className="self-start mb-6">
+      <Typography component="h3" variant="h4" fontWeight="bold" gutterBottom>
         Imagen del Profesor
       </Typography>
+      <Typography variant="body1" color="text.secondary" mb={3}>
+        Agrega una foto profesional para el perfil del profesor
+      </Typography>
 
-      <Box className="flex flex-col items-center space-y-6">
-        <Box className="relative">
-          {imagePreview ? (
-            <>
-              <img
-                src={imagePreview}
-                alt="Vista previa"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-300"
-              />
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+      {/* Vista previa de la imagen */}
+      <Grid
+        container
+        sx={{
+          display: "flex",
+          flexDirection: "column", // ← Dirección columna
+          justifyContent: "center",
+          alignItems: "center", // ← En lugar de alignContent
+          gap: 2,
+          height: "100%",
+        }}
+      >
+        {imagePreview ? (
+          <Box sx={{ position: "relative", display: "inline-block" }}>
+            <Avatar
+              src={imagePreview}
+              alt="Vista previa de la imagen"
+              sx={{
+                width: 200,
+                height: 200,
+                boxShadow: 3,
+              }}
+            />
+            <IconButton
+              onClick={handleRemoveImage}
+              sx={{
+                position: "absolute",
+                top: -8,
+                right: -8,
+                "&:hover": {
+                  backgroundColor: "error.dark",
+                },
+                width: 32,
+                height: 32,
+              }}
+            >
+              <ClearIcon />
+            </IconButton>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              width: 200,
+              height: 200,
+              border: `2px dashed ${theme.palette.grey[400]}`,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: theme.palette.grey[50],
+              flexDirection: "column",
+              gap: 1,
+            }}
+          >
+            <PersonIcon sx={{ fontSize: 60, color: "grey.400" }} />
+            <Typography variant="body2" color="text.secondary" align="center">
+              Sin imagen
+            </Typography>
+          </Box>
+        )}
+        {/* Controles de carga */}
+        <Grid spacing={2}>
+          {/* Datos de formatos */}
+
+          {/* Input de archivo oculto */}
+          <input
+            type="file"
+            id="imagen"
+            accept="image/jpeg,image/jpg,image/png,image/webp"
+            onChange={handleImageChange}
+            style={{ display: "none" }}
+          />
+          {/* Botón para seleccionar imagen */}
+          <label htmlFor="imagen" style={{ width: "100%" }}>
+            <CustomButton
+              tipo="outlined"
+              component="span"
+              fullWidth
+              startIcon={<CloudUploadIcon />}
+              sx={{
+                py: 1.5,
+                borderStyle: "dashed",
+                borderWidth: 2,
+                backgroundColor: "background.paper",
+                "&:hover": {
+                  backgroundColor: "action.hover",
+                  borderStyle: "solid",
+                },
+              }}
+            >
+              {imagePreview ? "Cambiar Imagen" : "Seleccionar Imagen"}
+            </CustomButton>
+          </label>
+          <Box display={"flex"} flexDirection={"column"} gap={1} mt={3}>
+            <Typography variant="subtitle2" gutterBottom>
+              Requisitos de la imagen:
+            </Typography>
+            <Box
+              component="ul"
+              sx={{
+                pl: 2,
+                m: 0,
+                display: "flex",
+                flexDirection: "row",
+                gap: 4,
+              }}
+            >
+              <Typography
+                component="li"
+                variant="caption"
+                color="text.secondary"
               >
-                ×
-              </button>
-            </>
-          ) : (
-            <Box className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-dashed border-gray-300">
-              <Typography variant="body2" color="textSecondary">
-                Sin imagen
+                Formatos: JPEG, PNG, WebP
+              </Typography>
+              <Typography
+                component="li"
+                variant="caption"
+                color="text.secondary"
+              >
+                Tamaño máximo: 5MB
+              </Typography>
+              <Typography
+                component="li"
+                variant="caption"
+                color="text.secondary"
+              >
+                Relación aspecto: 1:1 (cuadrada)
               </Typography>
             </Box>
-          )}
-        </Box>
-
-        <input
-          type="file"
-          id="imagen"
-          accept="image/jpeg,image/jpg,image/png,image/webp"
-          onChange={handleImageChange}
-          className="hidden"
-        />
-
-        <label htmlFor="imagen">
-          <CustomButton
-            type="button"
-            variant="outlined"
-            component="span"
-            className="h-10"
-          >
-            {selectedImage ? "Cambiar Imagen" : "Seleccionar Imagen"}
-          </CustomButton>
-        </label>
-
-        <Typography variant="caption" color="textSecondary" align="center">
-          Formatos: JPEG, PNG, WebP. Tamaño máximo: 5MB
-        </Typography>
-
-        {/* ✅ Mostrar error de validación */}
-        {errors.imagen && (
-          <Typography variant="caption" color="error">
-            {errors.imagen.message}
-          </Typography>
-        )}
-      </Box>
+          </Box>
+        </Grid>
+      </Grid>
     </>
   );
 
@@ -796,13 +950,28 @@ export default function FormRegister() {
     }
   };
 
+  const steps = [
+    { title: "Datos Personal", description: "Datos Basicos del Profesor" },
+    {
+      title: "Datos Educativa",
+      description: "Areas de Conocimiento y Titulos",
+    },
+    {
+      title: "Datos Profesional",
+      description: "Categoria, Dedicacion y Fecha de Ingreso",
+    },
+    {
+      title: "Imagen del Profesor",
+      description: "Foto de Perfil del Profesor",
+    },
+  ];
+
   return (
     <>
       <ResponsiveAppBar backgroundColor />
       <Box
-        className="flex flex-col w-full min-h-screen bg-gray-100 p-4"
         sx={{
-          mt: 10,
+          mt: 12,
           display: "flex",
           flexDirection: "column",
           width: "100%",
@@ -810,100 +979,120 @@ export default function FormRegister() {
           backgroundColor: theme.palette.background.default,
         }}
       >
-        <Typography
-          variant="h2"
-          component="h1"
-          gutterBottom
-          sx={{ mt: 6, ml: 6 }}
-        >
+        <Typography variant="h2" component="h1" sx={{ ml: 3 }}>
           Registrar Profesor
         </Typography>
+        <Grid
+          sx={{
+            width: "100%",
+            mr: { xs: 2, sm: 2, md: 4 },
+            my: 2,
+            display: { xs: "none", sm: "block" }, // Ocultar solo en móvil muy pequeño
+          }}
+        >
+          <Stepper activeStep={step - 1} alternativeLabel>
+            {steps.map((label) => {
+              return (
+                <Step key={label}>
+                  <StepLabel>
+                    <Typography variant="subtitle2" component={"p"}>
+                      {label.title}
+                    </Typography>
+                    <Typography variant="caption" component={"p"}>
+                      {label.description}
+                    </Typography>
+                  </StepLabel>
+                </Step>
+              );
+            })}
+          </Stepper>
+        </Grid>
 
-        <Box className="flex justify-center items-center flex-grow p-3">
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            encType="multipart/form-data"
-            sx={{
-              backgroundColor: theme.palette.background.paper,
-              width: "80%",
-              padding: "50px",
-              borderRadius: "25px",
-              boxShadow: theme.shadows[10],
-              minHeight: "450px",
-              position: "relative",
-            }}
-          >
-            <AnimatePresence custom={direction} initial={false} mode="wait">
-              <motion.div
-                key={step}
-                layout
-                initial={{ opacity: 0, x: 50 * direction }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -50 * direction }}
-                transition={{ type: "tween", duration: 0.3 }}
-              >
-                {renderStep()}
-
-                {/* Navigation Buttons */}
-                <Box className="flex justify-between w-full mt-6">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {step === 1 ? (
-                      <CustomButton
-                        type="button"
-                        variant="contained"
-                        className="h-12 w-32 rounded-xl font-medium"
-                        tipo="secondary"
-                      >
-                        Cancelar
-                      </CustomButton>
-                    ) : (
-                      <CustomButton
-                        type="button"
-                        variant="contained"
-                        className="h-12 w-32 rounded-xl font-medium"
-                        tipo="secondary"
-                        onClick={handlePrevious}
-                      >
-                        Anterior
-                      </CustomButton>
-                    )}
-                  </motion.div>
-
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {step < 4 ? (
-                      <CustomButton
-                        type="button"
-                        variant="contained"
-                        className="h-12 w-32 rounded-xl font-medium"
-                        tipo="primary"
-                        onClick={handleNext} // ✅ Corregido
-                      >
-                        Siguiente
-                      </CustomButton>
-                    ) : (
-                      <CustomButton
-                        type="submit"
-                        variant="contained"
-                        className="h-12 w-32 rounded-xl font-medium"
-                        tipo="primary"
-                        disabled={!isValid || isSubmitting}
-                      >
-                        {isSubmitting ? "Registrando..." : "Registrar"}
-                      </CustomButton>
-                    )}
-                  </motion.div>
-                </Box>
-              </motion.div>
-            </AnimatePresence>
-          </Box>
+        <Box sx={{ display: { xs: "block", sm: "none" }}}>
+          <Typography variant="body2" color="primary">
+            Paso {step} de {steps.length}: {steps[step - 1]?.title}
+          </Typography>
+          <LinearProgress
+            variant="determinate"
+            value={(step / steps.length) * 100}
+            sx={{ mt: 1 }}
+          />
         </Box>
+        <Paper
+          onSubmit={handleSubmit(onSubmit)}
+          encType="multipart/form-data"
+          component="form"
+          elevation={4}
+          sx={{
+            m: 3,
+            p: 3,
+            borderRadius: 5
+          }}
+        >
+          <AnimatePresence custom={direction} initial={false} mode="wait">
+            <motion.div
+              key={step}
+              layout
+              initial={{ opacity: 0, x: 50 * direction }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 * direction }}
+              transition={{ type: "tween", duration: 0.3 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              {renderStep()}
+
+              {/* Navigation Buttons */}
+              <Grid
+                container
+                spacing={2}
+                sx={{ margin: 3 }}
+                justifyContent={"end"}
+              >
+                {/* Botón Cancelar/Anterior */}
+                <Grid size={{ xs: 12, md: 1.8 }}>
+                  {step === 1 ? (
+                    <CustomButton tipo="secondary" sx={{ width: "100%" }}>
+                      Cancelar
+                    </CustomButton>
+                  ) : (
+                    <CustomButton
+                      tipo="secondary"
+                      onClick={handlePrevious}
+                      sx={{ width: "100%" }}
+                    >
+                      Anterior
+                    </CustomButton>
+                  )}
+                </Grid>
+
+                {/* Botón Siguiente/Registrar */}
+                <Grid size={{ xs: 12, md: 1.8 }}>
+                  {step < 4 ? (
+                    <CustomButton
+                      tipo="primary"
+                      onClick={handleNext}
+                      sx={{ width: "100%" }}
+                    >
+                      Siguiente
+                    </CustomButton>
+                  ) : (
+                    <CustomButton
+                      tipo="primary"
+                      type="submit"
+                      disabled={!isValid || isSubmitting}
+                      sx={{ width: "100%" }}
+                    >
+                      {isSubmitting ? "Registrando..." : "Registrar"}
+                    </CustomButton>
+                  )}
+                </Grid>
+              </Grid>
+            </motion.div>
+          </AnimatePresence>
+        </Paper>
       </Box>
     </>
   );

@@ -59,9 +59,9 @@ export default class HorarioController {
     return FormatResponseController.manejarServicio(
       res,
       HorarioService.mostrarAulasParaHorario(
-        parseInt(req.params.idSeccion),
-        parseInt(req.body.horasNecesarias),
-        parseInt(req.body.idProfesor),
+        parseInt(req.params.id_seccion),
+        parseInt(req.body.horas_necesarias),
+        parseInt(req.body.id_profesor),
       )
     );
   }
@@ -77,8 +77,40 @@ export default class HorarioController {
     return FormatResponseController.manejarServicio(
       res,
       HorarioService.mostrarProfesoresParaHorario(
-        parseInt(req.params.idSeccion),
-        parseInt(req.body.horasNecesarias)
+        parseInt(req.params.id_seccion),
+        parseInt(req.body.horas_necesarias)
+      )
+    );
+  }
+
+  /**
+   * @name mostrarAulaCambiarHorario
+   * @description Obtener información de profesores para la creación de un nuevo horario
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarAulaCambiarHorario(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarAulaCambiarHorario(
+        parseInt(req.params.id_aula)
+      )
+    );
+  }
+
+  /**
+   * @name mostrarProfesorCambiarHorario
+   * @description Obtener información de profesores para la creación de un nuevo horario
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async mostrarProfesorCambiarHorario(req, res) {
+    return FormatResponseController.manejarServicio(
+      res,
+      HorarioService.mostrarProfesorCambiarHorario(
+        parseInt(req.params.id_profesor)
       )
     );
   }
@@ -121,7 +153,7 @@ export default class HorarioController {
   static async eliminarHorario(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      HorarioService.eliminarHorario(parseInt(req.params.id), req.user)
+      HorarioService.eliminarHorario(parseInt(req.params.id_horario), req.user)
     );
   }
 

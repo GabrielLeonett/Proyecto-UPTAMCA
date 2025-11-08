@@ -6,38 +6,33 @@ import {
   AccordionDetails,
   Typography,
   Box,
-  Chip,
-  CircularProgress,
+  useTheme,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import useApi from "../hook/useApi";
 
 export default function FiltroAcordeonHorario({
   onSeccionSelect,
-  selectedSeccion,
 }) {
+  const axios = useApi();
+  const theme = useTheme();
   const [pnfs, setPnfs] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [expandedPnf, setExpandedPnf] = useState(null);
   const [expandedTrayectos, setExpandedTrayectos] = useState({});
-  const axios = useApi();
 
   // Cargar PNFs
   useEffect(() => {
     const fetchPnfs = async () => {
       try {
-        setLoading(true);
         const res = await axios.get("/pnf");
         setPnfs(res.pnf || []);
       } catch (error) {
         console.error("Error cargando PNFs:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchPnfs();
-  }, []);
+  }, [axios]);
 
   // Manejar expansión de PNF
   const handlePnfExpand = async (pnfId, pnfCodigo) => {
@@ -112,42 +107,57 @@ export default function FiltroAcordeonHorario({
     }
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" p={3}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box sx={{ width: "100%", maxWidth: 800, margin: "0 auto" }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 800,
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: theme.shape.borderRadius,
+        p: 2,
+      }}
+    >
       {pnfs.map((pnf) => (
         <Accordion
           key={pnf.id_pnf}
           expanded={expandedPnf === pnf.id_pnf}
           onChange={() => handlePnfExpand(pnf.id_pnf, pnf.codigo_pnf)}
-          sx={{ mb: 1 }}
+          sx={{
+            mb: 1,
+            borderRadius: `${theme.shape.borderRadius}px !important`,
+            "&:before": {
+              display: "none",
+            },
+            boxShadow: theme.shadows[1],
+            "&:hover": {
+              boxShadow: theme.shadows[2],
+            },
+            transition: theme.transitions.create(["box-shadow"], {
+              duration: theme.transitions.duration.short,
+            }),
+          }}
         >
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{
+              "& .MuiAccordionSummary-expandIconWrapper": {
+                color: theme.palette.primary.main,
+              },
+              "&:hover": {
+                backgroundColor: theme.palette.action.hover,
+              },
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", width: "100%" }}>
-              <Typography sx={{ fontWeight: "bold", flex: 1 }}>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  flex: 1,
+                  color: theme.palette.text.primary,
+                }}
+              >
                 {pnf.nombre_pnf}
               </Typography>
-              <Chip
-                label={pnf.codigo_pnf}
-                size="small"
-                variant="outlined"
-                sx={{ ml: 1 }}
-              />
-              {pnf.tiene_coordinador && (
-                <Chip
-                  label="Con coordinador"
-                  size="small"
-                  color="primary"
-                  sx={{ ml: 1 }}
-                />
-              )}
             </Box>
           </AccordionSummary>
 
@@ -168,14 +178,21 @@ export default function FiltroAcordeonHorario({
                   "&:before": { display: "none" },
                   boxShadow: "none",
                   border: "none",
+                  borderRadius: "0 !important",
+                  "&:last-of-type": {
+                    borderBottomLeftRadius: `${theme.shape.borderRadius}px !important`,
+                    borderBottomRightRadius: `${theme.shape.borderRadius}px !important`,
+                  },
                 }}
               >
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   sx={{
-                    backgroundColor: "grey.50",
-                    borderBottom: "1px solid",
-                    borderColor: "grey.200",
+                    backgroundColor: theme.palette.background.paper,
+                    borderBottom: `1px solid ${theme.palette.grey[200]}`,
+                    "&:hover": {
+                      backgroundColor: theme.palette.action.hover,
+                    },
                   }}
                 >
                   <Box
@@ -185,41 +202,28 @@ export default function FiltroAcordeonHorario({
                       width: "100%",
                     }}
                   >
-                    <Typography sx={{ fontWeight: "medium" }}>
+                    <Typography component={"h5"} variant="body1">
                       Trayecto {trayecto.valor_trayecto}
                     </Typography>
-                    <Chip
-                      label={`${trayecto.poblacion_estudiantil} estudiantes`}
-                      size="small"
-                      variant="outlined"
-                      sx={{ ml: 2 }}
-                    />
                   </Box>
                 </AccordionSummary>
 
-                <AccordionDetails sx={{ p: 1, backgroundColor: "grey.25" }}>
+                <AccordionDetails
+                  sx={{
+                    p: 1,
+                    backgroundColor: theme.palette.background.default,
+                  }}
+                >
                   {trayecto.secciones?.map((seccion) => (
                     <Box
                       key={seccion.id_seccion}
-                      onClick={() => handleSeccionClick(seccion, pnf, trayecto)}
+                      onClick={() => handleSeccionClick(seccion)}
                       sx={{
                         p: 2,
                         m: 1,
+                        backgroundColor: theme.palette.background.paper,
                         border: "1px solid",
-                        borderColor:
-                          selectedSeccion?.id === seccion.id_seccion
-                            ? "primary.main"
-                            : "grey.300",
-                        borderRadius: 1,
-                        backgroundColor:
-                          selectedSeccion?.id === seccion.id_seccion
-                            ? "primary.light"
-                            : "white",
                         cursor: "pointer",
-                        "&:hover": {
-                          backgroundColor: "action.hover",
-                        },
-                        transition: "all 0.2s",
                       }}
                     >
                       <Box
@@ -230,47 +234,28 @@ export default function FiltroAcordeonHorario({
                           mb: 1,
                         }}
                       >
-                        <Typography variant="subtitle1" fontWeight="medium">
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="medium"
+                          color={theme.palette.text.primary}
+                        >
                           Sección {seccion.valor_seccion}
                         </Typography>
-                        <Chip
-                          label={`${seccion.cupos_disponibles} cupos`}
-                          size="small"
-                          color={
-                            seccion.cupos_disponibles > 0 ? "success" : "error"
-                          }
-                          variant="outlined"
-                        />
                       </Box>
 
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color={theme.palette.text.secondary}
+                      >
                         Turno: {seccion.nombre_turno}
                       </Typography>
-
-                      {/* Información adicional si existe */}
-                      {seccion.aula && (
-                        <Typography variant="body2" color="text.secondary">
-                          Aula: {seccion.aula}
-                        </Typography>
-                      )}
-
-                      {seccion.estado && (
-                        <Chip
-                          label={seccion.estado}
-                          size="small"
-                          color={
-                            seccion.estado === "ACTIVA" ? "success" : "default"
-                          }
-                          sx={{ mt: 1 }}
-                        />
-                      )}
                     </Box>
                   ))}
 
                   {(!trayecto.secciones || trayecto.secciones.length === 0) && (
                     <Typography
                       variant="body2"
-                      color="text.secondary"
+                      color={theme.palette.text.secondary}
                       textAlign="center"
                       sx={{ p: 2 }}
                     >
@@ -284,7 +269,7 @@ export default function FiltroAcordeonHorario({
             {(!pnf.trayectos || pnf.trayectos.length === 0) && (
               <Typography
                 variant="body2"
-                color="text.secondary"
+                color={theme.palette.text.secondary}
                 textAlign="center"
                 sx={{ p: 2 }}
               >
@@ -296,7 +281,11 @@ export default function FiltroAcordeonHorario({
       ))}
 
       {pnfs.length === 0 && (
-        <Typography textAlign="center" color="text.secondary" sx={{ p: 3 }}>
+        <Typography
+          textAlign="center"
+          color={theme.palette.text.secondary}
+          sx={{ p: 3 }}
+        >
           No hay PNFs registrados
         </Typography>
       )}

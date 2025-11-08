@@ -1,18 +1,11 @@
-import ResponsiveAppBar from "../../../components/navbar";
-import CardProfesor from "../../../components/cardProfesor";
-import {
-  Typography,
-  Box,
-  Grid,
-  CircularProgress,
-  TextField,
-  InputAdornment,
-  Tooltip,
-} from "@mui/material";
-import { Search as SearchIcon, Add as AddIcon } from "@mui/icons-material";
+import { Typography, Box, Grid, Tooltip } from "@mui/material";
+import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
 import { useNavigate, useParams } from "react-router-dom";
+import ResponsiveAppBar from "../../../components/navbar";
+import CardProfesor from "../../../components/cardProfesor";
+import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
 
 export default function GestionProfesores() {
@@ -20,18 +13,12 @@ export default function GestionProfesores() {
   const navigate = useNavigate();
 
   const [profesores, setProfesores] = useState([]);
-  const [profesorEspecifico, setProfesorEspecifico] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const params = useParams();
-  const { id_profesor } = params;
+  const { id_profesor } = useParams();
 
   // Función para buscar profesores - MEJORADA
   const fetchProfesores = useCallback(async () => {
     setLoading(true);
-    setError(null);
-    setProfesorEspecifico(null); // Resetear profesor específico
 
     try {
       const endpoint = "/profesores";
@@ -52,7 +39,6 @@ export default function GestionProfesores() {
 
         if (profesorEncontrado) {
           console.log("✅ Profesor específico encontrado:", profesorEncontrado);
-          setProfesorEspecifico(profesorEncontrado);
 
           // Filtrar los demás profesores (excluir el específico)
           const otrosProfesores = profesoresData.filter(
@@ -70,136 +56,75 @@ export default function GestionProfesores() {
       }
     } catch (err) {
       console.error("❌ Error cargando profesores:", err);
-      setError("Error al cargar los profesores");
       setProfesores([]);
     } finally {
       setLoading(false);
     }
-  }, [axios, id_profesor]); // ✅ Ahora incluye id_profesor como dependencia
+  }, [axios, id_profesor]);
 
   // Efecto inicial para cargar profesores
   useEffect(() => {
     fetchProfesores();
   }, [fetchProfesores]); // ✅ Ahora depende de fetchProfesores
 
-  // Debug: ver qué está pasando
-  useEffect(() => {
-    console.log("📈 Estado actual:", {
-      loading,
-      error: error?.substring(0, 50) + "...",
-      cantidadProfesores: profesores.length,
-      profesorEspecifico: !!profesorEspecifico,
-      id_profesor,
-    });
-  }, [loading, error, profesores.length, profesorEspecifico, id_profesor]);
-
   return (
     <>
       <ResponsiveAppBar backgroundColor />
 
-      <Box sx={{ pt: 12, px: { xs: 2, sm: 3, md: 5 } }}>
-        <Typography variant="h3" component="h1" gutterBottom sx={{ mb: 4 }}>
-          Profesores
+      <Box mt={12} p={3}>
+        <Typography variant="h3" fontWeight={600} mb={1}>
+          Gestión de Profesores
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={3}>
+          Visualizar, Editar y Crear Profesores
         </Typography>
 
-        {/* 🔍 Barra de búsqueda */}
-        <Box display="flex" mb={3}>
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Buscar profesor..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="action" />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ width: { xs: "100%", sm: "300px" } }}
-          />
-        </Box>
-
         {loading ? (
-          <Box display="flex" justifyContent="center" my={4}>
-            <CircularProgress />
-            <Typography sx={{ ml: 2 }}>Cargando profesores...</Typography>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <SkeletonProfesores />
+            <SkeletonProfesores />
+            <SkeletonProfesores />
           </Box>
-        ) : error ? (
-          <Typography color="error" textAlign="center" my={4}>
-            {error}
-          </Typography>
         ) : (
-          <>
-            {/* SECCIÓN DEL PROFESOR ESPECÍFICO (si existe) */}
-            {profesorEspecifico && (
-              <Box sx={{ mb: 4 }}>
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  gutterBottom
-                  sx={{ mb: 3, color: "primary.main" }}
-                >
-                  Profesor Seleccionado
-                </Typography>
-                <Grid container spacing={3}>
-                  <Grid item>
+          <Box>
+            {profesores.length === 0 ? (
+              <Typography textAlign="center" my={4}>
+                No hay más profesores registrados
+              </Typography>
+            ) : (
+              <Grid
+                container
+                spacing={3}
+                sx={{
+                  width: "100%",
+                  margin: 0,
+                }}
+              >
+                {profesores.map((profesor) => (
+                  <Grid item key={profesor.cedula || profesor.id}>
                     <CardProfesor
-                      profesor={profesorEspecifico}
-                      isSearch={true}
-                      highlight={true} // Puedes agregar esta prop para destacarlo
+                      profesor={profesor}
+                      isSearch={!!id_profesor}
                     />
                   </Grid>
-                </Grid>
-              </Box>
+                ))}
+              </Grid>
             )}
-
-            {/* SECCIÓN DE LOS DEMÁS PROFESORES */}
-            {(profesores.length > 0 || !profesorEspecifico) && (
-              <Box>
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  gutterBottom
-                  sx={{ mb: 3 }}
-                >
-                  {profesorEspecifico
-                    ? "Otros Profesores"
-                    : "Todos los Profesores"}
-                </Typography>
-
-                {profesores.length === 0 ? (
-                  <Typography textAlign="center" my={4}>
-                    No hay más profesores registrados
-                  </Typography>
-                ) : (
-                  <Grid
-                    container
-                    spacing={3}
-                    sx={{
-                      width: "100%",
-                      margin: 0,
-                    }}
-                  >
-                    {profesores.map((profesor) => (
-                      <Grid item key={profesor.cedula || profesor.id}>
-                        <CardProfesor
-                          profesor={profesor}
-                          isSearch={!!id_profesor}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
-                )}
-              </Box>
-            )}
-          </>
+          </Box>
         )}
+
         <Tooltip title={"Registrar Profesor"} placement="left-start">
           <CustomButton
             onClick={() => {
-              navigate('/academico/profesores/registrar');
+              navigate("/academico/profesores/registrar");
             }}
             sx={{
               position: "fixed",
@@ -216,7 +141,7 @@ export default function GestionProfesores() {
             }}
             aria-label={"Registrar Profesor"}
           >
-            <AddIcon />
+            <PersonAddIcon />
           </CustomButton>
         </Tooltip>
       </Box>

@@ -234,6 +234,7 @@ export default class FormatterResponseService {
       );
     }
 
+
     return this.success(dbResponse.data, dbResponse.message, {
       status: dbResponse.status,
       title: dbResponse.title,

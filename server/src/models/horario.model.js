@@ -5,14 +5,14 @@ export default class HorarioModel {
   /**
    * @name obtenerPorProfesor
    * @description Obtener horarios por ID de profesor
-   * @param {number} idProfesor - ID del profesor
+   * @param {number} id_profesor - ID del profesor
    * @returns {Object} Respuesta formateada con los horarios del profesor
    */
-  static async obtenerPorProfesor(idProfesor) {
+  static async obtenerPorProfesor(id_profesor) {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.clases_completas WHERE id_profesor = $1",
-        [idProfesor]
+        [id_profesor]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -27,12 +27,59 @@ export default class HorarioModel {
   }
 
   /**
+   * @name obtenerPorId
+   * @description Obtener horarios por ID del horario
+   * @param {number} id_horario - ID del horario
+   * @returns {Object} Respuesta formateada con los horarios del profesor
+   */
+  static async obtenerPorId(id_horario) {
+    try {
+      const { rows } = await pg.query(
+        "SELECT * FROM public.clases_completas WHERE id_horario = $1",
+        [id_horario]
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Horarios obtenidos exitosamente"
+      );
+    } catch (error) {
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener los horarios del profesor"
+      );
+    }
+  }
+  /**
+   * @name obtenerIdUSerProfesor
+   * @description Obtener id_cedula del profesor para enviarle notificacion sobre sus horarios
+   * @param {number} id_profesor - ID del profesor
+   * @returns {Object} Respuesta formateada con los horarios del profesor
+   */
+  static async obtenerIdUSerProfesor(id_profesor) {
+    try {
+      const { rows } = await pg.query(
+        "SELECT id_cedula as id FROM profesores WHERE id_profesor = $1",
+        [id_profesor]
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Cedula obtenida exitosa"
+      );
+    } catch (error) {
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener la cedula del profesor"
+      );
+    }
+  }
+
+  /**
    * @name obtenerPorSeccion
    * @description Obtener horarios por ID de sección
-   * @param {number} idSeccion - ID de la sección
+   * @param {number} id_seccion - ID de la sección
    * @returns {Object} Respuesta formateada con los horarios de la sección
    */
-  static async obtenerPorSeccion(idSeccion) {
+  static async obtenerPorSeccion(id_seccion) {
     try {
       const { rows } = await pg.query(
         `SELECT 
@@ -60,7 +107,7 @@ export default class HorarioModel {
           codigo_pnf
          FROM public.clases_completas 
          WHERE id_seccion = $1`,
-        [idSeccion]
+        [id_seccion]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -77,14 +124,14 @@ export default class HorarioModel {
   /**
    * @name obtenerPorAula
    * @description Obtener horarios por ID de aula
-   * @param {number} idAula - ID del aula
+   * @param {number} id_aula - ID del aula
    * @returns {Object} Respuesta formateada con los horarios del aula
    */
-  static async obtenerPorAula(idAula) {
+  static async obtenerPorAula(id_aula) {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.clases_completas WHERE id_aula = $1",
-        [idAula]
+        [id_aula]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -99,17 +146,65 @@ export default class HorarioModel {
   }
 
   /**
+   * @name mostrarProfesorCambiarHorario
+   * @description Obtener profesores con horas disponibles
+   * @param {number} id_profesor - id del profesor
+   * @returns {Object} Respuesta formateada con profesores disponibles
+   */
+  static async mostrarProfesorCambiarHorario(id_profesor) {
+    try {
+      const { rows } = await pg.query(
+        `SELECT * FROM buscar_profesor_cambiar_horario($1) AS p_resultado;`,
+        [id_profesor]
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores disponibles obtenidos exitosamente"
+      );
+    } catch (error) {
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener profesores disponibles"
+      );
+    }
+  }
+
+  /**
+   * @name mostrarAulaCambiarHorario
+   * @description Obtener profesores con horas disponibles
+   * @param {number} id_aula - id del aula
+   * @returns {Object} Respuesta formateada con profesores disponibles
+   */
+  static async mostrarAulaCambiarHorario(id_aula) {
+    try {
+      const { rows } = await pg.query(
+        `SELECT * FROM buscar_aula_cambiar_horario($1) AS p_resultado;`,
+        [id_aula]
+      );
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Profesores disponibles obtenidos exitosamente"
+      );
+    } catch (error) {
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener profesores disponibles"
+      );
+    }
+  }
+
+  /**
    * @name obtenerProfesoresDisponibles
    * @description Obtener profesores con horas disponibles
-   * @param {number} idSeccion - id de la sección
+   * @param {number} id_seccion - id de la sección
    * @param {number} horasNecesarias - Horas necesarias en formato intervalo
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async obtenerProfesoresDisponibles(idSeccion, horasNecesarias) {
+  static async obtenerProfesoresDisponibles(id_seccion, horasNecesarias) {
     try {
       const { rows } = await pg.query(
         `SELECT * FROM buscar_profesores_disponibles($1, $2) AS p_resultado;`,
-        [idSeccion, horasNecesarias]
+        [id_seccion, horasNecesarias]
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
@@ -126,17 +221,21 @@ export default class HorarioModel {
   /**
    * @name obtenerAulasDisponibles
    * @description Obtener aulas disponibles por PNF
-   * @param {number} idSeccion - id de la seccion
+   * @param {number} id_seccion - id de la seccion
    * @param {number} horasNecesarias - horas necesarias
-   * @param {number} idProfesor - id de la profesor
+   * @param {number} id_profesor - id de la profesor
    * @returns {Object} Respuesta formateada con aulas disponibles
    */
-  static async obtenerAulasDisponibles(idSeccion, horasNecesarias, idProfesor) {
+  static async obtenerAulasDisponibles(
+    id_seccion,
+    horasNecesarias,
+    id_profesor
+  ) {
     try {
-      console.log(idSeccion, horasNecesarias, idProfesor);
+      console.log(id_seccion, horasNecesarias, id_profesor);
       const { rows } = await pg.query(
         "SELECT * FROM buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
-        [idSeccion, idProfesor, horasNecesarias]
+        [id_seccion, id_profesor, horasNecesarias]
       );
       console.log(rows);
       return FormatResponseModel.respuestaPostgres(
@@ -155,36 +254,36 @@ export default class HorarioModel {
    * @name crear
    * @description Crear un nuevo horario
    * @param {Object} datos - Datos del horario
-   * @param {number} datos.idSeccion - ID de la sección
-   * @param {number} datos.idProfesor - ID del profesor
-   * @param {number} datos.idUnidadCurricular - ID de la unidad curricular
-   * @param {number} datos.idAula - ID del aula
-   * @param {string} datos.diaSemana - Día de la semana
-   * @param {string} datos.horaInicio - Hora de inicio
+   * @param {number} datos.id_seccion - ID de la sección
+   * @param {number} datos.id_profesor - ID del profesor
+   * @param {number} datos.id_unidad_curricular - ID de la unidad curricular
+   * @param {number} datos.id_aula - ID del aula
+   * @param {string} datos.dia_semana - Día de la semana
+   * @param {string} datos.hora_inicio - Hora de inicio
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Object} Respuesta formateada del resultado
    */
   static async crear(datos, usuarioId) {
     try {
       const {
-        idSeccion,
-        idProfesor,
-        idUnidadCurricular,
-        idAula,
-        diaSemana,
-        horaInicio,
+        id_seccion,
+        id_profesor,
+        id_unidad_curricular,
+        id_aula,
+        dia_semana,
+        hora_inicio,
       } = datos;
 
       const { rows } = await pg.query(
         "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, NULL)",
         [
           usuarioId,
-          idSeccion,
-          idProfesor,
-          idUnidadCurricular,
-          idAula,
-          diaSemana,
-          horaInicio,
+          id_seccion,
+          id_profesor,
+          id_unidad_curricular,
+          id_aula,
+          dia_semana,
+          hora_inicio,
         ]
       );
       return FormatResponseModel.respuestaPostgres(
@@ -219,13 +318,12 @@ export default class HorarioModel {
       });
 
       const { rows } = await pg.query(
-        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6)",
+        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5)",
         [
           null, // p_resultado (OUT parameter)
           usuarioId,
           idHorario,
           datos.hora_inicio || null,
-          datos.hora_fin || null,
           datos.dia_semana || null,
         ]
       );
@@ -252,7 +350,7 @@ export default class HorarioModel {
    */
   static async eliminar(idHorario, usuarioId) {
     try {
-      const { rows } = await pg.query("CALL public.eliminar_horario($1, $2)", [
+      const { rows } = await pg.query("CALL public.eliminar_horario($1, $2, NULL)", [
         usuarioId,
         idHorario,
       ]);

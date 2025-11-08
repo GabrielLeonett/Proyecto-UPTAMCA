@@ -11,12 +11,12 @@ import NotificationService from "./notification.service.js";
 export default class HorarioService {
   /**
    * Mostrar los horarios de un profesor en específico
-   * @param {number} idProfesor
+   * @param {number} id_profesor
    * @returns {Object} Respuesta formateada con los horarios del profesor
    */
-  static async mostrarHorariosProfesores(idProfesor) {
+  static async mostrarHorariosProfesores(id_profesor) {
     try {
-      const validation = validationService.validateId(idProfesor, "profesor");
+      const validation = validationService.validateId(id_profesor, "profesor");
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
@@ -24,7 +24,7 @@ export default class HorarioService {
         );
       }
 
-      const dbResponse = await HorarioModel.obtenerPorProfesor(idProfesor);
+      const dbResponse = await HorarioModel.obtenerPorProfesor(id_profesor);
 
       // Si el modelo retorna una respuesta formateada, la adaptamos
       if (dbResponse && dbResponse.state === "error") {
@@ -32,39 +32,71 @@ export default class HorarioService {
       }
 
       const rows = dbResponse.data || dbResponse;
-      const horariosOrganizados = [];
 
-      rows.forEach((clase) => {
-        const nuevaClase = {
-          id: clase.id_horario,
-          idProfesor: clase.id_profesor,
-          idAula: clase.id_aula,
-          idUnidadCurricular: clase.id_unidad_curricular,
-          horaInicio: clase.hora_inicio,
-          horaFin: clase.hora_fin,
-          nombreProfesor: clase.nombres_profesor,
-          apellidoProfesor: clase.apellidos_profesor,
-          nombreUnidadCurricular: clase.nombre_unidad_curricular,
-        };
-
-        let horario = horariosOrganizados.find(
-          (h) => h.idProfesor === clase.id_profesor
+      // Validar que hay datos
+      if (!rows || rows.length === 0) {
+        return FormatterResponseService.notFound(
+          "No hay Horarios del profesor",
+          id_profesor
         );
-        if (!horario) {
-          horario = { idProfesor: clase.id_profesor, dias: [] };
-          horariosOrganizados.push(horario);
-        }
+      }
 
-        let dia = horario.dias.find((d) => d.nombre === clase.dia_semana);
-        if (!dia) {
-          dia = { nombre: clase.dia_semana, clases: [] };
-          horario.dias.push(dia);
-        }
-        dia.clases.push(nuevaClase);
-      });
+      // Usar los nombres correctos de las columnas según tu consulta SQL
+      const { nombres_profesor, apellidos_profesor } = rows[0];
+
+      // ✅ CORREGIDO: Filtrar solo filas que tengan datos reales de horarios
+      const filasConHorarios = rows.filter(
+        (row) => row.nombre_unidad_curricular && row.hora_inicio && row.hora_fin
+      );
+
+      let horario = [];
+
+      // ✅ CORREGIDO: Solo procesar si hay horarios reales
+      if (filasConHorarios.length > 0) {
+        const diasUnicos = [
+          ...new Set(filasConHorarios.map((d) => d.dia_semana)),
+        ];
+
+        // ✅ CORREGIDO: Sintaxis del map corregida
+        horario = diasUnicos.map((dia) => ({
+          nombre: dia,
+          clases: filasConHorarios
+            .filter((clase) => clase.dia_semana === dia)
+            .map((clase) => ({
+              codigo_pnf: clase.codigo_pnf,
+              valor_seccion: clase.valor_seccion,
+              valor_trayecto: clase.valor_trayecto,
+              id: clase.id_horario,
+              id_profesor: clase.id_profesor,
+              id_aula: clase.id_aula,
+              id_unidad_curricular: clase.id_unidad_curricular,
+              codigo_aula: clase.codigo_aula,
+              nombre_unidad_curricular: clase.nombre_unidad_curricular,
+              hora_inicio: clase.hora_inicio,
+              hora_fin: clase.hora_fin,
+              id_seccion: clase.id_seccion,
+              valor_seccion: clase.valor_seccion,
+              nombre_pnf: clase.nombre_pnf,
+            })),
+        }));
+      }
+      // ✅ Si no hay horarios reales, Horario será un array vacío []
+
+      // Crear configuración con nombres consistentes
+      const configuracion = {
+        profesor: { id_profesor, nombres_profesor, apellidos_profesor },
+        turno: {
+          nombre: "Completo",
+          hora_inicio: "07:00",
+          hora_fin: "20:00",
+        },
+        horario,
+      };
+
+      console.log("✅ Configuración formateada:", configuracion.horario);
 
       return FormatterResponseService.success(
-        horariosOrganizados,
+        configuracion,
         "Horarios del profesor obtenidos exitosamente"
       );
     } catch (error) {
@@ -84,12 +116,12 @@ export default class HorarioService {
 
   /**
    * Mostrar los horarios de una sección en específico
-   * @param {number} idSeccion
+   * @param {number} id_seccion
    * @returns {Object} Respuesta formateada con los horarios de la sección
    */
-  static async mostrarHorariosPorSeccion(idSeccion) {
+  static async mostrarHorariosPorSeccion(id_seccion) {
     try {
-      const validation = validationService.validateId(idSeccion, "sección");
+      const validation = validationService.validateId(id_seccion, "sección");
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
@@ -97,7 +129,7 @@ export default class HorarioService {
         );
       }
 
-      const dbResponse = await HorarioModel.obtenerPorSeccion(idSeccion);
+      const dbResponse = await HorarioModel.obtenerPorSeccion(id_seccion);
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);
@@ -109,7 +141,7 @@ export default class HorarioService {
 
       // Validar que hay datos
       if (!rows || rows.length === 0) {
-        return FormatterResponseService.notFound("Sección", idSeccion);
+        return FormatterResponseService.notFound("Sección", id_seccion);
       }
 
       // Usar los nombres correctos de las columnas según tu consulta SQL
@@ -120,7 +152,6 @@ export default class HorarioService {
         valor_trayecto,
         id_trayecto,
         valor_seccion,
-        id_seccion,
         nombre_turno,
         turno_hora_inicio,
         turno_hora_fin,
@@ -131,7 +162,7 @@ export default class HorarioService {
         (row) => row.nombre_unidad_curricular && row.hora_inicio && row.hora_fin
       );
 
-      let Horario = [];
+      let horario = [];
 
       // ✅ CORREGIDO: Solo procesar si hay horarios reales
       if (filasConHorarios.length > 0) {
@@ -140,45 +171,43 @@ export default class HorarioService {
         ];
 
         // ✅ CORREGIDO: Sintaxis del map corregida
-        Horario = diasUnicos.map((dia) => ({
+        horario = diasUnicos.map((dia) => ({
           nombre: dia,
           clases: filasConHorarios
             .filter((clase) => clase.dia_semana === dia)
             .map((clase) => ({
               id: clase.id_horario,
-              idProfesor: clase.id_profesor,
-              idAula: clase.id_aula,
-              idUnidadCurricular: clase.id_unidad_curricular,
-              nombreProfesor: clase.nombres_profesor,
-              codigoAula: clase.codigo_aula,
-              apellidoProfesor: clase.apellidos_profesor,
-              nombreUnidadCurricular: clase.nombre_unidad_curricular,
-              horaInicio: clase.hora_inicio,
-              horaFin: clase.hora_fin,
-              idSeccion: clase.id_seccion,
-              valorSeccion: clase.valor_seccion,
-              nombrePnf: clase.nombre_pnf,
-              diaSemana: clase.dia_semana,
-              nuevaClase: !clase.id_horario,
+              id_profesor: clase.id_profesor,
+              id_aula: clase.id_aula,
+              id_unidad_curricular: clase.id_unidad_curricular,
+              nombre_profesor: clase.nombres_profesor,
+              codigo_aula: clase.codigo_aula,
+              apellido_profesor: clase.apellidos_profesor,
+              nombre_unidad_curricular: clase.nombre_unidad_curricular,
+              hora_inicio: clase.hora_inicio,
+              hora_fin: clase.hora_fin,
+              id_seccion: clase.id_seccion,
+              valor_seccion: clase.valor_seccion,
+              nombre_pnf: clase.nombre_pnf,
             })),
         }));
       }
-      // ✅ Si no hay horarios reales, Horario será un array vacío []
+      // ✅ Si no hay horarios reales, horario será un array vacío []
 
       // Crear configuración con nombres consistentes
       const configuracion = {
-        PNF: { nombre_pnf, codigo_pnf, id_pnf },
-        Trayecto: { id_trayecto, valor_trayecto },
-        Seccion: { valor_seccion, id_seccion },
-        Turno: {
+        pnf: { nombre_pnf, codigo_pnf, id_pnf },
+        trayecto: { id_trayecto, valor_trayecto },
+        seccion: { valor_seccion, id_seccion },
+        turno: {
           nombre: nombre_turno,
-          horaInicio: turno_hora_inicio || "07:00",
-          horaFin: turno_hora_fin || "20:00",
+          hora_inicio: turno_hora_inicio || "07:00",
+          hora_fin: turno_hora_fin || "20:00",
         },
-        Horario, // ✅ Ahora será [] cuando no haya horarios
+        horario, // ✅ Ahora será [] cuando no haya horarios
       };
 
-      console.log("✅ Configuración formateada:", configuracion.Horario);
+      console.log("✅ Configuración formateada:", configuracion.horario);
 
       return FormatterResponseService.success(
         configuracion,
@@ -199,12 +228,12 @@ export default class HorarioService {
 
   /**
    * Mostrar los horarios de un aula en específico
-   * @param {number} idAula
+   * @param {number} id_aula
    * @returns {Object} Respuesta formateada con los horarios del aula
    */
-  static async mostrarHorariosPorAula(idAula) {
+  static async mostrarHorariosPorAula(id_aula) {
     try {
-      const validation = validationService.validateId(idAula, "aula");
+      const validation = validationService.validateId(id_aula, "aula");
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
@@ -212,46 +241,77 @@ export default class HorarioService {
         );
       }
 
-      const dbResponse = await HorarioModel.obtenerPorAula(idAula);
+      const dbResponse = await HorarioModel.obtenerPorAula(id_aula);
 
       if (dbResponse && dbResponse.state === "error") {
         return FormatterResponseService.fromDatabaseResponse(dbResponse);
       }
 
       const rows = dbResponse.data || dbResponse;
-      const horariosOrganizados = [];
-
-      rows.forEach((clase) => {
-        const nuevaClase = {
-          id: clase.id_horario,
-          idProfesor: clase.id_profesor,
-          idAula: clase.id_aula,
-          idUnidadCurricular: clase.id_unidad_curricular,
-          horaInicio: clase.hora_inicio,
-          horaFin: clase.hora_fin,
-          nombreProfesor: clase.nombres_profesor,
-          apellidoProfesor: clase.apellidos_profesor,
-          nombreUnidadCurricular: clase.nombre_unidad_curricular,
-        };
-
-        let horario = horariosOrganizados.find(
-          (h) => h.idProfesor === clase.id_profesor
+      // Validar que hay datos
+      if (!rows || rows.length === 0) {
+        return FormatterResponseService.notFound(
+          "No hay Horarios del profesor",
+          id_profesor
         );
-        if (!horario) {
-          horario = { idProfesor: clase.id_profesor, dias: [] };
-          horariosOrganizados.push(horario);
-        }
+      }
 
-        let dia = horario.dias.find((d) => d.nombre === clase.dia_semana);
-        if (!dia) {
-          dia = { nombre: clase.dia_semana, clases: [] };
-          horario.dias.push(dia);
-        }
-        dia.clases.push(nuevaClase);
-      });
+      // Usar los nombres correctos de las columnas según tu consulta SQL
+      const { codigo_aula } = rows[0];
+
+      // ✅ CORREGIDO: Filtrar solo filas que tengan datos reales de horarios
+      const filasConHorarios = rows.filter(
+        (row) => row.nombre_unidad_curricular && row.hora_inicio && row.hora_fin
+      );
+
+      let horario = [];
+
+      // ✅ CORREGIDO: Solo procesar si hay horarios reales
+      if (filasConHorarios.length > 0) {
+        const diasUnicos = [
+          ...new Set(filasConHorarios.map((d) => d.dia_semana)),
+        ];
+
+        // ✅ CORREGIDO: Sintaxis del map corregida
+        horario = diasUnicos.map((dia) => ({
+          nombre: dia,
+          clases: filasConHorarios
+            .filter((clase) => clase.dia_semana === dia)
+            .map((clase) => ({
+              codigo_pnf: clase.codigo_pnf,
+              valor_seccion: clase.valor_seccion,
+              valor_trayecto: clase.valor_trayecto,
+              id: clase.id_horario,
+              id_profesor: clase.id_profesor,
+              id_unidad_curricular: clase.id_unidad_curricular,
+              nombre_profesor: clase.nombres_profesor,
+              apellido_profesor: clase.apellidos_profesor,
+              nombre_unidad_curricular: clase.nombre_unidad_curricular,
+              hora_inicio: clase.hora_inicio,
+              hora_fin: clase.hora_fin,
+              id_seccion: clase.id_seccion,
+              valor_seccion: clase.valor_seccion,
+              nombre_pnf: clase.nombre_pnf,
+            })),
+        }));
+      }
+      // ✅ Si no hay horarios reales, Horario será un array vacío []
+
+      // Crear configuración con nombres consistentes
+      const configuracion = {
+        aula: { id_aula, codigo_aula },
+        turno: {
+          nombre: "Completo",
+          hora_inicio: "07:00",
+          hora_fin: "20:00",
+        },
+        horario,
+      };
+
+      console.log("✅ Configuración formateada:", configuracion.horario);
 
       return FormatterResponseService.success(
-        horariosOrganizados,
+        configuracion,
         "Horarios del aula obtenidos exitosamente"
       );
     } catch (error) {
@@ -269,14 +329,14 @@ export default class HorarioService {
 
   /**
    * Mostrar profesores disponibles según horas necesarias
-   * @param {number} idSeccion
-   * @param {number} horasNecesarias
+   * @param {number} id_seccion
+   * @param {number} horas_necesarias
    * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async mostrarProfesoresParaHorario(idSeccion, horasNecesarias) {
+  static async mostrarProfesoresParaHorario(id_seccion, horas_necesarias) {
     try {
       const validationidSeccion = validationService.validateId(
-        idSeccion,
+        id_seccion,
         "Id Seccion"
       );
       if (!validationidSeccion.isValid) {
@@ -287,7 +347,7 @@ export default class HorarioService {
       }
 
       const validation = validationService.validateId(
-        horasNecesarias,
+        horas_necesarias,
         "horas necesarias"
       );
       if (!validation.isValid) {
@@ -298,8 +358,8 @@ export default class HorarioService {
       }
 
       const dbResponse = await HorarioModel.obtenerProfesoresDisponibles(
-        idSeccion,
-        horasNecesarias
+        id_seccion,
+        horas_necesarias
       );
 
       if (dbResponse && dbResponse.state === "error") {
@@ -326,14 +386,106 @@ export default class HorarioService {
   }
 
   /**
-   * Mostrar aulas disponibles para una seccion y un profesor
-   * @param {number} idSeccion - id de la seccion
-   * @returns {Object} Respuesta formateada con aulas disponibles
+   * Mostrar profesores disponibles según horas necesarias
+   * @param {number} id_profesor
+   * @returns {Object} Respuesta formateada con profesores disponibles
    */
-  static async mostrarAulasParaHorario(idSeccion, horasNecesarias, idProfesor) {
+  static async mostrarProfesorCambiarHorario(id_profesor) {
     try {
       const validationidSeccion = validationService.validateId(
-        idSeccion,
+        id_profesor,
+        "Id de profesor"
+      );
+      if (!validationidSeccion.isValid) {
+        return FormatterResponseService.validationError(
+          validationidSeccion.errors,
+          "Id del profesor inválido"
+        );
+      }
+
+      const dbResponse = await HorarioModel.mostrarProfesorCambiarHorario(
+        id_profesor
+      );
+
+      if (dbResponse && dbResponse.state === "error") {
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
+      }
+
+      const rows = dbResponse.data || dbResponse;
+
+      return FormatterResponseService.success(
+        rows,
+        "Profesores disponibles obtenidos exitosamente"
+      );
+    } catch (error) {
+      if (error.success === false) {
+        throw error;
+      }
+      return FormatterResponseService.error(
+        "Error al obtener profesores disponibles",
+        error.message,
+        500,
+        "PROFESORES_DISPONIBLES_ERROR"
+      );
+    }
+  }
+
+  /**
+   * Mostrar profesores disponibles según horas necesarias
+   * @param {number} id_aula
+   * @returns {Object} Respuesta formateada con profesores disponibles
+   */
+  static async mostrarAulaCambiarHorario(id_aula) {
+    try {
+      const validationidSeccion = validationService.validateId(
+        id_aula,
+        "Id del aula"
+      );
+      if (!validationidSeccion.isValid) {
+        return FormatterResponseService.validationError(
+          validationidSeccion.errors,
+          "Id del aula inválido"
+        );
+      }
+
+      const dbResponse = await HorarioModel.mostrarAulaCambiarHorario(id_aula);
+
+      if (dbResponse && dbResponse.state === "error") {
+        return FormatterResponseService.fromDatabaseResponse(dbResponse);
+      }
+
+      const rows = dbResponse.data || dbResponse;
+
+      return FormatterResponseService.success(
+        rows,
+        "Profesores disponibles obtenidos exitosamente"
+      );
+    } catch (error) {
+      if (error.success === false) {
+        throw error;
+      }
+      return FormatterResponseService.error(
+        "Error al obtener profesores disponibles",
+        error.message,
+        500,
+        "PROFESORES_DISPONIBLES_ERROR"
+      );
+    }
+  }
+
+  /**
+   * Mostrar aulas disponibles para una seccion y un profesor
+   * @param {number} id_seccion - id de la seccion
+   * @returns {Object} Respuesta formateada con aulas disponibles
+   */
+  static async mostrarAulasParaHorario(
+    id_seccion,
+    horas_necesarias,
+    id_profesor
+  ) {
+    try {
+      const validationidSeccion = validationService.validateId(
+        id_seccion,
         "id seccion"
       );
       if (!validationidSeccion.isValid) {
@@ -344,7 +496,7 @@ export default class HorarioService {
       }
 
       const validation = validationService.validateId(
-        horasNecesarias,
+        horas_necesarias,
         "horas necesarias"
       );
       if (!validation.isValid) {
@@ -355,7 +507,7 @@ export default class HorarioService {
       }
 
       const validationidProfesor = validationService.validateId(
-        idProfesor,
+        id_profesor,
         "id profesor"
       );
       if (!validationidProfesor.isValid) {
@@ -365,9 +517,9 @@ export default class HorarioService {
         );
       }
       const dbResponse = await HorarioModel.obtenerAulasDisponibles(
-        idSeccion,
-        horasNecesarias,
-        idProfesor
+        id_seccion,
+        horas_necesarias,
+        id_profesor
       );
 
       if (dbResponse && dbResponse.state === "error") {
@@ -432,11 +584,15 @@ export default class HorarioService {
       console.log("🔔 Enviando notificaciones de horario...");
       const notificationService = new NotificationService();
 
+      const id_profesor = await HorarioModel.obtenerIdUSerProfesor(
+        datos.id_profesor
+      );
+
       // Notificación individual para el PROFESOR asignado
       await notificationService.crearNotificacionIndividual({
         titulo: "Nueva Asignación de Horario",
         tipo: "horario_asignado",
-        user_id: datos.id_profesor, // El profesor que recibe el horario
+        user_id: id_profesor.data[0].id, // El profesor que recibe el horario
         contenido: `Se le ha asignado un nuevo horario para la unidad curricular "${
           datos.nombre_unidad_curricular || "N/A"
         }" en el aula ${datos.codigo_aula || "N/A"}`,
@@ -497,13 +653,13 @@ export default class HorarioService {
 
   /**
    * Generar documento PDF del horario de una sección
-   * @param {number} idSeccion
+   * @param {number} id_seccion
    * @param {object} usuario_accion - Usuario que genera el documento
    * @returns {Object} Respuesta formateada con el buffer del PDF
    */
-  static async generarDocumentoHorario(idSeccion, usuario_accion) {
+  static async generarDocumentoHorario(id_seccion, usuario_accion) {
     try {
-      const validation = validationService.validateId(idSeccion, "sección");
+      const validation = validationService.validateId(id_seccion, "sección");
       if (!validation.isValid) {
         return FormatterResponseService.validationError(
           validation.errors,
@@ -511,16 +667,17 @@ export default class HorarioService {
         );
       }
 
-      console.log("📥 Generando documento para la sección:", idSeccion);
+      console.log("📥 Generando documento para la sección:", id_seccion);
 
       // 1️⃣ Obtener datos desde el modelo
-      const response = await this.mostrarHorariosPorSeccion(idSeccion);
+      const response = await this.mostrarHorariosPorSeccion(id_seccion);
 
       if (FormatterResponseService.isError(response)) {
         return response;
       }
 
       const { data } = response;
+      console.log("📊 Datos obtenidos para el documento:", data);
 
       // 4️ Generar documento
       const buffer = await DocumentServices.generarDocumentoHorario(data);
@@ -528,7 +685,9 @@ export default class HorarioService {
       return FormatterResponseService.success(
         {
           buffer,
-          fileName: `Horario${data.PNF.nombre_pnf.toLowerCase()}-${data.Trayecto.valor_trayecto}-${data.Seccion.seccion}.docx`,
+          fileName: `Horario: ${data.pnf.nombre_pnf.toLowerCase()}-${
+            data.trayecto.valor_trayecto
+          }-${data.seccion.valor_seccion}.pdf`,
         },
         "Documento de horario generado exitosamente"
       );
@@ -605,6 +764,10 @@ export default class HorarioService {
 
       // Obtener información del horario actualizado para notificar al profesor
       const horarioInfo = await HorarioModel.obtenerPorId(idHorario);
+      const id_profesor = await HorarioModel.obtenerIdUSerProfesor(
+        datos.id_profesor
+      );
+
       if (horarioInfo && horarioInfo.data && horarioInfo.data.length > 0) {
         const horario = horarioInfo.data[0];
 
@@ -612,7 +775,7 @@ export default class HorarioService {
         await notificationService.crearNotificacionIndividual({
           titulo: "Horario Actualizado",
           tipo: "horario_actualizado",
-          user_id: horario.id_profesor,
+          user_id: id_profesor.data[0].id,
           contenido: `Se han realizado modificaciones en su horario asignado. Verifique los cambios realizados.`,
           metadatos: {
             horario_id: idHorario,
@@ -666,6 +829,7 @@ export default class HorarioService {
    */
   static async eliminarHorario(idHorario, usuario_accion) {
     try {
+      console.log("🚨 Iniciando proceso de eliminación de horario:", idHorario);
       const userValidation = validationService.validateId(
         usuario_accion.id,
         "usuario"
@@ -709,11 +873,15 @@ export default class HorarioService {
       console.log("🔔 Enviando notificaciones de eliminación de horario...");
       const notificationService = new NotificationService();
 
+      const id_profesor = await HorarioModel.obtenerIdUSerProfesor(
+        horario.id_profesor
+      );
+
       // Notificación individual para el PROFESOR afectado
       await notificationService.crearNotificacionIndividual({
         titulo: "Horario Eliminado",
         tipo: "horario_eliminado",
-        user_id: horario.id_profesor,
+        user_id: id_profesor.data[0].id,
         contenido: `Se ha eliminado su horario asignado para ${horario.nombre_unidad_curricular} en el aula ${horario.codigo_aula}`,
         metadatos: {
           horario_id: idHorario,

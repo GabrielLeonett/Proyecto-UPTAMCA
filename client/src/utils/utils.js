@@ -13,12 +13,12 @@ export const UTILS = {
 
   obtenerDiaNombre: (id) => {
     const dias = [
-      "lunes",
-      "martes",
-      "miercoles",
-      "jueves",
-      "viernes",
-      "sabado",
+      "Lunes",
+      "Martes",
+      "Miercoles",
+      "Jueves",
+      "Viernes",
+      "Sabado",
     ];
     return dias[id] || "";
   },
@@ -83,6 +83,20 @@ export const UTILS = {
     const m = minutos % 60;
     return h * 100 + m;
   },
+
+  // Función para expandir un rango de horas en bloques individuales de 45 minutos
+  RangoHorasSeguidasDisponibilidad(inicio_hora, fin_hora) {
+    const bloques = [];
+
+    Object.keys(UTILS.initialHours).forEach((hora) => {
+      if (hora >= inicio_hora && hora < fin_hora) {
+        bloques.push(hora);
+      }
+    });
+
+    return bloques;
+  },
+
   initialHours: {
     700: null,
     745: null,

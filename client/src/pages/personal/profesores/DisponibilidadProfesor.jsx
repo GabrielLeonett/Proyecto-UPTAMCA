@@ -1,142 +1,66 @@
-import { useState, useEffect } from "react";
-import { Button, Typography, Paper } from "@mui/material";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Button,
+  Typography,
+  Paper,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  TableHead,
+  useTheme,
+  Chip,
+  Grid,
+  Card,
+  CardContent,
+  useMediaQuery,
+} from "@mui/material";
 import ResponsiveAppBar from "../../../components/navbar";
 import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { UTILS } from "../../../utils/UTILS";
 
-const DAYS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-
-// Generar bloques de 45 minutos entre start y end
-const generateTimeBlocks = (startHour, endHour, intervalMinutes = 45) => {
-  const blocks = [];
-  let current = new Date();
-  current.setHours(startHour, 0, 0, 0);
-
-  const end = new Date();
-  end.setHours(endHour, 0, 0, 0);
-
-  while (current < end) {
-    const hours = current.getHours().toString().padStart(2, "0");
-    const minutes = current.getMinutes().toString().padStart(2, "0");
-    blocks.push(`${hours}:${minutes}`);
-    current = new Date(current.getTime() + intervalMinutes * 60000);
-  }
-
-  return blocks;
-};
-
-// Función para expandir un rango de horas en bloques individuales de 45 minutos
-const expandRangeToBlocks = (startTime, endTime) => {
-  const blocks = [];
-  const start = new Date(`1970-01-01T${startTime}`);
-  const end = new Date(`1970-01-01T${endTime}`);
-
-  let current = new Date(start);
-
-  while (current < end) {
-    const hours = current.getHours().toString().padStart(2, "0");
-    const minutes = current.getMinutes().toString().padStart(2, "0");
-    blocks.push(`${hours}:${minutes}`);
-    current = new Date(current.getTime() + 45 * 60000); // Sumar 45 minutos
-  }
-
-  return blocks;
-};
-
-// Función para agrupar horas consecutivas en rangos
-const groupConsecutiveHours = (hours) => {
-  if (hours.length === 0) return [];
-
-  // Convertir horas a minutos para facilitar la comparación
-  const toMinutes = (timeStr) => {
-    const [hours, minutes] = timeStr.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
-
-  const minutesArray = hours.map(toMinutes).sort((a, b) => a - b);
-  const ranges = [];
-  let start = minutesArray[0];
-  let end = minutesArray[0];
-
-  for (let i = 1; i < minutesArray.length; i++) {
-    // 45 minutos = duración de cada bloque
-    if (minutesArray[i] === end + 45) {
-      end = minutesArray[i];
-    } else {
-      // Convertir minutos de vuelta a formato HH:MM
-      const startTime = `${Math.floor(start / 60)
-        .toString()
-        .padStart(2, "0")}:${(start % 60).toString().padStart(2, "0")}`;
-      const endTime = `${Math.floor((end + 45) / 60)
-        .toString()
-        .padStart(2, "0")}:${((end + 45) % 60).toString().padStart(2, "0")}`;
-      ranges.push({ inicio: startTime, fin: endTime });
-
-      start = minutesArray[i];
-      end = minutesArray[i];
-    }
-  }
-
-  // Agregar el último rango
-  const startTime = `${Math.floor(start / 60)
-    .toString()
-    .padStart(2, "0")}:${(start % 60).toString().padStart(2, "0")}`;
-  const endTime = `${Math.floor((end + 45) / 60)
-    .toString()
-    .padStart(2, "0")}:${((end + 45) % 60).toString().padStart(2, "0")}`;
-  ranges.push({ inicio: startTime, fin: endTime });
-
-  return ranges;
-};
+// Constantes
+const DAYS = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado"];
 
 export default function DisponibilidadProfesor() {
-  //utilizacion de los hooks
+  // Hooks
   const axios = useApi();
   const alert = useSweetAlert();
-  const location = useLocation();
-
-  // En tu componente
+  const theme = useTheme();
+  const { id_profesor } = useParams();
   const navigate = useNavigate();
-
-  // Al usar la alerta
-  alert.success("¡Éxito!", "La disponibilidad se guardó correctamente", {
-    willOpen: () => {
-      // Se ejecuta cuando la alerta se va a abrir
-    },
-  });
-
-  //Inicializacion de los estados
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
+  
+  // Estados
   const [selectedBlocks, setSelectedBlocks] = useState({});
   const [loading, setLoading] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-  const [idProfesor, setIdProfesor] = useState("");
-  const timeBlocks = generateTimeBlocks(7, 20); // 7am a 8pm
+  const timeBlocks = UTILS.initialHours;
 
-  // Efecto para cargar el idProfesor de forma segura
+  // Efecto para validar id_profesor
   useEffect(() => {
-    if (location.state?.idProfesor) {
-      setIdProfesor(location.state.idProfesor);
-    } else {
-      alert.error("Lo sentimos", "No se encontró idProfesor", {
+    if (!id_profesor) {
+      alert.error("Lo sentimos", "No se encontró id_profesor", {
         didClose: () => {
-          // Se ejecuta cuando la alerta se cierra
           navigate(-1);
         },
       });
     }
-  }, [location.state, alert, navigate]);
+  }, [id_profesor, alert, navigate]);
 
-  // Función para cargar la disponibilidad existente del profesor
-  const cargarDisponibilidadExistente = async () => {
+  // Función para cargar la disponibilidad existente
+  const cargarDisponibilidadExistente = useCallback(async () => {
     try {
-      setLoadingData(true);
+      setLoading(true);
       const response = await axios.get(
-        `/profesores/${idProfesor}/disponibilidad`
+        `/profesores/${id_profesor}/disponibilidad`
       );
 
-      console.log(response);
-      const disponibilidades = response.disponibilidades;
+      console.log("Respuesta completa:", response);
+      const disponibilidades = response.disponibilidades || response.data?.disponibilidades || [];
 
       // Inicializar selectedBlocks con arrays vacíos para cada día
       const nuevosBloques = {};
@@ -144,26 +68,63 @@ export default function DisponibilidadProfesor() {
         nuevosBloques[day] = [];
       });
 
-      // Procesar cada disponibilidad y expandir los rangos a bloques individuales
+      // Procesar cada disponibilidad
       disponibilidades.forEach((disp) => {
         if (disp.disponibilidad_activa && DAYS.includes(disp.dia_semana)) {
-          const bloquesDia = expandRangeToBlocks(
-            disp.hora_inicio,
-            disp.hora_fin
-          );
-          nuevosBloques[disp.dia_semana] = [
-            ...nuevosBloques[disp.dia_semana],
-            ...bloquesDia,
-          ];
+          console.log("Procesando disponibilidad:", disp);
+          
+          try {
+            const [horaInicio, minutosInicio] = disp.hora_inicio
+              .split(":")
+              .map(Number);
+
+            const [horaFin, minutosFin] = disp.hora_fin.split(":").map(Number);
+
+            console.log("Hora inicio:", horaInicio, minutosInicio);
+            console.log("Hora fin:", horaFin, minutosFin);
+
+            const inicioTotalMinutos = UTILS.horasMinutos(
+              horaInicio,
+              minutosInicio
+            );
+            const finTotalMinutos = UTILS.horasMinutos(horaFin, minutosFin);
+
+            console.log("Total minutos - Inicio:", inicioTotalMinutos, "Fin:", finTotalMinutos);
+
+            // Obtener los bloques individuales
+            const bloquesDia = UTILS.RangoHorasSeguidasDisponibilidad(
+              inicioTotalMinutos,
+              finTotalMinutos
+            );
+
+            console.log(
+              "Bloques expandidos para",
+              disp.dia_semana,
+              ":",
+              bloquesDia
+            );
+
+            nuevosBloques[disp.dia_semana] = [
+              ...(nuevosBloques[disp.dia_semana] || []),
+              ...bloquesDia,
+            ];
+          } catch (error) {
+            console.error("Error procesando horario:", disp, error);
+          }
         }
       });
 
-      // Eliminar duplicados (por si hay superposición de rangos)
+      // Eliminar duplicados y ordenar
       DAYS.forEach((day) => {
-        nuevosBloques[day] = [...new Set(nuevosBloques[day])].sort();
+        nuevosBloques[day] = [...new Set(nuevosBloques[day])].sort((a, b) => {
+          const [horaA] = a.split(':').map(Number);
+          const [horaB] = b.split(':').map(Number);
+          return horaA - horaB;
+        });
       });
 
       setSelectedBlocks(nuevosBloques);
+      console.log("Bloques finales cargados:", nuevosBloques);
     } catch (error) {
       console.error("Error al cargar la disponibilidad existente:", error);
       alert.error({
@@ -179,15 +140,16 @@ export default function DisponibilidadProfesor() {
       });
       setSelectedBlocks(bloquesVacios);
     } finally {
-      setLoadingData(false);
+      setLoading(false);
     }
-  };
-  // Efecto para cargar la disponibilidad existente cuando cambie el idProfesor
+  }, [axios, id_profesor, alert]);
+
+  // Efecto para cargar la disponibilidad
   useEffect(() => {
-    if (idProfesor) {
+    if (id_profesor) {
       cargarDisponibilidadExistente();
     }
-  }, [idProfesor]);
+  }, [id_profesor, cargarDisponibilidadExistente]);
 
   const toggleBlock = (day, hour) => {
     const current = selectedBlocks[day] || [];
@@ -197,8 +159,73 @@ export default function DisponibilidadProfesor() {
     setSelectedBlocks({ ...selectedBlocks, [day]: updated });
   };
 
+  // Función para agrupar bloques consecutivos en rangos
+  const agruparBloquesConsecutivos = (bloques) => {
+    if (!bloques || bloques.length === 0) return [];
+    
+    const bloquesOrdenados = [...bloques].sort((a, b) => {
+      const [horaA] = a.split(':').map(Number);
+      const [horaB] = b.split(':').map(Number);
+      return horaA - horaB;
+    });
+
+    const rangos = [];
+    let inicio = bloquesOrdenados[0];
+    let fin = bloquesOrdenados[0];
+
+    for (let i = 1; i < bloquesOrdenados.length; i++) {
+      const horaActual = bloquesOrdenados[i];
+      const [horaFinNum] = fin.split(':').map(Number);
+      const [horaActualNum] = horaActual.split(':').map(Number);
+      
+      // Si la hora actual es consecutiva a la final
+      if (horaActualNum === horaFinNum + 1) {
+        fin = horaActual;
+      } else {
+        // Guardar el rango actual y comenzar uno nuevo
+        rangos.push({ inicio, fin });
+        inicio = horaActual;
+        fin = horaActual;
+      }
+    }
+
+    // Guardar el último rango
+    rangos.push({ inicio, fin });
+
+    return rangos;
+  };
+
+  // Función para formatear el resumen por días
+  const getResumenPorDias = () => {
+    const resumen = {};
+    
+    DAYS.forEach(day => {
+      const bloquesDia = selectedBlocks[day] || [];
+      if (bloquesDia.length > 0) {
+        const rangos = agruparBloquesConsecutivos(bloquesDia);
+        resumen[day] = rangos.map(rango => ({
+          inicio: UTILS.formatearHora(rango.inicio),
+          fin: UTILS.formatearHora(rango.fin)
+        }));
+      }
+    });
+
+    return resumen;
+  };
+
+  const resumen = getResumenPorDias();
+
+  // Función para contar total de horas seleccionadas
+  const getTotalHoras = () => {
+    let total = 0;
+    Object.values(selectedBlocks).forEach(bloques => {
+      total += bloques.length;
+    });
+    return total;
+  };
+
   const guardarDisponibilidad = async () => {
-    if (!idProfesor) {
+    if (!id_profesor) {
       alert.error({
         icon: "error",
         title: "Error",
@@ -207,22 +234,22 @@ export default function DisponibilidadProfesor() {
       return;
     }
 
-    // Preparar los datos para enviar
+    // Preparar los datos para enviar basado en los rangos agrupados
     const disponibilidadData = [];
-
-    DAYS.forEach((day) => {
-      const horasDia = selectedBlocks[day] || [];
-      if (horasDia.length > 0) {
-        const rangos = groupConsecutiveHours(horasDia);
-        rangos.forEach((rango) => {
-          disponibilidadData.push({
-            idProfesor: parseInt(idProfesor),
-            dia_semana: day,
-            hora_inicio: rango.inicio + ":00", // Agregar segundos
-            hora_fin: rango.fin + ":00", // Agregar segundos
-          });
+    
+    Object.entries(resumen).forEach(([dia, rangos]) => {
+      rangos.forEach(rango => {
+        // Convertir formato de hora de vuelta a HH:MM para el backend
+        const horaInicio = rango.inicio.replace(':', '');
+        const horaFin = rango.fin.replace(':', '');
+        
+        disponibilidadData.push({
+          dia_semana: dia,
+          hora_inicio: horaInicio,
+          hora_fin: horaFin,
+          disponibilidad_activa: true
         });
-      }
+      });
     });
 
     if (disponibilidadData.length === 0) {
@@ -237,16 +264,14 @@ export default function DisponibilidadProfesor() {
     setLoading(true);
 
     try {
-      // Enviar cada registro individualmente
       const promises = disponibilidadData.map(async (data) => {
         const response = await axios.post(
-          `/profesores/${idProfesor}/disponibilidad`,
+          `/profesores/${id_profesor}/disponibilidad`,
           data
         );
         return response;
       });
 
-      // Esperar a que todas las peticiones se completen
       const results = await Promise.all(promises);
 
       await alert.success({
@@ -276,167 +301,241 @@ export default function DisponibilidadProfesor() {
     }
   };
 
-  // Función para formatear el resumen por días
-  const getResumenPorDias = () => {
-    const resumen = {};
+  // Vista móvil simplificada
+  const renderMobileView = () => (
+    <Box>
+      {DAYS.map(day => (
+        <Card key={day} sx={{ mb: 2 }}>
+          <CardContent>
+            <Typography variant="h6" sx={{ color: theme.palette.primary.main, mb: 2 }}>
+              {day}
+            </Typography>
+            <Grid container spacing={1}>
+              {Object.keys(timeBlocks).map((hour) => (
+                <Grid item xs={4} key={hour}>
+                  <Chip
+                    label={UTILS.formatearHora(hour)}
+                    onClick={() => toggleBlock(day, hour)}
+                    color={selectedBlocks[day]?.includes(hour) ? "primary" : "default"}
+                    variant={selectedBlocks[day]?.includes(hour) ? "filled" : "outlined"}
+                    sx={{ width: '100%' }}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+    </Box>
+  );
 
-    DAYS.forEach((day) => {
-      const horasDia = selectedBlocks[day] || [];
-      if (horasDia.length > 0) {
-        resumen[day] = groupConsecutiveHours(horasDia);
-      }
-    });
-
-    return resumen;
-  };
-
-  const resumen = getResumenPorDias();
-
-  if (loadingData) {
-    return (
-      <>
-        <ResponsiveAppBar pages={[]} backgroundColor />
-        <div
-          style={{ padding: "20px", marginTop: "80px", textAlign: "center" }}
-        >
-          <Typography variant="h6">Cargando disponibilidad...</Typography>
-        </div>
-      </>
-    );
-  }
+  // Vista desktop completa
+  const renderDesktopView = () => (
+    <Table 
+      sx={{ 
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 1,
+        overflow: "hidden"
+      }}
+    >
+      <TableHead>
+        <TableRow sx={{ backgroundColor: theme.palette.primary.main }}>
+          <TableCell sx={{ color: theme.palette.primary.contrastText, fontWeight: "bold" }}>
+            Hora
+          </TableCell>
+          {DAYS.map((day) => (
+            <TableCell 
+              key={day}
+              sx={{ 
+                color: theme.palette.primary.contrastText,
+                fontWeight: "bold",
+                textAlign: "center"
+              }}
+            >
+              {day}
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {Object.keys(timeBlocks).map((hour) => (
+          <TableRow key={hour} sx={{ "&:nth-of-type(odd)": { backgroundColor: theme.palette.action.hover } }}>
+            <TableCell sx={{ fontWeight: "bold", borderRight: `1px solid ${theme.palette.divider}` }}>
+              {UTILS.formatearHora(hour)}
+            </TableCell>
+            {DAYS.map((day) => (
+              <TableCell
+                key={day}
+                onClick={() => toggleBlock(day, hour)}
+                sx={{
+                  cursor: "pointer",
+                  textAlign: "center",
+                  backgroundColor: selectedBlocks[day]?.includes(hour) 
+                    ? theme.palette.success.main 
+                    : "transparent",
+                  color: selectedBlocks[day]?.includes(hour) 
+                    ? theme.palette.success.contrastText 
+                    : "inherit",
+                  "&:hover": {
+                    backgroundColor: selectedBlocks[day]?.includes(hour)
+                      ? theme.palette.success.dark
+                      : theme.palette.action.hover
+                  }
+                }}
+              >
+                {selectedBlocks[day]?.includes(hour) ? "✔" : ""}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
 
   return (
     <>
       <ResponsiveAppBar pages={[]} backgroundColor />
 
-      <div style={{ padding: "20px", marginTop: "80px" }}>
-        <Typography variant="h4" gutterBottom>
-          Disponibilidad del Profesor
-        </Typography>
-
-        <Paper
-          elevation={3}
-          style={{ overflowX: "auto", borderRadius: "12px" }}
+      <Box 
+        sx={{ 
+          padding: { xs: 1, sm: 2, md: 3 },
+          marginTop: "80px",
+          backgroundColor: theme.palette.background.default,
+          minHeight: "100vh"
+        }}
+      >
+        <Paper 
+          elevation={3} 
+          sx={{ 
+            padding: { xs: 2, sm: 3 },
+            backgroundColor: theme.palette.background.paper,
+            borderRadius: 2
+          }}
         >
-          <table style={{ borderCollapse: "collapse", width: "100%" }}>
-            <thead
-              style={{
-                padding: "12px",
-                textAlign: "center",
-                fontWeight: "bold",
-                border: "1px solid #ddd",
-                minWidth: "120px",
-              }}
-            >
-              <tr style={{ backgroundColor: "#1976d2", color: "white" }}>
-                <th style={styles.th}>Hora</th>
-                {DAYS.map((day) => (
-                  <th key={day} style={styles.th}>
-                    {day}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {timeBlocks.map((hour) => (
-                <tr key={hour} style={{ backgroundColor: "#f9f9f9" }}>
-                  <td style={styles.hourCell}>{hour}</td>
-                  {DAYS.map((day) => (
-                    <td
-                      key={day}
-                      onClick={() => toggleBlock(day, hour)}
-                      style={{
-                        ...styles.cell,
-                        backgroundColor: selectedBlocks[day]?.includes(hour)
-                          ? "#4caf50"
-                          : "#ffffff",
-                        color: selectedBlocks[day]?.includes(hour)
-                          ? "white"
-                          : "black",
-                        transition: "0.2s",
-                      }}
-                    >
-                      {selectedBlocks[day]?.includes(hour) ? "✔" : ""}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Paper>
+          <Typography 
+            variant="h4" 
+            gutterBottom 
+            sx={{ 
+              color: theme.palette.primary.main,
+              fontWeight: "bold",
+              marginBottom: 3,
+              fontSize: { xs: '1.5rem', sm: '2rem' }
+            }}
+          >
+            Disponibilidad del Profesor
+          </Typography>
 
-        {/* Resumen mejorado */}
-        <div style={{ marginTop: "20px" }}>
-          <Typography variant="h6">Resumen de disponibilidad:</Typography>
-          {Object.keys(resumen).length === 0 ? (
-            <Typography color="textSecondary">
-              No hay horarios seleccionados
-            </Typography>
-          ) : (
-            Object.entries(resumen).map(([dia, rangos]) => (
-              <div key={dia} style={{ marginBottom: "10px" }}>
-                <Typography>
-                  <strong>{dia}:</strong>
+          {/* Tabla o vista móvil */}
+          {isMobile ? renderMobileView() : renderDesktopView()}
+
+          {/* Resumen de disponibilidad */}
+          <Card 
+            sx={{ 
+              marginTop: 3,
+              backgroundColor: theme.palette.background.default,
+              border: `1px solid ${theme.palette.divider}`
+            }}
+          >
+            <CardContent>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ color: theme.palette.text.primary, fontWeight: "bold" }}>
+                  Resumen de disponibilidad:
                 </Typography>
-                {rangos.map((rango, index) => (
-                  <Typography key={index} style={{ marginLeft: "20px" }}>
-                    • {rango.inicio} - {rango.fin}
-                  </Typography>
-                ))}
-              </div>
-            ))
-          )}
-        </div>
+                <Chip 
+                  label={`${getTotalHoras()} horas totales`} 
+                  color="primary" 
+                  variant="outlined" 
+                />
+              </Box>
+              
+              {Object.keys(resumen).length === 0 ? (
+                <Typography color="textSecondary" sx={{ fontStyle: "italic" }}>
+                  No hay horarios seleccionados
+                </Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {Object.entries(resumen).map(([dia, rangos]) => (
+                    <Grid item xs={12} sm={6} md={4} key={dia}>
+                      <Paper 
+                        elevation={1} 
+                        sx={{ 
+                          padding: 2,
+                          backgroundColor: theme.palette.background.paper
+                        }}
+                      >
+                        <Typography 
+                          sx={{ 
+                            color: theme.palette.primary.main,
+                            fontWeight: "bold",
+                            marginBottom: 1
+                          }}
+                        >
+                          {dia}
+                        </Typography>
+                        {rangos.map((rango, index) => (
+                          <Chip
+                            key={index}
+                            label={`${rango.inicio} - ${rango.fin}`}
+                            size="small"
+                            color="success"
+                            variant="outlined"
+                            sx={{ margin: 0.5 }}
+                          />
+                        ))}
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Botones */}
-        <div style={{ marginTop: "15px", display: "flex", gap: "10px" }}>
-          <Button
-            variant="contained"
-            color="primary"
-            style={{ borderRadius: "8px" }}
-            onClick={guardarDisponibilidad}
-            disabled={loading}
+          {/* Botones */}
+          <Box 
+            sx={{ 
+              marginTop: 3, 
+              display: "flex", 
+              gap: 2,
+              flexWrap: "wrap",
+              justifyContent: { xs: 'center', sm: 'flex-start' }
+            }}
           >
-            {loading ? "Guardando..." : "Guardar disponibilidad"}
-          </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ 
+                borderRadius: 2,
+                paddingX: 3,
+                paddingY: 1,
+                fontWeight: "bold",
+                textTransform: "none",
+                minWidth: { xs: '100%', sm: 200 }
+              }}
+              onClick={guardarDisponibilidad}
+              disabled={loading}
+            >
+              {loading ? "Guardando..." : "Guardar disponibilidad"}
+            </Button>
 
-          <Button
-            variant="outlined"
-            color="secondary"
-            style={{ borderRadius: "8px" }}
-            onClick={cargarDisponibilidadExistente}
-            disabled={loading}
-          >
-            Recargar disponibilidad
-          </Button>
-        </div>
-      </div>
+            <Button
+              variant="outlined"
+              color="secondary"
+              sx={{ 
+                borderRadius: 2,
+                paddingX: 3,
+                paddingY: 1,
+                fontWeight: "bold",
+                textTransform: "none",
+                minWidth: { xs: '100%', sm: 200 }
+              }}
+              onClick={cargarDisponibilidadExistente}
+              disabled={loading}
+            >
+              Recargar disponibilidad
+            </Button>
+          </Box>
+        </Paper>
+      </Box>
     </>
   );
 }
-
-const styles = {
-  th: {
-    padding: "12px",
-    textAlign: "center",
-    fontWeight: "bold",
-    border: "1px solid #ddd",
-    minWidth: "120px",
-  },
-  cell: {
-    cursor: "pointer",
-    textAlign: "center",
-    height: "50px",
-    border: "1px solid #ddd",
-    fontSize: "16px",
-    userSelect: "none",
-  },
-  hourCell: {
-    padding: "10px",
-    textAlign: "center",
-    border: "1px solid #ddd",
-    fontWeight: "bold",
-    backgroundColor: "#eeeeee",
-    minWidth: "80px",
-  },
-};

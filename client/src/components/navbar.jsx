@@ -146,10 +146,7 @@ function ResponsiveAppBar({ backgroundColor }) {
         {
           name: "Gestión de Usuarios",
           url: "/administradores",
-          roles: [
-            "Vicerrector",
-            "SuperAdmin",
-          ],
+          roles: ["Vicerrector", "SuperAdmin"],
         },
       ],
     },
@@ -187,8 +184,19 @@ function ResponsiveAppBar({ backgroundColor }) {
       ],
       submenu: [
         {
-          name: "Gestión de Horarios",
-          url: "/horarios",
+          name: "Gestión de Horarios Secciones",
+          url: "/horarios/secciones",
+          roles: [
+            "Vicerrector",
+            "Profesor",
+            "Coordinador",
+            "Director General de Gestión Curricular",
+            "SuperAdmin",
+          ],
+        },
+        {
+          name: "Gestión de Horarios Aulas",
+          url: "/horarios/aulas",
           roles: [
             "Vicerrector",
             "Profesor",

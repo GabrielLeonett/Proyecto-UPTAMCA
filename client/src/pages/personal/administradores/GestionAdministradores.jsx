@@ -59,7 +59,7 @@ export default function GestionAdministradores() {
     <>
       <Navbar backgroundColor={true} />
       <Box mt={12} p={3}>
-        <Typography variant="h5" fontWeight={600} mb={1}>
+        <Typography variant="h3" fontWeight={600} mb={1}>
           Gestión de Administradores
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={3}>

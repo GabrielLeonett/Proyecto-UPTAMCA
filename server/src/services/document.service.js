@@ -1,4 +1,5 @@
 import fs from "fs";
+import { spawn } from "child_process";
 import {
   Document,
   Packer,
@@ -33,11 +34,11 @@ const ESTILOS = {
     informacion: 16,
   },
   espaciado: {
-    paddingCelda: 60,
+    paddingCelda: 80,
     marginInterno: 40,
-    alturaFila: 400,
+    alturaFila: 600,
     entreLineas: 250,
-    alturaFilaInformacion: 600,
+    alturaFilaInformacion: 800,
   },
   colores: {
     primario: "2E75B5",
@@ -55,37 +56,40 @@ const ESTILOS = {
   },
 };
 
+/**
+ * Servicio para la generación de documentos Word con horarios académicos
+ * @class DocumentServices
+ * @author Gabriel Leonett
+ */
 class DocumentServices {
+  /**
+   * Obtiene el logo para usar como marca de agua en el documento
+   * @static
+   * @async
+   * @returns {Promise<ImageRun|null>} Imagen del logo procesada o null si hay error
+   * @author Gabriel Leonett
+   */
   static async traerLogoMarcaAgua() {
     try {
-      // Solución más simple: usar el directorio de trabajo actual
-      const logoPath = path.resolve(process.cwd(), "utils/LogoSimple.png");
+      const logoPath = path.resolve(process.cwd(), "src/utils/LogoSimple.png");
 
       console.log("🔍 Buscando logo en:", logoPath);
 
-      // Verificar si el archivo existe
       if (!fs.existsSync(logoPath)) {
         console.error("❌ Archivo de logo no encontrado:", logoPath);
         return null;
       }
 
-      // Leer el archivo de imagen
       const logoData = fs.readFileSync(logoPath);
-      console.log(
-        "✅ Logo leído correctamente, tamaño:",
-        logoData.length,
-        "bytes"
-      );
+      console.log("✅ Logo leído correctamente, tamaño:", logoData.length, "bytes");
 
-      // Procesar la imagen para hacerla semitransparente
       const imagenProcesada = await sharp(logoData)
-        .ensureAlpha() // Asegurar canal alpha
+        .ensureAlpha()
         .png({ transparency: true, compressionLevel: 9 })
         .toBuffer();
 
       console.log("✅ Logo procesado para marca de agua");
 
-      // Crear el elemento de imagen para docx
       const logoMarcaAgua = new ImageRun({
         data: imagenProcesada,
         transformation: {
@@ -116,7 +120,17 @@ class DocumentServices {
     }
   }
 
-  // Función para crear texto con estilo
+  /**
+   * Crea un texto estilizado para usar en el documento
+   * @static
+   * @param {string} texto - Texto a estilizar
+   * @param {Object} config - Configuración de estilo
+   * @param {boolean} [config.bold=false] - Si el texto debe ser negrita
+   * @param {number} [config.size=ESTILOS.tamanos.contenido] - Tamaño de fuente
+   * @param {string} [config.color=ESTILOS.colores.textoOscuro] - Color del texto
+   * @returns {TextRun} Texto estilizado
+   * @author Gabriel Leonett
+   */
   static crearTextoEstilizado(texto, config = {}) {
     const {
       bold = false,
@@ -133,7 +147,16 @@ class DocumentServices {
     });
   }
 
-  // Función para crear párrafo con estilo
+  /**
+   * Crea un párrafo estilizado para el documento
+   * @static
+   * @param {Array|TextRun} children - Elementos hijos del párrafo
+   * @param {Object} config - Configuración del párrafo
+   * @param {AlignmentType} [config.alignment=AlignmentType.CENTER] - Alineación del texto
+   * @param {Object} [config.spacing] - Espaciado del párrafo
+   * @returns {Paragraph} Párrafo estilizado
+   * @author Gabriel Leonett
+   */
   static crearParrafoEstilizado(children, config = {}) {
     const {
       alignment = AlignmentType.CENTER,
@@ -151,33 +174,30 @@ class DocumentServices {
     });
   }
 
-  // Función para crear celda con estilo
+  /**
+   * Crea una celda de tabla estilizada
+   * @static
+   * @param {Array} children - Elementos hijos de la celda
+   * @param {Object} config - Configuración de la celda
+   * @param {Object} [config.shading=null] - Color de fondo de la celda
+   * @param {number} [config.rowSpan=1] - Número de filas que ocupa la celda
+   * @param {number} [config.colSpan=1] - Número de columnas que ocupa la celda
+   * @param {Object} [config.borders] - Configuración de bordes
+   * @param {Object} [config.margins] - Márgenes internos de la celda
+   * @param {string} [config.verticalAlign="center"] - Alineación vertical del contenido
+   * @returns {TableCell} Celda estilizada
+   * @author Gabriel Leonett
+   */
   static crearCeldaEstilizada(children, config = {}) {
     const {
       shading = null,
       rowSpan = 1,
       colSpan = 1,
       borders = {
-        top: {
-          style: "single",
-          size: ESTILOS.bordes.grosor,
-          color: ESTILOS.bordes.color,
-        },
-        bottom: {
-          style: "single",
-          size: ESTILOS.bordes.grosor,
-          color: ESTILOS.bordes.color,
-        },
-        left: {
-          style: "single",
-          size: ESTILOS.bordes.grosor,
-          color: ESTILOS.bordes.color,
-        },
-        right: {
-          style: "single",
-          size: ESTILOS.bordes.grosor,
-          color: ESTILOS.bordes.color,
-        },
+        top: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
+        bottom: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
+        left: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
+        right: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
       },
       margins = {
         top: ESTILOS.espaciado.paddingCelda,
@@ -199,304 +219,417 @@ class DocumentServices {
     });
   }
 
-  // Función principal que devuelve el buffer
-  static async generarDocumentoHorario(configuracion = {}) {
-    try {
-      const doc = await this.crearDocumentoHorario(configuracion);
-      const buffer = await Packer.toBuffer(doc);
+  /**
+   * Convierte un documento Word a PDF usando LibreOffice
+   * @static
+   * @async
+   * @param {Buffer} wordBuffer - Buffer del documento Word
+   * @returns {Promise<Buffer>} Buffer del PDF generado
+   * @author Gabriel Leonett
+   */
+  static async convertirWordAPDFLibreOffice(wordBuffer) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Crear archivo temporal Word
+        const tempWordPath = path.join(process.cwd(), `temp_${Date.now()}.docx`);
+        fs.writeFileSync(tempWordPath, wordBuffer);
 
-      return buffer;
+        // Ruta de salida para PDF
+        const tempOutputDir = path.join(process.cwd(), "temp_pdf");
+        if (!fs.existsSync(tempOutputDir)) {
+          fs.mkdirSync(tempOutputDir, { recursive: true });
+        }
+
+        console.log("🔄 Convirtiendo Word a PDF con LibreOffice...");
+
+        // Ejecutar LibreOffice en modo headless
+        const libreOffice = spawn("libreoffice", [
+          "--headless",
+          "--convert-to", "pdf",
+          "--outdir", tempOutputDir,
+          tempWordPath
+        ]);
+
+        libreOffice.on("close", (code) => {
+          if (code === 0) {
+            // Leer el PDF generado
+            const pdfFileName = path.basename(tempWordPath, ".docx") + ".pdf";
+            const pdfPath = path.join(tempOutputDir, pdfFileName);
+
+            if (fs.existsSync(pdfPath)) {
+              const pdfBuffer = fs.readFileSync(pdfPath);
+
+              // Limpiar archivos temporales
+              fs.unlinkSync(tempWordPath);
+              fs.rmSync(tempOutputDir, { recursive: true, force: true });
+
+              console.log("✅ PDF generado exitosamente");
+              resolve(pdfBuffer);
+            } else {
+              reject(new Error("No se pudo generar el archivo PDF"));
+            }
+          } else {
+            reject(new Error(`LibreOffice falló con código: ${code}`));
+          }
+        });
+
+        libreOffice.on("error", (error) => {
+          reject(new Error(`Error ejecutando LibreOffice: ${error.message}. Asegúrate de que LibreOffice esté instalado.`));
+        });
+
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Función principal que genera el documento de horario y devuelve el buffer
+   * @static
+   * @async
+   * @param {Object} configuracion - Configuración del horario
+   * @param {boolean} [toPDF=false] - Indica si se debe convertir a PDF
+   * @returns {Promise<Buffer>} Buffer del documento generado (Word o PDF)
+   * @throws {Error} Si hay error en la generación del documento
+   * @author Gabriel Leonett
+   */
+  static async generarDocumentoHorario(configuracion = {}, toPDF = false) {
+    try {
+      console.log("🔄 Generando documento de horario...");
+      
+      const doc = await this.crearDocumentoHorario(configuracion);
+      const wordBuffer = await Packer.toBuffer(doc);
+      
+      console.log("✅ Documento Word generado exitosamente");
+
+      if (toPDF) {
+        console.log("🔄 Convirtiendo a PDF...");
+        const pdfBuffer = await this.convertirWordAPDFLibreOffice(wordBuffer);
+        return pdfBuffer;
+      } else {
+        return wordBuffer;
+      }
     } catch (error) {
       console.error("❌ Error al generar el documento:", error);
       throw error;
     }
   }
 
-  // Función principal para crear documento de horario (devuelve el Document)
-  static async crearDocumentoHorario(configuracion = {}) {
-    const {
-      PNF = "",
-      Trayecto = "",
-      Seccion = "",
-      Horario = [],
-      Turno = { horaInicio: "07:00", horaFin: "20:00" },
-    } = configuracion;
+  /**
+   * Procesa el horario y genera la matriz para la tabla
+   * @static
+   * @param {Array} horario - Array con el horario de clases
+   * @param {Object} turno - Objeto de turno
+   * @param {string} turno.hora_inicio - Hora inicio del turno
+   * @param {string} turno.hora_fin - Hora fin del turno
+   * @returns {Object} Objeto con matrizHorario y horasDisponibles
+   * @author Gabriel Leonett
+   */
+  static procesarHorario(horario = [], turno = { hora_inicio: "07:00", hora_fin: "20:00" }) {
+    const diasSemana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+    const horasDisponibles = this.generarHorasDisponibles(turno);
 
-    // Procesar el horario
-    const procesarHorario = () => {
-      const diasSemana = [
-        "lunes",
-        "martes",
-        "miercoles",
-        "jueves",
-        "viernes",
-        "sabado",
-      ];
-      const horasDisponibles = this.generarHorasDisponibles(Turno);
+    const matrizHorario = diasSemana.map((dia) => ({
+      dia,
+      horas: horasDisponibles.reduce((acc, hora) => {
+        acc[hora] = null;
+        return acc;
+      }, {}),
+    }));
 
-      const matrizHorario = diasSemana.map((dia) => ({
-        dia,
-        horas: horasDisponibles.reduce((acc, hora) => {
-          acc[hora] = null;
-          return acc;
-        }, {}),
-      }));
+    // Llenar con las clases del horario
+    if (horario && horario.length > 0) {
+      horario.forEach((dia) => {
+        if (!dia.nombre) return;
 
-      // Llenar con las clases del horario
-      if (Horario && Horario.length > 0) {
-        Horario.forEach((dia) => {
-          if (!dia.nombre) return;
+        const diaIndex = diasSemana.indexOf(dia.nombre.toLowerCase());
+        if (diaIndex === -1) return;
 
-          const diaIndex = diasSemana.indexOf(dia.nombre.toLowerCase());
-          if (diaIndex === -1) return;
+        dia.clases?.forEach((clase) => {
+          const [hIni, mIni] = clase.hora_inicio.split(":");
+          const [hFin, mFin] = clase.hora_fin.split(":");
+          const inicio = UTILS.horasMinutos(parseInt(hIni), parseInt(mIni));
+          const fin = UTILS.horasMinutos(parseInt(hFin), parseInt(mFin));
+          const bloques = Math.ceil((fin - inicio) / 45);
 
-          dia.clases?.forEach((clase) => {
-            const [hIni, mIni] = clase.horaInicio.split(":");
-            const [hFin, mFin] = clase.horaFin.split(":");
-            const inicio = UTILS.horasMinutos(hIni, mIni);
-            const fin = UTILS.horasMinutos(hFin, mFin);
-            const bloques = Math.ceil((fin - inicio) / 45);
+          for (let i = 0; i < bloques; i++) {
+            const minutosActual = inicio + i * 45;
+            const h = Math.floor(minutosActual / 60);
+            const m = minutosActual % 60;
+            const horaHHMM = h * 100 + m;
 
-            for (let i = 0; i < bloques; i++) {
-              const minutosActual = inicio + i * 45;
-              const h = Math.floor(minutosActual / 60);
-              const m = minutosActual % 60;
-              const horaHHMM = h * 100 + m;
-
-              if (matrizHorario[diaIndex].horas[horaHHMM] !== undefined) {
-                if (i === 0) {
-                  matrizHorario[diaIndex].horas[horaHHMM] = {
-                    ocupado: true,
-                    datosClase: { ...clase, horasClase: bloques },
-                    bloque: i,
-                    bloquesTotales: bloques,
-                  };
-                } else {
-                  matrizHorario[diaIndex].horas[horaHHMM] = {
-                    ocupado: true,
-                    esContinuacion: true,
-                  };
-                }
+            if (matrizHorario[diaIndex].horas[horaHHMM] !== undefined) {
+              if (i === 0) {
+                matrizHorario[diaIndex].horas[horaHHMM] = {
+                  ocupado: true,
+                  datos_clase: { ...clase, horas_clase: bloques },
+                  bloque: i,
+                  bloques_totales: bloques,
+                };
+              } else {
+                matrizHorario[diaIndex].horas[horaHHMM] = {
+                  ocupado: true,
+                  es_continuacion: true,
+                };
               }
             }
-          });
+          }
         });
-      }
-
-      return {
-        matrizHorario,
-        horasDisponibles: horasDisponibles.sort((a, b) => a - b),
-      };
-    };
-
-    // Crear fila de información (PNF, Trayecto, Sección)
-    const crearFilaInformacion = (numColumnas) => {
-      const textoInformacion = `PNF EN ${PNF.nombre_pnf.toUpperCase()} TRAYECTO ${
-        Trayecto.valor_trayecto
-      } SECCIÓN ${Seccion.seccion}`;
-
-      return new TableRow({
-        children: [
-          DocumentServices.crearCeldaEstilizada(
-            [
-              DocumentServices.crearParrafoEstilizado(
-                DocumentServices.crearTextoEstilizado(textoInformacion, {
-                  bold: true,
-                  size: ESTILOS.tamanos.informacion,
-                  color: ESTILOS.colores.textoClaro,
-                })
-              ),
-            ],
-            {
-              shading: { fill: ESTILOS.colores.primario },
-              colSpan: numColumnas,
-            }
-          ),
-        ],
-        height: {
-          value: ESTILOS.espaciado.alturaFilaInformacion,
-          rule: "atLeast",
-        },
       });
+    }
+
+    return {
+      matrizHorario,
+      horasDisponibles: horasDisponibles.sort((a, b) => a - b),
     };
+  }
 
-    // Crear filas de la tabla para el documento Word
-    const crearFilasTabla = (matrizHorario, horasDisponibles) => {
-      const filas = [];
+  /**
+   * Crea la fila de información con datos del PNF, Trayecto y Sección
+   * @static
+   * @param {number} numColumnas - Número de columnas/días que tiene la tabla
+   * @param {Object} pnf - Datos del PNF
+   * @param {Object} trayecto - Datos del trayecto
+   * @param {Object} seccion - Datos de la sección
+   * @returns {TableRow} Fila de información
+   * @author Gabriel Leonett
+   */
+  static crearFilaInformacion(numColumnas, pnf, trayecto, seccion) {
+    const textoInformacion = `PNF EN ${pnf.nombre_pnf.toUpperCase()} TRAYECTO ${
+      trayecto.valor_trayecto
+    } SECCIÓN ${seccion.valor_seccion}`;
 
-      // Fila de información
-      const totalColumnas = 1 + matrizHorario.length;
-      const filaInfo = crearFilaInformacion(totalColumnas);
-      filas.push(filaInfo);
-
-      // Fila de encabezado con días
-      const filaEncabezado = new TableRow({
-        children: [
-          DocumentServices.crearCeldaEstilizada(
-            DocumentServices.crearParrafoEstilizado(
-              DocumentServices.crearTextoEstilizado("Hora/Día", {
+    return new TableRow({
+      children: [
+        this.crearCeldaEstilizada(
+          [
+            this.crearParrafoEstilizado(
+              this.crearTextoEstilizado(textoInformacion, {
                 bold: true,
-                size: ESTILOS.tamanos.encabezado,
+                size: ESTILOS.tamanos.informacion,
                 color: ESTILOS.colores.textoClaro,
               })
             ),
+          ],
+          {
+            shading: { fill: ESTILOS.colores.primario },
+            colSpan: numColumnas,
+          }
+        ),
+      ],
+      height: {
+        value: ESTILOS.espaciado.alturaFilaInformacion,
+        rule: "atLeast",
+      },
+    });
+  }
+
+  /**
+   * Crea todas las filas de la tabla del horario
+   * @static
+   * @param {Array} matrizHorario - Matriz con los datos del horario
+   * @param {Array} horasDisponibles - Array con las horas disponibles
+   * @param {Object} pnf - Datos del PNF
+   * @param {Object} trayecto - Datos del trayecto
+   * @param {Object} seccion - Datos de la sección
+   * @returns {Array<TableRow>} Array de filas de la tabla
+   * @author Gabriel Leonett
+   */
+  static crearFilasTabla(matrizHorario, horasDisponibles, pnf, trayecto, seccion) {
+    const filas = [];
+
+    // Fila de información
+    const totalColumnas = 1 + matrizHorario.length;
+    const filaInfo = this.crearFilaInformacion(totalColumnas, pnf, trayecto, seccion);
+    filas.push(filaInfo);
+
+    // Fila de encabezado con días
+    const filaEncabezado = new TableRow({
+      children: [
+        this.crearCeldaEstilizada(
+          this.crearParrafoEstilizado(
+            this.crearTextoEstilizado("Hora/Día", {
+              bold: true,
+              size: ESTILOS.tamanos.encabezado,
+              color: ESTILOS.colores.textoClaro,
+            })
+          ),
+          {
+            shading: { fill: ESTILOS.colores.primario },
+          }
+        ),
+        ...matrizHorario.map((dia) =>
+          this.crearCeldaEstilizada(
+            this.crearParrafoEstilizado(
+              this.crearTextoEstilizado(
+                dia.dia.charAt(0).toUpperCase() + dia.dia.slice(1),
+                {
+                  bold: true,
+                  size: ESTILOS.tamanos.encabezado,
+                  color: ESTILOS.colores.textoClaro,
+                }
+              )
+            ),
             {
               shading: { fill: ESTILOS.colores.primario },
             }
-          ),
-          ...matrizHorario.map((dia) =>
-            DocumentServices.crearCeldaEstilizada(
-              DocumentServices.crearParrafoEstilizado(
-                DocumentServices.crearTextoEstilizado(
-                  dia.dia.charAt(0).toUpperCase() + dia.dia.slice(1),
-                  {
-                    bold: true,
-                    size: ESTILOS.tamanos.encabezado,
-                    color: ESTILOS.colores.textoClaro,
-                  }
-                )
-              ),
-              {
-                shading: { fill: ESTILOS.colores.primario },
-              }
-            )
-          ),
-        ],
-      });
-      filas.push(filaEncabezado);
+          )
+        ),
+      ],
+    });
+    filas.push(filaEncabezado);
 
-      // Array para trackear rowSpans activos por día
-      const rowSpansActivos = matrizHorario.map(() => ({
-        activo: false,
-        filasRestantes: 0,
-      }));
+    // Array para trackear rowSpans activos por día
+    const rowSpansActivos = matrizHorario.map(() => ({
+      activo: false,
+      filasRestantes: 0,
+    }));
 
-      // Filas con horarios y clases
-      horasDisponibles.forEach((hora) => {
-        const celdas = [
-          DocumentServices.crearCeldaEstilizada(
-            DocumentServices.crearParrafoEstilizado(
-              DocumentServices.crearTextoEstilizado(UTILS.formatearHora(hora), {
-                bold: true,
-                size: ESTILOS.tamanos.hora,
-              })
-            ),
-            {
-              shading: { fill: ESTILOS.colores.secundario },
-            }
-          ),
-        ];
-
-        // Procesar cada día
-        matrizHorario.forEach((dia, diaIndex) => {
-          const celdaInfo = dia.horas[hora];
-          const rowSpanInfo = rowSpansActivos[diaIndex];
-
-          if (rowSpanInfo.activo) {
-            rowSpanInfo.filasRestantes--;
-            if (rowSpanInfo.filasRestantes === 0) {
-              rowSpanInfo.activo = false;
-            }
-            // Agregar celda placeholder para mantener la estructura
-            celdas.push(
-              DocumentServices.crearCeldaEstilizada([
-                DocumentServices.crearParrafoEstilizado(""),
-              ])
-            );
-          } else if (celdaInfo?.esContinuacion) {
-            // No hacer nada - ya está cubierto
-            celdas.push(
-              DocumentServices.crearCeldaEstilizada([
-                DocumentServices.crearParrafoEstilizado(""),
-              ])
-            );
-          } else if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
-            // Nueva clase que ocupa múltiples filas
-            const clase = celdaInfo.datosClase;
-            const contenido = [
-              DocumentServices.crearParrafoEstilizado(
-                DocumentServices.crearTextoEstilizado(
-                  clase.nombreUnidadCurricular || clase.materia || "Clase",
-                  { bold: true, size: ESTILOS.tamanos.contenido }
-                )
-              ),
-              ...(clase.nombreProfesor || clase.profesor
-                ? [
-                    DocumentServices.crearParrafoEstilizado(
-                      DocumentServices.crearTextoEstilizado(
-                        `Prof: ${clase.nombreProfesor || clase.profesor}`,
-                        { size: ESTILOS.tamanos.detalle }
-                      )
-                    ),
-                  ]
-                : []),
-              ...(clase.codigoAula
-                ? [
-                    DocumentServices.crearParrafoEstilizado(
-                      DocumentServices.crearTextoEstilizado(
-                        `Aula: ${clase.codigoAula}`,
-                        {
-                          size: ESTILOS.tamanos.detalle,
-                        }
-                      )
-                    ),
-                  ]
-                : []),
-              DocumentServices.crearParrafoEstilizado(
-                DocumentServices.crearTextoEstilizado(
-                  `${clase.horaInicio} - ${clase.horaFin}`,
-                  {
-                    size: ESTILOS.tamanos.detalle,
-                    color: ESTILOS.colores.textoGris,
-                  }
-                )
-              ),
-            ];
-
-            celdas.push(
-              DocumentServices.crearCeldaEstilizada(contenido, {
-                rowSpan: celdaInfo.bloquesTotales,
-                shading: { fill: ESTILOS.colores.fondoClase },
-              })
-            );
-
-            // Activar el tracking de rowSpan
-            rowSpansActivos[diaIndex] = {
-              activo: true,
-              filasRestantes: celdaInfo.bloquesTotales - 1,
-            };
-          } else {
-            // Celda vacía
-            celdas.push(
-              DocumentServices.crearCeldaEstilizada([
-                DocumentServices.crearParrafoEstilizado(""),
-              ])
-            );
-          }
-        });
-
-        // Solo agregar la fila si tiene el número correcto de celdas
-        if (celdas.length === 1 + matrizHorario.length) {
-          filas.push(
-            new TableRow({
-              children: celdas,
-              height: {
-                value: ESTILOS.espaciado.alturaFila,
-                rule: "atLeast",
-              },
+    // Filas con horarios y clases
+    horasDisponibles.forEach((hora) => {
+      const celdas = [
+        this.crearCeldaEstilizada(
+          this.crearParrafoEstilizado(
+            this.crearTextoEstilizado(UTILS.formatearHora(hora), {
+              bold: true,
+              size: ESTILOS.tamanos.hora,
             })
+          ),
+          {
+            shading: { fill: ESTILOS.colores.secundario },
+          }
+        ),
+      ];
+
+      // Procesar cada día
+      matrizHorario.forEach((dia, diaIndex) => {
+        const celdaInfo = dia.horas[hora];
+        const rowSpanInfo = rowSpansActivos[diaIndex];
+
+        // 1. Si hay un rowSpan activo para este día
+        if (rowSpanInfo.activo) {
+          rowSpanInfo.filasRestantes--;
+
+          if (rowSpanInfo.filasRestantes === 0) {
+            rowSpanInfo.activo = false;
+          }
+          return; // Salir sin agregar celda
+        }
+
+        // 2. Si es una continuación de otra clase
+        if (celdaInfo?.es_continuacion) {
+          return; // Salir sin agregar celda
+        }
+
+        // 3. Si es el inicio de una nueva clase con múltiples bloques
+        if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
+          const clase = celdaInfo.datos_clase;
+          const contenido = [
+            this.crearParrafoEstilizado(
+              this.crearTextoEstilizado(
+                clase.nombre_unidad_curricular || clase.materia || "Clase",
+                { bold: true, size: ESTILOS.tamanos.contenido }
+              )
+            ),
+            ...(clase.nombres_profesor || clase.profesor
+              ? [
+                  this.crearParrafoEstilizado(
+                    this.crearTextoEstilizado(
+                      `Prof: ${clase.nombres_profesor || clase.profesor}`,
+                      { size: ESTILOS.tamanos.detalle }
+                    )
+                  ),
+                ]
+              : []),
+            ...(clase.codigo_aula
+              ? [
+                  this.crearParrafoEstilizado(
+                    this.crearTextoEstilizado(
+                      `Aula: ${clase.codigo_aula}`,
+                      { size: ESTILOS.tamanos.detalle }
+                    )
+                  ),
+                ]
+              : []),
+            this.crearParrafoEstilizado(
+              this.crearTextoEstilizado(
+                `${clase.hora_inicio} - ${clase.hora_fin}`,
+                {
+                  size: ESTILOS.tamanos.detalle,
+                  color: ESTILOS.colores.textoGris,
+                }
+              )
+            ),
+          ];
+
+          celdas.push(
+            this.crearCeldaEstilizada(contenido, {
+              rowSpan: celdaInfo.bloques_totales,
+              shading: { fill: ESTILOS.colores.fondoClase },
+            })
+          );
+
+          // Activar el tracking de rowSpan
+          rowSpansActivos[diaIndex] = {
+            activo: true,
+            filasRestantes: celdaInfo.bloques_totales - 1,
+          };
+        } else {
+          // 4. Celda vacía normal
+          celdas.push(
+            this.crearCeldaEstilizada([
+              this.crearParrafoEstilizado(""),
+            ])
           );
         }
       });
 
-      return filas;
-    };
+      filas.push(
+        new TableRow({
+          children: celdas,
+          height: {
+            value: ESTILOS.espaciado.alturaFila,
+            rule: "atLeast",
+          },
+        })
+      );
+    });
+
+    return filas;
+  }
+
+  /**
+   * Función principal para crear el documento de horario en formato Word
+   * @static
+   * @async
+   * @param {Object} configuracion - Configuración del horario académico
+   * @param {Object} configuracion.pnf - Información del PNF
+   * @param {Object} configuracion.trayecto - Información del trayecto
+   * @param {Object} configuracion.seccion - Información de la sección
+   * @param {Array} configuracion.horario - Array con el horario de clases
+   * @param {Object} configuracion.turno - Información del turno (hora inicio/fin)
+   * @returns {Promise<Document>} Documento Word configurado
+   * @author Gabriel Leonett
+   */
+  static async crearDocumentoHorario(configuracion = {}) {
+    const {
+      pnf = "",
+      trayecto = "",
+      seccion = "",
+      horario = [],
+      turno = { hora_inicio: "07:00", hora_fin: "20:00" },
+    } = configuracion;
+
+    // Validar datos esenciales
+    if (!pnf || !trayecto || !seccion) {
+      throw new Error("Faltan datos esenciales (pnf, trayecto o seccion)");
+    }
 
     // Procesar el horario
-    const { matrizHorario, horasDisponibles } = procesarHorario();
+    const { matrizHorario, horasDisponibles } = this.procesarHorario(horario, turno);
 
     // Obtener la marca de agua
-    const logoMarcaAgua = await DocumentServices.traerLogoMarcaAgua();
+    const logoMarcaAgua = await this.traerLogoMarcaAgua();
 
     const header = new Header({
       children: [
@@ -505,6 +638,9 @@ class DocumentServices {
         }),
       ],
     });
+
+    // Crear filas de la tabla
+    const filas = this.crearFilasTabla(matrizHorario, horasDisponibles, pnf, trayecto, seccion);
 
     // Crear el documento Word
     const doc = new Document({
@@ -562,7 +698,7 @@ class DocumentServices {
                 type: WidthType.PERCENTAGE,
               },
               columnWidths: [1200, ...Array(matrizHorario.length).fill(2200)],
-              rows: crearFilasTabla(matrizHorario, horasDisponibles),
+              rows: filas,
             }),
           ],
         },
@@ -572,13 +708,21 @@ class DocumentServices {
     return doc;
   }
 
-  // Método auxiliar para generar horas disponibles
+  /**
+   * Genera un array con las horas disponibles basado en el turno
+   * @static
+   * @param {Object} turno - Objeto con hora de inicio y fin
+   * @param {string} turno.hora_inicio - Hora de inicio del turno (formato HH:MM)
+   * @param {string} turno.hora_fin - Hora de fin del turno (formato HH:MM)
+   * @returns {Array<number>} Array de horas en formato HHMM (ej: 700, 745, 830)
+   * @author Gabriel Leonett
+   */
   static generarHorasDisponibles(turno) {
-    const [horaInicio, minInicio] = turno.horaInicio.split(":");
-    const [horaFin, minFin] = turno.horaFin.split(":");
+    const [hora_inicio, minInicio] = turno.hora_inicio.split(":");
+    const [hora_fin, minFin] = turno.hora_fin.split(":");
 
-    const MinutosInicio = UTILS.horasMinutos(horaInicio, minInicio);
-    const MinutosFin = UTILS.horasMinutos(horaFin, minFin); // ← ¿hay un typo aquí? debería ser horasMinutos
+    const MinutosInicio = UTILS.horasMinutos(parseInt(hora_inicio), parseInt(minInicio));
+    const MinutosFin = UTILS.horasMinutos(parseInt(hora_fin), parseInt(minFin));
 
     const horaInicioHHMM = UTILS.calcularHorasHHMM(MinutosInicio);
     const horaFinHHMM = UTILS.calcularHorasHHMM(MinutosFin);
@@ -587,7 +731,6 @@ class DocumentServices {
     let horaActual = horaInicioHHMM;
 
     while (horaActual <= horaFinHHMM) {
-      // ← Este es el problema principal
       horas.push(horaActual);
       const horasActual = Math.floor(horaActual / 100);
       const minutosActual = horaActual % 100;

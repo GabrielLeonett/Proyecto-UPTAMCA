@@ -17,6 +17,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
     "bcrypt": "^5.1.1",
+    "child_process": "^1.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "docx": "^9.5.1",

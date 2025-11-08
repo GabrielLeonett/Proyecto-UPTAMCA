@@ -6,18 +6,26 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  AccordionActions,
   IconButton,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import dayjs from "dayjs";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import EditIcon from "@mui/icons-material/Edit";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import {
+  PersonRemove as PersonRemoveIcon,
+  Class as ClassIcon,
+  Schedule as ScheduleIcon,
+  Settings as SettingsIcon,
+  Edit as EditIcon,
+} from "@mui/icons-material";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import useApi from "../hook/useApi";
-import ModalEliminarProfe from "../components/ModalEliminarProfe.jsx";
-import ModalEditarCampoProfesor from "../components/ModalEditarCampoProfesor.jsx";
+import useApi from "../hook/useApi.jsx";
+import ModalEliminarProfe from "./ModalEliminarProfe.jsx";
+import ModalEditarCampoProfesor from "./ModalEditarCampoProfesor.jsx";
 import CustomButton from "./customButton.jsx";
 import CustomChip from "./CustomChip.jsx";
 
@@ -120,6 +128,15 @@ export default function CardProfesor({ profesor, isSearch }) {
     const lastname = profesor?.apellidos?.charAt(0) || "E";
     return `${firstname}${lastname}`;
   };
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Box
@@ -132,10 +149,12 @@ export default function CardProfesor({ profesor, isSearch }) {
         boxShadow: isTitileando ? 6 : 2,
         overflow: "hidden",
         transform: isTitileando ? "scale(1.02)" : "scale(1)",
-        border: isTitileando 
+        border: isTitileando
           ? `2px solid ${theme.palette.primary.main}`
           : "none",
-        animation: isTitileando ? "titileo 0.5s ease-in-out infinite alternate" : "none",
+        animation: isTitileando
+          ? "titileo 0.5s ease-in-out infinite alternate"
+          : "none",
         transition: "all 0.3s ease-in-out",
         "@keyframes titileo": {
           "0%": {
@@ -145,8 +164,8 @@ export default function CardProfesor({ profesor, isSearch }) {
           "100%": {
             boxShadow: `0 0 20px ${theme.palette.primary.main}, 0 0 30px ${theme.palette.primary.light}`,
             transform: "scale(1.03)",
-          }
-        }
+          },
+        },
       }}
     >
       {/* Imagen del profesor */}
@@ -190,6 +209,67 @@ export default function CardProfesor({ profesor, isSearch }) {
               "linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.3), transparent)",
           }}
         />
+
+        {/* Botón Editar - Izquierda */}
+        <Box
+          sx={{
+            position: "absolute",
+            left: 15,
+            top: 15,
+            color: "white",
+            fontWeight: "bold",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+            "&:hover": {
+              backgroundColor: "rgba(163, 163, 163, 0.3)",
+              borderRadius: "50%",
+            },
+            p: 0.5,
+            borderRadius: "50%",
+            transition: "background-color 0.2s ease-in-out",
+          }}
+        >
+          <Tooltip title="Editar Imagen" arrow>
+            <IconButton size="small" sx={{ color: "white", p: 0.5 }}>
+              <EditIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        {/* Botón Acciones - Derecha */}
+        <Box
+          sx={{
+            position: "absolute",
+            right: 15,
+            top: 15,
+            color: "white",
+            fontWeight: "bold",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+            "&:hover": {
+              backgroundColor: "rgba(163, 163, 163, 0.3)",
+            },
+            borderRadius: "50%",
+            transition: "background-color 0.2s ease-in-out",
+          }}
+        >
+          <Tooltip title="Acciones" arrow>
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "transparent", // Evita doble hover
+                },
+              }}
+              aria-controls={open ? "account-menu" : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? "true" : undefined}
+            >
+              <SettingsIcon sx={{ color: "inherit" }} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
         <Typography
           variant="h5"
           sx={{
@@ -453,35 +533,6 @@ export default function CardProfesor({ profesor, isSearch }) {
           </AccordionDetails>
         </Accordion>
 
-        {/* Acciones */}
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="subtitle1" color="primary">
-              Acciones Profesor
-            </Typography>
-          </AccordionSummary>
-          <AccordionActions>
-            <CustomButton
-              tipo="error"
-              onClick={() => setOpenModalEliminar(true)}
-              fullWidth
-            >
-              Eliminar
-            </CustomButton>
-            <CustomButton
-              variant="contained"
-              fullWidth
-              onClick={() =>
-                navigate("/academico/profesores/disponibilidad", {
-                  state: { idProfesor: profesorActual.id_profesor },
-                })
-              }
-            >
-              Disponibilidad
-            </CustomButton>
-          </AccordionActions>
-        </Accordion>
-
         {profesorEditado && (
           <CustomButton
             tipo="success"
@@ -509,6 +560,67 @@ export default function CardProfesor({ profesor, isSearch }) {
         onClose={() => setOpenModalEliminar(false)}
         onEliminado={handleProfesorEliminado}
       />
+
+      <Menu
+        anchorEl={anchorEl}
+        id="account-menu"
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              overflow: "visible",
+              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+              mt: 1.5,
+              "& .MuiAvatar-root": {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              "&::before": {
+                content: '""',
+                display: "block",
+                position: "absolute",
+                top: 0,
+                right: 14,
+                width: 10,
+                height: 10,
+                bgcolor: "background.paper",
+                transform: "translateY(-50%) rotate(45deg)",
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem
+          onClick={() => {
+            navigate(`/horarios/profesores/${profesor.id_profesor}`);
+          }}
+        >
+          <ListItemIcon>
+            <ClassIcon fontSize="small" />
+          </ListItemIcon>
+          Horario Profesor
+        </MenuItem>
+        <MenuItem onClick={() => { navigate(`/academico/profesores/disponibilidad/${profesor.id_profesor}`); }}>
+          <ListItemIcon>
+            <ScheduleIcon fontSize="small" />
+          </ListItemIcon>
+          Disponibilidad Profesor
+        </MenuItem>
+        <MenuItem onClick={() => setOpenModalEliminar(true)}>
+          <ListItemIcon>
+            <PersonRemoveIcon fontSize="small" />
+          </ListItemIcon>
+          Eliminar Profesor
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }

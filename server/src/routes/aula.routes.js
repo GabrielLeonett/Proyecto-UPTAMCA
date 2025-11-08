@@ -119,6 +119,7 @@ AulaRouter.post(
     "SuperAdmin",
     "Vicerrector",
     "Director General de Gestión Curricular",
+    "Coordinador",
   ]),
   registerAula
 );
