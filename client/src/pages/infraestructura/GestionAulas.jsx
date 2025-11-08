@@ -102,6 +102,8 @@ export default function GestionAulas() {
             onClick={() => navigate("/infraestructura/aulas/registrar")}
           >
             Registrar Aula
+
+            
           </CustomButton>
         </Box>
 

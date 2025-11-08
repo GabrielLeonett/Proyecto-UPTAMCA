@@ -73,6 +73,8 @@ import ProtectedViews from "./security/ProtectedViews";
 import MiPerfil from "./pages/MiPerfil";
 import CambiarContraseña from "./pages/cambiarContraseña";
 import EditarAula from "./pages/EditarAula";
+import ForgotContraseña from "./pages/ForgotContraseña.jsx";
+import RestablecerContraseña from "./pages/RestablecerContraseña.jsx";
 
 // Roles comunes para reutilización
 const ROLES = {
@@ -318,6 +320,10 @@ export default function App() {
                   </ProtectedViews>
                 }
               />
+
+              <Route path="/forgot-password" element={<ForgotContraseña />} />
+              <Route path="/reset-password/:token" element={<RestablecerContraseña />} />
+
             </Routes>
           </AuthProvider>
         </Router>

@@ -1,37 +1,10 @@
-import {
-  Box,
-  Typography,
-  Avatar,
-  Chip,
-  Grid,
-  Card,
-  CardContent,
-  Container,
-  Divider,
-  Paper,
-  useTheme,
-  Fade,
-} from "@mui/material";
+import { Box, Typography, Avatar, Chip, Grid, Card, CardContent, Container, Divider, Paper, useTheme, Fade } from "@mui/material";
 import CustomButton from "../components/customButton";
 import { useAuth } from "../hook/useAuth";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Person,
-  Schedule,
-  Notifications,
-  Assignment,
-  AdminPanelSettings,
-  Dashboard,
-  BarChart,
-  Groups,
-  School,
-  SupervisorAccount,
-  ManageAccounts,
-  TrendingUp,
-  Password,
-} from "@mui/icons-material";
+import { Person, Schedule, Notifications, Assignment, AdminPanelSettings, Dashboard, BarChart, Groups, School, SupervisorAccount, ManageAccounts, TrendingUp, Password } from "@mui/icons-material";
 import Footer from "../components/footer";
 
 const Miuser = () => {
@@ -94,7 +67,7 @@ const Miuser = () => {
     },
     "Director General de Gestión Curricular": {
       actions: [
-        
+
         {
           label: "Gestionar Profesores",
           path: "/profesores",
@@ -124,15 +97,15 @@ const Miuser = () => {
           path: "/reportes-globales",
           icon: <BarChart />,
         },
-        { 
-          label: "Panel de Administracion", 
-          path: "/administracion", 
-          icon: <Dashboard /> 
+        {
+          label: "Panel de Administracion",
+          path: "/administracion",
+          icon: <Dashboard />
         },
-        { 
-          label: "Cambiar Contraseña", 
-          path: "/cambiar-contraseña", 
-          icon: <Password /> 
+        {
+          label: "Cambiar Contraseña",
+          path: "/cambiar-contraseña",
+          icon: <Password />
         },
       ],
     },
@@ -356,8 +329,8 @@ const Miuser = () => {
         </Grid>
       </Container>
       {/* Footer */}
-            <Footer
-            />
+      <Footer
+      />
     </>
   );
 };
