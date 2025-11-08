@@ -88,6 +88,9 @@ export default class EmailService {
   createTransporter() {
     return nodemailer.createTransport({
       service: "gmail",
+      tls: {
+        rejectUnauthorized: false 
+      },
       auth: {
         user: this.EMAIL_CONFIG.user,
         pass: this.EMAIL_CONFIG.pass,
@@ -96,7 +99,7 @@ export default class EmailService {
   }
 
   /**
-   * @private
+   * @privateñ
    * @method generateEmailTemplate
    * @description Genera la plantilla HTML estructurada para el correo
    * @param {string} content - Contenido HTML del cuerpo del correo

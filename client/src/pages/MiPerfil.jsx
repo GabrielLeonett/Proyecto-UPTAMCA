@@ -1,37 +1,10 @@
-import {
-  Box,
-  Typography,
-  Avatar,
-  Chip,
-  Grid,
-  Card,
-  CardContent,
-  Container,
-  Divider,
-  Paper,
-  useTheme,
-  Fade,
-} from "@mui/material";
+import { Box, Typography, Avatar, Chip, Grid, Card, CardContent, Container, Divider, Paper, useTheme, Fade } from "@mui/material";
 import CustomButton from "../components/customButton";
 import { useAuth } from "../hook/useAuth";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/navbar";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Person,
-  Schedule,
-  Notifications,
-  Assignment,
-  AdminPanelSettings,
-  Dashboard,
-  BarChart,
-  Groups,
-  School,
-  SupervisorAccount,
-  ManageAccounts,
-  TrendingUp,
-  Password,
-} from "@mui/icons-material";
+import { Person, Schedule, Notifications, Assignment, AdminPanelSettings, Dashboard, BarChart, Groups, School, SupervisorAccount, ManageAccounts, TrendingUp, Password } from "@mui/icons-material";
 import Footer from "../components/footer";
 
 const Miuser = () => {
@@ -70,23 +43,7 @@ const Miuser = () => {
           label: "Datos Personales",
           path: "/datos-personales",
           icon: <Person />,
-        },
-        {
-          label: "Carga Académica",
-          path: "/carga-academica",
-          icon: <Assignment />,
-        },
-        {
-          label: "Notificaciones",
-          path: "/notificaciones",
-          icon: <Notifications />,
-        },
-        { label: "Tickets", path: "/tickets", icon: <Assignment /> },
-        {
-          label: "Registrar Disponibilidad",
-          path: "/academico/profesores/disponibilidad",
-          icon: <Schedule />,
-        },
+        }
       ],
     },
     Coordinador: {
@@ -95,11 +52,6 @@ const Miuser = () => {
           label: "Gestionar Horarios",
           path: "/gestion-horarios",
           icon: <Schedule />,
-        },
-        {
-          label: "Asignar Profesores",
-          path: "/asignar-profesores",
-          icon: <Groups />,
         },
         {
           label: "Gestionar Profesores",
@@ -115,17 +67,12 @@ const Miuser = () => {
     },
     "Director General de Gestión Curricular": {
       actions: [
-        {
-          label: "Supervisar Planificaciones",
-          path: "/planificaciones",
-          icon: <Dashboard />,
-        },
+
         {
           label: "Gestionar Profesores",
           path: "/profesores",
           icon: <Groups />,
-        },
-        { label: "Ver Reportes", path: "/reportes", icon: <BarChart /> },
+        }
       ],
     },
     Vicerrector: {
@@ -150,15 +97,15 @@ const Miuser = () => {
           path: "/reportes-globales",
           icon: <BarChart />,
         },
-        { 
-          label: "Panel de Administracion", 
-          path: "/administracion", 
-          icon: <Dashboard /> 
+        {
+          label: "Panel de Administracion",
+          path: "/administracion",
+          icon: <Dashboard />
         },
-        { 
-          label: "Cambiar Contraseña", 
-          path: "/cambiar-contraseña", 
-          icon: <Password /> 
+        {
+          label: "Cambiar Contraseña",
+          path: "/cambiar-contraseña",
+          icon: <Password />
         },
       ],
     },
@@ -382,8 +329,8 @@ const Miuser = () => {
         </Grid>
       </Container>
       {/* Footer */}
-            <Footer
-            />
+      <Footer
+      />
     </>
   );
 };

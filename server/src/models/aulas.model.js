@@ -348,18 +348,12 @@ export default class AulaModel {
       const query = `
         SELECT 
           a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
+          a.codigo_aula,
           s.id_sede,
-          s.nombre as nombre_sede
+          s.nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE s.nombre = ? AND a.estado = 'ACTIVO'
-        ORDER BY a.nombre ASC
+        WHERE s.id_sede = $1 
       `;
       const params = [sede];
 

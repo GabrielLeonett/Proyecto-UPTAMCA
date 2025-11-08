@@ -15,7 +15,7 @@ export default function InicioSesion() {
   const theme = useTheme();
   const [processing, setProcessing] = useState(false);
 
-  
+
   const {
     register,
     handleSubmit,
@@ -26,9 +26,9 @@ export default function InicioSesion() {
     mode: "onChange",
     shouldFocusError: true,
   });
-  
+
   const { login } = useAuth();
-  
+
   const onSubmit = async (formData) => {
     // Forzar validación antes de enviar
     setProcessing(true);
@@ -119,10 +119,11 @@ export default function InicioSesion() {
             variant="body2"
             className="mt-6 text-center text-gray-600"
           >
-            <a href="/support" className="hover:underline">
-              ¿Problemas para acceder? Contacta al soporte
+            <a href="/forgot-password" className="hover:underline">
+              ¿Olvidaste tu contraseña?
             </a>
           </Typography>
+
         </Box>
       </Box>
     </>

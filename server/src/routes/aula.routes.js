@@ -228,7 +228,7 @@ AulaRouter.get(
  * curl -X GET 'http://localhost:3000/aulas/sede/Edificio+A'
  */
 AulaRouter.get(
-  "/aulas/sede/:sede",
+  "/aulas/sede/:id_sede",
   middlewareAuth([
     "SuperAdmin",
     "Vicerrector",
