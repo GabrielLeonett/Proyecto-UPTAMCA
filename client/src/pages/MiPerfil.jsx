@@ -38,7 +38,7 @@ const Miuser = () => {
   const roleSections = {
     Profesor: {
       actions: [
-        { label: "Ver Horario", path: "/horario-profesor", icon: <Schedule /> },
+        { label: "Ver Horario", path: "/horarios", icon: <Schedule /> },
         {
           label: "Datos Personales",
           path: "/datos-personales",
@@ -50,7 +50,7 @@ const Miuser = () => {
       actions: [
         {
           label: "Gestionar Horarios",
-          path: "/gestion-horarios",
+          path: "/horarios",
           icon: <Schedule />,
         },
         {
@@ -80,7 +80,7 @@ const Miuser = () => {
         { label: "Ver Indicadores", path: "/indicadores", icon: <BarChart /> },
         {
           label: "Gestionar Profesores",
-          path: "/eliminar-profesores",
+          path: "/academico/profesores",
           icon: <Groups />,
         },
       ],
@@ -89,7 +89,7 @@ const Miuser = () => {
       actions: [
         {
           label: "Asignar Administradores",
-          path: "/Asignar-Administradores",
+          path: "/coordinacion/coordinadores/asignar",
           icon: <AdminPanelSettings />,
         },
         {
