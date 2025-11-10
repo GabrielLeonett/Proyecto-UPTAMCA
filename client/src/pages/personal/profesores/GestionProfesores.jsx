@@ -1,5 +1,5 @@
 import { Typography, Box, Grid, Tooltip } from "@mui/material";
-import { PersonAdd as PersonAddIcon } from "@mui/icons-material";
+import { PersonAdd as PersonAddIcon, Route as RouteIcon } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -7,6 +7,7 @@ import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesor from "../../../components/cardProfesor";
 import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
+import { useTour } from "../../../hook/useTour"; // 👈 Importa el hook 
 
 export default function GestionProfesores() {
   const axios = useApi(false);
@@ -67,6 +68,43 @@ export default function GestionProfesores() {
     fetchProfesores();
   }, [fetchProfesores]); // ✅ Ahora depende de fetchProfesores
 
+  // 🔹 Definición del tour con Intro.js
+const { startTour, resetTour } = useTour(
+  [
+    {
+      intro: "👋 Bienvenido al módulo de gestión de profesores. Te mostraremos las principales funciones.",
+    },
+    {
+      element: "#profesores-container",
+      intro: "Aquí se muestran todos los profesores registrados en el sistema.",
+      position: "right",
+    },
+    {
+      element: "#profesor-card-ejemplo",
+      intro: "Cada tarjeta muestra los datos de un profesor, incluyendo su información personal, educativa y profesional.",
+      position: "bottom",
+    },
+    {
+      element: "#btn-registrar-profesor",
+      intro: "Haz clic aquí para registrar un nuevo profesor.",
+      position: "left",
+    },
+    {
+      element: "#btn-reiniciar-tour",
+      intro: "Puedes volver a ver este recorrido cuando quieras haciendo clic aquí.",
+      position: "top",
+    },
+  ],
+  "tourGestionProfesores" // clave única para esta página
+);
+
+useEffect(() => {
+  if (!loading && profesores.length > 0) {
+    startTour();
+  }
+}, [loading, profesores]);
+
+
   return (
     <>
       <ResponsiveAppBar backgroundColor />
@@ -94,7 +132,7 @@ export default function GestionProfesores() {
             <SkeletonProfesores />
           </Box>
         ) : (
-          <Box>
+          <Box id="profesores-container">
             {profesores.length === 0 ? (
               <Typography textAlign="center" my={4}>
                 No hay más profesores registrados
@@ -108,8 +146,8 @@ export default function GestionProfesores() {
                   margin: 0,
                 }}
               >
-                {profesores.map((profesor) => (
-                  <Grid item key={profesor.cedula || profesor.id}>
+                {profesores.map((profesor, index) => (
+                  <Grid item key={profesor.cedula || profesor.id} id="profesores-container">
                     <CardProfesor
                       profesor={profesor}
                       isSearch={!!id_profesor}
@@ -123,6 +161,7 @@ export default function GestionProfesores() {
 
         <Tooltip title={"Registrar Profesor"} placement="left-start">
           <CustomButton
+          id="btn-registrar-profesor"
             onClick={() => {
               navigate("/academico/profesores/registrar");
             }}
@@ -142,6 +181,29 @@ export default function GestionProfesores() {
             aria-label={"Registrar Profesor"}
           >
             <PersonAddIcon />
+          </CustomButton>
+        </Tooltip>
+        <Tooltip title={"Tutorial"} placement="left-start">
+          <CustomButton
+           id="btn-reiniciar-tour"
+          variant="contained"
+          onClick={resetTour}
+            sx={{
+              position: "fixed",
+              bottom: 128,
+              right: 24,
+              minWidth: "auto",
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              zIndex: 9999,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            aria-label={"Registrar Profesor"}
+          >
+            <RouteIcon />
           </CustomButton>
         </Tooltip>
       </Box>

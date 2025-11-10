@@ -140,6 +140,7 @@ export default function CardProfesor({ profesor, isSearch }) {
 
   return (
     <Box
+      id="cardprofesor"
       sx={{
         background: theme.palette.background.paper,
         borderRadius: "15px",
@@ -251,7 +252,7 @@ export default function CardProfesor({ profesor, isSearch }) {
             transition: "background-color 0.2s ease-in-out",
           }}
         >
-          <Tooltip title="Acciones" arrow>
+          <Tooltip id="acciones" title="Acciones" arrow>
             <IconButton
               onClick={handleClick}
               size="small"
