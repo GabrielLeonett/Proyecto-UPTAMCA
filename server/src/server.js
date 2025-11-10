@@ -14,6 +14,7 @@ import { createServer } from "node:http";
 
 import SocketServices from "./services/socket.service.js";
 import SystemMonitor from "./services/systemMonitor.service.js";
+import NotificationService from "./services/notification.service.js";
 
 // Importaciones de Rutas
 import { adminRouter} from "./routes/Admin.routes.js";
@@ -55,11 +56,13 @@ export function initializeSocketServices() {
   const servicioSocket = new SocketServices();
   const io = servicioSocket.initializeService();
 
+  const notificationService = new NotificationService(io);
+
   let monitoringInterval = null;
   let superAdminCount = 0;
 
   io.on("connection", (socket) => {
-    console.log("Nuevo cliente conectado:", socket.id);
+    console.log("Nuevo cliente conectado:", socket.user.id);
 
     if (socket.user && socket.user.roles.includes("SuperAdmin")) {
       superAdminCount++;
@@ -74,6 +77,12 @@ export function initializeSocketServices() {
       // Unir al socket a la sala de SuperAdmin
       socket.join("role_SuperAdmin");
     }
+
+    socket.on("mark_notification_read", (noti) => {
+      console.log("Evento recibido: mark_notification_read", noti);
+      console.log(`Marcando notificación ${noti.notificationId} como leída por usuario ${socket.user.id}`);
+      notificationService.markAsRead(noti.notificationId, socket.user.id);
+    });
 
     socket.on("disconnect", (reason) => {
       console.log("Cliente desconectado:", socket.id, "Razón:", reason);

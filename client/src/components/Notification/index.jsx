@@ -25,10 +25,12 @@ export default function Notification({ userRoles, userID }) {
   const [socketConnected, setSocketConnected] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ USAR useRef PARA RASTREAR SI YA NOS UNIMOS A LAS SALAS
+  // ✅ REF para controlar si ya nos unimos a las salas
   const hasJoinedRoomsRef = useRef(false);
+  // ✅ REF para almacenar el último timestamp de conexión
+  const lastConnectionRef = useRef(null);
 
-  // ✅ USAR EL HOOK DE WEBSOCKET
+  // ✅ HOOK de WebSocket
   const {
     connect,
     on,
@@ -38,34 +40,36 @@ export default function Notification({ userRoles, userID }) {
     isConnected: wsIsConnected,
   } = useWebSocket();
 
+  // ✅ OBTENER HISTORIAL DE NOTIFICACIONES
   const getNotificationHistory = async () => {
     try {
       const response = await axios.get(`/notifications`);
-
-      // 🔥 ACTUALIZAR ÚLTIMA CONEXIÓN SOLO SI LA PETICIÓN FUE EXITOSA
-      localStorage.setItem(
-        "ultima_conexion_notificaciones",
-        new Date().toISOString()
-      );
-
-      return response;
+      
+      // 🔥 ACTUALIZAR ÚLTIMA CONEXIÓN
+      const now = new Date().toISOString();
+      localStorage.setItem("ultima_conexion_notificaciones", now);
+      lastConnectionRef.current = now;
+      
+      return response.data || response;
     } catch (err) {
       console.error("❌ Error cargando historial:", err);
       throw err;
     }
   };
 
-  // 🔥 INICIALIZAR ÚLTIMA CONEXIÓN SI NO EXISTE
+  // ✅ INICIALIZAR ÚLTIMA CONEXIÓN
   useEffect(() => {
-    if (!localStorage.getItem("ultima_conexion_notificaciones")) {
-      localStorage.setItem(
-        "ultima_conexion_notificaciones",
-        new Date().toISOString()
-      );
+    const lastConnection = localStorage.getItem("ultima_conexion_notificaciones");
+    if (!lastConnection) {
+      const now = new Date().toISOString();
+      localStorage.setItem("ultima_conexion_notificaciones", now);
+      lastConnectionRef.current = now;
+    } else {
+      lastConnectionRef.current = lastConnection;
     }
   }, []);
 
-  // 🔥 Cargar historial de notificaciones al montar el componente
+  // ✅ CARGAR HISTORIAL DE NOTIFICACIONES
   useEffect(() => {
     const loadNotificationHistory = async () => {
       if (!userID) {
@@ -74,9 +78,17 @@ export default function Notification({ userRoles, userID }) {
       }
 
       try {
+        setLoading(true);
         const history = await getNotificationHistory();
-        setNotifications(history);
-        setUpdateTrigger((prev) => prev + 1);
+        
+        // ✅ ORDENAR POR FECHA MÁS RECIENTE PRIMERO
+        const sortedHistory = Array.isArray(history) 
+          ? history.sort((a, b) => new Date(b.created_at || b.fecha_creacion) - new Date(a.created_at || a.fecha_creacion))
+          : [];
+          
+        setNotifications(sortedHistory);
+        setUpdateTrigger(prev => prev + 1);
+        setError(null);
       } catch (err) {
         console.error("❌ Error cargando historial:", err);
         setError("Error cargando notificaciones");
@@ -86,10 +98,12 @@ export default function Notification({ userRoles, userID }) {
     };
 
     loadNotificationHistory();
-  }, [userID, userRoles]);
+  }, [userID]);
 
-  // ✅ MANEJADORES DE EVENTOS OPTIMIZADOS
+  // ✅ MANEJADOR DE NUEVAS NOTIFICACIONES - MEJORADO
   const handleNewNotification = useCallback((data) => {
+    console.log("📨 Nueva notificación recibida:", data);
+    
     let notificationData = data;
 
     // Si viene envuelta en data.data, extraerla
@@ -102,34 +116,101 @@ export default function Notification({ userRoles, userID }) {
       notificationData = [notificationData];
     }
 
-    // 🔥 AGREGAR AL INICIO para que las nuevas aparezcan primero
-    setNotifications((prev) => [...notificationData, ...prev]);
-    setUpdateTrigger((prev) => prev + 1);
+    // ✅ AGREGAR NUEVAS NOTIFICACIONES AL INICIO Y ELIMINAR DUPLICADOS
+    setNotifications(prev => {
+      const newNotifications = [...notificationData];
+      const existingIds = new Set(prev.map(n => n.id || n._id));
+      
+      // Filtrar duplicados
+      const uniqueNewNotifications = newNotifications.filter(
+        notification => !existingIds.has(notification.id || notification._id)
+      );
+
+      if (uniqueNewNotifications.length === 0) return prev;
+
+      // Combinar y ordenar por fecha (más recientes primero)
+      const combined = [...uniqueNewNotifications, ...prev];
+      return combined.sort((a, b) => 
+        new Date(b.created_at || b.fecha_creacion) - new Date(a.created_at || a.fecha_creacion)
+      );
+    });
+
+    setUpdateTrigger(prev => prev + 1);
+    
+    // ✅ MOSTRAR NOTIFICACIÓN EN SISTEMA SI EL PANEL NO ESTÁ ABIERTO
+    if (!target && notificationData[0]?.titulo) {
+      // Puedes agregar aquí una notificación toast del sistema
+      console.log("🔔 Nueva notificación:", notificationData[0].titulo);
+    }
+  }, [target]);
+
+  // ✅ MANEJADOR DE NOTIFICACIONES ACTUALIZADAS
+  const handleNotificationUpdated = useCallback((data) => {
+    console.log("🔄 Notificación actualizada:", data);
+    
+    const updatedNotification = data.data || data;
+    
+    setNotifications(prev => 
+      prev.map(notification => 
+        (notification.id === updatedNotification.id || notification._id === updatedNotification._id) 
+          ? { ...notification, ...updatedNotification }
+          : notification
+      )
+    );
+    
+    setUpdateTrigger(prev => prev + 1);
   }, []);
 
+  // ✅ MANEJADOR DE NOTIFICACIONES ELIMINADAS
+  const handleNotificationDeleted = useCallback((data) => {
+    console.log("🗑️ Notificación eliminada:", data);
+    
+    const deletedId = data.id || data._id || data;
+    
+    setNotifications(prev => 
+      prev.filter(notification => 
+        notification.id !== deletedId && notification._id !== deletedId
+      )
+    );
+    
+    setUpdateTrigger(prev => prev + 1);
+  }, []);
+
+  // ✅ MANEJADOR DE CONEXIÓN
   const handleConnect = useCallback(() => {
+    console.log("✅ WebSocket conectado para notificaciones");
     setSocketConnected(true);
-    setLoading(false);
     setError(null);
 
-    // ✅ UNIRSE A LAS SALAS DE ROLES SOLO UNA VEZ AL CONECTAR
+    // ✅ UNIRSE A LAS SALAS DE ROLES SOLO UNA VEZ
     if (!hasJoinedRoomsRef.current && userRoles?.length > 0) {
+      console.log("🎯 Uniéndose a salas de roles:", userRoles);
       userRoles.forEach((role) => {
         emit("join_role_room", role);
       });
       hasJoinedRoomsRef.current = true;
     }
-  }, [userRoles, emit]);
 
+    // ✅ SOLICITAR NOTIFICACIONES PENDIENTES DESDE LA ÚLTIMA CONEXIÓN
+    if (lastConnectionRef.current) {
+      emit("get_pending_notifications", { 
+        lastConnection: lastConnectionRef.current,
+        userId: userID 
+      });
+    }
+  }, [userRoles, emit, userID]);
+
+  // ✅ MANEJADOR DE ERROR DE CONEXIÓN
   const handleConnectError = useCallback((error) => {
-    console.error("❌ Notificaciones: Error de conexión WebSocket:", error);
+    console.error("❌ Error de conexión WebSocket:", error);
     setSocketConnected(false);
-    setLoading(false);
     setError(`Error de conexión: ${error.message}`);
     hasJoinedRoomsRef.current = false;
   }, []);
 
+  // ✅ MANEJADOR DE DESCONEXIÓN
   const handleDisconnect = useCallback(() => {
+    console.log("🔌 WebSocket desconectado");
     setSocketConnected(false);
     hasJoinedRoomsRef.current = false;
   }, []);
@@ -137,37 +218,40 @@ export default function Notification({ userRoles, userID }) {
   // ✅ CONFIGURAR WEBSOCKET - VERSIÓN MEJORADA
   useEffect(() => {
     if (!userID) {
+      setLoading(false);
       return;
     }
 
-    // 1. CONFIGURAR EVENTOS PRIMERO (IMPORTANTE)
+    console.log("🔧 Configurando WebSocket para notificaciones...");
 
+    // 1. REGISTRAR MANEJADORES DE EVENTOS
     on("connect", handleConnect);
     on("disconnect", handleDisconnect);
     on("connect_error", handleConnectError);
     on("new_notification", handleNewNotification);
+    on("notification_updated", handleNotificationUpdated);
+    on("notification_deleted", handleNotificationDeleted);
+    on("pending_notifications", handleNewNotification); // Para notificaciones pendientes
 
-    // 2. VERIFICAR SI YA ESTÁ CONECTADO INMEDIATAMENTE
+    // 2. VERIFICAR CONEXIÓN ACTUAL
     const socket = getSocket();
-
+    
     if (socket?.connected) {
-      handleConnect(); // ✅ ACTUALIZAR ESTADO INMEDIATAMENTE
+      console.log("✅ Socket ya conectado, ejecutando handleConnect");
+      handleConnect();
+      setLoading(false);
     } else {
-      // 3. INTENTAR CONECTAR SOLO SI NO ESTÁ CONECTADO
+      // 3. INTENTAR CONEXIÓN
       setLoading(true);
-      setError(null);
-
+      
       const connectWebSocket = async () => {
         try {
+          console.log("🔄 Intentando conectar WebSocket...");
           await connect(userID, userRoles);
-
-          // ✅ VERIFICAR NUEVAMENTE DESPUÉS DE CONECTAR
-          const newSocket = getSocket();
-          if (newSocket?.connected && !socketConnected) {
-            handleConnect();
-          }
+          
+          // La conexión se manejará en el evento 'connect'
         } catch (err) {
-          console.error("💥 Notificaciones: Error en connect():", err);
+          console.error("💥 Error en connect():", err);
           setError(`Error al conectar: ${err.message}`);
           setLoading(false);
         }
@@ -178,10 +262,14 @@ export default function Notification({ userRoles, userID }) {
 
     // 4. CLEANUP
     return () => {
+      console.log("🧹 Limpiando WebSocket...");
       off("connect", handleConnect);
       off("disconnect", handleDisconnect);
       off("connect_error", handleConnectError);
       off("new_notification", handleNewNotification);
+      off("notification_updated", handleNotificationUpdated);
+      off("notification_deleted", handleNotificationDeleted);
+      off("pending_notifications", handleNewNotification);
       hasJoinedRoomsRef.current = false;
     };
   }, [
@@ -195,43 +283,82 @@ export default function Notification({ userRoles, userID }) {
     handleDisconnect,
     handleConnectError,
     handleNewNotification,
-    socketConnected,
+    handleNotificationUpdated,
+    handleNotificationDeleted,
   ]);
 
-  // 🔥 MEJORADO: Marcar notificación como leída
+  // ✅ MARCAR COMO LEÍDA - MEJORADO
   const markAsRead = async (notificationId) => {
-    if (socketConnected) {
-      emit("mark_notification_read", { notificationId });
-    }
-
     // ✅ ACTUALIZAR ESTADO LOCAL INMEDIATAMENTE
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === notificationId
-          ? { ...notif, leida: true, fecha_lectura: new Date().toISOString() }
+    setNotifications(prev =>
+      prev.map(notif =>
+        notif.id === notificationId || notif._id === notificationId
+          ? { 
+              ...notif, 
+              leida: true, 
+              fecha_lectura: new Date().toISOString(),
+              leida_por: userID
+            }
           : notif
       )
     );
-    setUpdateTrigger((prev) => prev + 1);
+
+    // ✅ ENVIAR AL SERVIDOR
+    if (socketConnected) {
+      emit("mark_notification_read", { 
+        notificationId,
+        userId: userID,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    setUpdateTrigger(prev => prev + 1);
   };
 
-  // ✅ CALCULAR NOTIFICACIONES NO LEÍAS
+  // ✅ MARCAR TODAS COMO LEÍDAS
+  const markAllAsRead = async () => {
+    const unreadNotifications = notifications.filter(notif => !notif.leida);
+    
+    if (unreadNotifications.length === 0) return;
+
+    // ✅ ACTUALIZAR ESTADO LOCAL
+    setNotifications(prev =>
+      prev.map(notif => ({
+        ...notif,
+        leida: true,
+        fecha_lectura: notif.leida ? notif.fecha_lectura : new Date().toISOString(),
+        leida_por: notif.leida ? notif.leida_por : userID
+      }))
+    );
+
+    // ✅ ENVIAR AL SERVIDOR
+    if (socketConnected) {
+      emit("mark_all_notifications_read", {
+        userId: userID,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    setUpdateTrigger(prev => prev + 1);
+  };
+
+  // ✅ CALCULAR ESTADÍSTICAS
   const numNotificationsNoRead = notifications.filter(
-    (notification) => !notification.leida
+    notification => !notification.leida
   ).length;
 
   // ✅ FILTRAR NOTIFICACIONES
-  const filteredNotifications = notifications.filter((notification) => {
+  const filteredNotifications = notifications.filter(notification => {
     if (filter === "all") return true;
     if (filter === "unread") return !notification.leida;
     if (filter === "read") return notification.leida;
     return notification.tipo_notificacion === filter;
   });
 
-  // ✅ CONTADORES PARA LOS FILTROS
+  // ✅ CONTADORES
   const allCount = notifications.length;
-  const unreadCount = notifications.filter((n) => !n.leida).length;
-  const readCount = notifications.filter((n) => n.leida).length;
+  const unreadCount = notifications.filter(n => !n.leida).length;
+  const readCount = notifications.filter(n => n.leida).length;
 
   return (
     <Box>
@@ -241,7 +368,7 @@ export default function Notification({ userRoles, userID }) {
         Target={target}
       />
 
-      {/* Panel de notificaciones cuando está abierto */}
+      {/* Panel de notificaciones */}
       {target && (
         <Box
           sx={{
@@ -250,9 +377,9 @@ export default function Notification({ userRoles, userID }) {
             right: { xs: 0, md: 60 },
             bottom: { xs: 0, md: "auto" },
             left: { xs: 0, md: "auto" },
-            width: { xs: "100%", md: 400 },
+            width: { xs: "100%", md: 450 },
             height: { xs: "100%", md: "auto" },
-            maxHeight: { xs: "none", md: 500 },
+            maxHeight: { xs: "none", md: 600 },
             backgroundColor: theme.palette.background.paper,
             border: { xs: "none", md: "1px solid" },
             borderColor: theme.palette.divider,
@@ -262,7 +389,7 @@ export default function Notification({ userRoles, userID }) {
             overflow: "hidden",
           }}
         >
-          {/* Header del panel con botón de cerrar */}
+          {/* Header */}
           <Box
             sx={{
               p: 2,
@@ -275,32 +402,34 @@ export default function Notification({ userRoles, userID }) {
             }}
           >
             <Box>
-              <Typography
-                variant="h6"
-                fontWeight="bold"
-                color={theme.palette.text.primary}
-              >
+              <Typography variant="h6" fontWeight="bold">
                 Notificaciones
               </Typography>
-              <Typography variant="body2" color={theme.palette.text.secondary}>
-                {unreadCount} sin leer de {allCount} totales
-                {loading && " - Cargando..."}
-                {socketConnected ? " • ✅ Conectado" : " • ❌ Desconectado"}
-                {error && ` • ⚠️ ${error}`}
+              <Typography variant="body2" color="text.secondary">
+                {unreadCount} sin leer • {allCount} totales
+                {socketConnected ? " • ✅ En línea" : " • 🔌 Offline"}
               </Typography>
             </Box>
 
-            {/* Botón de cerrar - visible solo en móvil */}
-            <IconButton
-              onClick={() => setTarget(false)}
-              sx={{
-                display: { xs: "flex", md: "none" },
-                color: theme.palette.text.primary,
-              }}
-              aria-label="Cerrar notificaciones"
-            >
-              <CloseIcon />
-            </IconButton>
+            <Box display="flex" alignItems="center" gap={1}>
+              {/* Botón para marcar todas como leídas */}
+              {unreadCount > 0 && (
+                <Chip
+                  label="Marcar todas"
+                  size="small"
+                  variant="outlined"
+                  onClick={markAllAsRead}
+                  sx={{ mr: 1 }}
+                />
+              )}
+              
+              <IconButton
+                onClick={() => setTarget(false)}
+                sx={{ display: { xs: "flex", md: "none" } }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
           </Box>
 
           {/* Filtros */}
@@ -309,7 +438,6 @@ export default function Notification({ userRoles, userID }) {
               p: 2,
               borderBottom: "1px solid",
               borderColor: theme.palette.divider,
-              backgroundColor: theme.palette.background.default,
             }}
           >
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
@@ -331,13 +459,8 @@ export default function Notification({ userRoles, userID }) {
                 label={`Leídas (${readCount})`}
                 variant={filter === "read" ? "filled" : "outlined"}
                 onClick={() => setFilter("read")}
+                color="success"
                 size="small"
-                sx={{
-                  backgroundColor:
-                    filter === "read" ? theme.palette.success.main : undefined,
-                  color:
-                    filter === "read" ? theme.palette.common.white : undefined,
-                }}
               />
             </Stack>
           </Box>
@@ -345,42 +468,51 @@ export default function Notification({ userRoles, userID }) {
           {/* Lista de notificaciones */}
           <Box
             sx={{
-              maxHeight: { xs: "calc(100% - 180px)", md: 350 },
+              maxHeight: { xs: "calc(100% - 180px)", md: 400 },
               overflow: "auto",
-              height: { xs: "100%", md: "auto" },
-              backgroundColor: theme.palette.background.paper,
             }}
           >
             {loading ? (
               <Box sx={{ p: 3, textAlign: "center" }}>
                 <CircularProgress size={24} />
-                <Typography
-                  variant="body2"
-                  color={theme.palette.text.secondary}
-                  sx={{ mt: 1 }}
-                >
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                   Cargando notificaciones...
                 </Typography>
               </Box>
             ) : filteredNotifications.length === 0 ? (
               <Box sx={{ p: 3, textAlign: "center" }}>
-                <Typography
-                  variant="body2"
-                  color={theme.palette.text.secondary}
-                >
-                  No hay notificaciones{" "}
-                  {filter !== "all" ? `con el filtro "${filter}"` : ""}
+                <Typography variant="body2" color="text.secondary">
+                  {filter === "all" 
+                    ? "No hay notificaciones" 
+                    : `No hay notificaciones ${filter === "unread" ? "no leídas" : "leídas"}`
+                  }
                 </Typography>
               </Box>
             ) : (
               filteredNotifications.map((notification, index) => (
                 <NotificationCard
-                  key={`${notification.id}-${updateTrigger}-${index}`}
+                  key={`${notification.id || notification._id}-${updateTrigger}-${index}`}
                   notification={notification}
                   onMarkAsRead={markAsRead}
                 />
               ))
             )}
+          </Box>
+
+          {/* Footer con estado de conexión */}
+          <Box
+            sx={{
+              p: 1,
+              borderTop: "1px solid",
+              borderColor: theme.palette.divider,
+              backgroundColor: theme.palette.background.default,
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              {socketConnected ? "✅ Conectado en tiempo real" : "❌ Sin conexión en tiempo real"}
+              {error && ` • ${error}`}
+            </Typography>
           </Box>
         </Box>
       )}

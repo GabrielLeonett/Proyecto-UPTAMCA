@@ -236,7 +236,7 @@ export default function App() {
                 }
               />
               <Route
-                path="/horarios/aulas"
+                path="/horarios/aulas/:id_aula"
                 element={
                   <ProtectedViews allowedRoles={ROLES.TODOS_AUTENTICADOS}>
                     <GestionHorariosAulas />

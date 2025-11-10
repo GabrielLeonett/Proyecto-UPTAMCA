@@ -10,11 +10,6 @@ import {
 import { useEffect } from "react";
 
 export default function NotificationCard({ notification, onMarkAsRead }) {
-  // ✅ Agregar onMarkAsRead
-  useEffect(() => {
-    console.log("La notificacion es la siguiente", notification);
-  }, [notification]);
-
   const navigate = useNavigate();
   const theme = useTheme();
 

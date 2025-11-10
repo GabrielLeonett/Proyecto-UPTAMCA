@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback} from "react";
 import HorarioAula from "../../components/HorarioAula/HorarioAula";
 import ResponsiveAppBar from "../../components/navbar";
 import { Box, Typography, Grid, Container, Alert } from "@mui/material";
@@ -10,29 +10,25 @@ export default function GestionHorariosAulas() {
   const [horario, setHorario] = useState(null);
   const { id_aula } = useParams();
   const axios = useApi();
-  const aula = {
-    id_aula: 2,
-    codigo_aula: "702",
-  };
+ 
+  const fetchHorarios = useCallback(async () => {
+    if (!id_aula) {
+      setHorario(null);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`/horarios/aula/${id_aula}`);
+      console.log("📊 Respuesta del horario:", response);
+      setHorario(response);
+    } catch (e) {
+      console.error("Error al consultar el horario: ", e);
+      setHorario(null);
+    }
+  }, [id_aula, axios]);
 
   // Efecto para cargar horario cuando se selecciona una sección
   useEffect(() => {
-    const fetchHorarios = async () => {
-      if (!id_aula) {
-        setHorario(null);
-        return;
-      }
-
-      try {
-        const response = await axios.get(`/horarios/aula/${id_aula}`);
-        console.log("📊 Respuesta del horario:", response);
-        setHorario(response);
-      } catch (e) {
-        console.error("Error al consultar el horario: ", e);
-        setHorario(null);
-      }
-    };
-
     fetchHorarios();
   }, [id_aula, axios]);
 
@@ -68,7 +64,7 @@ export default function GestionHorariosAulas() {
             {/* HorarioAula */}
             {horario ? (
               <HorarioAula
-                aula={aula}
+                aula={horario.aula}
                 turno={horario.turno}
                 horario={horario.horario}
                 Custom={true}
