@@ -20,6 +20,7 @@ import { useTheme } from "@mui/material/styles";
 import { useNavigate, useParams } from "react-router-dom";
 import ResponsiveAppBar from "../../components/navbar";
 import CustomButton from "../../components/customButton";
+import CardAula from "../../components/CardAula";
 import useApi from "../../hook/useApi";
 
 export default function GestionAulas() {
@@ -39,6 +40,7 @@ export default function GestionAulas() {
     const fetchAulas = async () => {
       try {
         const response = await axios.get(`/aulas/sede/${id_sede}`);
+        console.log("Aulas cargadas:", response);
         const data = response.aulas || [];
         setAulas(data);
         setFilteredAulas(data);
@@ -103,7 +105,7 @@ export default function GestionAulas() {
           >
             Registrar Aula
 
-            
+
           </CustomButton>
         </Box>
 
@@ -130,68 +132,9 @@ export default function GestionAulas() {
             No se encontraron aulas registradas.
           </Typography>
         ) : (
-          <TableContainer
-            component={Paper}
-            sx={{
-              borderRadius: "16px",
-              boxShadow: theme.shadows[4],
-              overflow: "hidden",
-            }}
-          >
-            <Table>
-              <TableHead sx={{ backgroundColor: theme.palette.primary.light }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
-                    Código
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
-                    Tipo
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
-                    Capacidad
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
-                    Sede
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: "#fff" }}>
-                    Acciones
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredAulas.map((aula) => (
-                  <TableRow key={aula.id_aula}>
-                    <TableCell>{aula.codigo}</TableCell>
-                    <TableCell>{aula.tipo}</TableCell>
-                    <TableCell>{aula.capacidad}</TableCell>
-                    <TableCell>
-                      {aula.sede?.nombre_sede || "Sin asignar"}
-                    </TableCell>
-                    <TableCell>
-                      <Tooltip title="Editar">
-                        <IconButton
-                          color="primary"
-                          onClick={() =>
-                            navigate(`/aulas/editar/${aulas.id_aula}`)
-                          }
-                        >
-                          <Edit />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Eliminar">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleDelete(aulas.id_aula)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          aulas.map((aula) => (
+            <CardAula key={aula.id_aula} aula={aula} onDelete={handleDelete} />
+          ))
         )}
       </Box>
     </>

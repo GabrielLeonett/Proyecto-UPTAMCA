@@ -589,26 +589,36 @@ export default class NotificationService {
   async markAsRead(notificationId, userId) {
     const client = await this.connectDB();
     try {
+      // ✅ CORREGIDO: Usar parámetros posicionales de PostgreSQL ($1, $2)
       const result = await client.query(
         `UPDATE public.notifications 
        SET is_read = true, read_at = NOW() 
-       WHERE id = ? AND user_id = ? 
+       WHERE id = $1
        RETURNING *`,
-        [notificationId, userId]
+        [notificationId]
       );
 
       if (result.rows.length > 0) {
-        // Emitir actualización en tiempo real
+        const updatedNotification = result.rows[0];
+        console.log(updatedNotification);
+
+        // ✅ MEJORADO: Emitir con más datos útiles
         this.io.emit("notification_updated", {
           notificationId,
           userId,
-          status: "read",
+          is_read: true,
+          read_at: updatedNotification.read_at,
+          action: "marked_read"
         });
+
+        return updatedNotification;
+      } else {
+        throw new Error("Notificación no encontrada o usuario no autorizado");
       }
 
-      return result.rows[0];
-    } finally {
-      await this.disconnectDB();
+    } catch (error) {
+      console.error("Error en markAsRead:", error);
+      throw error;
     }
   }
 

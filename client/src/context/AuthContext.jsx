@@ -52,12 +52,17 @@ export function AuthProvider({ children }) {
         } else {
           throw new Error("Respuesta del servidor incompleta");
         }
-      } catch (e) {
-        console.error(e);
+      } catch (error) {
         setUser(null);
         setIsAuthenticated(false);
         setIsLoggingIn(false);
-        alert.error("Error", "Credenciales incorrectas");
+        if (error.error.totalErrors > 0) {
+          error.error.validationErrors.map((error_validacion) => {
+            alert.toast(error_validacion.field, error_validacion.message);
+          });
+        } else {
+          alert.error(error.title, error.message);
+        }
       }
     },
     [navigate, alert, axios]

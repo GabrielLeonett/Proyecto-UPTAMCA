@@ -181,7 +181,6 @@ export default function FormRegister() {
         "Ya puede verlo en la lista."
       );
     } catch (error) {
-      console.log(error);
       if (error.error.totalErrors > 0) {
         error.error.validationErrors.map((error_validacion) => {
           alert.toast(error_validacion.field, error_validacion.message);

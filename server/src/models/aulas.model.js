@@ -348,6 +348,8 @@ export default class AulaModel {
       const query = `
         SELECT 
           a.id_aula,
+          a.tipo_aula,
+          a.capacidad_aula,
           a.codigo_aula,
           s.id_sede,
           s.nombre_sede
