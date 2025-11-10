@@ -1,5 +1,6 @@
 import fs from "fs";
-import { spawn } from "child_process";
+import axios from "axios";
+import FormData from "form-data";
 import {
   Document,
   Packer,
@@ -19,6 +20,7 @@ import {
 } from "docx";
 import sharp from "sharp";
 import { UTILS } from "../utils/utilis.js";
+import { loadEnv } from "../utils/utilis.js";
 import path from "path";
 
 // Estilos globales
@@ -81,7 +83,11 @@ class DocumentServices {
       }
 
       const logoData = fs.readFileSync(logoPath);
-      console.log("✅ Logo leído correctamente, tamaño:", logoData.length, "bytes");
+      console.log(
+        "✅ Logo leído correctamente, tamaño:",
+        logoData.length,
+        "bytes"
+      );
 
       const imagenProcesada = await sharp(logoData)
         .ensureAlpha()
@@ -194,10 +200,26 @@ class DocumentServices {
       rowSpan = 1,
       colSpan = 1,
       borders = {
-        top: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
-        bottom: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
-        left: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
-        right: { style: "single", size: ESTILOS.bordes.grosor, color: ESTILOS.bordes.color },
+        top: {
+          style: "single",
+          size: ESTILOS.bordes.grosor,
+          color: ESTILOS.bordes.color,
+        },
+        bottom: {
+          style: "single",
+          size: ESTILOS.bordes.grosor,
+          color: ESTILOS.bordes.color,
+        },
+        left: {
+          style: "single",
+          size: ESTILOS.bordes.grosor,
+          color: ESTILOS.bordes.color,
+        },
+        right: {
+          style: "single",
+          size: ESTILOS.bordes.grosor,
+          color: ESTILOS.bordes.color,
+        },
       },
       margins = {
         top: ESTILOS.espaciado.paddingCelda,
@@ -220,95 +242,29 @@ class DocumentServices {
   }
 
   /**
-   * Convierte un documento Word a PDF usando LibreOffice
-   * @static
-   * @async
-   * @param {Buffer} wordBuffer - Buffer del documento Word
-   * @returns {Promise<Buffer>} Buffer del PDF generado
-   * @author Gabriel Leonett
-   */
-  static async convertirWordAPDFLibreOffice(wordBuffer) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Crear archivo temporal Word
-        const tempWordPath = path.join(process.cwd(), `temp_${Date.now()}.docx`);
-        fs.writeFileSync(tempWordPath, wordBuffer);
-
-        // Ruta de salida para PDF
-        const tempOutputDir = path.join(process.cwd(), "temp_pdf");
-        if (!fs.existsSync(tempOutputDir)) {
-          fs.mkdirSync(tempOutputDir, { recursive: true });
-        }
-
-        console.log("🔄 Convirtiendo Word a PDF con LibreOffice...");
-
-        // Ejecutar LibreOffice en modo headless
-        const libreOffice = spawn("libreoffice", [
-          "--headless",
-          "--convert-to", "pdf",
-          "--outdir", tempOutputDir,
-          tempWordPath
-        ]);
-
-        libreOffice.on("close", (code) => {
-          if (code === 0) {
-            // Leer el PDF generado
-            const pdfFileName = path.basename(tempWordPath, ".docx") + ".pdf";
-            const pdfPath = path.join(tempOutputDir, pdfFileName);
-
-            if (fs.existsSync(pdfPath)) {
-              const pdfBuffer = fs.readFileSync(pdfPath);
-
-              // Limpiar archivos temporales
-              fs.unlinkSync(tempWordPath);
-              fs.rmSync(tempOutputDir, { recursive: true, force: true });
-
-              console.log("✅ PDF generado exitosamente");
-              resolve(pdfBuffer);
-            } else {
-              reject(new Error("No se pudo generar el archivo PDF"));
-            }
-          } else {
-            reject(new Error(`LibreOffice falló con código: ${code}`));
-          }
-        });
-
-        libreOffice.on("error", (error) => {
-          reject(new Error(`Error ejecutando LibreOffice: ${error.message}. Asegúrate de que LibreOffice esté instalado.`));
-        });
-
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
-
-  /**
    * Función principal que genera el documento de horario y devuelve el buffer
    * @static
    * @async
    * @param {Object} configuracion - Configuración del horario
-   * @param {boolean} [toPDF=false] - Indica si se debe convertir a PDF
+   * @param {boolean} [toPDF=true] - Indica si se debe convertir a PDF
    * @returns {Promise<Buffer>} Buffer del documento generado (Word o PDF)
    * @throws {Error} Si hay error en la generación del documento
    * @author Gabriel Leonett
    */
-  static async generarDocumentoHorario(configuracion = {}, toPDF = false) {
+  static async generarDocumentoHorario(configuracion = {}) {
     try {
       console.log("🔄 Generando documento de horario...");
-      
+
       const doc = await this.crearDocumentoHorario(configuracion);
       const wordBuffer = await Packer.toBuffer(doc);
-      
+
       console.log("✅ Documento Word generado exitosamente");
 
-      if (toPDF) {
-        console.log("🔄 Convirtiendo a PDF...");
-        const pdfBuffer = await this.convertirWordAPDFLibreOffice(wordBuffer);
-        return pdfBuffer;
-      } else {
-        return wordBuffer;
-      }
+      return {
+        buffer: wordBuffer,
+        metodo: "word",
+        extension: "docx",
+      };
     } catch (error) {
       console.error("❌ Error al generar el documento:", error);
       throw error;
@@ -325,8 +281,18 @@ class DocumentServices {
    * @returns {Object} Objeto con matrizHorario y horasDisponibles
    * @author Gabriel Leonett
    */
-  static procesarHorario(horario = [], turno = { hora_inicio: "07:00", hora_fin: "20:00" }) {
-    const diasSemana = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado"];
+  static procesarHorario(
+    horario = [],
+    turno = { hora_inicio: "07:00", hora_fin: "20:00" }
+  ) {
+    const diasSemana = [
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+    ];
     const horasDisponibles = this.generarHorasDisponibles(turno);
 
     const matrizHorario = diasSemana.map((dia) => ({
@@ -435,12 +401,23 @@ class DocumentServices {
    * @returns {Array<TableRow>} Array de filas de la tabla
    * @author Gabriel Leonett
    */
-  static crearFilasTabla(matrizHorario, horasDisponibles, pnf, trayecto, seccion) {
+  static crearFilasTabla(
+    matrizHorario,
+    horasDisponibles,
+    pnf,
+    trayecto,
+    seccion
+  ) {
     const filas = [];
 
     // Fila de información
     const totalColumnas = 1 + matrizHorario.length;
-    const filaInfo = this.crearFilaInformacion(totalColumnas, pnf, trayecto, seccion);
+    const filaInfo = this.crearFilaInformacion(
+      totalColumnas,
+      pnf,
+      trayecto,
+      seccion
+    );
     filas.push(filaInfo);
 
     // Fila de encabezado con días
@@ -520,10 +497,11 @@ class DocumentServices {
         if (celdaInfo?.es_continuacion) {
           return; // Salir sin agregar celda
         }
-
+        
         // 3. Si es el inicio de una nueva clase con múltiples bloques
         if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
           const clase = celdaInfo.datos_clase;
+          console.log(clase.nombres_profesor || clase.apellido_profesor)  
           const contenido = [
             this.crearParrafoEstilizado(
               this.crearTextoEstilizado(
@@ -531,11 +509,11 @@ class DocumentServices {
                 { bold: true, size: ESTILOS.tamanos.contenido }
               )
             ),
-            ...(clase.nombres_profesor || clase.profesor
+            ...(clase.nombres_profesor || clase.apellido_profesor
               ? [
                   this.crearParrafoEstilizado(
                     this.crearTextoEstilizado(
-                      `Prof: ${clase.nombres_profesor || clase.profesor}`,
+                      `Prof: ${clase.nombres_profesor?.split(" ")[0]} ${clase.apellido_profesor?.split(" ")[0]}`,
                       { size: ESTILOS.tamanos.detalle }
                     )
                   ),
@@ -544,10 +522,9 @@ class DocumentServices {
             ...(clase.codigo_aula
               ? [
                   this.crearParrafoEstilizado(
-                    this.crearTextoEstilizado(
-                      `Aula: ${clase.codigo_aula}`,
-                      { size: ESTILOS.tamanos.detalle }
-                    )
+                    this.crearTextoEstilizado(`Aula: ${clase.codigo_aula}`, {
+                      size: ESTILOS.tamanos.detalle,
+                    })
                   ),
                 ]
               : []),
@@ -577,9 +554,7 @@ class DocumentServices {
         } else {
           // 4. Celda vacía normal
           celdas.push(
-            this.crearCeldaEstilizada([
-              this.crearParrafoEstilizado(""),
-            ])
+            this.crearCeldaEstilizada([this.crearParrafoEstilizado("")])
           );
         }
       });
@@ -626,7 +601,10 @@ class DocumentServices {
     }
 
     // Procesar el horario
-    const { matrizHorario, horasDisponibles } = this.procesarHorario(horario, turno);
+    const { matrizHorario, horasDisponibles } = this.procesarHorario(
+      horario,
+      turno
+    );
 
     // Obtener la marca de agua
     const logoMarcaAgua = await this.traerLogoMarcaAgua();
@@ -640,7 +618,13 @@ class DocumentServices {
     });
 
     // Crear filas de la tabla
-    const filas = this.crearFilasTabla(matrizHorario, horasDisponibles, pnf, trayecto, seccion);
+    const filas = this.crearFilasTabla(
+      matrizHorario,
+      horasDisponibles,
+      pnf,
+      trayecto,
+      seccion
+    );
 
     // Crear el documento Word
     const doc = new Document({
@@ -721,7 +705,10 @@ class DocumentServices {
     const [hora_inicio, minInicio] = turno.hora_inicio.split(":");
     const [hora_fin, minFin] = turno.hora_fin.split(":");
 
-    const MinutosInicio = UTILS.horasMinutos(parseInt(hora_inicio), parseInt(minInicio));
+    const MinutosInicio = UTILS.horasMinutos(
+      parseInt(hora_inicio),
+      parseInt(minInicio)
+    );
     const MinutosFin = UTILS.horasMinutos(parseInt(hora_fin), parseInt(minFin));
 
     const horaInicioHHMM = UTILS.calcularHorasHHMM(MinutosInicio);

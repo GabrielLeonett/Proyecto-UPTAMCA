@@ -168,48 +168,6 @@ const HorarioSeccion = ({
     }
   }, [stateSetters, alert, dataActions.fetchCambiosTableHorario]);
 
-  const handlePrint = useCallback(async () => {
-    try {
-      setOverlayVisible(false);
-      const id_seccion = seccion?.id_seccion;
-
-      if (!id_seccion) {
-        alert.warning(
-          "Advertencia",
-          "No se encontró la sección para exportar."
-        );
-        return;
-      }
-
-      console.log(`📥 Descargando horario PDF para sección ${id_seccion}...`);
-
-      const response = await axios.get(`/exportar/seccion/${id_seccion}`, {
-        responseType: "blob",
-      });
-
-      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = blobUrl;
-      link.download = `Horario_${seccion?.seccion || id_seccion}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(blobUrl);
-
-      console.log("✅ Archivo PDF descargado correctamente.");
-      alert.success(
-        "Éxito",
-        "El horario se ha exportado y descargado correctamente."
-      );
-    } catch (error) {
-      console.error("❌ Error al descargar el horario:", error);
-      alert.error(
-        "Error al exportar",
-        "No se pudo descargar el horario. Intente nuevamente."
-      );
-    }
-  }, [axios, seccion, setOverlayVisible, alert]);
-
   const handleCloseOverlay = useCallback(() => {
     setOverlayVisible(false);
   }, [setOverlayVisible]);
@@ -228,6 +186,46 @@ const HorarioSeccion = ({
     return parts.join(" - ");
   }, [pnf, trayecto, seccion]);
 
+  const handlePrint = useCallback(async () => {
+    try {
+      setOverlayVisible(false);
+      const id_seccion = seccion?.id_seccion;
+
+      if (!id_seccion) {
+        alert.warning(
+          "Advertencia",
+          "No se encontró la sección para exportar."
+        );
+        return;
+      }
+
+      const response = await axios.get(`/exportar/seccion/${id_seccion}`, {
+        responseType: "blob",
+      });
+      console.log(response);
+
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `Horario_${horarioTitle}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+
+      console.log("✅ Archivo PDF descargado correctamente.");
+      alert.success(
+        "Éxito",
+        "El horario se ha exportado y descargado correctamente."
+      );
+    } catch (error) {
+      console.error("❌ Error al descargar el horario:", error);
+      alert.error(
+        "Error al exportar",
+        "No se pudo descargar el horario. Intente nuevamente."
+      );
+    }
+  }, [axios, seccion, setOverlayVisible, alert, horarioTitle]);
   // Configuración de la tabla
   const tableConfig = useMemo(
     () => ({

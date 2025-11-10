@@ -180,7 +180,7 @@ export default class HorarioService {
               id_profesor: clase.id_profesor,
               id_aula: clase.id_aula,
               id_unidad_curricular: clase.id_unidad_curricular,
-              nombre_profesor: clase.nombres_profesor,
+              nombres_profesor: clase.nombres_profesor,
               codigo_aula: clase.codigo_aula,
               apellido_profesor: clase.apellidos_profesor,
               nombre_unidad_curricular: clase.nombre_unidad_curricular,
@@ -284,7 +284,7 @@ export default class HorarioService {
               id: clase.id_horario,
               id_profesor: clase.id_profesor,
               id_unidad_curricular: clase.id_unidad_curricular,
-              nombre_profesor: clase.nombres_profesor,
+              nombres_profesor: clase.nombres_profesor,
               apellido_profesor: clase.apellidos_profesor,
               nombre_unidad_curricular: clase.nombre_unidad_curricular,
               hora_inicio: clase.hora_inicio,
@@ -620,7 +620,7 @@ export default class HorarioService {
         metadatos: {
           horario_id: resultado.id_horario || resultado.id,
           profesor_id: datos.id_profesor,
-          profesor_nombre: datos.nombre_profesor || "Profesor",
+          profesor_nombre: datos.nombres_profesor || "Profesor",
           unidad_curricular: datos.nombre_unidad_curricular,
           aula: datos.codigo_aula,
           dia_semana: datos.dia_semana,
@@ -680,14 +680,14 @@ export default class HorarioService {
       console.log("📊 Datos obtenidos para el documento:", data);
 
       // 4️ Generar documento
-      const buffer = await DocumentServices.generarDocumentoHorario(data);
+      const {buffer,extension} = await DocumentServices.generarDocumentoHorario(data);
 
       return FormatterResponseService.success(
         {
           buffer,
           fileName: `Horario: ${data.pnf.nombre_pnf.toLowerCase()}-${
             data.trayecto.valor_trayecto
-          }-${data.seccion.valor_seccion}.pdf`,
+          }-${data.seccion.valor_seccion}.${extension}`,
         },
         "Documento de horario generado exitosamente"
       );

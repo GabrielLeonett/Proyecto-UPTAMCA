@@ -102,6 +102,145 @@ export default class UserModel {
   /**
    * @static
    * @async
+   * @method obtenerUsuarioPorEmail
+   * @description Obtiene un usuario por su ID
+   * @param {number} correo - Correo del usuario
+   * @returns {Promise<Object>} Datos del usuario
+   */
+  static async obtenerUsuarioPorEmail(correo) {
+    try {
+      const query = "SELECT * FROM users WHERE email = $1";
+      const values = [correo];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(rows, "Usuario obtenido");
+    } catch (error) {
+      error.details = {
+        path: "UserModel.obtenerUsuarioPorId",
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener el usuario"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method GuardarTokenEmail
+   * @description Actualiza el token de recuperación con expiración
+   * @param {string} correo - correo del usuario
+   * @param {string} token - token hasheado
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async GuardarTokenEmail(correo, token) {
+    try {
+      const query = `
+      UPDATE users 
+      SET 
+        reset_password_token = $1, 
+        reset_password_expires = NOW() + INTERVAL '1 hour'
+      WHERE email = $2
+      RETURNING cedula, email
+    `;
+      const values = [token, correo];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(rows, "Token actualizado");
+    } catch (error) {
+      error.details = { path: "UserModel.EnviarTokenEmail" };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al actualizar el token"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method obtenerUsuarioPorEmailConToken
+   * @description Obtiene usuario por email con token no expirado
+   * @param {string} email - Email del usuario
+   * @returns {Promise<Object>} Datos del usuario con token
+   */
+  static async obtenerUsuarioPorEmailConToken(email) {
+    try {
+      const query = `
+      SELECT cedula, email, nombres, reset_password_token, reset_password_expires
+      FROM users 
+      WHERE email = $1 
+        AND reset_password_token IS NOT NULL
+        AND reset_password_expires > NOW()
+    `;
+      const values = [email];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Usuario obtenido por token"
+      );
+    } catch (error) {
+      error.details = { path: "UserModel.obtenerUsuarioPorToken" };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al obtener el usuario por token"
+      );
+    }
+  }
+  /**
+   * @static
+   * @async
+   * @method actualizarContraseñaYLimpiarToken
+   * @description Actualiza la contraseña y limpia los campos de recuperación
+   * @param {string} email - Email del usuario
+   * @param {string} nuevaPasswordHash - Nueva contraseña hasheada
+   * @returns {Promise<Object>} Resultado de la operación
+   */
+  static async actualizarContraseñaYLimpiarToken(email, nuevaPasswordHash) {
+    try {
+      console.log(
+        "🔍 [actualizarContraseñaYLimpiarToken] Actualizando contraseña y limpiando token..."
+      );
+
+      const query = `
+      UPDATE users 
+      SET 
+        password = $1,
+        reset_password_token = NULL,
+        reset_password_expires = NULL,
+        updated_at = NOW()
+      WHERE email = $2
+      RETURNING cedula, email, nombres, apellidos
+    `;
+      const values = [nuevaPasswordHash, email];
+
+      const { rows } = await client.query(query, values);
+
+      return FormatResponseModel.respuestaPostgres(
+        rows,
+        "Contraseña actualizada exitosamente"
+      );
+    } catch (error) {
+      console.error("💥 Error en actualizarContraseñaYLimpiarToken:", error);
+      error.details = {
+        path: "UserModel.actualizarContraseñaYLimpiarToken",
+        email: email,
+      };
+      throw FormatResponseModel.respuestaError(
+        error,
+        "Error al actualizar la contraseña y limpiar el token"
+      );
+    }
+  }
+
+  /**
+   * @static
+   * @async
    * @method actualizarUltimoLogin
    * @description Actualiza la fecha del último login del usuario
    * @param {number} usuarioId - ID del usuario

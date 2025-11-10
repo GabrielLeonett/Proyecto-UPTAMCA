@@ -10,11 +10,12 @@ import CustomButton from "../components/customButton";
 import { useState } from "react";
 import { useAuth } from "../hook/useAuth";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 export default function InicioSesion() {
   const theme = useTheme();
   const [processing, setProcessing] = useState(false);
-
+  const navigate = useNavigate();
 
   const {
     register,
@@ -116,14 +117,15 @@ export default function InicioSesion() {
           </CustomButton>
 
           <Typography
+            onClick={() => {
+              navigate("/recuperar-contrasena");
+            }}
+            sx={{ cursor: "pointer", color: theme.palette.primary.main }}
             variant="body2"
             className="mt-6 text-center text-gray-600"
           >
-            <a href="/forgot-password" className="hover:underline">
-              ¿Olvidaste tu contraseña?
-            </a>
+            ¿Olvidaste tu contraseña?
           </Typography>
-
         </Box>
       </Box>
     </>

@@ -1,6 +1,6 @@
 // utils/envLoader.js
 import dotenv from "dotenv";
-import path, { format } from "path";
+import path from "path";
 import { fileURLToPath } from "url";
 
 /**

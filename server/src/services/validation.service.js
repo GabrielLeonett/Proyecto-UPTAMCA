@@ -8,6 +8,7 @@ import coordinadorSchema, {
 import destitucionSchema from "../schemas/destitucion.schema.js";
 import reingresoSchema from "../schemas/reingreso.schema.js";
 import disponibilidadDocenteSchema from "../schemas/disponiblidaddocente.schema.js";
+import validateRecoveryPassword from "../schemas/recovery_password.schema.js";
 import loginSchema from "../schemas/login.schema.js";
 import pnfSchema from "../schemas/pnf.schema.js";
 import {
@@ -211,14 +212,14 @@ export default class ValidationService {
   }
 
   /**
-   * @name validatePartialContrasenia
+   * @name validateRecoveryPassword
    * @description Valida datos parciales de una contraseña (para updates)
    * @param {Object} data - Datos parciales de la contraseña
    * @param {Object} [options] - Opciones de formato de errores
    * @returns {Object} Resultado de la validación
    */
-  static validatePartialContrasenia(data, options = {}) {
-    const validationResult = contraseniaSchema.partial().safeParse(data);
+  static validateRecoveryPassword(data, options = {}) {
+    const validationResult = validateRecoveryPassword.safeParse(data);
     const errors = this.formatValidationErrors(validationResult, options);
 
     return {

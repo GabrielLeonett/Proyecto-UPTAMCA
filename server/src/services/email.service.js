@@ -89,7 +89,7 @@ export default class EmailService {
     return nodemailer.createTransport({
       service: "gmail",
       tls: {
-        rejectUnauthorized: false 
+        rejectUnauthorized: false,
       },
       auth: {
         user: this.EMAIL_CONFIG.user,
@@ -484,19 +484,38 @@ export default class EmailService {
    */
   async enviarEmail({ Destinatario, Correo, verificarEmail = true }) {
     try {
+      console.log(
+        `📧 [EmailService] Intentando enviar email a: ${Destinatario}`
+      );
+
       // Verificar email antes del envío
       if (verificarEmail) {
         const verificacion = await this.verificarYValidarEmails(Destinatario);
 
         if (!verificacion.todosValidos) {
+          console.error(
+            `❌ Email inválido: ${Destinatario}`,
+            verificacion.errores
+          );
           return this.crearRespuestaErrorEmail(verificacion.errores);
         }
       }
 
       const mailOptions = this.createMailOptions({ Destinatario, Correo });
-      await this.transporter.sendMail(mailOptions);
+
+      // Enviar email y esperar confirmación
+      const resultado = await this.transporter.sendMail(mailOptions);
+
+      console.log(
+        `✅ [EmailService] Email enviado exitosamente a: ${Destinatario}`,
+        {
+          messageId: resultado.messageId,
+          asunto: Correo.asunto,
+        }
+      );
 
       return {
+        success: true,
         state: "success",
         status: 200,
         title: "Correo Enviado",
@@ -504,13 +523,30 @@ export default class EmailService {
         data: {
           destinatario: Destinatario,
           asunto: Correo.asunto,
+          messageId: resultado.messageId,
         },
       };
     } catch (error) {
-      throw {
-        message: "Error al enviar el correo electrónico",
-        tipo: "Correo",
+      console.error(
+        `💥 [EmailService] Error al enviar email a: ${Destinatario}`,
+        {
+          error: error.message,
+          asunto: Correo.asunto,
+        }
+      );
+
+      // Devolver error REAL, no éxito falso
+      return {
+        success: false,
+        state: "error",
+        status: 500,
+        title: "Error de Envío",
+        message: "No se pudo enviar el correo electrónico",
         error: error.message,
+        data: {
+          destinatario: Destinatario,
+          asunto: Correo.asunto,
+        },
       };
     }
   }

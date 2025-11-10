@@ -34,7 +34,7 @@ export default function CambiarContraseña() {
   const onSubmit = async (formData) => {
     try {
       setProcessing(true);
-      await axios.put("/auth/password", formData);
+      await axios.put("/auth/cambiar-contrasena", formData);
       alert.success(
         "Cambio de contraseña Exitoso",
         "Se ha realizado el cambio de contraseña"
