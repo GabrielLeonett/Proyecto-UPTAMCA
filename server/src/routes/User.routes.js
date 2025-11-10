@@ -1,10 +1,15 @@
 import { Router } from "express";
 import { middlewareAuth } from "../middlewares/auth.js";
 import UserController from "../controllers/user.controller.js";
-import fs from "node:fs";
 
-const { login, verificarUsers, closeSession, cambiarContraseña } =
-  UserController;
+const {
+  login,
+  verificarUsers,
+  closeSession,
+  cambiarContraseña,
+  EnviarTokenEmail,
+  VerificarToken,
+} = UserController;
 
 export const UserRouter = Router();
 
@@ -34,33 +39,51 @@ UserRouter.post("/auth/login", middlewareAuth([], { required: false }), login);
  * @description Verificar token de autenticación y obtener datos del usuario
  * @middleware Requiere autenticación (cualquier rol)
  */
-UserRouter.get("/auth/verify", middlewareAuth(null), verificarUsers);
+UserRouter.get(
+  "/auth/verify",
+  middlewareAuth(null, { required: true }),
+  verificarUsers
+);
 
 /**
  * @name get /auth/logout
  * @description Cerrar sesión del usuario
  * @middleware Requiere autenticación (cualquier rol)
  */
-UserRouter.get("/auth/logout", middlewareAuth(null), closeSession);
+UserRouter.get(
+  "/auth/logout",
+  middlewareAuth(null, { required: true }),
+  closeSession
+);
+
+/**
+ * @name post /auth/logout
+ * @description Cerrar sesión del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.post(
+  "/auth/recuperar-contrasena",
+  middlewareAuth(null, { required: false }),
+  EnviarTokenEmail
+);
+/**
+ * @name post /auth/logout
+ * @description Cerrar sesión del usuario
+ * @middleware Requiere autenticación (cualquier rol)
+ */
+UserRouter.post(
+  "/auth/verificar-token",
+  middlewareAuth(null, { required: false }),
+  VerificarToken
+);
 
 /**
  * @name PUT /auth/password
  * @description Cambiar contraseña del usuario autenticado
- * @middleware Requiere uno de estos roles:
- *   - Profesor
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
+ * @middleware Requiere que el usuario haya iniciado sesion
  */
 UserRouter.put(
-  "/auth/password",
-  middlewareAuth([
-    "Profesor",
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-  ]),
+  "/auth/cambiar-contrasena",
+  middlewareAuth(null, { required: false }),
   cambiarContraseña
 );

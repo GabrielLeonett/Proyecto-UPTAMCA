@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 /**
  * @module passwordUtils
@@ -17,9 +17,9 @@ import crypto from 'crypto';
  * const nuevaPassword = await generarPassword();
  * // Ejemplo de resultado: "1a3f5c7e"
  */
-export async function generarPassword() {
-    const randomString = crypto.randomBytes(4).toString('hex'); 
-    return randomString;
+export async function generarPassword(tamano = 4) {
+  const randomString = crypto.randomBytes(tamano).toString("hex");
+  return randomString;
 }
 
 /**

@@ -1,10 +1,14 @@
 import ValidationService from "./validation.service.js";
+import EmailService from "./email.service.js";
 import UserModel from "../models/user.model.js";
-import { comparePassword, hashPassword } from "../utils/encrypted.js";
+import {
+  comparePassword,
+  generarPassword,
+  hashPassword,
+} from "../utils/encrypted.js";
 import { createSession } from "../utils/auth.js";
 import { asegurarStringEnMinusculas } from "../utils/utilis.js";
 import FormatterResponseService from "../utils/FormatterResponseService.js";
-import { throws } from "node:assert";
 
 /**
  * @class UserService
@@ -119,31 +123,227 @@ export default class UserService {
   }
 
   /**
+   * Enviar el token para la recuperacion de contraseña
+   * @static
+   * @async
+   * @param {object} datos - contiene datos como email
+   * @returns {object} - Resultado del enviado del email
+   */
+  static async EnviarTokenEmail(datos) {
+    try {
+      console.log("🔍 [EnviarTokenEmail] Iniciando envío de token...");
+
+      // 1. Validar datos de entrada
+      const validacion = ValidationService.validatePartialLogin(datos);
+      if (!validacion.isValid) {
+        console.error("❌ Validación de email fallida:", validacion.errors);
+        return FormatterResponseService.validationError(
+          validacion.errors,
+          "Error de validación del correo"
+        );
+      }
+
+      // 2. Verificar que el usuario existe
+      const respuestaModel = await UserModel.obtenerUsuarioPorEmail(
+        datos.email
+      );
+      console.log(respuestaModel);
+
+      if (respuestaModel.state != "success") {
+        console.log("❌ Usuario no encontrado:", datos.email);
+        // Por seguridad, no revelar que el email no existe
+        return FormatterResponseService.success(
+          null,
+          "Si el email existe, se ha enviado el token de recuperación",
+          { status: 200, title: "Token Enviado" }
+        );
+      }
+
+      const usuario = respuestaModel.data[0];
+
+      // 3. Generar token seguro (sin hash para el usuario)
+      const tokenPlano = await generarPassword(16); // Más largo para seguridad
+      const token_hash = await hashPassword(tokenPlano);
+
+      // 4. Guardar token con expiración (ej: 1 hora)
+      await UserModel.GuardarTokenEmail(datos.email, token_hash);
+
+      // 5. Construir URL con parámetros correctos
+      const resetUrl = `${
+        process.env.ORIGIN_FRONTEND
+      }/recuperar-contrasena?email=${encodeURIComponent(
+        datos.email
+      )}&token=${encodeURIComponent(tokenPlano)}`;
+
+      // 6. Preparar email con token PLANO (no el hash) y link directo
+      const correo = {
+        asunto: "Recuperación de Contraseña - Sistema Académico",
+        html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color: #2c3e50;">Recuperación de Contraseña</h2>
+        <p>Hola ${usuario.nombres || "usuario"},</p>
+        <p>Has solicitado recuperar tu contraseña. Utiliza el siguiente token:</p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0; text-align: center;">
+          <p style="font-size: 24px; font-weight: bold; letter-spacing: 2px; margin: 0;">${tokenPlano}</p>
+        </div>
+        <p><strong>Instrucciones:</strong></p>
+        <ul>
+          <li>Este token expira en 1 hora</li>
+          <li>Copia y pega el token en la plataforma O haz clic en el botón</li>
+          <li>Si no solicitaste este token, ignora este mensaje</li>
+        </ul>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${resetUrl}" 
+             style="display: inline-block; background-color: #1C75BA; color: white; 
+                    padding: 12px 30px; text-decoration: none; border-radius: 5px; 
+                    font-weight: bold;">
+            Restablecer Contraseña
+          </a>
+        </div>
+        <p style="color: #7f8c8d; font-size: 12px; text-align: center;">
+          Si el botón no funciona, copia y pega esta URL en tu navegador:<br>
+          ${resetUrl}
+        </p>
+      </div>
+      `,
+      };
+
+      // 7. Enviar email
+      const emailService = new EmailService();
+      const resultadoEmail = await emailService.enviarEmail({
+        Destinatario: datos.email,
+        Correo: correo,
+        verificarEmail: false,
+      });
+
+      if (!resultadoEmail.success) {
+        console.error("❌ Error al enviar email:", resultadoEmail.error);
+        return FormatterResponseService.error(
+          "Error al enviar el correo electrónico",
+          { status: 500, title: "Error de envío" }
+        );
+      }
+
+      console.log("✅ Token enviado exitosamente a:", datos.email);
+      return FormatterResponseService.success(
+        null,
+        "Si el email existe, se ha enviado el token de recuperación",
+        { status: 200, title: "Token Enviado" }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio EnviarTokenEmail:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * @static
+   * @async
+   * @method VerificarToken
+   * @description Verifica si un token de recuperación es válido
+   * @param {string} email - Email del usuario
+   * @param {string} token - Token proporcionado por el usuario (sin hash)
+   * @returns {Object} Resultado de la verificación
+   */
+  static async VerificarToken(email, token) {
+    try {
+      console.log("🔍 [VerificarToken] Verificando token...");
+
+      // 1. Buscar usuario con token válido (no expirado)
+      const respuestaModel = await UserModel.obtenerUsuarioPorEmailConToken(
+        email
+      );
+
+      if (respuestaModel.state != "success") {
+        console.log("❌ Usuario no encontrado o sin token válido:", email);
+        return FormatterResponseService.error("Token inválido o expirado", {
+          status: 400,
+          title: "Token Inválido",
+        });
+      }
+
+      const usuario = respuestaModel.data[0];
+      // 2. Verificar que el token no haya expirado
+      const ahora = new Date();
+      const expiracion = new Date(usuario.reset_password_expires);
+
+      if (ahora > expiracion) {
+        console.log("❌ Token expirado para:", email);
+        return FormatterResponseService.error("Token expirado", {
+          status: 400,
+          title: "Token Expirado",
+        });
+      }
+
+      // 3. Comparar el token plano con el hash almacenado
+      const tokenValido = await comparePassword(
+        token,
+        usuario.reset_password_token
+      );
+
+      if (!tokenValido) {
+        console.log("❌ Token no coincide para:", email);
+        return FormatterResponseService.error("Token inválido", {
+          status: 400,
+          title: "Token Inválido",
+        });
+      }
+
+      console.log("✅ Token verificado exitosamente para:", email);
+      return FormatterResponseService.success(
+        {
+          email: usuario.email,
+          nombres: usuario.nombres,
+          tokenValido: true,
+        },
+        "Token verificado correctamente",
+        { status: 200, title: "Token Válido" }
+      );
+    } catch (error) {
+      console.error("💥 Error en servicio VerificarToken:", error);
+      throw error;
+    }
+  }
+
+  /**
    * @static
    * @async
    * @method cambiarContraseña
-   * @description Cambiar contraseña del usuario
+   * @description Cambiar contraseña del usuario (autenticado o con token de recuperación)
    * @param {Object} datos - Datos para cambiar contraseña
-   * @param {Object} usuarioActual - Usuario actual autenticado
+   * @param {Object} [usuarioActual] - Usuario actual autenticado (opcional)
    * @returns {Object} Resultado de la operación
    */
-  static async cambiarContraseña(datos, usuarioActual) {
+  static async cambiarContraseña(datos, usuarioActual = null) {
     try {
       console.log("🔍 [cambiarContraseña] Iniciando cambio de contraseña...");
+      console.log(
+        "📝 Modo:",
+        usuarioActual ? "USUARIO_AUTENTICADO" : "RECUPERACION_CON_TOKEN"
+      );
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: datos,
-          usuarioActual: {
-            id: usuarioActual.id,
-            nombres: usuarioActual.nombres,
-            apellidos: usuarioActual.apellidos,
-          },
+          usuarioActual: usuarioActual
+            ? {
+                id: usuarioActual.id,
+                nombres: usuarioActual.nombres,
+                apellidos: usuarioActual.apellidos,
+              }
+            : "RECUPERACION_CON_TOKEN",
         });
       }
 
-      // 1. Validar datos de entrada
-      const validacion = ValidationService.validateContrasenia(datos);
+      // 1. Validar datos de entrada según el modo
+      let validacion;
+      if (usuarioActual) {
+        // Modo usuario autenticado - valida contraseña actual
+        validacion = ValidationService.validateContrasenia(datos);
+      } else {
+        // Modo recuperación - valida solo email, token y nueva contraseña
+        validacion = ValidationService.validateRecoveryPassword(datos);
+      }
 
       if (!validacion.isValid) {
         console.error(
@@ -157,62 +357,94 @@ export default class UserService {
       }
       console.log("✅ Validación de datos exitosa.");
 
-      console.log("🔍 Obteniendo datos del usuario para validación...");
-      const respuestaUsuario = await UserModel.obtenerUsuarioPorId(
-        usuarioActual.id
-      );
-      console.log(
-        "✅ Datos del usuario obtenidos para validación: ",
-        respuestaUsuario.data[0]
-      );
-      const { password } = respuestaUsuario.data[0];
+      let usuarioParaCambio;
 
-      // 2. Validar contraseña actual
-      console.log("🔐 Validando contraseña actual...");
-      const validatePassword = await comparePassword(
-        datos.antigua_password,
-        password
-      );
+      // 2. Lógica según el modo de operación
+      if (usuarioActual) {
+        // 🔐 MODO USUARIO AUTENTICADO
+        console.log("🔐 Modo: Usuario autenticado");
 
-      if (!validatePassword) {
-        console.error(
-          "❌ Contraseña actual incorrecta para usuario:",
+        console.log("🔍 Obteniendo datos del usuario para validación...");
+        const respuestaUsuario = await UserModel.obtenerUsuarioPorId(
           usuarioActual.id
         );
-        return FormatterResponseService.unauthorized(
-          "La contraseña actual es incorrecta"
+
+        if (!respuestaUsuario.data || respuestaUsuario.data.length === 0) {
+          console.error("❌ Usuario no encontrado:", usuarioActual.id);
+          return FormatterResponseService.notFound("Usuario no encontrado");
+        }
+
+        console.log("✅ Datos del usuario obtenidos para validación");
+        const { password } = respuestaUsuario.data[0];
+        usuarioParaCambio = respuestaUsuario.data[0];
+
+        // Validar contraseña actual
+        console.log("🔐 Validando contraseña actual...");
+        const validatePassword = await comparePassword(
+          datos.antigua_password,
+          password
         );
+
+        if (!validatePassword) {
+          console.error(
+            "❌ Contraseña actual incorrecta para usuario:",
+            usuarioActual.id
+          );
+          return FormatterResponseService.unauthorized(
+            "La contraseña actual es incorrecta"
+          );
+        }
+      } else {
+        // 🔑 MODO RECUPERACIÓN CON TOKEN
+        console.log("🔑 Modo: Recuperación con token");
+
+        const { email, token } = datos;
+
+        // Verificar que el token sea válido y no haya expirado
+        console.log("🔍 Verificando token de recuperación...");
+
+        this.VerificarToken(email, token);
       }
 
-      // 3. Hashear nueva contraseña
+      // 3. Hashear nueva contraseña (común para ambos modos)
       console.log("🔒 Hasheando nueva contraseña...");
       const passwordHash = await hashPassword(datos.password);
 
       // 4. Cambiar contraseña en la base de datos
       console.log("💾 Actualizando contraseña en base de datos...");
-      const respuestaModel = await UserModel.cambiarContraseña(
-        usuarioActual.id,
-        passwordHash
-      );
+
+      let respuestaModel;
+      if (usuarioActual) {
+        // Modo autenticado - cambiar contraseña normalmente
+        respuestaModel = await UserModel.cambiarContraseña(
+          usuarioActual.id,
+          passwordHash
+        );
+      } else {
+        // Modo recuperación - cambiar contraseña y limpiar token
+        respuestaModel = await UserModel.actualizarContraseñaYLimpiarToken(
+          datos.email,
+          passwordHash
+        );
+      }
 
       if (FormatterResponseService.isError(respuestaModel)) {
         console.error("❌ Error en modelo cambiar contraseña:", respuestaModel);
         return respuestaModel;
       }
 
-      console.log(
-        "✅ Contraseña cambiada exitosamente para usuario:",
-        usuarioActual.id
-      );
+      console.log("✅ Contraseña cambiada exitosamente");
 
-      return FormatterResponseService.success(
-        null,
-        "Contraseña cambiada exitosamente",
-        {
-          status: 200,
-          title: "Contraseña Actualizada",
-        }
-      );
+      const mensajeExito = usuarioActual
+        ? "Contraseña cambiada exitosamente"
+        : "Contraseña restablecida exitosamente. Ahora puedes iniciar sesión con tu nueva contraseña";
+
+      return FormatterResponseService.success(null, mensajeExito, {
+        status: 200,
+        title: usuarioActual
+          ? "Contraseña Actualizada"
+          : "Contraseña Restablecida",
+      });
     } catch (error) {
       console.error("💥 Error en servicio cambiar contraseña:", error);
 

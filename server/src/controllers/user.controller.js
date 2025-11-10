@@ -36,6 +36,34 @@ export default class UserController {
   }
 
   /**
+   * @name EnviarTokenEmail
+   * @description Verificar la sesión del usuario
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async EnviarTokenEmail(req, res) {
+    return FormatterResponseController.manejarServicio(
+      res,
+      UserService.EnviarTokenEmail(req.body)
+    );
+  }
+
+  /**
+   * @name VerificarToken
+   * @description Verificar el token del usuario
+   * @param {Object} req - Objeto de solicitud Express
+   * @param {Object} res - Objeto de respuesta Express
+   * @returns {void}
+   */
+  static async VerificarToken(req, res) {
+    return FormatterResponseController.manejarServicio(
+      res,
+      UserService.VerificarToken(req.body.email, req.body.token)
+    );
+  }
+
+  /**
    * @name verificarUsers
    * @description Verificar la sesión del usuario
    * @param {Object} req - Objeto de solicitud Express
