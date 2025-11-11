@@ -9,6 +9,8 @@ import cookieParser from "cookie-parser";
 import express from "express";
 import { securityMiddleware } from "./middlewares/security.js";
 import { jsonSyntaxErrorHandler } from "./middlewares/process.js";
+import languageMiddleware from "./middlewares/language.js";
+import {i18nMiddleware} from "./locales/index.js";
 import helmet from "helmet";
 import { createServer } from "node:http";
 
@@ -17,7 +19,7 @@ import SystemMonitor from "./services/systemMonitor.service.js";
 import NotificationService from "./services/notification.service.js";
 
 // Importaciones de Rutas
-import { adminRouter} from "./routes/Admin.routes.js";
+import { adminRouter } from "./routes/Admin.routes.js";
 import { profesorRouter } from "./routes/profesor.routes.js";
 import { CurricularRouter } from "./routes/curricular.routes.js";
 import { UserRouter } from "./routes/user.routes.js";
@@ -37,6 +39,8 @@ app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 app.use(jsonSyntaxErrorHandler);
+app.use(i18nMiddleware);
+app.use(languageMiddleware);
 
 // Rutas del sistema
 app.use("", adminRouter);
@@ -52,7 +56,7 @@ app.use("", NotificationRouter);
 // ✅ MOVER la inicialización de sockets a una función
 export function initializeSocketServices() {
   console.log("🔧 Inicializando servicios de Socket...");
-  
+
   const servicioSocket = new SocketServices();
   const io = servicioSocket.initializeService();
 
@@ -80,7 +84,9 @@ export function initializeSocketServices() {
 
     socket.on("mark_notification_read", (noti) => {
       console.log("Evento recibido: mark_notification_read", noti);
-      console.log(`Marcando notificación ${noti.notificationId} como leída por usuario ${socket.user.id}`);
+      console.log(
+        `Marcando notificación ${noti.notificationId} como leída por usuario ${socket.user.id}`
+      );
       notificationService.markAsRead(noti.notificationId, socket.user.id);
     });
 
@@ -107,10 +113,10 @@ export function initializeSocketServices() {
 // ✅ SOLO ejecutar si es el archivo principal (para ES6 modules)
 export function startServer(port = process.env.SERVER_PORT) {
   console.log(`🚀 Iniciando servidor en puerto ${port}...`);
-  
+
   // Inicializar sockets
   initializeSocketServices();
-  
+
   // Iniciar servidor
   server.listen(port, () => {
     console.log(`✅ Servidor corriendo en el puerto ${port}`);

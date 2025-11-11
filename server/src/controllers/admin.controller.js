@@ -16,7 +16,7 @@ export default class AdminController {
   static async registrarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.registrarAdmin(req.body, req.file, req.user)
+      AdminService.registrarAdmin(req.body, req.file, req.user, req)
     );
   }
 
@@ -30,7 +30,7 @@ export default class AdminController {
   static async mostrarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.mostrarAdmin(req.query)
+      AdminService.mostrarAdmin(req.query, req)
     );
   }
 
@@ -44,7 +44,7 @@ export default class AdminController {
   static async buscarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.buscarAdmin(req.query.busqueda)
+      AdminService.buscarAdmin(req.query.busqueda, req)
     );
   }
 
@@ -58,7 +58,12 @@ export default class AdminController {
   static async actualizarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.actualizarAdmin(parseInt(req.params.id), req.body, req.user)
+      AdminService.actualizarAdmin(
+        parseInt(req.params.id),
+        req.body,
+        req.user,
+        req
+      )
     );
   }
 
@@ -72,7 +77,7 @@ export default class AdminController {
   static async desactivarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.desactivarAdmin(parseInt(req.params.id), req.user)
+      AdminService.desactivarAdmin(parseInt(req.params.id), req.user, req)
     );
   }
 
@@ -89,7 +94,8 @@ export default class AdminController {
       AdminService.cambiarRolAdmin(
         parseInt(req.params.id),
         req.body.roles,
-        req.user
+        req.user,
+        req
       )
     );
   }
@@ -103,7 +109,7 @@ export default class AdminController {
   static async getProfile(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.getProfile(req.user)
+      AdminService.getProfile(req.user, req)
     );
   }
 
@@ -117,7 +123,7 @@ export default class AdminController {
   static async updateProfile(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.updateProfile(req.user, req.body)
+      AdminService.updateProfile(req.user, req.body, req)
     );
   }
 
@@ -131,7 +137,7 @@ export default class AdminController {
   static async obtenerAdminPorId(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminPorId(parseInt(req.params.id))
+      AdminService.obtenerAdminPorId(parseInt(req.params.id), req)
     );
   }
 
@@ -145,7 +151,7 @@ export default class AdminController {
   static async obtenerAdminsPorRol(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminsPorRol(req.params.rol)
+      AdminService.obtenerAdminsPorRol(req.params.rol, req)
     );
   }
 
@@ -159,7 +165,7 @@ export default class AdminController {
   static async obtenerAdminsPorEstado(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminsPorEstado(req.params.estado)
+      AdminService.obtenerAdminsPorEstado(req.params.estado, req)
     );
   }
 }
