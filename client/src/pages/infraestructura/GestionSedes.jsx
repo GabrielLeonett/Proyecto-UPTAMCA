@@ -14,6 +14,8 @@ import CardSede from "../../components/CardSede";
 import CustomButton from "../../components/customButton";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
+import { Route as RouteIcon } from "@mui/icons-material";
+import { useTour } from "../../hook/useTour";
 
 export default function GestionSedes() {
   const theme = useTheme();
@@ -39,6 +41,42 @@ export default function GestionSedes() {
     };
     fetchSedes();
   }, [axios]);
+
+  const { startTour, resetTour } = useTour(
+    [
+      {
+        intro: "👋 Bienvenido a la gestión de sedes. Te mostraré dónde está todo."
+      },
+      {
+        element: "#sede-container",
+        intro: "Aquí verás todas las sedes registradas en el sistema.",
+        position: "right"
+      },
+      {
+        element: "#sede-card-ejemplo",
+        intro: "Cada tarjeta muestra la información de una sede, incluyendo ubicación y datos relevantes.",
+        position: "bottom"
+      },
+      {
+        element: "#btn-crear-sede",
+        intro: "Haz clic aquí para registrar una nueva sede.",
+        position: "left"
+      },
+      {
+        element: "#btn-reiniciar-tour",
+        intro: "Puedes repetir este recorrido cuando quieras haciendo clic aquí.",
+        position: "top"
+      }
+    ],
+    "tourGestionSedes" // clave única para este módulo
+  );
+
+  // ✅ Iniciar el tour cuando ya cargaron las sedes
+  useEffect(() => {
+    if (!loading && sedes.length > 0) {
+      startTour();
+    }
+  }, [loading, sedes]);
 
   return (
     <>
@@ -86,9 +124,10 @@ export default function GestionSedes() {
 
         {/* 👉 Grid de sedes */}
         {!loading && !error && (
-          <Grid container spacing={4}>
+          <Grid container spacing={4} id="sede-container">
             {sedes.length > 0 ? (
-              sedes.map((sede) => <CardSede sede={sede} />)
+              sedes.map((sede, index) => <CardSede sede={sede} key={sede.id}
+                {...(index === 0 ? { id: "sede-card-ejemplo" } : {})} />)
             ) : (
               <Typography
                 variant="h6"
@@ -102,6 +141,7 @@ export default function GestionSedes() {
         )}
         <Tooltip title={"Crear Sede"} placement="left-start">
           <CustomButton
+            id="btn-crear-sede"
             onClick={() => {
               navigate("/infraestructura/sedes/registrar");
             }}
@@ -123,6 +163,29 @@ export default function GestionSedes() {
             <AddIcon />
           </CustomButton>
         </Tooltip>
+        <Tooltip title={"Tutorial"} placement="left-start">
+                <CustomButton
+                  id="btn-reiniciar-tour"
+                  variant="contained"
+                  onClick={resetTour}
+                  sx={{
+                    position: "fixed",
+                    bottom: 128,
+                    right: 24,
+                    minWidth: "auto",
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    zIndex: 9999,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                  aria-label={"Registrar Profesor"}
+                >
+                  <RouteIcon />
+                </CustomButton>
+              </Tooltip>
       </Box>
     </>
   );

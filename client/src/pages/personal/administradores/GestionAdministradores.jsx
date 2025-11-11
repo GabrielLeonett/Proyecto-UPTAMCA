@@ -16,6 +16,8 @@ import CustomButton from "../../../components/customButton";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
+import { Route as RouteIcon } from "@mui/icons-material";
+import { useTour } from "../../../hook/useTour"
 
 export default function GestionAdministradores() {
   const axios = useApi();
@@ -54,6 +56,44 @@ export default function GestionAdministradores() {
     const matchRol = filtroRol === "todos" ? true : u.rol === filtroRol;
     return matchBusqueda && matchRol;
   });
+
+  // 🔹 Definición del tour con Intro.js
+  const { startTour, resetTour } = useTour(
+    [
+      {
+        intro: "👋 Bienvenido al módulo de gestión de administradores. Te mostraré dónde está todo."
+      },
+      {
+        element: "#admin-container",
+        intro: "Aquí verás la lista de todos los administradores registrados.",
+        position: "right"
+      },
+      {
+        element: "#admin-card-ejemplo",
+        intro: "Cada tarjeta muestra la información de un administrador y sus permisos.",
+        position: "bottom"
+      },
+      {
+        element: "#btn-registrar-admin",
+        intro: "Desde este botón puedes registrar un nuevo administrador.",
+        position: "left"
+      },
+      {
+        element: "#btn-reiniciar-tour",
+        intro: "Puedes repetir el tutorial en cualquier momento desde este botón.",
+        position: "top"
+      }
+    ],
+    "tourGestionAdministradores" // clave única para este módulo
+  );
+
+  // ✅ Ejecutar el tour solo cuando ya cargaron los administradores
+  useEffect(() => {
+    if (usuarios.length > 0) {
+      startTour();
+    }
+  }, [usuarios]);
+
 
   return (
     <>
@@ -103,9 +143,10 @@ export default function GestionAdministradores() {
         </Box>
 
         {/* Tarjetas de usuario */}
-        <Grid container spacing={3}>
-          {usuariosFiltrados.map((usuario) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={usuario.id}>
+        <Grid container spacing={3} id="admin-container">
+          {usuariosFiltrados.map((usuario, index) => (
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={usuario.id}
+              {...(index === 0 ? { id: "admin-card-ejemplo" } : {})}>
               <CardAdmin usuario={usuario} />
             </Grid>
           ))}
@@ -113,6 +154,7 @@ export default function GestionAdministradores() {
       </Box>
       <Tooltip title={"Registrar Administrador"} placement="left-start">
         <CustomButton
+          id="btn-registrar-admin"
           onClick={() => {
             navigate("/administradores/crear");
           }}
@@ -132,6 +174,29 @@ export default function GestionAdministradores() {
           aria-label={"Registrar Administrador"}
         >
           <PersonAddIcon />
+        </CustomButton>
+      </Tooltip>
+      <Tooltip title={"Tutorial"} placement="left-start">
+        <CustomButton
+          id="btn-reiniciar-tour"
+          variant="contained"
+          onClick={resetTour}
+          sx={{
+            position: "fixed",
+            bottom: 128,
+            right: 24,
+            minWidth: "auto",
+            width: 48,
+            height: 48,
+            borderRadius: "50%",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          aria-label={"Registrar Profesor"}
+        >
+          <RouteIcon />
         </CustomButton>
       </Tooltip>
     </>
