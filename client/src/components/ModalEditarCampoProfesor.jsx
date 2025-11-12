@@ -15,6 +15,7 @@ import CustomChip from "./CustomChip";
 import { useState, useEffect } from "react";
 import { profesorSchema } from "../schemas/profesor.schema";
 import useApi from "../hook/useApi";
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function ModalEditarCampoProfesor({
   open,
@@ -24,6 +25,7 @@ export default function ModalEditarCampoProfesor({
   onGuardar,
 }) {
   const axios = useApi();
+  const alert = useSweetAlert();
   const [valor, setValor] = useState(valorActual || []);
   const [error, setError] = useState("");
   const [preGrado, setPreGrado] = useState([]);
@@ -66,19 +68,49 @@ export default function ModalEditarCampoProfesor({
     fetchCatalogosNecesarios();
   }, [campo, open, axios]);
 
-  const handleGuardar = () => {
-    try {
-      const campoSchema = profesorSchema.pick({ [campo]: true });
-      campoSchema.parse({ [campo]: valor });
-      onGuardar(campo, valor);
-      setError("");
-      onClose();
-    } catch (err) {
-      console.error("❌ ERROR en handleGuardar:", err);
-      const mensajeError = err.errors?.[0]?.message || "Error validando campo.";
-      setError(mensajeError);
+ const handleGuardar = async () => {
+  try {
+    // ✅ Confirmar antes de guardar cambios
+    const confirm = await alert.confirm(
+      "¿Desea guardar los cambios?",
+      "El valor actual del campo será reemplazado por el nuevo."
+    );
+    if (!confirm) return;
+
+    // ✅ Validar campo con esquema de Zod
+    const campoSchema = profesorSchema.pick({ [campo]: true });
+    campoSchema.parse({ [campo]: valor });
+
+    // ✅ Si pasa validación → guardar cambios
+    onGuardar(campo, valor);
+    setError("");
+
+    alert.success(
+      "Campo actualizado",
+      "El valor se guardó correctamente."
+    );
+
+    onClose();
+  } catch (err) {
+    console.error("❌ ERROR en handleGuardar:", err);
+
+    // ✅ Si hay errores de validación de Zod → mostrar con toast
+    if (err.errors && Array.isArray(err.errors)) {
+      err.errors.forEach((e) => {
+        alert.toast("Validación", e.message);
+      });
+      setError(err.errors?.[0]?.message || "Error validando campo.");
+    } else {
+      // ✅ Si no hay errores de validación (otro tipo de error)
+      alert.error(
+        "Error al guardar",
+        err.message || "El valor ingresado no es válido."
+      );
+      setError("Error validando campo.");
     }
-  };
+  }
+};
+
   // Función para eliminar un item
   const handleDeleteItem = (indexToDelete) => {
     if (Array.isArray(valor)) {

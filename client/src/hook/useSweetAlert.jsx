@@ -122,8 +122,8 @@ const useSweetAlert = () => {
      * @param {object} config - Configuración adicional de SweetAlert2
      * @returns {Promise} Promesa que se resuelve con el resultado de la confirmación
      */
-    confirm: (title, text = "", config = {}) =>
-      Swal.fire({
+    confirm: async (title, text = "", config = {}) => {
+      const result = await Swal.fire({
         ...getBaseConfig(),
         title,
         text,
@@ -131,8 +131,14 @@ const useSweetAlert = () => {
         showCancelButton: true,
         confirmButtonText: "Confirmar",
         cancelButtonText: "Cancelar",
+        allowOutsideClick: false, // ❌ evita cerrar por clic afuera
+        allowEscapeKey: true, // ✅ permite cerrar con Escape si el usuario quiere
         ...config,
-      }),
+      });
+
+      return result.isConfirmed; // 🔥 devuelve true/false
+    },
+
 
     /**
      * Función para mostrar una alerta con campo de entrada

@@ -71,6 +71,14 @@ export const UTILS = {
 
     return `${horas12}:${String(minutos).padStart(2, "0")} ${periodo}`;
   },
+  formatearHoraMilitar: (horaMilitar) => {
+    const horas = Math.floor(horaMilitar / 100);
+    const minutos = horaMilitar % 100;
+    const horas12 = horas > 12 ? horas - 12 : horas === 0 ? 12 : horas;
+    const ceroAñadido = horas > 9 ? "" : "0";
+
+    return `${ceroAñadido}${horas12}:${String(minutos).padStart(2, "0")}:00`;
+  },
   obtenerTrayectoNumero(trayecto) {
     const trayectos = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
     return trayectos[trayecto] || 1;
@@ -85,11 +93,13 @@ export const UTILS = {
   },
 
   // Función para expandir un rango de horas en bloques individuales de 45 minutos
-  RangoHorasSeguidasDisponibilidad(inicio_hora, fin_hora) {
+  RangoHorasSeguidasDisponibilidad(inicio_hora, fin_hora, ) {
     const bloques = [];
 
+    console.log("Expandiendo rango de horas desde", inicio_hora, "hasta", fin_hora);
     Object.keys(UTILS.initialHours).forEach((hora) => {
       if (hora >= inicio_hora && hora < fin_hora) {
+        console.log("Añadiendo bloque:", hora);
         bloques.push(hora);
       }
     });

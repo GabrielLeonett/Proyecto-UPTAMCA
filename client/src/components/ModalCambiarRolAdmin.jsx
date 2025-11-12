@@ -15,6 +15,7 @@ import {
   Groups, // Gestión Docente
   AssignmentInd, // Secretaria
 } from "@mui/icons-material";
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function ModalEditarRolesAdmin({
   open,
@@ -23,6 +24,7 @@ export default function ModalEditarRolesAdmin({
   onGuardar,
 }) {
   const axios = useApi();
+  const alert = useSweetAlert();
   const [rolesSeleccionados, setRolesSeleccionados] = useState([]);
   const [rolesActuales, setRolesActuales] = useState([]);
   const [cargando, setCargando] = useState(false);
@@ -76,39 +78,39 @@ export default function ModalEditarRolesAdmin({
   useEffect(() => {
     if (usuario && usuario.roles) {
       setRolesActuales([...usuario.roles]);
-      
+
       // Asegurar que Profesor y Coordinador siempre estén presentes
-      const rolesBase = usuario.roles.filter(rol => 
+      const rolesBase = usuario.roles.filter(rol =>
         rol.id_rol === 1 || rol.id_rol === 2
       );
-      
+
       // Si no tiene Profesor o Coordinador, agregarlos
       const tieneProfesor = usuario.roles.some(rol => rol.id_rol === 1);
       const tieneCoordinador = usuario.roles.some(rol => rol.id_rol === 2);
-      
+
       const rolesIniciales = [...usuario.roles];
-      
+
       if (!tieneProfesor) {
         rolesIniciales.push(opcionesRoles.find(rol => rol.id_rol === 1));
       }
       if (!tieneCoordinador) {
         rolesIniciales.push(opcionesRoles.find(rol => rol.id_rol === 2));
       }
-      
+
       setRolesSeleccionados(rolesIniciales);
     }
   }, [usuario]);
 
   const handleRoleSelect = (rol) => {
     setError("");
-    
+
     // Verificar si el rol ya está seleccionado
     const yaSeleccionado = rolesSeleccionados.some(r => r.id_rol === rol.id_rol);
-    
+
     if (yaSeleccionado) {
       // Solo permitir remover si el rol es removible y no es siempre activo
       if (rol.removible && !rol.siempreActivo) {
-        setRolesSeleccionados(prev => 
+        setRolesSeleccionados(prev =>
           prev.filter(r => r.id_rol !== rol.id_rol)
         );
       }
@@ -116,7 +118,7 @@ export default function ModalEditarRolesAdmin({
       // Para roles administrativos (tipo "admin"), reemplazar el admin actual
       if (rol.tipo === "admin") {
         // Mantener Profesor y Coordinador, quitar otros admins, agregar el nuevo
-        const rolesBase = rolesSeleccionados.filter(r => 
+        const rolesBase = rolesSeleccionados.filter(r =>
           r.siempreActivo || r.tipo !== "admin"
         );
         setRolesSeleccionados([...rolesBase, rol]);
@@ -141,28 +143,55 @@ export default function ModalEditarRolesAdmin({
   };
 
   const handleGuardar = async () => {
-    // No validar mínimo porque siempre tendrá Profesor y Coordinador
     setCargando(true);
     setError("");
 
     try {
-      // Preparar datos para enviar
+      // ✅ Confirmar acción antes de enviar
+      const confirm = await alert.confirm(
+        "¿Desea actualizar los roles del administrador?",
+        "Esta acción modificará los permisos asignados al usuario."
+      );
+      if (!confirm) {
+        setCargando(false);
+        return; // 👈 Cancela si el usuario no confirma
+      }
+
+      // ✅ Preparar datos para enviar
       const datosActualizar = {
-        roles: rolesSeleccionados.map(rol => ({
+        roles: rolesSeleccionados.map((rol) => ({
           id_rol: rol.id_rol,
-          nombre_rol: rol.nombre_rol
-        }))
+          nombre_rol: rol.nombre_rol,
+        })),
       };
 
-      // Enviar PATCH request
+      // ✅ Enviar PATCH request
       const response = await axios.patch(`/admins/${usuario.id}/rol`, datosActualizar);
-      
+
       if (response.status === 200) {
+        alert.success(
+          "Roles actualizados con éxito",
+          "Los roles del administrador se actualizaron correctamente."
+        );
+
         onGuardar(rolesSeleccionados);
         onClose();
       }
     } catch (error) {
       console.error("Error al actualizar roles:", error);
+
+      // ✅ Manejo estandarizado de errores del backend
+      if (error?.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((error_validacion) => {
+          alert.toast(error_validacion.field, error_validacion.message);
+        });
+      } else {
+        alert.error(
+          error.title || "Error al actualizar los roles",
+          error.message || "No se pudieron actualizar los roles del administrador."
+        );
+      }
+
       setError("Error al actualizar los roles. Intente nuevamente.");
     } finally {
       setCargando(false);
@@ -177,8 +206,8 @@ export default function ModalEditarRolesAdmin({
   };
 
   return (
-    <Dialog 
-      open={open} 
+    <Dialog
+      open={open}
       onClose={handleCancelar}
       maxWidth="md"
       fullWidth
@@ -199,7 +228,7 @@ export default function ModalEditarRolesAdmin({
             </Typography>
             <Box display="flex" gap={1} flexWrap="wrap">
               {rolesActuales.map(rol => (
-                <Chip 
+                <Chip
                   key={rol.id_rol}
                   label={rol.nombre_rol}
                   color="primary"
@@ -228,7 +257,7 @@ export default function ModalEditarRolesAdmin({
             const seleccionado = isRoleSelected(rol);
             const esActual = isRoleActual(rol);
             const esForzado = isRoleForced(rol);
-            
+
             return (
               <Grid item lg={6} md={6} xs={12} sm={6} key={rol.id_rol}>
                 <CustomButton
@@ -254,9 +283,9 @@ export default function ModalEditarRolesAdmin({
                     <Typography variant="subtitle1" fontWeight="medium">
                       {rol.nombre_rol}
                       {esForzado && (
-                        <Box 
-                          component="span" 
-                          sx={{ 
+                        <Box
+                          component="span"
+                          sx={{
                             fontSize: '0.7em',
                             ml: 1,
                             color: seleccionado ? 'primary.contrastText' : 'primary.main'
@@ -277,7 +306,7 @@ export default function ModalEditarRolesAdmin({
                       {rol.descripcion}
                     </Typography>
                   </Box>
-                  
+
                   {/* Indicador visual para roles forzados */}
                   {esForzado && (
                     <Box
@@ -301,22 +330,22 @@ export default function ModalEditarRolesAdmin({
         {/* Información adicional */}
         <Box mt={3} p={2} bgcolor="grey.50" borderRadius={1}>
           <Typography variant="caption" color="text.secondary">
-            💡 <strong>Nota:</strong> Los roles de <strong>Profesor</strong> y <strong>Coordinador</strong> son permanentes. 
+            💡 <strong>Nota:</strong> Los roles de <strong>Profesor</strong> y <strong>Coordinador</strong> son permanentes.
             Los roles administrativos (<strong>Director</strong> y <strong>Secretario</strong>) son mutuamente excluyentes.
           </Typography>
         </Box>
       </DialogContent>
 
       <DialogActions sx={{ p: 3, gap: 2 }}>
-        <CustomButton 
-          tipo="outlined" 
+        <CustomButton
+          tipo="outlined"
           onClick={handleCancelar}
           disabled={cargando}
         >
           Cancelar
         </CustomButton>
-        <CustomButton 
-          tipo="primary" 
+        <CustomButton
+          tipo="primary"
           onClick={handleGuardar}
           disabled={cargando}
           loading={cargando}
