@@ -74,8 +74,13 @@
       "invalid_status": "Invalid status for filter"
     }
   },
+  "titles": {
+    "created": "Admin created",
+    "list_retrieved": ""
+  },
   "success": {
-    "admin_created": "Admin created successfully",
+    "retrieved_all": "",
+    "created": "Admin created successfully",
     "admin_updated": "Admin updated successfully",
     "admin_deactivated": "Admin deactivated successfully",
     "roles_updated": "Admin roles updated successfully",
@@ -84,7 +89,11 @@
     "admins_retrieved": "Admins retrieved successfully",
     "search_completed": "Admin search completed",
     "admins_filtered_by_role": "Admins filtered by role retrieved successfully",
-    "admins_filtered_by_status": "Admins filtered by status retrieved successfully"
+    "admins_filtered_by_status": "Admins filtered by status retrieved successfully",
+    "admin_registered": "Admin registered successfully",
+    "admin_deleted": "Admin deleted successfully",
+    "role_assigned": "Role assigned successfully",
+    "permission_granted": "Permission granted successfully"
   },
   "errors": {
     "validation_failed": "Validation error",
@@ -97,11 +106,27 @@
     "invalid_role": "Invalid role",
     "invalid_status": "Invalid status",
     "image_validation": "Image validation error",
-    "user_validation": "User validation error"
+    "user_validation": "User validation error",
+    "executing_user_not_found": "Procedure executing user does not exist",
+    "user_not_found": "User to update not found",
+    "role_not_found": "One or more roles do not exist",
+    "permission_denied": "Permission denied to perform this action",
+    "self_role_modification": "You cannot modify your own roles",
+    "protected_role_modification": "Cannot modify protected system roles",
+    "invalid_role_assignment": "Invalid role assignment",
+    "duplicate_registration": "Existing user or admin"
   },
   "email": {
-    "welcome_subject": "Welcome to Academic System - Administrator Credentials",
-    "welcome_body": "Welcome, {{name}}! We're pleased to welcome you to our academic platform as an administrator."
+    "welcome_subject": "Welcome to the Academic System - Administrator Credentials",
+    "welcome_body": "Welcome, {{name}}! It is a pleasure to welcome you to our academic platform as an administrator.",
+    "welcome_credentials": "Your access credentials are:",
+    "welcome_username": "Username:",
+    "welcome_temp_password": "Temporary password:",
+    "welcome_instructions": "Important instructions:",
+    "welcome_instruction_1": "Change your password after the first login",
+    "welcome_instruction_2": "This password is temporary and for personal use",
+    "welcome_instruction_3": "Keep this information in a safe place",
+    "welcome_login_button": "Access the platform"
   },
   "notifications": {
     "welcome_title": "Welcome to the System as Administrator",
@@ -116,6 +141,12 @@
     "roles_updated_content": "Roles for {{name}} {{lastName}} have been updated from \"{{oldRoles}}\" to \"{{newRoles}}\""
   },
   "validation": {
+    "valid_admin_data": "Valid administrator data",
+    "email_duplicate": "User is already registered",
+    "cedula_duplicate": "ID card is already registered",
+    "role_not_found": "The specified role does not exist or is not an administrator role",
+    "role_not_admin": "The specified role is not a valid administrator role",
+    "self_assignment": "You cannot assign administrative roles to yourself",
     "search_required": "Search term is required",
     "invalid_id": "Invalid ID",
     "roles_array_required": "Roles must be an array of objects",
@@ -123,6 +154,19 @@
     "multiple_admin_roles": "Only one administrative role can be assigned at a time",
     "no_valid_data": "No valid data provided for update",
     "invalid_role_filter": "Invalid role for filter",
-    "invalid_status_filter": "Invalid status for filter"
+    "invalid_status_filter": "Invalid status for filter",
+    "valid_user_role_update": "Valid user for administrator role update",
+    "user_not_found": "The specified user does not exist",
+    "user_inactive": "The specified user is inactive",
+    "self_role_update": "You cannot update your own administrative roles",
+    "gender_not_defined": "The user does not have a defined gender",
+    "gender_invalid": "Invalid user gender. Must be \"masculino\" or \"femenino\" (male or female)",
+    "email_not_defined": "The user does not have a defined email",
+    "email_invalid_format": "The user's email does not have a valid format",
+    "user_required": "User is required",
+    "roles_required": "Roles are required",
+    "valid_roles_required": "You must provide valid roles",
+    "permission_level": "You do not have sufficient permissions to modify these roles",
+    "protected_roles": "Roles {roles} are protected and cannot be deleted"
   }
 }

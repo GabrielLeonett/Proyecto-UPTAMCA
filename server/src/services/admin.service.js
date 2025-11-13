@@ -16,176 +16,54 @@ loadEnv();
 export default class AdminService {
   /**
    * @static
-   * @method getTranslation
-   * @description Obtiene traducción para el servicio admin
-   */
-  static getTranslation(req, key, params = {}) {
-    try {
-      if (req && req.t) {
-        const translation = req.t(key, params);
-        return translation;
-      }
-
-      // Fallback básico en español
-      const fallback = {
-        "admins:service.registrarAdmin.start":
-          "Iniciando registro de administrador...",
-        "admins:service.registrarAdmin.validating_data":
-          "Validando datos del administrador...",
-        "admins:service.registrarAdmin.validating_user":
-          "Validando ID de usuario...",
-        "admins:service.registrarAdmin.validating_image": "Validando imagen...",
-        "admins:service.registrarAdmin.validating_email": "Validando email...",
-        "admins:service.registrarAdmin.generating_password":
-          "Generando contraseña...",
-        "admins:service.registrarAdmin.creating_admin":
-          "Creando administrador en base de datos...",
-        "admins:service.registrarAdmin.sending_email":
-          "Enviando email de bienvenida...",
-        "admins:service.registrarAdmin.sending_notifications":
-          "Enviando notificaciones...",
-        "admins:service.registrarAdmin.success":
-          "Administrador registrado exitosamente",
-        "admins:service.mostrarAdmin.start":
-          "Obteniendo todos los administradores...",
-        "admins:service.buscarAdmin.start":
-          "Buscando administradores: {{search}}",
-        "admins:service.obtenerAdminPorId.start": "Buscando admin ID: {{id}}",
-        "admins:service.actualizarAdmin.start": "Actualizando admin ID: {{id}}",
-        "admins:service.desactivarAdmin.start": "Desactivando admin ID: {{id}}",
-        "admins:service.cambiarRolAdmin.start":
-          "Actualizando roles del admin ID: {{id}}",
-        "admins:service.profile.get_start":
-          "Obteniendo perfil del admin ID: {{id}}",
-        "admins:service.profile.update_start":
-          "Actualizando perfil del admin ID: {{id}}",
-        "admins:service.obtenerAdminsPorRol.start":
-          "Filtrando admins por rol: {{rol}}",
-        "admins:service.obtenerAdminsPorEstado.start":
-          "Filtrando admins por estado: {{estado}}",
-
-        "admins:success.admin_created": "Administrador creado exitosamente",
-        "admins:success.admin_updated":
-          "Administrador actualizado exitosamente",
-        "admins:success.admin_deactivated":
-          "Administrador desactivado exitosamente",
-        "admins:success.roles_updated":
-          "Roles de administrador actualizados exitosamente",
-        "admins:success.profile_retrieved": "Perfil obtenido exitosamente",
-        "admins:success.profile_updated": "Perfil actualizado exitosamente",
-        "admins:success.admins_retrieved":
-          "Administradores obtenidos exitosamente",
-        "admins:success.search_completed":
-          "Búsqueda de administradores completada",
-
-        "admins:errors.validation_failed": "Error de validación",
-        "admins:errors.not_found": "Administrador no encontrado",
-        "admins:errors.duplicate": "Administrador ya existe",
-        "admins:errors.invalid_email": "Email inválido",
-        "admins:errors.self_action":
-          "Acción no permitida sobre tu propia cuenta",
-        "admins:errors.last_superadmin":
-          "No se puede realizar esta acción sobre el último SuperAdmin",
-
-        "admins:email.welcome_subject":
-          "Bienvenido/a al Sistema Académico - Credenciales de Administrador",
-        "admins:email.welcome_body":
-          "¡Bienvenido/a, {{name}}! Es un placer darle la bienvenida a nuestra plataforma académica como administrador.",
-
-        "admins:notifications.welcome_title":
-          "Bienvenido al Sistema como Administrador",
-        "admins:notifications.welcome_content":
-          "¡Bienvenido {{name}} {{lastName}}! Su registro como administrador ha sido exitoso.",
-        "admins:notifications.admin_created_title":
-          "Nuevo Administrador Registrado",
-        "admins:notifications.admin_created_content":
-          "Se ha registrado al administrador {{name}} {{lastName}} ({{cedula}}) con rol: {{rol}}",
-        "admins:notifications.admin_updated_title": "Administrador Actualizado",
-        "admins:notifications.admin_updated_content":
-          "Se han actualizado los datos del administrador {{name}} {{lastName}}",
-        "admins:notifications.admin_deactivated_title":
-          "Administrador Desactivado",
-        "admins:notifications.admin_deactivated_content":
-          "Se ha desactivado la cuenta del administrador {{name}} {{lastName}} (Rol: {{rol}})",
-        "admins:notifications.roles_updated_title":
-          "Roles de Administrador Actualizados",
-        "admins:notifications.roles_updated_content":
-          'Se han actualizado los roles de {{name}} {{lastName}} de "{{oldRoles}}" a "{{newRoles}}"',
-      };
-
-      let translation = fallback[key] || key;
-
-      // Interpolación básica de parámetros
-      Object.keys(params).forEach((param) => {
-        translation = translation.replace(`{{${param}}}`, params[param]);
-      });
-
-      return translation;
-    } catch (error) {
-      return key;
-    }
-  }
-
-  /**
-   * @static
    * @async
    * @method registrarAdmin
    */
-  static async registrarAdmin(datos, imagen, user_action, req = null) {
+  static async registrarAdmin(datos, imagen, user_action, mensajesEmail) {
     const imagenService = new ImagenService("administradores");
     let imagenPath = null;
 
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.registrarAdmin.start")
-      );
+      console.log("👤 Iniciando registro de administrador...");
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📝 Datos recibidos:", {
+          datos: JSON.stringify(datos, null, 2),
+          user_action: user_action,
+        });
+      }
+
+      // 1. Procesar datos
       const roles = parseJSONField(datos.roles, "Roles");
       datos = { ...datos, cedula: parseInt(datos.cedula), roles };
 
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.registrarAdmin.validating_data"
-        )
-      );
+      // 2. Validar datos del administrador
+      console.log("Validando datos del administrador...");
       const validation = ValidationService.validateAdmins(datos);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+          "admins:validation.data_invalid"
         );
       }
 
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.registrarAdmin.validating_user"
-        )
-      );
+      // 3. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const idValidation = ValidationService.validateId(
         user_action.id,
-        "usuario"
+        "general:validation.id_invalid"
       );
 
       if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
       }
 
+      // 4. Validar y procesar imagen
       if (imagen && imagen.originalname) {
-        console.log(
-          this.getTranslation(
-            req,
-            "admins:service.registrarAdmin.validating_image"
-          )
-        );
+        console.log("Validando imagen...");
         const validationImage = await imagenService.validateImage(
           imagen.originalname,
           {
@@ -199,9 +77,8 @@ export default class AdminService {
 
         if (!validationImage.isValid) {
           return FormatterResponseService.validationError(
-            [{ path: "imagen", message: validationImage.error }],
-            this.getTranslation(req, "admins:errors.validation_failed"),
-            req
+            [{ field: "imagen", message: validationImage.error }],
+            "admins:validation.image_invalid"
           );
         }
 
@@ -216,12 +93,8 @@ export default class AdminService {
         );
       }
 
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.registrarAdmin.validating_email"
-        )
-      );
+      // 5. Validar email
+      console.log("Validando email...");
       const emailService = new EmailService();
       const validationEmail = await emailService.verificarEmailConAPI(
         datos.email
@@ -229,27 +102,20 @@ export default class AdminService {
 
       if (!validationEmail.existe) {
         return FormatterResponseService.error(
-          this.getTranslation(req, "admins:errors.invalid_email"),
-          this.getTranslation(req, "admins:errors.invalid_email"),
           400,
-          "INVALID_EMAIL",
-          { email: datos.email },
-          req
+          "EMAIL_INVALID",
+          "admins:errors.email_invalid",
+          { email: datos.email }
         );
       }
 
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.registrarAdmin.generating_password"
-        )
-      );
+      // 6. Generar contraseña
+      console.log("Generando contraseña...");
       const contrasenia = await generarPassword();
       const hash = await hashPassword(contrasenia);
 
-      console.log(
-        this.getTranslation(req, "admins:service.registrarAdmin.creating_admin")
-      );
+      // 7. Crear administrador en BD
+      console.log("Creando administrador en base de datos...");
       const respuestaModel = await AdminModel.crear(
         {
           ...datos,
@@ -263,67 +129,29 @@ export default class AdminService {
         return respuestaModel;
       }
 
+      // 8. Enviar email de bienvenida
+      console.log("Enviando email de bienvenida...");
       const Correo = {
-        asunto: this.getTranslation(req, "admins:email.welcome_subject"),
-        html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="color: #2c3e50;">${this.getTranslation(
-            req,
-            "admins:email.welcome_body",
-            { name: datos.nombre }
-          )}</h2>
-          <p>Sus credenciales de acceso son:</p>
-          <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
-            <p><strong>Usuario:</strong> ${datos.email}</p>
-            <p><strong>Contraseña temporal:</strong> ${contrasenia}</p>
-          </div>
-          <p><strong>Instrucciones importantes:</strong></p>
-          <ul>
-            <li>Cambie su contraseña después del primer acceso</li>
-            <li>Esta contraseña es temporal y de uso personal</li>
-            <li>Guarde esta información en un lugar seguro</li>
-          </ul>
-        </div>
-        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
-          <a href="${
-            process.env.ORIGIN_FRONTEND
-          }/inicio-sesion" style="display: inline-block; background-color: #1C75BA; color: white; 
-                    padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
-              Acceder a la plataforma
-          </a>
-        </div>
-        `,
-      };
+      asunto: mensajesEmail.subject,
+      html: this.buildWelcomeAdminEmailHTML(mensajesEmail, datos.email, contrasenia)
+    };
 
-      console.log(
-        this.getTranslation(req, "admins:service.registrarAdmin.sending_email")
-      );
       await emailService.enviarEmail({
         Destinatario: datos.email,
         Correo: Correo,
         verificarEmail: false,
       });
 
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.registrarAdmin.sending_notifications"
-        )
-      );
+      // 9. Enviar notificaciones
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
 
+      // Notificación individual al nuevo admin
       await notificationService.crearNotificacionIndividual({
-        titulo: this.getTranslation(req, "admins:notifications.welcome_title"),
+        titulo: "admins:notifications.welcome_title",
         tipo: "admin_registro_exitoso",
         user_id: datos.cedula,
-        contenido: this.getTranslation(
-          req,
-          "admins:notifications.welcome_content",
-          {
-            name: datos.nombre,
-            lastName: datos.apellido,
-          }
-        ),
+        contenido: "admins:notifications.welcome_content",
         metadatos: {
           admin_cedula: datos.cedula,
           admin_nombre: `${datos.nombre} ${datos.apellido}`,
@@ -333,43 +161,29 @@ export default class AdminService {
         },
       });
 
+      // Notificación masiva a otros administradores
       await notificationService.crearNotificacionMasiva({
-        titulo: this.getTranslation(
-          req,
-          "admins:notifications.admin_created_title"
-        ),
         tipo: "admin_creado",
-        contenido: this.getTranslation(
-          req,
-          "admins:notifications.admin_created_content",
-          {
-            name: datos.nombre,
-            lastName: datos.apellido,
-            cedula: datos.cedula,
-            rol: datos.rol,
-          }
-        ),
+        titulo: "admins:notifications.admin_created_title",
+        contenido: "admins:notifications.admin_created_content",
         metadatos: {
           admin_cedula: datos.cedula,
           admin_nombre: `${datos.nombre} ${datos.apellido}`,
           admin_email: datos.email,
           admin_rol: datos.rol,
           usuario_creador: user_action.id,
+          usuario_creador_nombre: user_action.nombre || user_action.username,
           fecha_registro: new Date().toISOString(),
           url_action: `/administracion/administradores`,
         },
-        roles_ids: [10, 20],
+        roles_ids: [10, 20], // Vicerrector, SuperAdmin
         users_ids: [user_action.id],
       });
 
-      console.log(
-        "🎉 " +
-          this.getTranslation(req, "admins:service.registrarAdmin.success")
-      );
+      console.log("✅ Administrador registrado exitosamente");
 
       return FormatterResponseService.success(
         {
-          message: this.getTranslation(req, "admins:success.admin_created"),
           admin: {
             cedula: datos.cedula,
             nombre: datos.nombre,
@@ -380,9 +194,12 @@ export default class AdminService {
             estado: "activo",
           },
         },
-        this.getTranslation(req, "admins:success.admin_created"),
-        { status: 201, title: "Administrador Creado" },
-        req
+        "admins:success.created",
+        "admins:titles.created",
+        {
+          status: 201,
+          title: "Administrador Creado",
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio registrar administrador:", error);
@@ -395,15 +212,49 @@ export default class AdminService {
 
   /**
    * @static
+   * @method buildWelcomeAdminEmailHTML
+   * @description Construye el HTML del email de bienvenida
+   */
+  static buildWelcomeAdminEmailHTML(mensajes, email, contrasenia) {
+    return `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h2 style="color: #2c3e50;">${mensajes.body}</h2>
+        <p>${mensajes.credentials}</p>
+        <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #3498db; margin: 15px 0;">
+          <p><strong>${mensajes.username}</strong> ${email}</p>
+          <p><strong>${mensajes.temp_password}</strong> ${contrasenia}</p>
+        </div>
+        <p><strong>${mensajes.instructions}</strong></p>
+        <ul>
+          <li>${mensajes.instruction_1}</li>
+          <li>${mensajes.instruction_2}</li>
+          <li>${mensajes.instruction_3}</li>
+        </ul>
+      </div>
+      <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%;">
+        <a href="${process.env.ORIGIN_FRONTEND}/inicio-sesion" style="display: inline-block; background-color: #1C75BA; color: white; 
+                  padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-bottom: 20px;">
+            ${mensajes.login_button}
+        </a>
+      </div>
+  `;
+  }
+
+  /**
+   * @static
    * @async
    * @method mostrarAdmin
    */
-  static async mostrarAdmin(queryParams = {}, req = null) {
+  static async mostrarAdmin(queryParams = {}) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.mostrarAdmin.start")
-      );
+      console.log("📋 Obteniendo lista de administradores...");
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("🔍 Parámetros de consulta:", queryParams);
+      }
+
+      // 1. Validar parámetros de consulta
+      console.log("Validando parámetros de consulta...");
       const allowedParams = ["page", "limit", "sort", "order", "rol", "estado"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
@@ -411,19 +262,28 @@ export default class AdminService {
       );
 
       if (!queryValidation.isValid) {
-        return FormatterResponseService.validationError(
-          queryValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de parámetros fallida:",
+          queryValidation.errors
         );
+        return FormatterResponseService.validationError(queryValidation.errors);
       }
 
+      // 2. Obtener administradores del modelo
+      console.log("Obteniendo administradores de base de datos...");
       const respuestaModel = await AdminModel.obtenerTodos(queryParams);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(
+        `✅ Se obtuvieron ${respuestaModel.data.length} administradores`
+      );
       return FormatterResponseService.success(
         {
           administradores: respuestaModel.data,
@@ -431,9 +291,11 @@ export default class AdminService {
           page: parseInt(queryParams.page) || 1,
           limit: parseInt(queryParams.limit) || respuestaModel.data.length,
         },
-        this.getTranslation(req, "admins:success.admins_retrieved"),
-        { status: 200, title: "Lista de Administradores" },
-        req
+        "admins:success.retrieved_all",
+        "admins:titles.list_retrieved",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio mostrar administradores:", error);
@@ -444,81 +306,22 @@ export default class AdminService {
   /**
    * @static
    * @async
-   * @method buscarAdmin
-   */
-  static async buscarAdmin(busqueda, req = null) {
-    try {
-      console.log(
-        this.getTranslation(req, "admins:service.buscarAdmin.start", {
-          search: busqueda,
-        })
-      );
-
-      if (
-        !busqueda ||
-        typeof busqueda !== "string" ||
-        busqueda.trim().length === 0
-      ) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "busqueda",
-              message: "El término de búsqueda es requerido",
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
-      }
-
-      const busquedaLimpia = busqueda.trim();
-      const respuestaModel = await AdminModel.buscar(busquedaLimpia);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          administradores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          busqueda: busquedaLimpia,
-        },
-        this.getTranslation(req, "admins:success.search_completed"),
-        { status: 200, title: "Resultados de Búsqueda" },
-        req
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio buscar administradores:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
    * @method obtenerAdminPorId
    */
-  static async obtenerAdminPorId(id_admin, req = null) {
+  static async obtenerAdminPorId(id_admin) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.obtenerAdminPorId.start", {
-          id: id_admin,
-        })
-      );
+      console.log(`🔍 Buscando administrador con ID: ${id_admin}`);
 
-      const idValidation = ValidationService.validateId(
-        id_admin,
-        "administrador"
-      );
+      // 1. Validar ID del administrador
+      console.log("Validando ID del administrador...");
+      const idValidation = ValidationService.validateId(id_admin, "admin");
       if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
       }
 
+      // 2. Buscar administrador en el modelo
+      console.log("Buscando administrador en base de datos...");
       const respuestaModel = await AdminModel.buscarPorId(id_admin);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -526,21 +329,28 @@ export default class AdminService {
       }
 
       if (!respuestaModel.data || respuestaModel.data.length === 0) {
-        return FormatterResponseService.notFound(
-          this.getTranslation(req, "admins:errors.not_found"),
-          id_admin,
-          req
-        );
+        console.error(`❌ Administrador con ID ${id_admin} no encontrado`);
+        return FormatterResponseService.notFound(id_admin);
       }
 
       const admin = respuestaModel.data[0];
-      console.log(`✅ ${admin.nombre} ${admin.apellido}`);
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Administrador encontrado:", admin);
+      }
+
+      console.log(
+        `✅ Administrador encontrado: ${admin.nombre} ${admin.apellido}`
+      );
       return FormatterResponseService.success(
-        { admin: admin },
-        this.getTranslation(req, "admins:success.profile_retrieved"),
-        { status: 200, title: "Detalles del Administrador" },
-        req
+        {
+          admin: admin,
+        },
+        "admins:success.retrieved_one",
+        "admins:titles.details_retrieved",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener admin por ID:", error);
@@ -553,62 +363,61 @@ export default class AdminService {
    * @async
    * @method actualizarAdmin
    */
-  static async actualizarAdmin(id_admin, datos, user_action, req = null) {
+  static async actualizarAdmin(id_admin, datos, user_action) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.actualizarAdmin.start", {
-          id: id_admin,
-        })
-      );
+      console.log(`🔄 Actualizando administrador con ID: ${id_admin}`);
+      console.log("📝 Datos a actualizar:", datos);
 
-      const idValidation = ValidationService.validateId(
-        id_admin,
-        "administrador"
-      );
-      if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("👤 Usuario ejecutor:", user_action);
       }
 
+      // 1. Validar ID del administrador
+      console.log("Validando ID del administrador...");
+      const idValidation = ValidationService.validateId(id_admin, "admin");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
+      }
+
+      // 2. Validar datos parciales del administrador
+      console.log("Validando datos del administrador...");
       const validation = ValidationService.validatePartialAdmin(datos);
       if (!validation.isValid) {
-        return FormatterResponseService.validationError(
-          validation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(validation.errors);
       }
 
+      // 3. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
         );
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
+      // 4. Verificar que el administrador existe
+      console.log("Verificando existencia del administrador...");
       const adminExistente = await AdminModel.buscarPorId(id_admin);
       if (
         FormatterResponseService.isError(adminExistente) ||
         !adminExistente.data ||
         adminExistente.data.length === 0
       ) {
-        return FormatterResponseService.notFound(
-          this.getTranslation(req, "admins:errors.not_found"),
-          id_admin,
-          req
-        );
+        console.error(`❌ Administrador con ID ${id_admin} no encontrado`);
+        return FormatterResponseService.notFound(id_admin);
       }
 
       const adminActual = adminExistente.data[0];
 
+      // 5. Verificar duplicados
+      console.log("Verificando duplicados...");
       if (datos.cedula || datos.email) {
         const adminDuplicado = await AdminModel.buscarPorCedulaOEmail(
           datos.cedula || adminActual.cedula,
@@ -620,24 +429,20 @@ export default class AdminService {
             (admin) => admin.id_admin !== id_admin
           );
           if (adminDupe) {
-            return FormatterResponseService.error(
-              this.getTranslation(req, "admins:errors.duplicate"),
-              this.getTranslation(req, "admins:errors.duplicate"),
-              409,
-              "ADMIN_DUPLICADO",
-              {
-                admin_existente: {
-                  id: adminDupe.id_admin,
-                  cedula: adminDupe.cedula,
-                  email: adminDupe.email,
-                },
+            console.error("❌ Administrador duplicado encontrado:", adminDupe);
+            return FormatterResponseService.error(409, "ADMIN_DUPLICADO", {
+              admin_existente: {
+                id: adminDupe.id_admin,
+                cedula: adminDupe.cedula,
+                email: adminDupe.email,
               },
-              req
-            );
+            });
           }
         }
       }
 
+      // 6. Actualizar administrador
+      console.log("Actualizando administrador en base de datos...");
       const respuestaModel = await AdminModel.actualizar(
         id_admin,
         datos,
@@ -648,21 +453,17 @@ export default class AdminService {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      // 7. Enviar notificación
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: this.getTranslation(
-          req,
-          "admins:notifications.admin_updated_title"
-        ),
         tipo: "admin_actualizado",
-        contenido: this.getTranslation(
-          req,
-          "admins:notifications.admin_updated_content",
-          {
-            name: datos.nombre || adminActual.nombre,
-            lastName: datos.apellido || adminActual.apellido,
-          }
-        ),
+        titulo: "admins:notifications.admin_updated_title",
+        contenido: "admins:notifications.admin_updated_content",
         metadatos: {
           admin_id: id_admin,
           admin_cedula: datos.cedula || adminActual.cedula,
@@ -670,6 +471,8 @@ export default class AdminService {
           admin_apellido: datos.apellido || adminActual.apellido,
           campos_actualizados: Object.keys(datos),
           usuario_actualizador: user_action.id,
+          usuario_actualizador_nombre:
+            user_action.nombre || user_action.username,
           fecha_actualizacion: new Date().toISOString(),
           url_action: `/administracion/administradores/${id_admin}`,
         },
@@ -677,20 +480,24 @@ export default class AdminService {
         users_ids: [user_action.id],
       });
 
-      console.log(
-        "✅ " +
-          this.getTranslation(req, "admins:service.registrarAdmin.success")
-      );
-
+      console.log(`✅ Administrador ${id_admin} actualizado exitosamente`);
       return FormatterResponseService.success(
         {
-          message: this.getTranslation(req, "admins:success.admin_updated"),
           admin_id: id_admin,
           cambios: Object.keys(datos),
+          admin_actualizado: {
+            id: id_admin,
+            cedula: datos.cedula || adminActual.cedula,
+            nombre: datos.nombre || adminActual.nombre,
+            apellido: datos.apellido || adminActual.apellido,
+            email: datos.email || adminActual.email,
+          },
         },
-        this.getTranslation(req, "admins:success.admin_updated"),
-        { status: 200, title: "Administrador Actualizado" },
-        req
+        "admins:success.updated",
+        "admins:titles.updated",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio actualizar administrador:", error);
@@ -703,81 +510,84 @@ export default class AdminService {
    * @async
    * @method desactivarAdmin
    */
-  static async desactivarAdmin(id_admin, user_action, req = null) {
+  static async desactivarAdmin(id_admin, user_action) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.desactivarAdmin.start", {
-          id: id_admin,
-        })
-      );
+      console.log(`🗑️ Desactivando administrador con ID: ${id_admin}`);
 
-      const idValidation = ValidationService.validateId(
-        id_admin,
-        "administrador"
-      );
-      if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("👤 Usuario ejecutor:", user_action);
       }
 
+      // 1. Validar ID del administrador
+      console.log("Validando ID del administrador...");
+      const idValidation = ValidationService.validateId(id_admin, "admin");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
+      }
+
+      // 2. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
         );
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
+      // 3. Verificar que el administrador existe
+      console.log("Verificando existencia del administrador...");
       const adminExistente = await AdminModel.buscarPorId(id_admin);
       if (
         FormatterResponseService.isError(adminExistente) ||
         !adminExistente.data ||
         adminExistente.data.length === 0
       ) {
-        return FormatterResponseService.notFound(
-          this.getTranslation(req, "admins:errors.not_found"),
-          id_admin,
-          req
-        );
+        console.error(`❌ Administrador con ID ${id_admin} no encontrado`);
+        return FormatterResponseService.notFound(id_admin);
       }
 
       const admin = adminExistente.data[0];
 
+      // 4. Verificar auto-desactivación
       if (parseInt(id_admin) === parseInt(user_action.id)) {
+        console.error("❌ No se puede desactivar a uno mismo");
         return FormatterResponseService.error(
-          this.getTranslation(req, "admins:errors.self_action"),
-          this.getTranslation(req, "admins:errors.self_action"),
           403,
           "SELF_DEACTIVATION_NOT_ALLOWED",
-          null,
-          req
+          {
+            accion_recomendada:
+              "Contacte a otro administrador para esta acción",
+          }
         );
       }
 
+      // 5. Verificar último SuperAdmin
       if (admin.rol === "SuperAdmin") {
         const superAdminsActivos = await AdminModel.contarPorRolYEstado(
           "SuperAdmin",
           "activo"
         );
         if (superAdminsActivos.data <= 1) {
+          console.error("❌ No se puede desactivar el último SuperAdmin");
           return FormatterResponseService.error(
-            this.getTranslation(req, "admins:errors.last_superadmin"),
-            this.getTranslation(req, "admins:errors.last_superadmin"),
             403,
             "LAST_SUPERADMIN_NOT_ALLOWED",
-            null,
-            req
+            {
+              accion_recomendada:
+                "Asigne otro SuperAdmin antes de desactivar este",
+            }
           );
         }
       }
 
+      // 6. Desactivar administrador
+      console.log("Desactivando administrador en base de datos...");
       const respuestaModel = await AdminModel.desactivar(
         id_admin,
         user_action.id
@@ -787,22 +597,17 @@ export default class AdminService {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      // 7. Enviar notificación
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: this.getTranslation(
-          req,
-          "admins:notifications.admin_deactivated_title"
-        ),
         tipo: "admin_desactivado",
-        contenido: this.getTranslation(
-          req,
-          "admins:notifications.admin_deactivated_content",
-          {
-            name: admin.nombre,
-            lastName: admin.apellido,
-            rol: admin.rol,
-          }
-        ),
+        titulo: "admins:notifications.admin_deactivated_title",
+        contenido: "admins:notifications.admin_deactivated_content",
         metadatos: {
           admin_id: id_admin,
           admin_cedula: admin.cedula,
@@ -810,6 +615,7 @@ export default class AdminService {
           admin_apellido: admin.apellido,
           admin_rol: admin.rol,
           usuario_ejecutor: user_action.id,
+          usuario_ejecutor_nombre: user_action.nombre || user_action.username,
           fecha_desactivacion: new Date().toISOString(),
           url_action: `/administracion/administradores`,
         },
@@ -817,14 +623,9 @@ export default class AdminService {
         users_ids: [user_action.id],
       });
 
-      console.log(
-        "✅ " +
-          this.getTranslation(req, "admins:service.registrarAdmin.success")
-      );
-
+      console.log(`✅ Administrador ${id_admin} desactivado exitosamente`);
       return FormatterResponseService.success(
         {
-          message: this.getTranslation(req, "admins:success.admin_deactivated"),
           admin: {
             id: id_admin,
             cedula: admin.cedula,
@@ -833,9 +634,11 @@ export default class AdminService {
             estado: "inactivo",
           },
         },
-        this.getTranslation(req, "admins:success.admin_deactivated"),
-        { status: 200, title: "Administrador Desactivado" },
-        req
+        "admins:success.deactivated",
+        "admins:titles.deactivated",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio desactivar administrador:", error);
@@ -848,97 +651,88 @@ export default class AdminService {
    * @async
    * @method cambiarRolAdmin
    */
-  static async cambiarRolAdmin(
-    id_admin,
-    nuevos_roles,
-    user_action,
-    req = null
-  ) {
+  static async cambiarRolAdmin(id_admin, nuevos_roles, user_action) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.cambiarRolAdmin.start", {
-          id: id_admin,
-        })
-      );
+      console.log(`🔄 Cambiando roles del administrador con ID: ${id_admin}`);
+      console.log("🎭 Nuevos roles:", nuevos_roles);
 
-      const idValidation = ValidationService.validateId(
-        id_admin,
-        "administrador"
-      );
-      if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("👤 Usuario ejecutor:", user_action);
       }
 
+      // 1. Validar ID del administrador
+      console.log("Validando ID del administrador...");
+      const idValidation = ValidationService.validateId(id_admin, "admin");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
+      }
+
+      // 2. Validar estructura de roles
+      console.log("Validando estructura de roles...");
       if (!Array.isArray(nuevos_roles)) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "roles",
-              message: "Los roles deben ser un array de objetos",
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        return FormatterResponseService.validationError([
+          {
+            field: "roles",
+            message: "admins:validation.roles_array_required",
+          },
+        ]);
       }
 
       for (const rol of nuevos_roles) {
         if (!rol.id_rol || !rol.nombre_rol) {
-          return FormatterResponseService.validationError(
-            [
-              {
-                path: "roles",
-                message: "Cada rol debe tener id_rol y nombre_rol",
-              },
-            ],
-            this.getTranslation(req, "admins:errors.validation_failed"),
-            req
-          );
+          return FormatterResponseService.validationError([
+            {
+              field: "roles",
+              message: "admins:validation.role_structure_invalid",
+            },
+          ]);
         }
       }
 
+      // 3. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
         );
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
+      // 4. Verificar que el administrador existe
+      console.log("Verificando existencia del administrador...");
       const adminExistente = await AdminModel.buscarPorId(id_admin);
       if (
         FormatterResponseService.isError(adminExistente) ||
         !adminExistente.data ||
         adminExistente.data.length === 0
       ) {
-        return FormatterResponseService.notFound(
-          this.getTranslation(req, "admins:errors.not_found"),
-          id_admin,
-          req
-        );
+        console.error(`❌ Administrador con ID ${id_admin} no encontrado`);
+        return FormatterResponseService.notFound(id_admin);
       }
 
       const admin = adminExistente.data[0];
 
+      // 5. Verificar auto-modificación
       if (parseInt(id_admin) === parseInt(user_action.id)) {
+        console.error("❌ No se puede modificar los roles propios");
         return FormatterResponseService.error(
-          this.getTranslation(req, "admins:errors.self_action"),
-          this.getTranslation(req, "admins:errors.self_action"),
           403,
           "SELF_ROLE_CHANGE_NOT_ALLOWED",
-          null,
-          req
+          {
+            accion_recomendada:
+              "Contacte a otro administrador para esta acción",
+          }
         );
       }
 
+      // 6. Procesar roles
+      console.log("Procesando roles...");
       const rolesNoModificables = [1, 2, 10, 20];
       const rolesModificables = [7, 8, 9];
 
@@ -957,21 +751,20 @@ export default class AdminService {
         ...nuevosRolesModificablesIds,
       ];
 
+      // 7. Validar reglas de negocio
+      console.log("Validando reglas de negocio de roles...");
       const rolesAdministrativosSeleccionados =
         nuevosRolesModificablesIds.filter((id) => [7, 8, 9].includes(id));
       if (rolesAdministrativosSeleccionados.length > 1) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "roles",
-              message: "Solo se puede asignar un rol administrativo a la vez",
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        return FormatterResponseService.validationError([
+          {
+            field: "roles",
+            message: "admins:validation.single_admin_role_allowed",
+          },
+        ]);
       }
 
+      // 8. Verificar último SuperAdmin
       const tieneSuperAdminActual = rolesActuales.includes(20);
       const tieneSuperAdminFinal = rolesFinales.includes(20);
 
@@ -981,17 +774,19 @@ export default class AdminService {
           "activo"
         );
         if (superAdminsActivos.data <= 1) {
+          console.error("❌ No se puede remover el último SuperAdmin");
           return FormatterResponseService.error(
-            this.getTranslation(req, "admins:errors.last_superadmin"),
-            this.getTranslation(req, "admins:errors.last_superadmin"),
             403,
             "LAST_SUPERADMIN_ROLE_CHANGE_NOT_ALLOWED",
-            null,
-            req
+            {
+              accion_recomendada:
+                "Asigne otro SuperAdmin antes de remover este rol",
+            }
           );
         }
       }
 
+      // 9. Mapear nombres de roles
       const mapeoRoles = {
         1: "Profesor",
         2: "Coordinador",
@@ -1007,6 +802,8 @@ export default class AdminService {
         .map((id) => mapeoRoles[id] || `Rol ${id}`)
         .join(", ");
 
+      // 10. Actualizar roles en BD
+      console.log("Actualizando roles en base de datos...");
       const respuestaModel = await AdminModel.cambiarRol(
         id_admin,
         rolesFinales,
@@ -1017,33 +814,28 @@ export default class AdminService {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      // 11. Enviar notificación
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: this.getTranslation(
-          req,
-          "admins:notifications.roles_updated_title"
-        ),
         tipo: "admin_roles_actualizados",
-        contenido: this.getTranslation(
-          req,
-          "admins:notifications.roles_updated_content",
-          {
-            name: admin.nombres,
-            lastName: admin.apellidos,
-            oldRoles: rolesAnterioresNombres,
-            newRoles: rolesFinalesNombres,
-          }
-        ),
+        titulo: "admins:notifications.roles_updated_title",
+        contenido: "admins:notifications.roles_updated_content",
         metadatos: {
           admin_id: id_admin,
           admin_cedula: admin.cedula,
-          admin_nombres: admin.nombres,
-          admin_apellidos: admin.apellidos,
+          admin_nombre: admin.nombre,
+          admin_apellido: admin.apellido,
           roles_anteriores: rolesAnterioresNombres,
           roles_nuevos: rolesFinalesNombres,
           roles_ids_anteriores: rolesActuales,
           roles_ids_nuevos: rolesFinales,
           usuario_ejecutor: user_action.id,
+          usuario_ejecutor_nombre: user_action.nombre || user_action.username,
           fecha_cambio: new Date().toISOString(),
           url_action: `/administracion/administradores/${id_admin}`,
         },
@@ -1052,18 +844,15 @@ export default class AdminService {
       });
 
       console.log(
-        "✅ " +
-          this.getTranslation(req, "admins:service.registrarAdmin.success")
+        `✅ Roles del administrador ${id_admin} actualizados exitosamente`
       );
-
       return FormatterResponseService.success(
         {
-          message: this.getTranslation(req, "admins:success.roles_updated"),
           admin: {
             id: id_admin,
             cedula: admin.cedula,
-            nombres: admin.nombres,
-            apellidos: admin.apellidos,
+            nombre: admin.nombre,
+            apellido: admin.apellido,
             roles_anteriores: rolesAnterioresNombres,
             roles_nuevos: rolesFinalesNombres,
             roles_ids_anteriores: rolesActuales,
@@ -1077,9 +866,11 @@ export default class AdminService {
             ),
           },
         },
-        this.getTranslation(req, "admins:success.roles_updated"),
-        { status: 200, title: "Roles Actualizados" },
-        req
+        "admins:success.roles_updated",
+        "admins:titles.roles_updated",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error(
@@ -1095,23 +886,23 @@ export default class AdminService {
    * @async
    * @method getProfile
    */
-  static async getProfile(user, req = null) {
+  static async getProfile(user) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.profile.get_start", {
-          id: user.id,
-        })
-      );
+      console.log(`👤 Obteniendo perfil del administrador con ID: ${user.id}`);
 
+      // 1. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(user.id, "usuario");
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
         );
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
+      // 2. Buscar administrador en el modelo
+      console.log("Buscando administrador en base de datos...");
       const respuestaModel = await AdminModel.buscarPorId(user.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -1119,14 +910,13 @@ export default class AdminService {
       }
 
       if (!respuestaModel.data || respuestaModel.data.length === 0) {
-        return FormatterResponseService.notFound(
-          this.getTranslation(req, "admins:errors.not_found"),
-          user.id,
-          req
-        );
+        console.error(`❌ Administrador con ID ${user.id} no encontrado`);
+        return FormatterResponseService.notFound(user.id);
       }
 
       const admin = respuestaModel.data[0];
+
+      // 3. Preparar información del perfil
       const profileInfo = {
         id: admin.id_admin,
         cedula: admin.cedula,
@@ -1139,13 +929,18 @@ export default class AdminService {
         ultimo_acceso: admin.ultimo_acceso,
       };
 
-      console.log(`✅ ${admin.nombre} ${admin.apellido}`);
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Perfil encontrado:", profileInfo);
+      }
 
+      console.log(`✅ Perfil obtenido: ${admin.nombre} ${admin.apellido}`);
       return FormatterResponseService.success(
         { profile: profileInfo },
-        this.getTranslation(req, "admins:success.profile_retrieved"),
-        { status: 200, title: "Mi Perfil" },
-        req
+        "admins:success.profile_retrieved",
+        "admins:titles.profile_retrieved",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener perfil:", error);
@@ -1158,23 +953,26 @@ export default class AdminService {
    * @async
    * @method updateProfile
    */
-  static async updateProfile(user, datos, req = null) {
+  static async updateProfile(user, datos) {
     try {
       console.log(
-        this.getTranslation(req, "admins:service.profile.update_start", {
-          id: user.id,
-        })
+        `🔄 Actualizando perfil del administrador con ID: ${user.id}`
       );
+      console.log("📝 Datos a actualizar:", datos);
 
+      // 1. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(user.id, "usuario");
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
         );
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
+      // 2. Filtrar campos permitidos
+      console.log("Filtrando campos permitidos...");
       const camposPermitidos = ["nombre", "apellido", "email"];
       const datosFiltrados = {};
 
@@ -1185,28 +983,25 @@ export default class AdminService {
       }
 
       if (Object.keys(datosFiltrados).length === 0) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "datos",
-              message: "No se proporcionaron datos válidos para actualizar",
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        return FormatterResponseService.validationError([
+          {
+            field: "datos",
+            message: "admins:validation.no_valid_fields",
+          },
+        ]);
       }
 
+      // 3. Validar datos parciales
+      console.log("Validando datos del perfil...");
       const validation = ValidationService.validatePartialAdmin(datosFiltrados);
       if (!validation.isValid) {
-        return FormatterResponseService.validationError(
-          validation.errors,
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(validation.errors);
       }
 
+      // 4. Verificar duplicados de email
       if (datosFiltrados.email) {
+        console.log("Verificando duplicados de email...");
         const adminDuplicado = await AdminModel.buscarPorEmail(
           datosFiltrados.email
         );
@@ -1215,23 +1010,19 @@ export default class AdminService {
             (admin) => admin.id_admin !== user.id
           );
           if (adminDupe) {
-            return FormatterResponseService.error(
-              this.getTranslation(req, "admins:errors.duplicate"),
-              this.getTranslation(req, "admins:errors.duplicate"),
-              409,
-              "EMAIL_DUPLICATED",
-              {
-                admin_existente: {
-                  id: adminDupe.id_admin,
-                  email: adminDupe.email,
-                },
+            console.error("❌ Email duplicado encontrado:", adminDupe);
+            return FormatterResponseService.error(409, "EMAIL_DUPLICATED", {
+              admin_existente: {
+                id: adminDupe.id_admin,
+                email: adminDupe.email,
               },
-              req
-            );
+            });
           }
         }
       }
 
+      // 5. Actualizar perfil en BD
+      console.log("Actualizando perfil en base de datos...");
       const respuestaModel = await AdminModel.actualizarPerfil(
         user.id,
         datosFiltrados
@@ -1241,19 +1032,22 @@ export default class AdminService {
         return respuestaModel;
       }
 
-      console.log(
-        "✅ " +
-          this.getTranslation(req, "admins:service.registrarAdmin.success")
-      );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
 
+      console.log(
+        `✅ Perfil del administrador ${user.id} actualizado exitosamente`
+      );
       return FormatterResponseService.success(
         {
-          message: this.getTranslation(req, "admins:success.profile_updated"),
           cambios: Object.keys(datosFiltrados),
         },
-        this.getTranslation(req, "admins:success.profile_updated"),
-        { status: 200, title: "Perfil Actualizado" },
-        req
+        "admins:success.profile_updated",
+        "admins:titles.profile_updated",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio actualizar perfil:", error);
@@ -1266,14 +1060,12 @@ export default class AdminService {
    * @async
    * @method obtenerAdminsPorRol
    */
-  static async obtenerAdminsPorRol(rol, req = null) {
+  static async obtenerAdminsPorRol(rol) {
     try {
-      console.log(
-        this.getTranslation(req, "admins:service.obtenerAdminsPorRol.start", {
-          rol: rol,
-        })
-      );
+      console.log(`🎭 Obteniendo administradores por rol: ${rol}`);
 
+      // 1. Validar parámetro rol
+      console.log("Validando parámetro rol...");
       const rolesValidos = [
         "SuperAdmin",
         "Vicerrector",
@@ -1281,35 +1073,40 @@ export default class AdminService {
         "Coordinador",
       ];
       if (!rol || !rolesValidos.includes(rol)) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "rol",
-              message: `Rol inválido. Los roles válidos son: ${rolesValidos.join(
-                ", "
-              )}`,
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        return FormatterResponseService.validationError([
+          {
+            field: "rol",
+            message: "admins:validation.invalid_role",
+          },
+        ]);
       }
 
+      // 2. Obtener administradores por rol del modelo
+      console.log("Obteniendo administradores por rol de base de datos...");
       const respuestaModel = await AdminModel.filtrarPorRol(rol);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(
+        `✅ Se obtuvieron ${respuestaModel.data.length} administradores para rol ${rol}`
+      );
       return FormatterResponseService.success(
         {
           administradores: respuestaModel.data,
           total: respuestaModel.data.length,
           rol: rol,
         },
-        this.getTranslation(req, "admins:success.admins_retrieved"),
-        { status: 200, title: `Administradores - ${rol}` },
-        req
+        "admins:success.filtered_by_role",
+        "admins:titles.filtered_by_role",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener admins por rol:", error);
@@ -1322,47 +1119,48 @@ export default class AdminService {
    * @async
    * @method obtenerAdminsPorEstado
    */
-  static async obtenerAdminsPorEstado(estado, req = null) {
+  static async obtenerAdminsPorEstado(estado) {
     try {
-      console.log(
-        this.getTranslation(
-          req,
-          "admins:service.obtenerAdminsPorEstado.start",
-          { estado: estado }
-        )
-      );
+      console.log(`📊 Obteniendo administradores por estado: ${estado}`);
 
+      // 1. Validar parámetro estado
+      console.log("Validando parámetro estado...");
       const estadosValidos = ["activo", "inactivo"];
       if (!estado || !estadosValidos.includes(estado)) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "estado",
-              message: `Estado inválido. Los estados válidos son: ${estadosValidos.join(
-                ", "
-              )}`,
-            },
-          ],
-          this.getTranslation(req, "admins:errors.validation_failed"),
-          req
-        );
+        return FormatterResponseService.validationError([
+          {
+            field: "estado",
+            message: "admins:validation.invalid_status",
+          },
+        ]);
       }
 
+      // 2. Obtener administradores por estado del modelo
+      console.log("Obteniendo administradores por estado de base de datos...");
       const respuestaModel = await AdminModel.filtrarPorEstado(estado);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(
+        `✅ Se obtuvieron ${respuestaModel.data.length} administradores en estado ${estado}`
+      );
       return FormatterResponseService.success(
         {
           administradores: respuestaModel.data,
           total: respuestaModel.data.length,
           estado: estado,
         },
-        this.getTranslation(req, "admins:success.admins_retrieved"),
-        { status: 200, title: `Administradores - ${estado}` },
-        req
+        "admins:success.filtered_by_status",
+        "admins:titles.filtered_by_status",
+        {
+          status: 200,
+        }
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener admins por estado:", error);

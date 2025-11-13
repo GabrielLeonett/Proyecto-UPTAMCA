@@ -85,9 +85,20 @@
     "aula_retrieved": "Classroom retrieved successfully",
     "aulas_retrieved": "Classrooms retrieved successfully",
     "search_completed": "Classroom search completed",
-    "availability_checked": "Classroom availability checked"
+    "availability_checked": "Classroom availability checked",
+    "classroom_registered": "Classroom registered successfully",
+    "classroom_updated": "Classroom updated successfully",
+    "classroom_deleted": "Classroom deleted successfully",
+    "classroom_found": "Classroom found successfully"
   },
   "errors": {
+    "executing_user_not_found": "Procedure executing user does not exist",
+    "duplicate_classroom": "Existing classroom with the same code",
+    "invalid_data": "Invalid data in classroom registration",
+    "classroom_not_found": "Classroom not found",
+    "sede_not_found": "Campus not found",
+    "capacity_exceeded": "Classroom capacity exceeded",
+    "classroom_in_use": "Classroom is in use and cannot be deleted",
     "error_created": "Error creating classroom",
     "error_created_title": "Creation Error",
     "error_retrieved_all": "Error retrieving classrooms",
@@ -129,11 +140,11 @@
   },
   "notifications": {
     "aula_created_title": "New Classroom Registered",
-    "aula_created_content": "Classroom \"{{nombre}}\" (Code: {{codigo}}) has been registered at campus {{sede}}",
+    "aula_created_content": "Classroom Code: {{aula_codigo}} has been registered at campus {{aula_sede}} by {{usuario_creador_nombre}}",
     "aula_updated_title": "Classroom Updated",
-    "aula_updated_content": "The details for classroom \"{{nombre}}\" ({{codigo}}) at campus {{sede}} have been updated",
+    "aula_updated_content": "The details for classroom \"{{aula_nombre}}\" ({{aula_codigo}}) at campus {{aula_sede}} have been updated by {{usuario_actualizador_nombre}}",
     "aula_deleted_title": "Classroom Deleted",
-    "aula_deleted_content": "Classroom \"{{nombre}}\" ({{codigo}}) at campus {{sede}} has been deleted from the system"
+    "aula_deleted_content": "Classroom \"{{aula_nombre}}\" ({{aula_codigo}}) at campus {{aula_sede}} has been deleted from the system by {{usuario_ejecutor_nombre}}"
   },
   "titles": {
     "aula_created": "Classroom Created",
@@ -152,6 +163,14 @@
     "list_by_pnf_obtained": "Classrooms by PNF"
   },
   "validation": {
+    "code_required": "The classroom code is required",
+    "sede_required": "The campus is required",
+    "type_required": "The classroom type is required",
+    "capacity_required": "The classroom capacity is required",
+    "capacity_positive": "Capacity must be a positive number",
+    "code_min_length": "The classroom code must be at least 2 characters long",
+    "code_format": "The classroom code must have a valid format",
+    "type_invalid": "Invalid classroom type",
     "data_valid": "Classroom data is valid",
     "codigo_required": "The classroom code is required",
     "codigo_invalid_type": "The code must be text",

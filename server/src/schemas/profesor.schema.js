@@ -175,9 +175,9 @@ export const profesorSchema = userSchema.extend({
 
   areas_de_conocimiento: z
     .array(areaConocimientoSchema, {
-      required_error: "profesores:validation.areas_conocimiento_required|Las areas de conocimiento son requeridas",
+      required_error: "profesores:validation.areas_conocimiento_required",
     })
-    .nonempty("profesores:validation.areas_conocimiento_min_length|Debe tener al menos un area de conocimiento"),
+    .nonempty("profesores:validation.areas_conocimiento_min_length"),
 
   pre_grado: z
     .array(preGradoSchema, { 

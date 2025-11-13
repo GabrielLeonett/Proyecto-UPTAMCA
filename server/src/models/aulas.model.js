@@ -25,12 +25,12 @@ export default class AulaModel {
 
       const params = [id_usuario, id_sede, codigo, tipo, capacidad];
       console.log("📝 Ejecutando query:", query, params);
-      
+
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "aulas:success.created"
+        "aulas:success.created_title"
       );
     } catch (error) {
       error.details = { path: "AulaModel.crear" };
@@ -158,22 +158,13 @@ export default class AulaModel {
       const query = `
         SELECT 
           a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
+          a.codigo_aula,
+          a.tipo_aula,
+          a.capacidad_aula,
           s.id_sede,
-          s.nombre as nombre_sede,
-          a.fecha_creacion,
-          a.fecha_actualizacion,
-          u_creador.nombre as usuario_creador,
-          u_actualizador.nombre as usuario_actualizador
+          s.nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        LEFT JOIN public.usuarios u_creador ON a.id_usuario_creacion = u_creador.id_usuario
-        LEFT JOIN public.usuarios u_actualizador ON a.id_usuario_actualizacion = u_actualizador.id_usuario
         WHERE a.id_aula = $1
       `;
       const params = [id_aula];
@@ -210,20 +201,20 @@ export default class AulaModel {
       const campos = [];
       const params = [];
 
-      // Campos permitidos para actualización
-      const camposPermitidos = [
-        "codigo",
-        "nombre",
-        "tipo",
-        "capacidad",
-        "equipamiento",
-        "id_sede",
-        "estado",
-      ];
+      // Mapeo de campos del servicio a campos de la base de datos
+      const mapeoCampos = {
+        codigo: "codigo_aula",
+        nombre: "nombre_aula",
+        tipo: "tipo_aula",
+        capacidad: "capacidad_aula",
+        equipamiento: "equipamiento_aula",
+        id_sede: "id_sede",
+        estado: "estado_aula"
+      };
 
       for (const [campo, valor] of Object.entries(datos)) {
-        if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = $${params.length + 1}`);
+        if (mapeoCampos[campo] && valor !== undefined) {
+          campos.push(`${mapeoCampos[campo]} = $${params.length + 1}`);
           params.push(valor);
         }
       }
@@ -242,7 +233,9 @@ export default class AulaModel {
         UPDATE public.aulas 
         SET ${campos.join(
           ", "
-        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $${params.length}
+        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $${
+        params.length
+      }
         WHERE id_aula = $${params.length + 1}
       `;
 
@@ -251,7 +244,7 @@ export default class AulaModel {
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "aulas:success.updated"
+        "aulas:success.updated_title"
       );
     } catch (error) {
       error.details = { path: "AulaModel.actualizar" };
@@ -275,7 +268,7 @@ export default class AulaModel {
     try {
       const query = `
         UPDATE public.aulas 
-        SET estado = 'INACTIVO', fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $1
+        SET estado_aula = 'INACTIVO', fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $1
         WHERE id_aula = $2
       `;
       const params = [id_usuario, id_aula];
@@ -285,7 +278,7 @@ export default class AulaModel {
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "aulas:success.deleted"
+        "aulas:success.deleted_title"
       );
     } catch (error) {
       error.details = { path: "AulaModel.eliminar" };
@@ -309,18 +302,15 @@ export default class AulaModel {
       const query = `
         SELECT 
           a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          a.equipamiento,
-          a.estado,
+          a.codigo_aula,
+          a.tipo_aula,
+          a.capacidad_aula,
           s.id_sede,
-          s.nombre as nombre_sede
+          s.nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE a.tipo = $1 AND a.estado = 'ACTIVO'
-        ORDER BY a.nombre ASC
+        WHERE a.tipo_aula = $1 AND a.estado_aula = 'ACTIVO'
+        ORDER BY a.codigo_aula ASC
       `;
       const params = [tipo];
 
@@ -346,7 +336,7 @@ export default class AulaModel {
    * @async
    * @method filtrarPorSede
    * @description Filtrar aulas por sede específica
-   * @param {string} sede - Nombre de la sede a filtrar
+   * @param {string} sede - ID de la sede a filtrar
    * @returns {Promise<Object>} Lista de aulas de la sede especificada
    */
   static async filtrarPorSede(sede) {
@@ -354,14 +344,14 @@ export default class AulaModel {
       const query = `
         SELECT 
           a.id_aula,
+          a.codigo_aula,
           a.tipo_aula,
           a.capacidad_aula,
-          a.codigo_aula,
           s.id_sede,
           s.nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE s.id_sede = $1 
+        WHERE s.id_sede = $1 AND a.estado_aula = 'ACTIVO'
       `;
       const params = [sede];
 
@@ -393,19 +383,18 @@ export default class AulaModel {
   static async obtenerAulasPorPnf(codigoPNF) {
     try {
       const query = `
-        -- Aquí va tu consulta específica para obtener aulas por PNF
         SELECT 
           a.id_aula,
-          a.codigo,
-          a.nombre,
-          a.tipo,
-          a.capacidad,
-          s.nombre as nombre_sede
+          a.codigo_aula,
+          a.tipo_aula,
+          a.capacidad_aula,
+          s.id_sede,
+          s.nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE a.estado = 'ACTIVO'
+        WHERE a.estado_aula = 'ACTIVO'
         -- Agrega aquí los joins y condiciones específicas para PNF
-        ORDER BY a.nombre ASC
+        ORDER BY a.codigo_aula ASC
       `;
       const params = [codigoPNF];
 

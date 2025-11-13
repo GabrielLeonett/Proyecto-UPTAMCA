@@ -15,22 +15,9 @@ export default class AulaController {
    */
   static async registerAula(req, res) {
     try {
-      // Mensajes traducidos para la notificación
-      const notificationMessages = {
-        title: req.t("aulas:notifications.aula_created_title"),
-        body: req.t("aulas:notifications.aula_created_body", {
-          codigo: req.body.codigo,
-          sede: req.body.sede,
-        }),
-      };
-
       return FormatResponseController.manejarServicio(
         res,
-        await AulaService.registrarAula(
-          req.body,
-          req.user,
-          notificationMessages
-        )
+        await AulaService.registrarAula(req.body, req.user)
       );
     } catch (error) {
       return FormatResponseController.respuestaError(res, error);

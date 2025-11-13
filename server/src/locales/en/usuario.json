@@ -1,0 +1,25 @@
+{
+  "usuario": {
+    "success": {
+      "password_updated": "Contraseña actualizada exitosamente",
+      "profile_updated": "Perfil actualizado exitosamente",
+      "user_registered": "Usuario registrado exitosamente",
+      "user_found": "Usuario encontrado exitosamente"
+    },
+    "errors": {
+      "user_not_found": "El usuario al que se le desea cambiar la contraseña no existe",
+      "data_integrity_error": "Error de integridad de datos",
+      "invalid_data": "Datos inválidos en la operación",
+      "current_password_incorrect": "La contraseña actual es incorrecta",
+      "password_too_weak": "La contraseña es demasiado débil",
+      "password_same_as_old": "La nueva contraseña no puede ser igual a la anterior"
+    },
+    "validation": {
+      "user_id_required": "El ID de usuario es requerido",
+      "password_required": "La contraseña es requerida",
+      "password_min_length": "La contraseña debe tener al menos 6 caracteres",
+      "password_max_length": "La contraseña no puede exceder los 255 caracteres",
+      "current_password_required": "La contraseña actual es requerida"
+    }
+  }
+}

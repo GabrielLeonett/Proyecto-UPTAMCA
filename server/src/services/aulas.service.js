@@ -23,10 +23,8 @@ export default class AulaService {
    * @param {string} notification_messages.body - Cuerpo de la notificación
    * @returns {Object} Resultado de la operación
    */
-  static async registrarAula(datos, user_action, notification_messages = {}) {
+  static async registrarAula(datos, user_action) {
     try {
-      console.log("🏷️ Datos del aula a registrar:", datos);
-
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
@@ -35,7 +33,6 @@ export default class AulaService {
       }
 
       // 1. Validar datos del aula
-      console.log("Validando datos del aula...");
       const validation = ValidationService.validateAula(datos, {});
 
       if (!validation.isValid) {
@@ -47,7 +44,6 @@ export default class AulaService {
       }
 
       // 2. Validar ID de usuario
-      console.log("Validando ID de usuario...");
       const idValidation = ValidationService.validateId(
         user_action.id,
         "general:validation.id_invalid"
@@ -58,20 +54,7 @@ export default class AulaService {
         return FormatterResponseService.validationError(idValidation.errors);
       }
 
-      // 3. Validar mensajes de notificación
-      console.log("Validando mensajes de notificación...");
-      const defaultMessages = {
-        title: "Notificación del Sistema",
-        body: "Se ha realizado una operación en el sistema",
-      };
-
-      const finalMessages = {
-        ...defaultMessages,
-        ...notification_messages,
-      };
-
       // 4. Crear aula en el modelo
-      console.log("Creando aula en base de datos...");
       const respuestaModel = await AulaModel.crear(datos, user_action.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -82,39 +65,37 @@ export default class AulaService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
+      const busquedaAula = await this.obtenerAulaPorId(respuestaModel.data.id_aula);
+      const aula = busquedaAula.data.aula
+
       // 5. Enviar notificación específica para gestión de infraestructura
-      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
         tipo: "aula_creada",
-        titulo: finalMessages.title,
-        contenido: finalMessages.body,
+        titulo: "aulas:notifications.aula_created_title",
+        contenido: "aulas:notifications.aula_created_body",
         metadatos: {
-          aula_codigo: datos.codigo,
-          aula_nombre: datos.nombre,
-          aula_tipo: datos.tipo,
-          aula_capacidad: datos.capacidad,
-          aula_sede: datos.sede,
-          equipamiento: datos.equipamiento,
+          id_aula: aula.id_aula,
+          aula_codigo: aula.codigo_aula,
+          aula_tipo: aula.tipo_aula,
+          aula_capacidad: aula.capacidad_aula,
+          aula_sede: aula.nombre_sede,
           usuario_creador: user_action.id,
           fecha_registro: new Date().toISOString(),
-          url_action: `/infraestructura/aulas`,
+          url_action: `/infraestructura/sedes/${datos.id_sede}/aulas/${aula.id_aula}`,
         },
         roles_ids: [2, 7, 8, 9, 10, 20], // Coordinador, Directores, Vicerrectoría, SuperAdmin
         users_ids: [user_action.id], // Usuario que creó el aula
       });
 
-      console.log(respuestaModel.message, respuestaModel.title);
       return FormatterResponseService.success(
         {
           aula: {
-            id: respuestaModel.data[0]?.id_aula || datos.codigo,
-            codigo: datos.codigo,
-            nombre: datos.nombre,
-            tipo: datos.tipo,
-            capacidad: datos.capacidad,
-            sede: datos.sede,
-            equipamiento: datos.equipamiento,
+            id: aula.id_aula || aula.codigo_aula,
+            codigo: aula.codigo_aula,
+            tipo: aula.tipo_aula,
+            capacidad: aula.capacidad_aula,
+            sede: aula.nombre_sede,
           },
         },
         respuestaModel.message,
@@ -155,7 +136,10 @@ export default class AulaService {
       );
 
       if (!queryValidation.isValid) {
-        console.error("❌ Validación de parámetros fallida:", queryValidation.errors);
+        console.error(
+          "❌ Validación de parámetros fallida:",
+          queryValidation.errors
+        );
         return FormatterResponseService.validationError(queryValidation.errors);
       }
 
@@ -230,7 +214,7 @@ export default class AulaService {
         console.log("📊 Aula encontrada:", aula);
       }
 
-      console.log(`✅ Aula encontrada: ${aula.nombre}`);
+      console.log(`✅ Aula encontrada: ${aula}`);
       return FormatterResponseService.success(
         {
           aula: aula,
@@ -289,7 +273,10 @@ export default class AulaService {
         "usuario"
       );
       if (!userValidation.isValid) {
-        console.error("❌ Validación de usuario fallida:", userValidation.errors);
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
+        );
         return FormatterResponseService.validationError(userValidation.errors);
       }
 
@@ -352,7 +339,9 @@ export default class AulaService {
       await notificationService.crearNotificacionMasiva({
         tipo: "aula_actualizada",
         titulo: "Aula Actualizada",
-        contenido: `Se han realizado cambios en el aula ${datos.codigo || aulaActual.codigo}`,
+        contenido: `Se han realizado cambios en el aula ${
+          datos.codigo || aulaActual.codigo
+        }`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: datos.codigo || aulaActual.codigo,
@@ -425,7 +414,10 @@ export default class AulaService {
         "usuario"
       );
       if (!userValidation.isValid) {
-        console.error("❌ Validación de usuario fallida:", userValidation.errors);
+        console.error(
+          "❌ Validación de usuario fallida:",
+          userValidation.errors
+        );
         return FormatterResponseService.validationError(userValidation.errors);
       }
 
@@ -525,12 +517,14 @@ export default class AulaService {
 
       // 1. Validar parámetro sede
       console.log("Validando parámetro sede...");
-      if (!sede || typeof sede !== 'string') {
+      if (!sede || typeof sede !== "string") {
         console.error("❌ Parámetro sede inválido");
-        return FormatterResponseService.validationError([{
-          field: 'sede',
-          message: 'aulas:validation.sede_required'
-        }]);
+        return FormatterResponseService.validationError([
+          {
+            field: "sede",
+            message: "aulas:validation.sede_required",
+          },
+        ]);
       }
 
       // 2. Obtener aulas por sede del modelo
@@ -545,7 +539,9 @@ export default class AulaService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      console.log(`✅ Se obtuvieron ${respuestaModel.data.length} aulas para sede ${sede}`);
+      console.log(
+        `✅ Se obtuvieron ${respuestaModel.data.length} aulas para sede ${sede}`
+      );
       return FormatterResponseService.success(
         {
           aulas: respuestaModel.data,
@@ -596,7 +592,9 @@ export default class AulaService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      console.log(`✅ Se obtuvieron ${respuestaModel.data.length} aulas para PNF ${codigoPNF}`);
+      console.log(
+        `✅ Se obtuvieron ${respuestaModel.data.length} aulas para PNF ${codigoPNF}`
+      );
       return FormatterResponseService.success(
         {
           aulas_disponibles: respuestaModel.data,

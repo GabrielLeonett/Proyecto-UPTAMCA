@@ -14,9 +14,25 @@ export default class AdminController {
    * @returns {void}
    */
   static async registrarAdmin(req, res) {
+    const nombre_apellido = req.body.nombres.split(' ')[0] + " " + req.body.apellidos.split(' ')[0]
+    // En tu controller
+    const email_message = {
+      subject: req.t("admins:email.welcome_subject"),
+      body: req.t("admins:email.welcome_body", { name: nombre_apellido }),
+      credentials: req.t("admins:email.welcome_credentials"),
+      username: req.t("admins:email.welcome_username"),
+      temp_password: req.t("admins:email.welcome_temp_password"),
+      instructions: req.t("admins:email.welcome_instructions"),
+      instruction_1: req.t("admins:email.welcome_instruction_1"),
+      instruction_2: req.t("admins:email.welcome_instruction_2"),
+      instruction_3: req.t("admins:email.welcome_instruction_3"),
+      login_button: req.t("admins:email.welcome_login_button"),
+    };
+    console.log(email_message)
+
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.registrarAdmin(req.body, req.file, req.user, req)
+      AdminService.registrarAdmin(req.body, req.file, req.user, email_message)
     );
   }
 
@@ -30,7 +46,7 @@ export default class AdminController {
   static async mostrarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.mostrarAdmin(req.query, req)
+      AdminService.mostrarAdmin(req.query)
     );
   }
 
@@ -44,7 +60,7 @@ export default class AdminController {
   static async buscarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.buscarAdmin(req.query.busqueda, req)
+      AdminService.buscarAdmin(req.query.busqueda)
     );
   }
 
@@ -77,7 +93,7 @@ export default class AdminController {
   static async desactivarAdmin(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.desactivarAdmin(parseInt(req.params.id), req.user, req)
+      AdminService.desactivarAdmin(parseInt(req.params.id), req.user)
     );
   }
 
@@ -109,7 +125,7 @@ export default class AdminController {
   static async getProfile(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.getProfile(req.user, req)
+      AdminService.getProfile(req.user)
     );
   }
 
@@ -123,7 +139,7 @@ export default class AdminController {
   static async updateProfile(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.updateProfile(req.user, req.body, req)
+      AdminService.updateProfile(req.user, req.body)
     );
   }
 
@@ -137,7 +153,7 @@ export default class AdminController {
   static async obtenerAdminPorId(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminPorId(parseInt(req.params.id), req)
+      AdminService.obtenerAdminPorId(parseInt(req.params.id))
     );
   }
 
@@ -151,7 +167,7 @@ export default class AdminController {
   static async obtenerAdminsPorRol(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminsPorRol(req.params.rol, req)
+      AdminService.obtenerAdminsPorRol(req.params.rol)
     );
   }
 
@@ -165,7 +181,7 @@ export default class AdminController {
   static async obtenerAdminsPorEstado(req, res) {
     return FormatResponseController.manejarServicio(
       res,
-      AdminService.obtenerAdminsPorEstado(req.params.estado, req)
+      AdminService.obtenerAdminsPorEstado(req.params.estado)
     );
   }
 }

@@ -4,7 +4,12 @@
     "message": "The input data is not valid. Please correct the indicated errors.",
     "id_invalid": "The ID of the {{entity}} must be a positive integer.",
     "query_param_invalid": "Query parameter not allowed. The parameter '{{param}}' is invalid. Valid parameters: {{validParams}}.",
-    "field_required": "The '{{field}}' field is required and cannot be empty."
+    "field_required": "The '{{field}}' field is required and cannot be empty.",
+    "teacher_not_found": "The teacher does not exist",
+    "executing_user_not_found": "User executing the procedure does not exist"
+  },
+  "errors": {
+    "internal_server_error": "Internal server error during validation"
   },
   "http": {
     "400": "Bad Request",

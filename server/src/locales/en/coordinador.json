@@ -1,0 +1,34 @@
+{
+  "success": {
+    "coordinator_assigned": "Professor successfully assigned as coordinator",
+    "coordinator_updated": "Coordinator successfully updated",
+    "coordinator_removed": "Coordinator successfully removed",
+    "coordinator_found": "Coordinator successfully found"
+  },
+  "errors": {
+    "executing_user_not_found": "Procedure executing user does not exist",
+    "pnf_not_found": "The specified PNF (National Training Program) does not exist",
+    "already_coordinator": "The professor is already a coordinator for this PNF",
+    "duplicate_coordinator": "Existing coordinator for this PNF",
+    "foreign_key_violation": "Data reference error",
+    "coordinator_not_found": "Coordinator not found",
+    "professor_not_found": "Professor not found",
+    "invalid_professor": "The professor is not valid to be a coordinator"
+  },
+  "validation": {
+    "valid_user": "Valid user to assign as coordinator",
+    "self_assignment": "You cannot assign yourself as coordinator",
+    "user_not_found": "The specified user does not exist",
+    "user_inactive": "The specified user is inactive",
+    "gender_not_defined": "The user does not have a defined gender",
+    "email_not_defined": "The user does not have a defined email",
+    "not_professor": "The specified user is not a professor",
+    "professor_inactive": "The specified professor is inactive",
+    "already_coordinator": "The professor is already an active coordinator",
+    "no_undergraduate": "The professor must have at least one undergraduate degree registered",
+    "professor_required": "The professor is required",
+    "pnf_required": "The PNF is required",
+    "professor_active": "The professor must be active",
+    "professor_qualified": "The professor must meet the requirements to be a coordinator"
+  }
+}

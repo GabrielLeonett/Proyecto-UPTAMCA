@@ -1,0 +1,21 @@
+{
+    "success": {
+        "campus_registered": "Sede registrada exitosamente"
+    },
+    "errors": {
+        "duplicate_campus": "Ya existe una sede con ese nombre",
+        "invalid_data": "Datos inválidos en el registro"
+    },
+    "validation": {
+        "valid_campus_data": "Datos de sede válidos",
+        "campus_name_empty": "El nombre de la sede no puede estar vacío",
+        "campus_name_too_short": "El nombre de la sede debe tener al menos 3 caracteres",
+        "campus_location_empty": "La ubicación de la sede no puede estar vacía",
+        "campus_location_too_short": "La ubicación de la sede debe tener al menos 5 caracteres",
+        "campus_name_duplicate": "El nombre de sede ya está registrado",
+        "campus_location_duplicate": "La ubicación de sede ya está registrada",
+        "google_url_invalid": "El código Google debe ser una URL válida",
+        "google_code_duplicate": "El código Google de la sede ya está registrado",
+        "campus_invalid_characters": "El nombre de la sede contiene caracteres no permitidos"
+    }
+}
