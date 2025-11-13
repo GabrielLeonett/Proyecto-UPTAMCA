@@ -1,0 +1,27 @@
+{
+    "validation": {
+        "id_pnf_invalid_type": "El ID del PNF debe ser un número",
+        "id_pnf_required": "El ID del PNF es obligatorio",
+        "id_pnf_positive": "El ID del PNF debe ser un número positivo",
+        "id_pnf_integer": "El ID del PNF debe ser un número entero",
+        "id_profesor_invalid_type": "Debe seleccionar un profesor válido",
+        "id_profesor_required": "El profesor es obligatorio",
+        "id_profesor_positive": "El ID del profesor debe ser un número positivo",
+        "id_profesor_integer": "El ID del profesor debe ser un número entero",
+        "cedula_invalid_type": "La cédula debe ser un número",
+        "cedula_required": "La cédula es obligatoria",
+        "cedula_positive": "La cédula debe ser un número positivo",
+        "nombre_invalid_type": "El nombre debe ser un texto",
+        "nombre_required": "El nombre es obligatorio",
+        "nombre_min_length": "El nombre debe tener al menos {{minimum}} caracteres",
+        "apellido_invalid_type": "El apellido debe ser un texto",
+        "apellido_required": "El apellido es obligatorio",
+        "apellido_min_length": "El apellido debe tener al menos {{minimum}} caracteres",
+        "email_invalid_type": "El email debe ser un texto",
+        "email_required": "El email es obligatorio",
+        "email_invalid_format": "El formato del email no es válido",
+        "telefono_invalid_type": "El teléfono debe ser un texto",
+        "telefono_invalid_format": "El formato del teléfono no es válido",
+        "estado_invalid_enum": "El estado debe ser 'activo' o 'inactivo'"
+    }
+}

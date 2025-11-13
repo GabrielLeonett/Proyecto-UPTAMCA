@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 import AdminController from "../controllers/admin.controller.js";
 import fs from "fs";
 

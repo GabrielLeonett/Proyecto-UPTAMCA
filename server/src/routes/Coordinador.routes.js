@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 import CoordinadorController from "../controllers/coordinador.controller.js";
 
 // Destructuración de los métodos del controlador de Coordinador

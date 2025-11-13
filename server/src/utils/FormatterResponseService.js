@@ -13,8 +13,14 @@ export default class FormatterResponseService {
    * @param {Object} [metadata={}] - Metadatos adicionales
    * @returns {Object} Respuesta formateada
    */
-  static success(data = null, message = "Operación completada", metadata = {}) {
+  static success(
+    data = null,
+    message = "Operación completada",
+    title = "Operación completada",
+    metadata = {}
+  ) {
     return {
+      title: title,
       success: true,
       status: metadata.status || 200,
       message,
@@ -116,7 +122,7 @@ export default class FormatterResponseService {
         timestamp: new Date().toISOString(),
       },
     };
-    
+
     return errorObj; // ← PROPAGACIÓN AUTOMÁTICA
   }
 
@@ -133,7 +139,8 @@ export default class FormatterResponseService {
       ? `${resource} con ID ${id} no encontrado`
       : `${resource} no encontrado`;
 
-    this.error( // ← SIN return, se propaga automáticamente
+    this.error(
+      // ← SIN return, se propaga automáticamente
       "Recurso No Encontrado",
       message,
       404,
@@ -150,9 +157,13 @@ export default class FormatterResponseService {
    * @param {string} [message='Error de validación'] - Mensaje general
    * @throws {Object} Error de validación formateado
    */
-  static validationError(errors, message = "Error de validación") {
-    const error = this.error( // ← SIN return, se propaga automáticamente
-      "Error de Validación",
+  static validationError(
+    errors,
+    message = "formatter:validation.default_message"
+  ) {
+    const error = this.error(
+      // ← SIN return, se propaga automáticamente
+      "formatter:validation.default_message",
       message,
       400,
       "VALIDATION_ERROR",
@@ -171,7 +182,8 @@ export default class FormatterResponseService {
    * @throws {Object} Error 401 formateado
    */
   static unauthorized(message = "No autorizado") {
-   return this.error( // ← SIN return
+    return this.error(
+      // ← SIN return
       "No Autorizado",
       message,
       401,
@@ -187,7 +199,8 @@ export default class FormatterResponseService {
    * @throws {Object} Error 403 formateado
    */
   static forbidden(message = "Acceso prohibido") {
-    this.error( // ← SIN return
+    this.error(
+      // ← SIN return
       "Acceso Prohibido",
       message,
       403,
@@ -204,7 +217,8 @@ export default class FormatterResponseService {
    * @throws {Object} Error 409 formateado
    */
   static conflict(message, details = {}) {
-    this.error( // ← SIN return
+    this.error(
+      // ← SIN return
       "Conflicto",
       message,
       409,
@@ -223,7 +237,8 @@ export default class FormatterResponseService {
    */
   static fromDatabaseResponse(dbResponse) {
     if (dbResponse.state === "error") {
-      this.error( // ← SIN return, se propaga automáticamente
+      this.error(
+        // ← SIN return, se propaga automáticamente
         dbResponse.title || "Error de Base de Datos",
         dbResponse.message,
         dbResponse.status || 500,
@@ -233,7 +248,6 @@ export default class FormatterResponseService {
         }
       );
     }
-
 
     return this.success(dbResponse.data, dbResponse.message, {
       status: dbResponse.status,

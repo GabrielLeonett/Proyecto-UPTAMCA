@@ -1,0 +1,34 @@
+{
+    "validation": {
+        "id_seccion_invalid_type": "El id de sección debe ser un número",
+        "id_seccion_required": "El id de sección es obligatorio",
+        "id_seccion_positive": "El id de sección debe ser positivo",
+        "id_profesor_invalid_type": "El id de profesor debe ser un número",
+        "id_profesor_required": "El id de profesor es obligatorio",
+        "id_profesor_positive": "El id de profesor debe ser positivo",
+        "id_unidad_curricular_invalid_type": "El id de unidad curricular debe ser un número",
+        "id_unidad_curricular_required": "El id de unidad curricular es obligatorio",
+        "id_unidad_curricular_positive": "El id de unidad curricular debe ser positivo",
+        "dia_semana_required": "El día de la semana es obligatorio",
+        "dia_semana_invalid_enum": "El día tiene que ser Lunes, Martes, Miércoles, Jueves, Viernes, Sábado",
+        "hora_inicio_invalid_type": "La hora de inicio debe ser un texto en formato HH:MM:SS",
+        "hora_inicio_required": "La hora de inicio es obligatoria",
+        "hora_inicio_invalid_format": "Formato de hora inválido (HH:MM:SS)",
+        "id_aula_invalid_type": "El id del aula debe ser un número",
+        "id_aula_required": "El id del aula es obligatorio",
+        "id_aula_positive": "El id del aula debe ser positivo",
+        "hora_fin_required": "La hora de fin es obligatoria",
+        "hora_fin_invalid_format": "Formato de hora de fin inválido (HH:MM:SS)",
+        "time_conflict": "Existe un conflicto de horario para este profesor/aula",
+        "duration_too_short": "La duración de la clase debe ser de al menos 30 minutos",
+        "duration_too_long": "La duración de la clase no puede exceder 4 horas"
+    },
+    "days": {
+        "Lunes": "Lunes",
+        "Martes": "Martes",
+        "Miércoles": "Miércoles",
+        "Jueves": "Jueves",
+        "Viernes": "Viernes",
+        "Sábado": "Sábado"
+    }
+}

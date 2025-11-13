@@ -1,0 +1,34 @@
+{
+    "validation": {
+        "id_profesor_required": "El ID del profesor es requerido",
+        "id_profesor_invalid_type": "El ID del profesor debe ser un número",
+        "id_profesor_integer": "El ID del profesor debe ser un número entero",
+        "id_profesor_positive": "El ID del profesor debe ser un número positivo",
+        "tipo_reingreso_required": "El tipo de reingreso es requerido",
+        "tipo_reingreso_invalid_enum": "Tipo de reingreso debe ser: REINGRESO, REINCORPORACION o REINTEGRO",
+        "motivo_reingreso_required": "El motivo de reingreso es requerido",
+        "motivo_reingreso_invalid_type": "El motivo de reingreso debe ser un texto",
+        "motivo_reingreso_min_length": "El motivo de reingreso debe tener al menos 10 caracteres",
+        "motivo_reingreso_max_length": "El motivo de reingreso no puede exceder 1000 caracteres",
+        "observaciones_invalid_type": "Las observaciones deben ser un texto",
+        "observaciones_max_length": "Las observaciones no pueden exceder 2000 caracteres",
+        "fecha_efectiva_invalid_type": "La fecha efectiva debe ser un texto",
+        "fecha_efectiva_invalid_format": "Formato de fecha inválido (YYYY-MM-DD)",
+        "registro_anterior_id_invalid_type": "El ID del registro anterior debe ser un número",
+        "registro_anterior_id_integer": "El ID del registro anterior debe ser un número entero",
+        "registro_anterior_id_positive": "El ID del registro anterior debe ser un número positivo",
+        "profesor_activo": "El profesor ya se encuentra activo en el sistema",
+        "profesor_no_encontrado": "No se encontró el profesor especificado",
+        "reingreso_exitoso": "Reingreso registrado exitosamente"
+    },
+    "types": {
+        "REINGRESO": "Reingreso",
+        "REINCORPORACION": "Reincorporación",
+        "REINTEGRO": "Reintegro"
+    },
+    "messages": {
+        "reingreso_created": "Reingreso registrado exitosamente",
+        "reingreso_updated": "Reingreso actualizado exitosamente",
+        "reingreso_cancelled": "Reingreso cancelado exitosamente"
+    }
+}

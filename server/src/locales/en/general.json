@@ -1,0 +1,16 @@
+{
+  "validation": {
+    "title": "Validation Error",
+    "message": "The input data is not valid. Please correct the indicated errors.",
+    "id_invalid": "The ID of the {{entity}} must be a positive integer.",
+    "query_param_invalid": "Query parameter not allowed. The parameter '{{param}}' is invalid. Valid parameters: {{validParams}}.",
+    "field_required": "The '{{field}}' field is required and cannot be empty."
+  },
+  "http": {
+    "400": "Bad Request",
+    "401": "Unauthorized",
+    "403": "Forbidden",
+    "404": "Not Found",
+    "500": "Internal Server Error"
+  }
+}

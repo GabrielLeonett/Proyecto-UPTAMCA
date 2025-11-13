@@ -125,6 +125,7 @@ export default class FormatterResponseModel {
    */
   static respuestaSuccess(rows = {}, title = "Datos obtenidos") {
     try {
+      console.log(rows, title)
       return {
         status: rows.metadata?.status_code || 200,
         state: rows.metadata?.status_code >= 400 ? "error" : "success",

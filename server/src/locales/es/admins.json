@@ -116,13 +116,29 @@
     "roles_updated_content": "Se han actualizado los roles de {{name}} {{lastName}} de \"{{oldRoles}}\" a \"{{newRoles}}\""
   },
   "validation": {
-    "search_required": "El término de búsqueda es requerido",
-    "invalid_id": "ID inválido",
-    "roles_array_required": "Los roles deben ser un array de objetos",
-    "role_structure_invalid": "Cada rol debe tener id_rol y nombre_rol",
-    "multiple_admin_roles": "Solo se puede asignar un rol administrativo a la vez",
-    "no_valid_data": "No se proporcionaron datos válidos para actualizar",
-    "invalid_role_filter": "Rol inválido para filtro",
-    "invalid_status_filter": "Estado inválido para filtro"
+    "id_rol_required": "El id del rol es requerido",
+    "id_rol_invalid_type": "El id del rol debe ser un número",
+    "id_rol_positive": "El id del rol debe ser un número positivo",
+    "nombre_rol_required": "El nombre del rol es requerido",
+    "nombre_rol_invalid_type": "El nombre del rol debe ser un texto",
+    "nombre_rol_min_length": "El nombre del rol no puede estar vacío",
+    "nombre_rol_max_length": "El nombre del rol no puede tener más de {{maximum}} caracteres",
+    "roles_required": "Los roles son obligatorios",
+    "roles_invalid_type": "Los roles deben ser un array",
+    "roles_min_length": "Debe tener al menos un rol",
+    "roles_max_length": "No puede tener más de {{maximum}} roles",
+    "cedula_invalid_type": "La cédula debe ser un número",
+    "cedula_required": "La cédula es obligatoria",
+    "cedula_positive": "La cédula debe ser un número positivo",
+    "nombre_invalid_type": "El nombre debe ser un texto",
+    "nombre_required": "El nombre es obligatorio",
+    "nombre_min_length": "El nombre debe tener al menos {{minimum}} caracteres",
+    "apellido_invalid_type": "El apellido debe ser un texto",
+    "apellido_required": "El apellido es obligatorio",
+    "apellido_min_length": "El apellido debe tener al menos {{minimum}} caracteres",
+    "email_invalid_type": "El email debe ser un texto",
+    "email_required": "El email es obligatorio",
+    "email_invalid_format": "El formato del email no es válido",
+    "estado_invalid_enum": "El estado debe ser 'activo' o 'inactivo'"
   }
 }

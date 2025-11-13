@@ -13,19 +13,91 @@ loadEnv();
 export default class CoordinadorService {
   /**
    * @static
+   * @method getTranslation
+   * @description Obtiene traducción para el servicio coordinador
+   */
+  static getTranslation(req, key, params = {}) {
+    try {
+      if (req && req.t) {
+        const translation = req.t(key, params);
+        return translation;
+      }
+
+      // Fallback básico en español
+      const fallback = {
+        // Logs del servicio
+        "coordinadores:service.asignarCoordinador.start": "Iniciando asignación de coordinador...",
+        "coordinadores:service.asignarCoordinador.validating_data": "Validando datos de asignación...",
+        "coordinadores:service.asignarCoordinador.validating_user": "Validando ID de usuario...",
+        "coordinadores:service.asignarCoordinador.creating_coordinador": "Asignando coordinador en base de datos...",
+        "coordinadores:service.asignarCoordinador.sending_notifications": "Enviando notificaciones...",
+        "coordinadores:service.asignarCoordinador.success": "Coordinador asignado exitosamente",
+        
+        "coordinadores:service.listarCoordinadores.start": "Obteniendo listado de coordinadores...",
+        "coordinadores:service.obtenerCoordinador.start": "Buscando coordinador cédula: {{cedula}}",
+        "coordinadores:service.actualizarCoordinador.start": "Actualizando coordinador ID: {{id}}",
+        "coordinadores:service.eliminarCoordinador.start": "Eliminando coordinador ID: {{id}}",
+
+        // Mensajes de éxito
+        "coordinadores:success.coordinador_asignado": "Coordinador asignado exitosamente",
+        "coordinadores:success.coordinador_actualizado": "Coordinador actualizado exitosamente",
+        "coordinadores:success.coordinador_eliminado": "Coordinador destituido exitosamente",
+        "coordinadores:success.coordinador_obtenido": "Coordinador obtenido exitosamente",
+        "coordinadores:success.coordinadores_obtenidos": "Coordinadores obtenidos exitosamente",
+        "coordinadores:success.search_completed": "Búsqueda de coordinadores completada",
+
+        // Mensajes de error
+        "coordinadores:errors.validation_failed": "Error de validación",
+        "coordinadores:errors.not_found": "Coordinador no encontrado",
+        "coordinadores:errors.duplicate": "Coordinador ya existe",
+        "coordinadores:errors.in_use": "Coordinador en uso",
+        "coordinadores:errors.invalid_id": "ID inválido",
+        "coordinadores:errors.invalid_cedula": "Cédula inválida",
+        "coordinadores:errors.invalid_user": "ID de usuario inválido",
+
+        // Notificaciones
+        "coordinadores:notifications.coordinador_asignado_title": "Nuevo Coordinador Asignado",
+        "coordinadores:notifications.coordinador_asignado_content": "Se ha asignado al profesor {{nombre}} como coordinador del PNF {{pnf}}",
+        "coordinadores:notifications.coordinador_actualizado_title": "Coordinador Actualizado",
+        "coordinadores:notifications.coordinador_actualizado_content": "Se han actualizado los datos del coordinador {{nombre}}",
+        "coordinadores:notifications.coordinador_eliminado_title": "Coordinador Destituido",
+        "coordinadores:notifications.coordinador_eliminado_content": "Se ha destituido al coordinador {{nombre}} del PNF {{pnf}}",
+
+        // Títulos para respuestas
+        "coordinadores:titles.coordinador_asignado": "Coordinador Asignado",
+        "coordinadores:titles.coordinador_actualizado": "Coordinador Actualizado",
+        "coordinadores:titles.coordinador_eliminado": "Coordinador Destituido",
+        "coordinadores:titles.coordinador_encontrado": "Coordinador Encontrado",
+        "coordinadores:titles.lista_coordinadores": "Lista de Coordinadores",
+      };
+
+      let translation = fallback[key] || key;
+
+      // Interpolación básica de parámetros
+      Object.keys(params).forEach((param) => {
+        translation = translation.replace(`{{${param}}}`, params[param]);
+      });
+
+      return translation;
+    } catch (error) {
+      return key;
+    }
+  }
+
+  /**
+   * @static
    * @async
    * @method asignarCoordinador
    * @description Asigna un profesor como coordinador de un PNF
    * @param {Object} datos - Datos de asignación del coordinador
    * @param {object} user_action - Usuario que realiza la acción
+   * @param {object} req - Request object para internacionalización
    * @returns {Object} Resultado de la operación
    */
-  static async asignarCoordinador(datos, user_action) {
+  static async asignarCoordinador(datos, user_action, req = null) {
     try {
-      console.log(
-        "🔍 [asignarCoordinador] Iniciando asignación de coordinador..."
-      );
-
+      console.log(this.getTranslation(req, "coordinadores:service.asignarCoordinador.start"));
+      
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
@@ -34,19 +106,20 @@ export default class CoordinadorService {
       }
 
       // 1. Validar datos de asignación
-      console.log("✅ Validando datos de asignación...");
-      const validation = ValidationService.validateAsignacionCoordinador(datos);
+      console.log(this.getTranslation(req, "coordinadores:service.asignarCoordinador.validating_data"));
+      const validation = ValidationService.validateAsignacionCoordinador(datos, {}, req);
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en asignación de coordinador"
+          this.getTranslation(req, "coordinadores:errors.validation_failed"),
+          req
         );
       }
 
       // 2. Validar ID de usuario
-      console.log("✅ Validando ID de usuario...");
+      console.log(this.getTranslation(req, "coordinadores:service.asignarCoordinador.validating_user"));
       const idValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
@@ -56,12 +129,13 @@ export default class CoordinadorService {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
         return FormatterResponseService.validationError(
           idValidation.errors,
-          "ID de usuario inválido"
+          this.getTranslation(req, "coordinadores:errors.invalid_user"),
+          req
         );
       }
 
-      // 6. Asignar coordinador en el modelo
-      console.log("👑 Asignando coordinador en base de datos...");
+      // 3. Asignar coordinador en el modelo
+      console.log(this.getTranslation(req, "coordinadores:service.asignarCoordinador.creating_coordinador"));
       const respuestaModel = await CoordinadorModel.asignarCoordinador(
         datos,
         user_action.id
@@ -76,13 +150,16 @@ export default class CoordinadorService {
         console.log("📊 Respuesta del modelo:", respuestaModel);
       }
 
-      // 7. Enviar notificación
-      console.log("🔔 Enviando notificaciones...");
+      // 4. Enviar notificación
+      console.log(this.getTranslation(req, "coordinadores:service.asignarCoordinador.sending_notifications"));
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Nuevo Coordinador Asignado",
+        titulo: this.getTranslation(req, "coordinadores:notifications.coordinador_asignado_title"),
         tipo: "coordinador_asignado",
-        contenido: `Se ha asignado al profesor ${respuestaModel.data.coordinador.nombres} como coordinador del PNF ${respuestaModel.data.coordinador.nombre_pnf}`,
+        contenido: this.getTranslation(req, "coordinadores:notifications.coordinador_asignado_content", {
+          nombre: respuestaModel.data.coordinador.nombres,
+          pnf: respuestaModel.data.coordinador.nombre_pnf
+        }),
         metadatos: {
           coordinador_cedula: datos.cedula_profesor,
           coordinador_nombre: respuestaModel.data.coordinador.nombres,
@@ -96,24 +173,25 @@ export default class CoordinadorService {
         users_ids: [user_action.id, datos.cedula_profesor],
       });
 
-      console.log("🎉 Coordinador asignado exitosamente");
+      console.log("🎉 " + this.getTranslation(req, "coordinadores:service.asignarCoordinador.success"));
 
       return FormatterResponseService.success(
         {
-          message: "Coordinador asignado exitosamente",
+          message: this.getTranslation(req, "coordinadores:success.coordinador_asignado"),
           coordinador: {
             cedula: datos.cedula_profesor,
-            nombre: profesorValidation.nombre,
-            pnf: pnfValidation.nombre,
+            nombre: respuestaModel.data.coordinador.nombres,
+            pnf: respuestaModel.data.coordinador.nombre_pnf,
             fecha_inicio: datos.fecha_inicio,
             fecha_fin: datos.fecha_fin || null,
           },
         },
-        "Coordinador asignado exitosamente",
+        this.getTranslation(req, "coordinadores:success.coordinador_asignado"),
         {
           status: 201,
-          title: "Coordinador Asignado",
-        }
+          title: this.getTranslation(req, "coordinadores:titles.coordinador_asignado"),
+        },
+        req
       );
     } catch (error) {
       console.error("💥 Error en servicio asignar coordinador:", error);
@@ -127,13 +205,12 @@ export default class CoordinadorService {
    * @method listarCoordinadores
    * @description Obtiene el listado de todos los coordinadores
    * @param {Object} queryParams - Parámetros de consulta
+   * @param {object} req - Request object para internacionalización
    * @returns {Object} Resultado de la operación
    */
-  static async listarCoordinadores(queryParams = {}) {
+  static async listarCoordinadores(queryParams = {}, req = null) {
     try {
-      console.log(
-        "🔍 [listarCoordinadores] Obteniendo listado de coordinadores..."
-      );
+      console.log(this.getTranslation(req, "coordinadores:service.listarCoordinadores.start"));
 
       // Validar parámetros de consulta
       const allowedParams = [
@@ -150,13 +227,11 @@ export default class CoordinadorService {
       );
 
       if (!queryValidation.isValid) {
-        console.error(
-          "❌ Validación de parámetros fallida:",
-          queryValidation.errors
-        );
+        console.error("❌ Validación de parámetros fallida:", queryValidation.errors);
         return FormatterResponseService.validationError(
           queryValidation.errors,
-          "Error de validación en parámetros de consulta"
+          this.getTranslation(req, "coordinadores:errors.validation_failed"),
+          req
         );
       }
 
@@ -181,11 +256,12 @@ export default class CoordinadorService {
           limit:
             parseInt(queryParams.limit) || respuestaModel.data?.length || 0,
         },
-        "Coordinadores obtenidos exitosamente",
+        this.getTranslation(req, "coordinadores:success.coordinadores_obtenidos"),
         {
           status: 200,
-          title: "Lista de Coordinadores",
-        }
+          title: this.getTranslation(req, "coordinadores:titles.lista_coordinadores"),
+        },
+        req
       );
     } catch (error) {
       console.error("💥 Error en servicio listar coordinadores:", error);
@@ -199,24 +275,23 @@ export default class CoordinadorService {
    * @method obtenerCoordinador
    * @description Obtiene los detalles de un coordinador específico
    * @param {number} cedula - Cédula del coordinador
+   * @param {object} req - Request object para internacionalización
    * @returns {Object} Resultado de la operación
    */
-  static async obtenerCoordinador(cedula) {
+  static async obtenerCoordinador(cedula, req = null) {
     try {
-      console.log(
-        `🔍 [obtenerCoordinador] Buscando coordinador cédula: ${cedula}`
-      );
+      console.log(this.getTranslation(req, "coordinadores:service.obtenerCoordinador.start", {
+        cedula: cedula
+      }));
 
       // Validar cédula
-      const cedulaValidation = ValidationService.validateCedula(cedula);
+      const cedulaValidation = ValidationService.validateCedula(cedula, {}, req);
       if (!cedulaValidation.isValid) {
-        console.error(
-          "❌ Validación de cédula fallida:",
-          cedulaValidation.errors
-        );
+        console.error("❌ Validación de cédula fallida:", cedulaValidation.errors);
         return FormatterResponseService.validationError(
           cedulaValidation.errors,
-          "Cédula de coordinador inválida"
+          this.getTranslation(req, "coordinadores:errors.invalid_cedula"),
+          req
         );
       }
 
@@ -229,7 +304,11 @@ export default class CoordinadorService {
 
       if (!respuestaModel.data || respuestaModel.data.length === 0) {
         console.error("❌ Coordinador no encontrado:", cedula);
-        return FormatterResponseService.notFound("Coordinador", cedula);
+        return FormatterResponseService.notFound(
+          this.getTranslation(req, "coordinadores:errors.not_found"),
+          cedula,
+          req
+        );
       }
 
       const coordinador = respuestaModel.data[0];
@@ -240,11 +319,12 @@ export default class CoordinadorService {
 
       return FormatterResponseService.success(
         coordinador,
-        "Coordinador obtenido exitosamente",
+        this.getTranslation(req, "coordinadores:success.coordinador_obtenido"),
         {
           status: 200,
-          title: "Coordinador Encontrado",
-        }
+          title: this.getTranslation(req, "coordinadores:titles.coordinador_encontrado"),
+        },
+        req
       );
     } catch (error) {
       console.error("💥 Error en servicio obtener coordinador:", error);
@@ -260,13 +340,14 @@ export default class CoordinadorService {
    * @param {number} id - ID del coordinador
    * @param {Object} datos - Datos actualizados del coordinador
    * @param {object} user_action - Usuario que realiza la acción
+   * @param {object} req - Request object para internacionalización
    * @returns {Object} Resultado de la operación
    */
-  static async actualizarCoordinador(id, datos, user_action) {
+  static async actualizarCoordinador(id, datos, user_action, req = null) {
     try {
-      console.log(
-        `🔍 [actualizarCoordinador] Actualizando coordinador ID: ${id}`
-      );
+      console.log(this.getTranslation(req, "coordinadores:service.actualizarCoordinador.start", {
+        id: id
+      }));
 
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
@@ -277,56 +358,57 @@ export default class CoordinadorService {
       }
 
       // 1. Validar ID del coordinador
-      const idValidation = ValidationService.validateId(id, "coordinador");
+      const idValidation = ValidationService.validateId(id, "coordinador", {}, req);
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
         return FormatterResponseService.validationError(
           idValidation.errors,
-          "ID de coordinador inválido"
+          this.getTranslation(req, "coordinadores:errors.invalid_id"),
+          req
         );
       }
 
       // 2. Validar ID de usuario
       const usuarioValidation = ValidationService.validateId(
         user_action.id,
-        "usuario"
+        "usuario",
+        {},
+        req
       );
       if (!usuarioValidation.isValid) {
-        console.error(
-          "❌ Validación de usuario fallida:",
-          usuarioValidation.errors
-        );
+        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
-          "ID de usuario inválido"
+          this.getTranslation(req, "coordinadores:errors.invalid_user"),
+          req
         );
       }
 
       // 3. Validar datos de actualización
-      const validation =
-        ValidationService.validateActualizacionCoordinador(datos);
+      const validation = ValidationService.validateActualizacionCoordinador(datos, {}, req);
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en actualización de coordinador"
+          this.getTranslation(req, "coordinadores:errors.validation_failed"),
+          req
         );
       }
 
       // 4. Verificar que el coordinador existe
-      const coordinadorExistente =
-        await CoordinadorModel.obtenerCoordinadorPorId(id);
+      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
 
       if (FormatterResponseService.isError(coordinadorExistente)) {
         return coordinadorExistente;
       }
 
-      if (
-        !coordinadorExistente.data ||
-        coordinadorExistente.data.length === 0
-      ) {
+      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
         console.error("❌ Coordinador no encontrado:", id);
-        return FormatterResponseService.notFound("Coordinador", id);
+        return FormatterResponseService.notFound(
+          this.getTranslation(req, "coordinadores:errors.not_found"),
+          id,
+          req
+        );
       }
 
       // 5. Actualizar coordinador en el modelo
@@ -346,9 +428,11 @@ export default class CoordinadorService {
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Coordinador Actualizado",
+        titulo: this.getTranslation(req, "coordinadores:notifications.coordinador_actualizado_title"),
         tipo: "coordinador_actualizado",
-        contenido: `Se han actualizado los datos del coordinador ${coordinadorExistente.data[0].nombres} ${coordinadorExistente.data[0].apellidos}`,
+        contenido: this.getTranslation(req, "coordinadores:notifications.coordinador_actualizado_content", {
+          nombre: `${coordinadorExistente.data[0].nombres} ${coordinadorExistente.data[0].apellidos}`
+        }),
         metadatos: {
           coordinador_id: id,
           coordinador_cedula: coordinadorExistente.data[0].cedula,
@@ -360,18 +444,19 @@ export default class CoordinadorService {
         users_ids: [user_action.id, coordinadorExistente.data[0].cedula],
       });
 
-      console.log("✅ Coordinador actualizado exitosamente");
+      console.log("✅ " + this.getTranslation(req, "coordinadores:service.asignarCoordinador.success"));
 
       return FormatterResponseService.success(
         {
-          message: "Coordinador actualizado exitosamente",
+          message: this.getTranslation(req, "coordinadores:success.coordinador_actualizado"),
           coordinador_id: id,
         },
-        "Coordinador actualizado exitosamente",
+        this.getTranslation(req, "coordinadores:success.coordinador_actualizado"),
         {
           status: 200,
-          title: "Coordinador Actualizado",
-        }
+          title: this.getTranslation(req, "coordinadores:titles.coordinador_actualizado"),
+        },
+        req
       );
     } catch (error) {
       console.error("💥 Error en servicio actualizar coordinador:", error);
@@ -386,52 +471,56 @@ export default class CoordinadorService {
    * @description Elimina un coordinador (destitución)
    * @param {number} id - ID del coordinador
    * @param {object} user_action - Usuario que realiza la acción
+   * @param {object} req - Request object para internacionalización
    * @returns {Object} Resultado de la operación
    */
-  static async eliminarCoordinador(id, user_action) {
+  static async eliminarCoordinador(id, user_action, req = null) {
     try {
-      console.log(`🔍 [eliminarCoordinador] Eliminando coordinador ID: ${id}`);
+      console.log(this.getTranslation(req, "coordinadores:service.eliminarCoordinador.start", {
+        id: id
+      }));
 
       // 1. Validar ID del coordinador
-      const idValidation = ValidationService.validateId(id, "coordinador");
+      const idValidation = ValidationService.validateId(id, "coordinador", {}, req);
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
         return FormatterResponseService.validationError(
           idValidation.errors,
-          "ID de coordinador inválido"
+          this.getTranslation(req, "coordinadores:errors.invalid_id"),
+          req
         );
       }
 
       // 2. Validar ID de usuario
       const usuarioValidation = ValidationService.validateId(
         user_action.id,
-        "usuario"
+        "usuario",
+        {},
+        req
       );
       if (!usuarioValidation.isValid) {
-        console.error(
-          "❌ Validación de usuario fallida:",
-          usuarioValidation.errors
-        );
+        console.error("❌ Validación de usuario fallida:", usuarioValidation.errors);
         return FormatterResponseService.validationError(
           usuarioValidation.errors,
-          "ID de usuario inválido"
+          this.getTranslation(req, "coordinadores:errors.invalid_user"),
+          req
         );
       }
 
       // 3. Verificar que el coordinador existe
-      const coordinadorExistente =
-        await CoordinadorModel.obtenerCoordinadorPorId(id);
+      const coordinadorExistente = await CoordinadorModel.obtenerCoordinadorPorId(id);
 
       if (FormatterResponseService.isError(coordinadorExistente)) {
         return coordinadorExistente;
       }
 
-      if (
-        !coordinadorExistente.data ||
-        coordinadorExistente.data.length === 0
-      ) {
+      if (!coordinadorExistente.data || coordinadorExistente.data.length === 0) {
         console.error("❌ Coordinador no encontrado:", id);
-        return FormatterResponseService.notFound("Coordinador", id);
+        return FormatterResponseService.notFound(
+          this.getTranslation(req, "coordinadores:errors.not_found"),
+          id,
+          req
+        );
       }
 
       const coordinador = coordinadorExistente.data[0];
@@ -452,9 +541,12 @@ export default class CoordinadorService {
       console.log("🔔 Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Coordinador Destituido",
+        titulo: this.getTranslation(req, "coordinadores:notifications.coordinador_eliminado_title"),
         tipo: "coordinador_eliminado",
-        contenido: `Se ha destituido al coordinador ${coordinador.nombres} ${coordinador.apellidos} del PNF ${coordinador.nombre_pnf}`,
+        contenido: this.getTranslation(req, "coordinadores:notifications.coordinador_eliminado_content", {
+          nombre: `${coordinador.nombres} ${coordinador.apellidos}`,
+          pnf: coordinador.nombre_pnf
+        }),
         metadatos: {
           coordinador_id: id,
           coordinador_cedula: coordinador.cedula,
@@ -468,11 +560,11 @@ export default class CoordinadorService {
         users_ids: [user_action.id, coordinador.cedula],
       });
 
-      console.log("✅ Coordinador eliminado exitosamente");
+      console.log("✅ " + this.getTranslation(req, "coordinadores:service.asignarCoordinador.success"));
 
       return FormatterResponseService.success(
         {
-          message: "Coordinador destituido exitosamente",
+          message: this.getTranslation(req, "coordinadores:success.coordinador_eliminado"),
           coordinador: {
             id: id,
             cedula: coordinador.cedula,
@@ -480,11 +572,12 @@ export default class CoordinadorService {
             pnf: coordinador.nombre_pnf,
           },
         },
-        "Coordinador destituido exitosamente",
+        this.getTranslation(req, "coordinadores:success.coordinador_eliminado"),
         {
           status: 200,
-          title: "Coordinador Destituido",
-        }
+          title: this.getTranslation(req, "coordinadores:titles.coordinador_eliminado"),
+        },
+        req
       );
     } catch (error) {
       console.error("💥 Error en servicio eliminar coordinador:", error);

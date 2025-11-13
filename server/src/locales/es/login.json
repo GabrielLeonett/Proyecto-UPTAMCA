@@ -1,0 +1,26 @@
+{
+    "validation": {
+        "email_required": "El email es requerido",
+        "email_invalid_type": "El email debe ser texto",
+        "email_invalid_format": "El email no es válido",
+        "email_max_length": "El email no puede exceder 150 caracteres",
+        "email_empty": "El email no puede estar vacío",
+        "password_required": "La contraseña es requerida",
+        "password_invalid_type": "La contraseña debe ser texto",
+        "password_min_length": "La contraseña debe tener al menos 8 caracteres",
+        "password_max_length": "La contraseña no puede exceder 40 caracteres",
+        "password_letter_required": "La contraseña debe contener al menos una letra",
+        "password_number_required": "La contraseña debe contener al menos un número",
+        "password_invalid_chars": "La contraseña solo puede contener caracteres alfanuméricos y símbolos especiales",
+        "password_empty": "La contraseña no puede estar vacía",
+        "credentials_invalid": "Credenciales inválidas",
+        "account_inactive": "La cuenta está inactiva",
+        "account_locked": "La cuenta está bloqueada",
+        "login_success": "Inicio de sesión exitoso"
+    },
+    "messages": {
+        "welcome": "Bienvenido/a",
+        "session_expired": "La sesión ha expirado",
+        "logout_success": "Cierre de sesión exitoso"
+    }
+}

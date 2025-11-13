@@ -3,41 +3,66 @@ import { z } from "zod";
 const aulaSchema = z.object({
   codigo: z
     .string({
-      invalid_type_error: "El código debe ser un texto",
-      required_error: "El código es obligatorio"
+      invalid_type_error: "aulas:validation.codigo_invalid_type",
+      required_error: "aulas:validation.codigo_required"
     })
-    .min(3, { message: "El código debe tener al menos 3 caracteres" })
-    .max(10, { message: "El código no puede tener más de 10 caracteres" })
+    .min(3, { 
+      // CLAVE PURA: Zod-i18n enviará { minimum: 3 } a i18next.
+      message: "aulas:validation.codigo_min_length" 
+    })
+    .max(10, { 
+      // CLAVE PURA: Zod-i18n enviará { maximum: 10 } a i18next.
+      message: "aulas:validation.codigo_max_length" 
+    })
     .regex(/^[A-Z0-9\-_]+$/, {
-      message:
-        "El código solo puede contener letras mayúsculas, números, guiones y underscores",
+      message: "aulas:validation.codigo_invalid_format", // CLAVE PURA
     }),
 
-  tipo: z.enum(
-    ["Convencional", "Interactiva", "Computación", "Exterior", "Laboratorio"],
-    { 
-      required_error: "El tipo de aula es obligatorio",
-      invalid_type_error: "Debe seleccionar un tipo de aula válido" 
+  tipo: z
+  .string({
+    invalid_type_error: "aulas:validation.tipo_invalid_type",
+    required_error: "aulas:validation.tipo_required"
+  })
+  .refine(
+    (val) => ["Convencional", "Interactiva", "Computación", "Exterior", "Laboratorio"].includes(val),
+    {
+      message: "aulas:validation.tipo_invalid"
     }
   ),
 
   id_sede: z
     .number({
-      invalid_type_error: "El ID de la sede debe ser un número",
-      required_error: "La sede es obligatoria",
+      invalid_type_error: "aulas:validation.id_sede_invalid_type",
+      required_error: "aulas:validation.id_sede_required"
     })
-    .int({ message: "El ID de la sede debe ser un número entero" })
-    .positive({ message: "El ID de la sede debe ser un número positivo" }),
+    .int({ 
+      message: "aulas:validation.id_sede_invalid_int" // CLAVE PURA
+    })
+    .positive({ 
+      message: "aulas:validation.id_sede_positive" // CLAVE PURA
+    }),
 
   capacidad: z
     .number({
-      invalid_type_error: "La capacidad debe ser un número",
-      required_error: "La capacidad es obligatoria",
+      invalid_type_error: "aulas:validation.capacidad_invalid_type",
+      required_error: "aulas:validation.capacidad_required"
     })
-    .int({ message: "La capacidad debe ser un número entero" })
-    .min(1, { message: "La capacidad mínima es 1 estudiante" })
-    .max(500, { message: "La capacidad máxima es 500 estudiantes" })
-    .positive({ message: "La capacidad debe ser un número positivo" }),
+    .int({ 
+      message: "aulas:validation.capacidad_invalid_int" // CLAVE PURA
+    })
+    .min(8, { 
+      // CLAVE PURA: Zod-i18n enviará { minimum: 1 } a i18next.
+      message: "aulas:validation.capacidad_min" 
+    })
+    .max(30, { 
+      // CLAVE PURA: Zod-i18n enviará { maximum: 500 } a i18next.
+      message: "aulas:validation.capacidad_max" 
+    })
+    .positive({ 
+      message: "aulas:validation.capacidad_positive" // CLAVE PURA
+    }),
+    
+  // ... (otros campos)
 });
 
 export default aulaSchema;

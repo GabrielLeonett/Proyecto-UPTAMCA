@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { server } from "../server.js";
-import { socketAuth } from "../middlewares/auth.js";
-import { joinRoleRooms } from "../middlewares/process.js";
+import { socketAuth } from "../middlewares/auth.middleware.js";
+import { joinRoleRooms } from "../middlewares/process.middleware.js";
 
 export default class SocketServices {
   static instance;

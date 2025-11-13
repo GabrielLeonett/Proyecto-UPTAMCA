@@ -24,18 +24,19 @@ export default class AulaModel {
       const query = `CALL registrar_aula_completo($1, $2, $3, $4, $5, NULL)`;
 
       const params = [id_usuario, id_sede, codigo, tipo, capacidad];
-      console.log(query, params);
+      console.log("📝 Ejecutando query:", query, params);
+      
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aula creada exitosamente"
+        "aulas:success.created"
       );
     } catch (error) {
       error.details = { path: "AulaModel.crear" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error en la creación del aula"
+        "aulas:errors.error_created"
       );
     }
   }
@@ -51,44 +52,44 @@ export default class AulaModel {
   static async obtenerTodas(queryParams = {}) {
     try {
       let query = `
-       SELECT 
-         id_sede,
-         nombre_sede,
-         ubicacion_sede,
-         google_sede,
-         id_aula,
-         codigo_aula,
-         tipo_aula,
-         capacidad_aula
-       FROM 
-         public.vistas_aulas
-       WHERE 1=1
-     `;
+        SELECT 
+          id_sede,
+          nombre_sede,
+          ubicacion_sede,
+          google_sede,
+          id_aula,
+          codigo_aula,
+          tipo_aula,
+          capacidad_aula
+        FROM 
+          public.vistas_aulas
+        WHERE 1=1
+      `;
       const params = [];
 
       // --- 1. Aplicar Filtros ---
 
       // Filtro por ID de Sede
       if (queryParams.idSede) {
-        query += ` AND id_sede = ?`;
+        query += ` AND id_sede = $${params.length + 1}`;
         params.push(queryParams.idSede);
       }
 
       // Filtro por Tipo de Aula
       if (queryParams.tipo) {
-        query += ` AND tipo_aula = ?`; // Usando 'tipo_aula' de la vista
+        query += ` AND tipo_aula = $${params.length + 1}`;
         params.push(queryParams.tipo);
       }
 
       // Filtro por Código de Aula (ILIKE para búsqueda parcial)
       if (queryParams.codigo) {
-        query += ` AND codigo_aula ILIKE ?`; // Usando 'codigo_aula' de la vista
+        query += ` AND codigo_aula ILIKE $${params.length + 1}`;
         params.push(`%${queryParams.codigo}%`);
       }
 
       // Filtro por Capacidad (ejemplo)
       if (queryParams.minCapacidad) {
-        query += ` AND capacidad_aula >= ?`;
+        query += ` AND capacidad_aula >= $${params.length + 1}`;
         params.push(parseInt(queryParams.minCapacidad));
       }
 
@@ -123,23 +124,23 @@ export default class AulaModel {
           ? (parseInt(queryParams.page) - 1) * limit
           : 0;
 
-        query += ` LIMIT ? OFFSET ?`;
+        query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
         // Los parámetros de límite y offset van al final
         params.push(limit, offset);
       }
 
-      // 🚀 Ejecutar la consulta con parámetros
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aulas obtenidas exitosamente (desde vista)"
+        "aulas:success.retrieved_all"
       );
     } catch (error) {
       error.details = { path: "AulaModel.obtenerTodas" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al obtener las aulas"
+        "aulas:errors.error_retrieved_all"
       );
     }
   }
@@ -173,21 +174,22 @@ export default class AulaModel {
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
         LEFT JOIN public.usuarios u_creador ON a.id_usuario_creacion = u_creador.id_usuario
         LEFT JOIN public.usuarios u_actualizador ON a.id_usuario_actualizacion = u_actualizador.id_usuario
-        WHERE a.id_aula = ?
+        WHERE a.id_aula = $1
       `;
       const params = [id_aula];
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aula obtenida exitosamente"
+        "aulas:success.retrieved_one"
       );
     } catch (error) {
       error.details = { path: "AulaModel.buscarPorId" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al buscar aula por ID"
+        "aulas:errors.error_retrieved_one"
       );
     }
   }
@@ -221,7 +223,7 @@ export default class AulaModel {
 
       for (const [campo, valor] of Object.entries(datos)) {
         if (camposPermitidos.includes(campo) && valor !== undefined) {
-          campos.push(`${campo} = ?`);
+          campos.push(`${campo} = $${params.length + 1}`);
           params.push(valor);
         }
       }
@@ -229,7 +231,7 @@ export default class AulaModel {
       if (campos.length === 0) {
         return FormatterResponseModel.respuestaPostgres(
           [],
-          "No hay campos válidos para actualizar"
+          "aulas:success.no_fields"
         );
       }
 
@@ -240,21 +242,22 @@ export default class AulaModel {
         UPDATE public.aulas 
         SET ${campos.join(
           ", "
-        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = ?
-        WHERE id_aula = ?
+        )}, fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $${params.length}
+        WHERE id_aula = $${params.length + 1}
       `;
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aula actualizada exitosamente"
+        "aulas:success.updated"
       );
     } catch (error) {
       error.details = { path: "AulaModel.actualizar" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al actualizar aula"
+        "aulas:errors.error_updated"
       );
     }
   }
@@ -272,22 +275,23 @@ export default class AulaModel {
     try {
       const query = `
         UPDATE public.aulas 
-        SET estado = 'INACTIVO', fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = ?
-        WHERE id_aula = ?
+        SET estado = 'INACTIVO', fecha_actualizacion = CURRENT_TIMESTAMP, id_usuario_actualizacion = $1
+        WHERE id_aula = $2
       `;
       const params = [id_usuario, id_aula];
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aula eliminada exitosamente"
+        "aulas:success.deleted"
       );
     } catch (error) {
       error.details = { path: "AulaModel.eliminar" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al eliminar aula"
+        "aulas:errors.error_deleted"
       );
     }
   }
@@ -315,22 +319,24 @@ export default class AulaModel {
           s.nombre as nombre_sede
         FROM public.aulas a
         INNER JOIN public.sedes s ON a.id_sede = s.id_sede
-        WHERE a.tipo = ? AND a.estado = 'ACTIVO'
+        WHERE a.tipo = $1 AND a.estado = 'ACTIVO'
         ORDER BY a.nombre ASC
       `;
       const params = [tipo];
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        `Aulas de tipo ${tipo} obtenidas exitosamente`
+        "aulas:success.filtered_by_type",
+        { tipo }
       );
     } catch (error) {
       error.details = { path: "AulaModel.filtrarPorTipo" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al filtrar aulas por tipo"
+        "aulas:errors.error_filtered_by_type"
       );
     }
   }
@@ -359,17 +365,19 @@ export default class AulaModel {
       `;
       const params = [sede];
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        `Aulas de la sede ${sede} obtenidas exitosamente`
+        "aulas:success.filtered_by_campus",
+        { sede }
       );
     } catch (error) {
       error.details = { path: "AulaModel.filtrarPorSede" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al filtrar aulas por sede"
+        "aulas:errors.error_filtered_by_campus"
       );
     }
   }
@@ -384,23 +392,69 @@ export default class AulaModel {
    */
   static async obtenerAulasPorPnf(codigoPNF) {
     try {
-      let query = `
-        
+      const query = `
+        -- Aquí va tu consulta específica para obtener aulas por PNF
+        SELECT 
+          a.id_aula,
+          a.codigo,
+          a.nombre,
+          a.tipo,
+          a.capacidad,
+          s.nombre as nombre_sede
+        FROM public.aulas a
+        INNER JOIN public.sedes s ON a.id_sede = s.id_sede
+        WHERE a.estado = 'ACTIVO'
+        -- Agrega aquí los joins y condiciones específicas para PNF
+        ORDER BY a.nombre ASC
       `;
+      const params = [codigoPNF];
 
+      console.log("📝 Ejecutando query:", query, params);
       const { rows } = await pg.query(query, params);
 
       return FormatterResponseModel.respuestaPostgres(
         rows,
-        "Aulas disponibles obtenidas exitosamente"
+        "aulas:success.retrieved_by_pnf"
       );
     } catch (error) {
-      error.details = { path: "AulaModel.obtenerDisponibles" };
+      error.details = { path: "AulaModel.obtenerAulasPorPnf" };
       throw FormatterResponseModel.respuestaError(
         error,
-        "Error al obtener aulas disponibles"
+        "aulas:errors.error_retrieved_by_pnf"
       );
     }
   }
 
+  /**
+   * @static
+   * @async
+   * @method verificarHorariosFuturos
+   * @description Verificar si el aula tiene horarios futuros asignados
+   * @param {number} id_aula - ID del aula a verificar
+   * @returns {Promise<boolean>} True si tiene horarios futuros, false en caso contrario
+   */
+  static async verificarHorariosFuturos(id_aula) {
+    try {
+      const query = `
+        SELECT EXISTS(
+          SELECT 1 FROM public.horarios 
+          WHERE id_aula = $1 
+          AND fecha_hora_inicio > CURRENT_TIMESTAMP
+          AND estado = 'ACTIVO'
+        ) as tiene_horarios_futuros
+      `;
+      const params = [id_aula];
+
+      console.log("📝 Ejecutando query:", query, params);
+      const { rows } = await pg.query(query, params);
+
+      return rows[0]?.tiene_horarios_futuros || false;
+    } catch (error) {
+      error.details = { path: "AulaModel.verificarHorariosFuturos" };
+      throw FormatterResponseModel.respuestaError(
+        error,
+        "Error al verificar horarios futuros del aula"
+      );
+    }
+  }
 }

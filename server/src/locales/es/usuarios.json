@@ -1,0 +1,63 @@
+{
+    "validation": {
+        "cedula_required": "La cedula es requerida",
+        "cedula_invalid_type": "La cedula debe ser un numero",
+        "cedula_integer": "La cédula debe ser un número entero",
+        "cedula_positive": "La cédula debe ser un número positivo",
+        "cedula_min": "La cédula debe tener al menos 7 dígitos",
+        "cedula_max": "La cédula no puede tener más de 8 dígitos",
+        "municipio_required": "El municipio es obligatorio",
+        "municipio_invalid_enum": "El municipio debe ser: Carrizal, Los Salias o Guaicaipuro",
+        "nombres_invalid_type": "Nombres tiene que ser un string",
+        "nombres_required": "Los nombres son obligatorios",
+        "nombres_min_length": "Nombres tiene que tener al menos 3 caracteres",
+        "nombres_max_length": "Nombres tiene que tener menos de 150 caracteres",
+        "nombres_empty": "Nombres no puede estar vacio",
+        "apellidos_invalid_type": "Apellidos tiene que ser un string",
+        "apellidos_required": "Los apellidos son obligatorios",
+        "apellidos_min_length": "Apellidos tiene que tener al menos 3 caracteres",
+        "apellidos_max_length": "Apellidos tiene que tener menos de 150 caracteres",
+        "apellidos_empty": "Apellidos no puede estar vacio",
+        "email_invalid_type": "Email tiene que ser un string",
+        "email_required": "El email es obligatorio",
+        "email_invalid_format": "Email no es valido",
+        "email_max_length": "Email tiene que tener menos de 150 caracteres",
+        "email_empty": "Email no puede estar vacio",
+        "password_invalid_type": "Password tiene que ser un string",
+        "password_required": "La contraseña es obligatoria",
+        "password_min_length": "Password tiene que tener al menos 8 caracteres",
+        "password_max_length": "Password tiene que tener menos de 40 caracteres",
+        "direccion_invalid_type": "Direccion tiene que ser un string",
+        "direccion_required": "La dirección es obligatoria",
+        "direccion_min_length": "Direccion tiene que tener al menos 3 caracteres",
+        "direccion_max_length": "Direccion tiene que tener menos de 150 caracteres",
+        "direccion_empty": "Direccion no puede estar vacio",
+        "telefono_movil_invalid_type": "Telefono movil tiene que ser un string",
+        "telefono_movil_required": "El teléfono móvil es obligatorio",
+        "telefono_movil_invalid_format": "Telefono movil tiene que tener 11 digitos",
+        "telefono_local_invalid_type": "Telefono local tiene que ser un string",
+        "telefono_local_invalid_format": "Telefono local tiene que tener 11 digitos",
+        "fecha_nacimiento_invalid_type": "Fecha de nacimiento tiene que ser un string",
+        "fecha_nacimiento_required": "La fecha de nacimiento es obligatoria",
+        "fecha_nacimiento_invalid_format": "Fecha de nacimiento tiene que tener el formato DD-MM-YYYY",
+        "fecha_nacimiento_empty": "Fecha de nacimiento no puede estar vacio",
+        "genero_required": "El género es obligatorio",
+        "genero_invalid_enum": "Genero tiene que ser masculino o femenino",
+        "cedula_duplicate": "Ya existe un usuario con esta cédula",
+        "email_duplicate": "Ya existe un usuario con este email"
+    },
+    "municipalities": {
+        "Carrizal": "Carrizal",
+        "Los Salias": "Los Salias",
+        "Guaicaipuro": "Guaicaipuro"
+    },
+    "genders": {
+        "masculino": "Masculino",
+        "femenino": "Femenino"
+    },
+    "messages": {
+        "user_created": "Usuario creado exitosamente",
+        "user_updated": "Usuario actualizado exitosamente",
+        "user_deleted": "Usuario eliminado exitosamente"
+    }
+}

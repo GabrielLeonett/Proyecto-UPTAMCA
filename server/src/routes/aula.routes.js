@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 import AulaController from "../controllers/aulas.controller.js";
 
 // Destructuración de los métodos del controlador de Aula
@@ -9,7 +9,6 @@ const {
   obtenerAulaPorId,
   actualizarAula,
   eliminarAula,
-  obtenerAulasPorTipo,
   obtenerAulasPorSede,
   obtenerAulasPorPnf
 } = AulaController;
@@ -187,31 +186,6 @@ AulaRouter.delete(
  * =============================================
  */
 
-/**
- * @name GET /aulas/tipo/:tipo
- * @description Obtiene aulas filtradas por tipo específico
- * @param {string} tipo - Tipo de aula (teorica, laboratorio, taller, auditorio)
- * @middleware Requiere uno de estos roles:
- *   - SuperAdmin
- *   - Vicerrector
- *   - Director General de Gestión Curricular
- *   - Coordinador
- *   - Profesor
- * @returns {Array} Lista de aulas del tipo especificado
- * @example
- * curl -X GET 'http://localhost:3000/aulas/tipo/laboratorio'
- */
-AulaRouter.get(
-  "/aulas/tipo/:tipo",
-  middlewareAuth([
-    "SuperAdmin",
-    "Vicerrector",
-    "Director General de Gestión Curricular",
-    "Coordinador",
-    "Profesor",
-  ]),
-  obtenerAulasPorTipo
-);
 
 /**
  * @name GET /aulas/sede/:sede

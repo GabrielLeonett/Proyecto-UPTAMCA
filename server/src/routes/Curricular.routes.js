@@ -1,6 +1,6 @@
 import { Router } from "express";
 import CurricularController from "../controllers/curricular.controller.js";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 
 const {
   regitrarPNF,

@@ -14,12 +14,28 @@ export default class AulaController {
    * @returns {void}
    */
   static async registerAula(req, res) {
-    return FormatResponseController.manejarServicio(
-      res,
-      AulaService.registrarAula(req.body, req.user)
-    );
-  }
+    try {
+      // Mensajes traducidos para la notificación
+      const notificationMessages = {
+        title: req.t("aulas:notifications.aula_created_title"),
+        body: req.t("aulas:notifications.aula_created_body", {
+          codigo: req.body.codigo,
+          sede: req.body.sede,
+        }),
+      };
 
+      return FormatResponseController.manejarServicio(
+        res,
+        await AulaService.registrarAula(
+          req.body,
+          req.user,
+          notificationMessages
+        )
+      );
+    } catch (error) {
+      return FormatResponseController.respuestaError(res, error);
+    }
+  }
   /**
    * @name mostrarAulas
    * @description Obtener todas las aulas registradas

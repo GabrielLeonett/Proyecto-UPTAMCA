@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 import ProfesorController from "../controllers/profesor.controller.js";
 import multer from "multer";
 import path from "path";

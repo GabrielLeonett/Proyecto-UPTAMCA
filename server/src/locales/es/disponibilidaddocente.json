@@ -1,0 +1,26 @@
+{
+    "validation": {
+        "id_profesor_invalid_type": "El ID del profesor debe ser un número",
+        "id_profesor_required": "El ID del profesor es obligatorio",
+        "id_profesor_integer": "El ID del profesor debe ser un número entero",
+        "id_profesor_positive": "El ID del profesor debe ser un número positivo",
+        "dia_semana_required": "El día de la semana es obligatorio",
+        "dia_semana_invalid_enum": "Debe seleccionar un día de la semana válido",
+        "dia_semana_valid_days": "Días válidos: Lunes, Martes, Miércoles, Jueves, Viernes, Sábado",
+        "hora_inicio_invalid_type": "La hora de inicio debe ser un texto",
+        "hora_inicio_required": "La hora de inicio es obligatoria",
+        "hora_inicio_invalid_format": "La hora de inicio debe tener formato HH:MM:SS (24 horas)",
+        "hora_fin_invalid_type": "La hora de fin debe ser un texto",
+        "hora_fin_required": "La hora de fin es obligatoria",
+        "hora_fin_invalid_format": "La hora de fin debe tener formato HH:MM:SS (24 horas)",
+        "hora_fin_after_start": "La hora de fin debe ser posterior a la hora de inicio"
+    },
+    "days": {
+        "Lunes": "Lunes",
+        "Martes": "Martes",
+        "Miércoles": "Miércoles",
+        "Jueves": "Jueves",
+        "Viernes": "Viernes",
+        "Sábado": "Sábado"
+    }
+}

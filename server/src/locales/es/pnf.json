@@ -1,0 +1,35 @@
+{
+    "validation": {
+        "nombre_pnf_invalid_type": "El nombre del PNF debe ser un texto",
+        "nombre_pnf_required": "El nombre del PNF es obligatorio",
+        "nombre_pnf_min_length": "El nombre debe tener al menos 5 caracteres",
+        "nombre_pnf_max_length": "El nombre no puede exceder los 100 caracteres",
+        "nombre_pnf_invalid_format": "Solo se permiten letras, números, espacios y guiones",
+        "descripcion_pnf_invalid_type": "La descripción debe ser un texto",
+        "descripcion_pnf_required": "La descripción es obligatoria",
+        "descripcion_pnf_min_length": "La descripción debe tener al menos 20 caracteres",
+        "descripcion_pnf_max_length": "La descripción no puede exceder los 500 caracteres",
+        "poblacion_pnf_invalid_type": "La población debe ser un número",
+        "poblacion_pnf_required": "La población estudiantil es obligatoria",
+        "poblacion_pnf_integer": "Debe ser un número entero",
+        "poblacion_pnf_positive": "La población debe ser un número positivo",
+        "poblacion_pnf_max": "La población no puede exceder 10,000 estudiantes",
+        "codigo_pnf_invalid_type": "El código debe ser un texto",
+        "codigo_pnf_required": "El código del PNF es obligatorio",
+        "codigo_pnf_min_length": "El código debe tener mínimo 3 caracteres",
+        "codigo_pnf_max_length": "El código debe tener máximo 7 caracteres",
+        "codigo_pnf_invalid_format": "Formato inválido. Use AAA-AAA o AAA-913",
+        "duracion_trayectos_invalid_type": "La duración debe ser un número",
+        "duracion_trayectos_required": "La duración de los trayectos es obligatoria",
+        "duracion_trayectos_min": "La duración mínima es 1 trayecto",
+        "duracion_trayectos_max": "La duración máxima es 5 trayectos",
+        "sede_pnf_invalid_type": "La sede debe ser un numero",
+        "sede_pnf_required": "La sede del PNF es obligatorio",
+        "sede_pnf_positive": "Debe ser un numero positivo",
+        "codigo_duplicate": "Ya existe un PNF con este código",
+        "nombre_duplicate": "Ya existe un PNF con este nombre"
+    },
+    "examples": {
+        "codigo_format": "Ejemplos: ING-INF, ADM-913, TSU-ADM"
+    }
+}

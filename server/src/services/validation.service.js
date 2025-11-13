@@ -883,7 +883,7 @@ export default class ValidationService {
       data: validationResult.success ? validationResult.data : null,
     };
   }
-  
+
   // =============================================
   // MÉTODOS DE VALIDACIÓN PARA USER
   // =============================================
@@ -932,10 +932,10 @@ export default class ValidationService {
    * @name validateId
    * @description Valida que un ID sea numérico y positivo
    * @param {any} id - ID a validar
-   * @param {string} entityName - Nombre de la entidad para el mensaje de error
+   * @param {string} message - Mensaje de error
    * @returns {Object} Resultado de la validación
    */
-  static validateId(id, entityName = "entidad") {
+  static validateId(id, message = "formatter.validation.default_message") {
     const numId = parseInt(id);
     const isValid = !isNaN(numId) && numId > 0;
 
@@ -946,7 +946,7 @@ export default class ValidationService {
         : [
             {
               path: "id",
-              message: `ID de ${entityName} debe ser un número positivo`,
+              message: message,
             },
           ],
       data: isValid ? numId : null,
@@ -962,7 +962,7 @@ export default class ValidationService {
    */
   static validateQueryParams(query, allowedParams = []) {
     const invalidParams = Object.keys(query).filter(
-      (param) => !allowedParams.includes(param)
+      (param) => !allowedParams.includes([param, "lang"])
     );
     const isValid = invalidParams.length === 0;
 

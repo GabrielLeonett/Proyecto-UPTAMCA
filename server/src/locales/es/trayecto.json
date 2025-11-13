@@ -1,0 +1,26 @@
+{
+    "validation": {
+        "descripcion_trayecto_invalid_type": "La descripción debe ser un texto",
+        "descripcion_trayecto_required": "La descripción es obligatoria",
+        "descripcion_trayecto_min_length": "La descripción debe tener al menos 20 caracteres",
+        "descripcion_trayecto_max_length": "La descripción no puede exceder los 500 caracteres",
+        "nombre_trayecto_invalid_type": "El nombre del trayecto debe ser un texto",
+        "nombre_trayecto_required": "El nombre del trayecto es obligatorio",
+        "nombre_trayecto_min_length": "El nombre debe tener al menos 3 caracteres",
+        "nombre_trayecto_max_length": "El nombre no puede exceder los 100 caracteres",
+        "numero_trayecto_invalid_type": "El número del trayecto debe ser un número",
+        "numero_trayecto_required": "El número del trayecto es obligatorio",
+        "numero_trayecto_min": "El número mínimo del trayecto es 1",
+        "numero_trayecto_max": "El número máximo del trayecto es 5",
+        "numero_trayecto_positive": "El número del trayecto debe ser positivo",
+        "duracion_trayecto_invalid_type": "La duración debe ser un número",
+        "duracion_trayecto_required": "La duración es obligatoria",
+        "duracion_trayecto_min": "La duración mínima es 1 trimestre",
+        "duracion_trayecto_max": "La duración máxima es 4 trimestres"
+    },
+    "messages": {
+        "trayecto_created": "Trayecto creado exitosamente",
+        "trayecto_updated": "Trayecto actualizado exitosamente",
+        "trayecto_deleted": "Trayecto eliminado exitosamente"
+    }
+}

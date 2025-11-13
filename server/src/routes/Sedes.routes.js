@@ -1,6 +1,6 @@
 import { Router } from "express";
 import SedesController from "../controllers/sedes.controller.js";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 
 const { registerSede, mostrarSedes, obtenerSedePorId } = SedesController;
 

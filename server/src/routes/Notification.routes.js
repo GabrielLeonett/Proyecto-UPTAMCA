@@ -1,6 +1,6 @@
 import { Router } from "express";
 import NotificationController from "../controllers/notification.controller.js";
-import { middlewareAuth } from "../middlewares/auth.js";
+import { middlewareAuth } from "../middlewares/auth.middleware.js";
 
 const { mostrarNotificacion } = NotificationController;
 

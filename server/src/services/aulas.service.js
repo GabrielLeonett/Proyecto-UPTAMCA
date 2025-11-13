@@ -18,12 +18,15 @@ export default class AulaService {
    * @description Registrar una nueva aula con validación y notificación
    * @param {Object} datos - Datos del aula a registrar
    * @param {object} user_action - Usuario que realiza la acción
+   * @param {Object} notification_messages - Mensajes para la notificación
+   * @param {string} notification_messages.title - Título de la notificación
+   * @param {string} notification_messages.body - Cuerpo de la notificación
    * @returns {Object} Resultado de la operación
    */
-  static async registrarAula(datos, user_action) {
+  static async registrarAula(datos, user_action, notification_messages = {}) {
     try {
-      console.log("🔍 [registrarAula] Iniciando registro de aula...");
       console.log("🏷️ Datos del aula a registrar:", datos);
+
       if (process.env.MODE === "DEVELOPMENT") {
         console.log("📝 Datos recibidos:", {
           datos: JSON.stringify(datos, null, 2),
@@ -32,33 +35,43 @@ export default class AulaService {
       }
 
       // 1. Validar datos del aula
-      console.log("✅ Validando datos del aula...");
-      const validation = ValidationService.validateAula(datos);
+      console.log("Validando datos del aula...");
+      const validation = ValidationService.validateAula(datos, {});
 
       if (!validation.isValid) {
         console.error("❌ Validación de datos fallida:", validation.errors);
         return FormatterResponseService.validationError(
           validation.errors,
-          "Error de validación en registro de aula"
+          "aulas:validation.data_valid"
         );
       }
 
       // 2. Validar ID de usuario
-      console.log("✅ Validando ID de usuario...");
+      console.log("Validando ID de usuario...");
       const idValidation = ValidationService.validateId(
         user_action.id,
-        "usuario"
+        "general:validation.id_invalid"
       );
 
       if (!idValidation.isValid) {
         console.error("❌ Validación de ID fallida:", idValidation.errors);
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de usuario inválido"
-        );
+        return FormatterResponseService.validationError(idValidation.errors);
       }
+
+      // 3. Validar mensajes de notificación
+      console.log("Validando mensajes de notificación...");
+      const defaultMessages = {
+        title: "Notificación del Sistema",
+        body: "Se ha realizado una operación en el sistema",
+      };
+
+      const finalMessages = {
+        ...defaultMessages,
+        ...notification_messages,
+      };
+
       // 4. Crear aula en el modelo
-      console.log("🏫 Creando aula en base de datos...");
+      console.log("Creando aula en base de datos...");
       const respuestaModel = await AulaModel.crear(datos, user_action.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -70,12 +83,12 @@ export default class AulaService {
       }
 
       // 5. Enviar notificación específica para gestión de infraestructura
-      console.log("🔔 Enviando notificaciones de aula...");
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Nueva Aula Registrada",
         tipo: "aula_creada",
-        contenido: `Se ha registrado el aula "${datos.nombre}" (Código: ${datos.codigo}) en la sede ${datos.sede}`,
+        titulo: finalMessages.title,
+        contenido: finalMessages.body,
         metadatos: {
           aula_codigo: datos.codigo,
           aula_nombre: datos.nombre,
@@ -91,13 +104,11 @@ export default class AulaService {
         users_ids: [user_action.id], // Usuario que creó el aula
       });
 
-      console.log("🎉 Aula registrada exitosamente");
-
+      console.log(respuestaModel.message, respuestaModel.title);
       return FormatterResponseService.success(
         {
-          message: "Aula creada exitosamente",
           aula: {
-            id: respuestaModel.data?.id_aula || datos.codigo,
+            id: respuestaModel.data[0]?.id_aula || datos.codigo,
             codigo: datos.codigo,
             nombre: datos.nombre,
             tipo: datos.tipo,
@@ -106,7 +117,8 @@ export default class AulaService {
             equipamiento: datos.equipamiento,
           },
         },
-        "Aula registrada exitosamente",
+        respuestaModel.message,
+        respuestaModel.title,
         {
           status: 201,
           title: "Aula Creada",
@@ -128,9 +140,14 @@ export default class AulaService {
    */
   static async mostrarAulas(queryParams = {}) {
     try {
-      console.log("🔍 [mostrarAulas] Obteniendo todas las aulas...");
+      console.log("📋 Obteniendo lista de aulas...");
 
-      // Validar parámetros de consulta
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("🔍 Parámetros de consulta:", queryParams);
+      }
+
+      // 1. Validar parámetros de consulta
+      console.log("Validando parámetros de consulta...");
       const allowedParams = ["page", "limit", "sort", "order", "sede", "tipo"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
@@ -138,18 +155,23 @@ export default class AulaService {
       );
 
       if (!queryValidation.isValid) {
-        return FormatterResponseService.validationError(
-          queryValidation.errors,
-          "Error de validación en parámetros de consulta"
-        );
+        console.error("❌ Validación de parámetros fallida:", queryValidation.errors);
+        return FormatterResponseService.validationError(queryValidation.errors);
       }
 
+      // 2. Obtener aulas del modelo
+      console.log("Obteniendo aulas de base de datos...");
       const respuestaModel = await AulaModel.obtenerTodas(queryParams);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(`✅ Se obtuvieron ${respuestaModel.data.length} aulas`);
       return FormatterResponseService.success(
         {
           aulas: respuestaModel.data,
@@ -157,10 +179,10 @@ export default class AulaService {
           page: parseInt(queryParams.page) || 1,
           limit: parseInt(queryParams.limit) || respuestaModel.data.length,
         },
-        "Aulas obtenidas exitosamente",
+        "aulas:success.obtained_successfully",
+        "aulas:titles.list_obtained",
         {
           status: 200,
-          title: "Lista de Aulas",
         }
       );
     } catch (error) {
@@ -179,17 +201,18 @@ export default class AulaService {
    */
   static async obtenerAulaPorId(id_aula) {
     try {
-      console.log(`🔍 [obtenerAulaPorId] Buscando aula ID: ${id_aula}`);
+      console.log(`🔍 Buscando aula con ID: ${id_aula}`);
 
-      // Validar ID del aula
+      // 1. Validar ID del aula
+      console.log("Validando ID del aula...");
       const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de aula inválido"
-        );
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
       }
 
+      // 2. Buscar aula en el modelo
+      console.log("Buscando aula en base de datos...");
       const respuestaModel = await AulaModel.buscarPorId(id_aula);
 
       if (FormatterResponseService.isError(respuestaModel)) {
@@ -197,21 +220,25 @@ export default class AulaService {
       }
 
       if (!respuestaModel.data || respuestaModel.data.length === 0) {
-        return FormatterResponseService.notFound("Aula", id_aula);
+        console.error(`❌ Aula con ID ${id_aula} no encontrada`);
+        return FormatterResponseService.notFound(id_aula);
       }
 
       const aula = respuestaModel.data[0];
 
-      console.log(`✅ Aula encontrada: ${aula.nombre}`);
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Aula encontrada:", aula);
+      }
 
+      console.log(`✅ Aula encontrada: ${aula.nombre}`);
       return FormatterResponseService.success(
         {
           aula: aula,
         },
-        "Aula obtenida exitosamente",
+        "aulas:success.obtained_successfully",
+        "aulas:titles.details_obtained",
         {
           status: 200,
-          title: "Detalles del Aula",
         }
       );
     } catch (error) {
@@ -232,51 +259,56 @@ export default class AulaService {
    */
   static async actualizarAula(id_aula, datos, user_action) {
     try {
-      console.log(`🔍 [actualizarAula] Actualizando aula ID: ${id_aula}`);
+      console.log(`🔄 Actualizando aula con ID: ${id_aula}`);
+      console.log("📝 Datos a actualizar:", datos);
 
-      // Validar ID del aula
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("👤 Usuario ejecutor:", user_action);
+      }
+
+      // 1. Validar ID del aula
+      console.log("Validando ID del aula...");
       const idValidation = ValidationService.validateId(id_aula, "aula");
       if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de aula inválido"
-        );
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
       }
 
-      // Validar datos parciales del aula
+      // 2. Validar datos parciales del aula
+      console.log("Validando datos del aula...");
       const validation = ValidationService.validatePartialAula(datos);
       if (!validation.isValid) {
-        return FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en actualización de aula"
-        );
+        console.error("❌ Validación de datos fallida:", validation.errors);
+        return FormatterResponseService.validationError(validation.errors);
       }
 
-      // Validar ID de usuario
+      // 3. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          "ID de usuario inválido"
-        );
+        console.error("❌ Validación de usuario fallida:", userValidation.errors);
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
-      // Verificar que el aula existe
+      // 4. Verificar que el aula existe
+      console.log("Verificando existencia del aula...");
       const aulaExistente = await AulaModel.buscarPorId(id_aula);
       if (
         FormatterResponseService.isError(aulaExistente) ||
         !aulaExistente.data ||
         aulaExistente.data.length === 0
       ) {
-        return FormatterResponseService.notFound("Aula", id_aula);
+        console.error(`❌ Aula con ID ${id_aula} no encontrada`);
+        return FormatterResponseService.notFound(id_aula);
       }
 
       const aulaActual = aulaExistente.data[0];
 
-      // Verificar duplicados si se está actualizando código o nombre
+      // 5. Verificar duplicados si se está actualizando código o nombre
+      console.log("Verificando duplicados...");
       if (datos.codigo || datos.nombre) {
         const aulasExistentes = await AulaModel.obtenerTodas();
         const aulaDuplicada = aulasExistentes.data.find(
@@ -287,23 +319,19 @@ export default class AulaService {
         );
 
         if (aulaDuplicada) {
-          return FormatterResponseService.error(
-            "Aula ya existe",
-            "Ya existe otro aula con el mismo código o nombre",
-            409,
-            "AULA_DUPLICADA",
-            {
-              aula_existente: {
-                id: aulaDuplicada.id_aula,
-                codigo: aulaDuplicada.codigo,
-                nombre: aulaDuplicada.nombre,
-              },
-            }
-          );
+          console.error("❌ Aula duplicada encontrada:", aulaDuplicada);
+          return FormatterResponseService.error(409, "AULA_DUPLICADA", {
+            aula_existente: {
+              id: aulaDuplicada.id_aula,
+              codigo: aulaDuplicada.codigo,
+              nombre: aulaDuplicada.nombre,
+            },
+          });
         }
       }
 
-      // Actualizar aula
+      // 6. Actualizar aula
+      console.log("Actualizando aula en base de datos...");
       const respuestaModel = await AulaModel.actualizar(
         id_aula,
         datos,
@@ -314,12 +342,17 @@ export default class AulaService {
         return respuestaModel;
       }
 
-      // Enviar notificación específica para gestión de infraestructura
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      // 7. Enviar notificación específica para gestión de infraestructura
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Aula Actualizada",
         tipo: "aula_actualizada",
-        contenido: `Se han actualizado los datos del aula "${datos.nombre || aulaActual.nombre}" (${datos.codigo || aulaActual.codigo}) en la sede ${datos.sede || aulaActual.sede}`,
+        titulo: "Aula Actualizada",
+        contenido: `Se han realizado cambios en el aula ${datos.codigo || aulaActual.codigo}`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: datos.codigo || aulaActual.codigo,
@@ -334,18 +367,24 @@ export default class AulaService {
         users_ids: [user_action.id], // Usuario que actualizó el aula
       });
 
-      console.log("✅ Aula actualizada exitosamente");
-
+      console.log(`✅ Aula ${id_aula} actualizada exitosamente`);
       return FormatterResponseService.success(
         {
-          message: "Aula actualizada exitosamente",
           aula_id: id_aula,
           cambios: Object.keys(datos),
+          aula_actualizada: {
+            id: id_aula,
+            codigo: datos.codigo || aulaActual.codigo,
+            nombre: datos.nombre || aulaActual.nombre,
+            tipo: datos.tipo || aulaActual.tipo,
+            capacidad: datos.capacidad || aulaActual.capacidad,
+            sede: datos.sede || aulaActual.sede,
+          },
         },
-        "Aula actualizada exitosamente",
+        "aulas:success.updated_successfully",
+        "aulas:titles.updated_successfully",
         {
           status: 200,
-          title: "Aula Actualizada",
         }
       );
     } catch (error) {
@@ -365,72 +404,78 @@ export default class AulaService {
    */
   static async eliminarAula(id_aula, user_action) {
     try {
-      console.log(`🔍 [eliminarAula] Eliminando aula ID: ${id_aula}`);
+      console.log(`🗑️ Eliminando aula con ID: ${id_aula}`);
 
-      // Validar ID del aula
-      const idValidation = ValidationService.validateId(id_aula, "aula");
-      if (!idValidation.isValid) {
-        return FormatterResponseService.validationError(
-          idValidation.errors,
-          "ID de aula inválido"
-        );
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("👤 Usuario ejecutor:", user_action);
       }
 
-      // Validar ID de usuario
+      // 1. Validar ID del aula
+      console.log("Validando ID del aula...");
+      const idValidation = ValidationService.validateId(id_aula, "aula");
+      if (!idValidation.isValid) {
+        console.error("❌ Validación de ID fallida:", idValidation.errors);
+        return FormatterResponseService.validationError(idValidation.errors);
+      }
+
+      // 2. Validar ID de usuario
+      console.log("Validando ID de usuario...");
       const userValidation = ValidationService.validateId(
         user_action.id,
         "usuario"
       );
       if (!userValidation.isValid) {
-        return FormatterResponseService.validationError(
-          userValidation.errors,
-          "ID de usuario inválido"
-        );
+        console.error("❌ Validación de usuario fallida:", userValidation.errors);
+        return FormatterResponseService.validationError(userValidation.errors);
       }
 
-      // Verificar que el aula existe
+      // 3. Verificar que el aula existe
+      console.log("Verificando existencia del aula...");
       const aulaExistente = await AulaModel.buscarPorId(id_aula);
       if (
         FormatterResponseService.isError(aulaExistente) ||
         !aulaExistente.data ||
         aulaExistente.data.length === 0
       ) {
-        return FormatterResponseService.notFound("Aula", id_aula);
+        console.error(`❌ Aula con ID ${id_aula} no encontrada`);
+        return FormatterResponseService.notFound(id_aula);
       }
 
       const aula = aulaExistente.data[0];
 
-      // Verificar si el aula está siendo utilizada en horarios futuros
+      // 4. Verificar si el aula está siendo utilizada en horarios futuros
+      console.log("Verificando uso del aula en horarios...");
       const tieneHorariosFuturos = await AulaModel.verificarHorariosFuturos(
         id_aula
       );
       if (tieneHorariosFuturos) {
-        return FormatterResponseService.error(
-          "Aula en uso",
-          "No se puede eliminar el aula porque tiene horarios asignados en el futuro",
-          409,
-          "AULA_EN_USO",
-          {
-            aula_id: id_aula,
-            aula_nombre: aula.nombre,
-            accion_recomendada: "Reasignar o cancelar los horarios primero",
-          }
-        );
+        console.error(`❌ Aula ${id_aula} está en uso en horarios futuros`);
+        return FormatterResponseService.error(409, "AULA_EN_USO", {
+          aula_id: id_aula,
+          aula_nombre: aula.nombre,
+          accion_recomendada: "Reasignar o cancelar los horarios primero",
+        });
       }
 
-      // Eliminar aula
+      // 5. Eliminar aula
+      console.log("Eliminando aula de base de datos...");
       const respuestaModel = await AulaModel.eliminar(id_aula, user_action.id);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
-      // Enviar notificación específica para gestión de infraestructura
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      // 6. Enviar notificación específica para gestión de infraestructura
+      console.log("Enviando notificaciones...");
       const notificationService = new NotificationService();
       await notificationService.crearNotificacionMasiva({
-        titulo: "Aula Eliminada",
         tipo: "aula_eliminada",
-        contenido: `Se ha eliminado el aula "${aula.nombre}" (${aula.codigo}) de la sede ${aula.sede} del sistema`,
+        titulo: "Aula Eliminada",
+        contenido: `Se ha eliminado el aula ${aula.codigo} - ${aula.nombre}`,
         metadatos: {
           aula_id: id_aula,
           aula_codigo: aula.codigo,
@@ -445,99 +490,23 @@ export default class AulaService {
         users_ids: [user_action.id], // Usuario que eliminó el aula
       });
 
-      console.log("✅ Aula eliminada exitosamente");
-
+      console.log(`✅ Aula ${id_aula} eliminada exitosamente`);
       return FormatterResponseService.success(
         {
-          message: "Aula eliminada exitosamente",
           aula: {
             id: id_aula,
             codigo: aula.codigo,
             nombre: aula.nombre,
           },
         },
-        "Aula eliminada exitosamente",
+        "aulas:success.deleted_successfully",
+        "aulas:titles.deleted_successfully",
         {
           status: 200,
-          title: "Aula Eliminada",
         }
       );
     } catch (error) {
       console.error("💥 Error en servicio eliminar aula:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
-   * @method obtenerAulasPorTipo
-   * @description Obtener aulas filtradas por tipo con validación
-   * @param {string} tipo - Tipo de aula a filtrar
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerAulasPorTipo(tipo) {
-    try {
-      console.log(`🔍 [obtenerAulasPorTipo] Filtrando aulas por tipo: ${tipo}`);
-
-      // Validar tipo de aula
-      if (!tipo || typeof tipo !== "string" || tipo.trim().length === 0) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "tipo",
-              message:
-                "El tipo de aula es requerido y debe ser una cadena no vacía",
-            },
-          ],
-          "Error de validación en filtro por tipo"
-        );
-      }
-
-      const tipoLimpio = tipo.trim().toUpperCase();
-
-      // Validar que el tipo sea válido
-      const tiposValidos = [
-        "TEORIA",
-        "LABORATORIO",
-        "MIXTA",
-        "AUDITORIO",
-        "TALLER",
-      ];
-      if (!tiposValidos.includes(tipoLimpio)) {
-        return FormatterResponseService.validationError(
-          [
-            {
-              path: "tipo",
-              message: `Tipo de aula inválido. Los tipos válidos son: ${tiposValidos.join(
-                ", "
-              )}`,
-            },
-          ],
-          "Tipo de aula no válido"
-        );
-      }
-
-      const respuestaModel = await AulaModel.filtrarPorTipo(tipoLimpio);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          aulas: respuestaModel.data,
-          total: respuestaModel.data.length,
-          tipo: tipoLimpio,
-        },
-        `Aulas de tipo ${tipoLimpio} obtenidas exitosamente`,
-        {
-          status: 200,
-          title: `Aulas - ${tipoLimpio}`,
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio obtener aulas por tipo:", error);
       throw error;
     }
   }
@@ -552,23 +521,41 @@ export default class AulaService {
    */
   static async obtenerAulasPorSede(sede) {
     try {
-      console.log(`🔍 [obtenerAulasPorSede] Filtrando aulas por sede: ${sede}`);
+      console.log(`🏢 Obteniendo aulas para sede: ${sede}`);
 
+      // 1. Validar parámetro sede
+      console.log("Validando parámetro sede...");
+      if (!sede || typeof sede !== 'string') {
+        console.error("❌ Parámetro sede inválido");
+        return FormatterResponseService.validationError([{
+          field: 'sede',
+          message: 'aulas:validation.sede_required'
+        }]);
+      }
+
+      // 2. Obtener aulas por sede del modelo
+      console.log("Obteniendo aulas por sede de base de datos...");
       const respuestaModel = await AulaModel.filtrarPorSede(sede);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(`✅ Se obtuvieron ${respuestaModel.data.length} aulas para sede ${sede}`);
       return FormatterResponseService.success(
         {
           aulas: respuestaModel.data,
           total: respuestaModel.data.length,
+          sede: sede,
         },
-        `Aulas de la sede ${sede} obtenidas exitosamente`,
+        "aulas:success.obtained_by_campus_successfully",
+        "aulas:titles.list_by_campus_obtained",
         {
           status: 200,
-          title: `Aulas - Sede ${sede}`,
         }
       );
     } catch (error) {
@@ -580,85 +567,50 @@ export default class AulaService {
   /**
    * @static
    * @async
-   * @method obtenerAulasDisponibles
-   * @description Obtener aulas disponibles para un horario específico
-   * @param {Object} filtros - Filtros de disponibilidad
-   * @param {string} filtros.fecha - Fecha en formato YYYY-MM-DD
-   * @param {string} filtros.hora_inicio - Hora de inicio en formato HH:MM
-   * @param {string} filtros.hora_fin - Hora de fin en formato HH:MM
-   * @param {string} filtros.tipo - Tipo de aula (opcional)
-   * @param {string} filtros.sede - Sede (opcional)
-   * @returns {Object} Resultado de la operación
-   */
-  static async obtenerAulasDisponibles(filtros = {}) {
-    try {
-      console.log("🔍 [obtenerAulasDisponibles] Buscando aulas disponibles...");
-
-      // Validar filtros de disponibilidad
-      const validation = ValidationService.validateDisponibilidadAula(filtros);
-      if (!validation.isValid) {
-        return FormatterResponseService.validationError(
-          validation.errors,
-          "Error de validación en filtros de disponibilidad"
-        );
-      }
-
-      const respuestaModel = await AulaModel.obtenerDisponibles(filtros);
-
-      if (FormatterResponseService.isError(respuestaModel)) {
-        return respuestaModel;
-      }
-
-      return FormatterResponseService.success(
-        {
-          aulas_disponibles: respuestaModel.data,
-          total: respuestaModel.data.length,
-          filtros: filtros,
-        },
-        "Aulas disponibles obtenidas exitosamente",
-        {
-          status: 200,
-          title: "Aulas Disponibles",
-        }
-      );
-    } catch (error) {
-      console.error("💥 Error en servicio obtener aulas disponibles:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * @static
-   * @async
    * @method obtenerAulasPorPnf
    * @description Obtener aulas disponibles para un horario específico
-   * @param {number} codigoPNF - de disponibilidad
+   * @param {number} codigoPNF - Código PNF para filtrar
    * @returns {Object} Resultado de la operación
    */
   static async obtenerAulasPorPnf(codigoPNF) {
     try {
-      console.log("🔍 [obtenerAulasPorPnf] Buscando aulas disponibles...");
+      console.log(`📚 Obteniendo aulas para PNF: ${codigoPNF}`);
 
+      // 1. Validar código PNF
+      console.log("Validando código PNF...");
+      const pnfValidation = ValidationService.validateId(codigoPNF, "pnf");
+      if (!pnfValidation.isValid) {
+        console.error("❌ Validación de PNF fallida:", pnfValidation.errors);
+        return FormatterResponseService.validationError(pnfValidation.errors);
+      }
+
+      // 2. Obtener aulas por PNF del modelo
+      console.log("Obteniendo aulas por PNF de base de datos...");
       const respuestaModel = await AulaModel.obtenerAulasPorPnf(codigoPNF);
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
+      if (process.env.MODE === "DEVELOPMENT") {
+        console.log("📊 Respuesta del modelo:", respuestaModel);
+      }
+
+      console.log(`✅ Se obtuvieron ${respuestaModel.data.length} aulas para PNF ${codigoPNF}`);
       return FormatterResponseService.success(
         {
           aulas_disponibles: respuestaModel.data,
           total: respuestaModel.data.length,
-          filtros: filtros,
+          pnf: codigoPNF,
         },
-        "Aulas disponibles obtenidas exitosamente",
+        "aulas:success.obtained_by_pnf_successfully",
+        "aulas:titles.list_by_pnf_obtained",
         {
           status: 200,
-          title: "Aulas Disponibles",
         }
       );
     } catch (error) {
-      console.error("💥 Error en servicio obtener aulas disponibles:", error);
+      console.error("💥 Error en servicio obtener aulas por PNF:", error);
       throw error;
     }
   }
