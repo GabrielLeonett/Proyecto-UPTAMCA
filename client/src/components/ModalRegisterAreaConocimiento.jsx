@@ -6,6 +6,7 @@ import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { nuevaAreaConocimientoSchema } from "../schemas/profesor.schema.js";
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function ModalRegisterAreaConocimiento({
   open,
@@ -14,6 +15,7 @@ export default function ModalRegisterAreaConocimiento({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const axios = useApi(true);
+  const alert = useSweetAlert();
 
   const { register, handleSubmit, reset } = useForm({
     resolver: zodResolver(nuevaAreaConocimientoSchema),
@@ -23,21 +25,49 @@ export default function ModalRegisterAreaConocimiento({
   });
 
   const onSubmit = async (data) => {
-    try {
-      setIsLoading(true);
+  try {
+    const confirm = await alert.confirm(
+      "¿Desea registrar el área de conocimiento?",
+      "Se agregará una nueva área al catálogo."
+    );
+    if (!confirm) return;
 
-      const payload = { area_conocimiento: data.area_conocimiento };
+    setIsLoading(true);
 
-      await axios.post("/catalogos/areas-conocimiento", payload);
+    const payload = { area_conocimiento: data.area_conocimiento };
 
-      const {areas_conocimiento} = await axios.get("/catalogos/areas-conocimiento");
-      setState(areas_conocimiento);
-      reset();
-    } finally {
-      onClose();
-      setIsLoading(false);
+    await axios.post("/catalogos/areas-conocimiento", payload);
+
+    alert.success(
+      "Área registrada",
+      "El área de conocimiento se agregó exitosamente."
+    );
+
+    // 🔄 Recargar lista actualizada
+    const { areas_conocimiento } = await axios.get("/catalogos/areas-conocimiento");
+    setState(areas_conocimiento);
+
+    reset();
+  } catch (error) {
+    console.error("❌ Error al registrar área de conocimiento:", error);
+
+    // ⚠️ Si hay errores de validación desde el backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((e) => {
+        alert.toast(e.field, e.message);
+      });
+    } else {
+      // ❌ Error general
+      alert.error(
+        error.title || "Error al registrar",
+        error.message || "No se pudo registrar el área de conocimiento."
+      );
     }
-  };
+  } finally {
+    onClose();
+    setIsLoading(false);
+  }
+};
 
   return (
     <Modal

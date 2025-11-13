@@ -1007,7 +1007,7 @@ export default function FormRegister() {
           </Stepper>
         </Grid>
 
-        <Box sx={{ display: { xs: "block", sm: "none" }}}>
+        <Box sx={{ display: { xs: "block", sm: "none" } }}>
           <Typography variant="body2" color="primary">
             Paso {step} de {steps.length}: {steps[step - 1]?.title}
           </Typography>

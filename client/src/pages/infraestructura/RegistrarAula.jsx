@@ -8,11 +8,12 @@ import CustomLabel from "../../components/customLabel";
 import CustomButton from "../../components/customButton";
 import useApi from "../../hook/useApi"; // Added import for axios
 import AulaSchema from "../../schemas/aula.schema";
+import useSweetAlert from "../../hook/useSweetAlert";
 
 export default function RegistrarAula() {
   const theme = useTheme();
   const axios = useApi();
-
+  const alert = useSweetAlert();
   const {
     control,
     register,
@@ -42,21 +43,51 @@ export default function RegistrarAula() {
     fetchSedes();
   }, [axios]);
 
-  const onSubmit = async (data) => {
-    setRegistering(true);
+const onSubmit = async (data) => {
+  setRegistering(true);
 
-    try {
-      // Asegurar que capacidad sea número
-      const formData = {
-        ...data,
-        capacidad: Number(data.capacidad),
-      };
-
-      await axios.post("/aulas", formData);
-    } finally {
+  try {
+    // Confirmación antes de enviar
+    const confirm = await alert.confirm(
+      "¿Desea registrar esta aula?",
+      "Verifique que los datos sean correctos antes de continuar."
+    );
+    if (!confirm) {
       setRegistering(false);
+      return; // 👈 Cancela el proceso si el usuario no confirma
     }
-  };
+
+    // Asegurar que capacidad sea número
+    const formData = {
+      ...data,
+      capacidad: Number(data.capacidad),
+    };
+
+    await axios.post("/aulas", formData);
+
+    alert.success(
+      "Aula registrada con éxito",
+      "La información del aula se ha guardado correctamente."
+    );
+
+    reset(); // 👈 si estás usando react-hook-form
+  } catch (error) {
+    if (error?.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((error_validacion) => {
+        alert.toast(error_validacion.field, error_validacion.message);
+      });
+    } else {
+      alert.error(
+        error.title || "Error al registrar el aula",
+        error.message || "No se pudo completar el registro. Intente nuevamente."
+      );
+    }
+
+    console.error("Error al registrar el aula:", error);
+  } finally {
+    setRegistering(false);
+  }
+};
 
   const handleReset = () => {
     reset({

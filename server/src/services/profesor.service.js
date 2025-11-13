@@ -1394,6 +1394,7 @@ export default class ProfesorService {
       console.log(
         "🔍 [registrarDisponibilidad] Iniciando creación de disponibilidad..."
       );
+      console.log("Datos recibidos:", datos);
 
       // Validar datos de disponibilidad
       const validation = ValidationService.validateDisponibilidadDocente(datos);

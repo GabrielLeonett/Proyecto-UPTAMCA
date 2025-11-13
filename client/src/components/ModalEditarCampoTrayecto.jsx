@@ -11,6 +11,7 @@ import CustomLabel from "./customLabel";
 import { useState, useEffect } from "react";
 import trayectoSchema from "../schemas/trayecto.schema";
 import useApi from "../hook/useApi";
+import useSweetAlert from "../hook/useSweetAlert";
 
 export default function ModalEditarCampoTrayecto({
   open,
@@ -20,6 +21,7 @@ export default function ModalEditarCampoTrayecto({
   onGuardar,
 }) {
   const axios = useApi();
+  const alert = useSweetAlert();
   const [valor, setValor] = useState(valorActual || "");
   const [error, setError] = useState("");
   const [pnfs, setPnfs] = useState([]);
@@ -44,18 +46,50 @@ export default function ModalEditarCampoTrayecto({
     fetchPnfs();
   }, [axios]);
 
-  // 💾 Guardar cambios con validación
-  const handleGuardar = () => {
-    try {
-      const campoSchema = trayectoSchema.pick({ [campo]: true });
-      campoSchema.parse({ [campo]: valor });
-      onGuardar(campo, valor);
-      setError("");
-      onClose();
-    } catch (err) {
+// 💾 Guardar cambios con validación
+const handleGuardar = async () => {
+  try {
+    // ✅ Confirmar antes de guardar
+    const confirm = await alert.confirm(
+      "¿Desea guardar los cambios?",
+      "El valor actual del campo será reemplazado por el nuevo."
+    );
+    if (!confirm) return;
+
+    // ✅ Validar el campo individualmente con Zod
+    const campoSchema = trayectoSchema.pick({ [campo]: true });
+    campoSchema.parse({ [campo]: valor });
+
+    // ✅ Si pasa validación → guardar y mostrar éxito
+    onGuardar(campo, valor);
+    setError("");
+
+    alert.success(
+      "Campo actualizado",
+      "El valor se guardó correctamente."
+    );
+
+    onClose();
+  } catch (err) {
+    console.error("❌ Error al guardar campo de trayecto:", err);
+
+    // ⚠️ Si es un error de validación (Zod)
+    if (err.errors && Array.isArray(err.errors)) {
+      err.errors.forEach((e) => {
+        alert.toast("Validación", e.message);
+      });
       setError(err.errors?.[0]?.message || "Error validando campo.");
+    } else {
+      // ❌ Error genérico
+      alert.error(
+        "Error",
+        err.message || "El valor ingresado no es válido."
+      );
+      setError("Error validando campo.");
     }
-  };
+  }
+};
+
 
   // 🧠 Render dinámico según el campo
   const renderCampo = () => {

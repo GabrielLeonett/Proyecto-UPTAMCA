@@ -8,12 +8,14 @@ import ResponsiveAppBar from "../../components/navbar";
 import UnidadCurricularSchema from "../../schemas/unidadcurricular.schema";
 import useApi from "../../hook/useApi";
 import { useLocation } from "react-router-dom";
+import useSweetAlert from "../../hook/useSweetAlert";
 
 export default function RegistrarUnidadCurricular() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const location = useLocation();
   const { idTrayecto } = location.state;
   const axios = useApi(true);
+  const alert = useSweetAlert();
 
   const {
     register,
@@ -28,11 +30,31 @@ export default function RegistrarUnidadCurricular() {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      await axios.post(`/trayectos/${idTrayecto}/unidades-curriculares`, data);
-      reset();
-    } finally {
-      setIsSubmitting(false);
-    }
+  await axios.post(`/trayectos/${idTrayecto}/unidades-curriculares`, data);
+
+  alert.success(
+    "Unidad Curricular registrada con éxito",
+    "Ya puede verla en la lista de unidades."
+  );
+
+  reset();
+} catch (error) {
+  if (error.error?.totalErrors > 0) {
+    error.error.validationErrors.map((error_validacion) => {
+      alert.toast(error_validacion.field, error_validacion.message);
+    });
+  } else {
+    alert.error(
+      error.title || "Error al registrar",
+      error.message || "No se pudo registrar la unidad curricular"
+    );
+  }
+
+  console.error("Error al registrar la unidad curricular:", error);
+} finally {
+  setIsSubmitting(false);
+}
+
   };
 
   return (

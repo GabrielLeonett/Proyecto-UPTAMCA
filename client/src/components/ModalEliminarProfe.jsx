@@ -12,10 +12,12 @@ import CustomLabel from "./customLabel.jsx"; // ✅ tu componente personalizado
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import useSweetAlert from "../hook/useSweetAlert.jsx";
 
 export default function ModalEliminacionProfe({ profesor, open, onClose }) {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const alert = useSweetAlert();
 
     const { register, handleSubmit, reset } = useForm({
         defaultValues: {
@@ -27,33 +29,58 @@ export default function ModalEliminacionProfe({ profesor, open, onClose }) {
     });
 
     const onSubmit = async (data) => {
-        try {
-            setIsLoading(true);
+  try {
+    const confirm = await alert.confirm(
+      "¿Está seguro de eliminar este profesor?",
+      "Esta acción no se puede deshacer."
+    );
+    if (!confirm) return;
 
-            const payload = {
-                id_profesor: profesor.id_profesor,
-                tipo_accion: data.tipo_accion,
-                razon: data.razon,
-                observaciones: data.observaciones,
-                fecha_efectiva: data.fecha_efectiva,
-            };
+    setIsLoading(true);
 
-            await axios.delete("http://localhost:3000/Profesores/Delete", {
-                data: payload,
-                headers: { "Content-Type": "application/json" },
-                withCredentials: true,
-            });
-
-            reset();
-            onClose(); // cerrar modal
-            navigate("/profesores/eliminados");
-        } catch (error) {
-            console.error("Error eliminando profesor:", error);
-            alert("Ocurrió un error al eliminar el profesor.");
-        } finally {
-            setIsLoading(false);
-        }
+    // ✅ Construcción del payload
+    const payload = {
+      id_profesor: profesor.id_profesor,
+      tipo_accion: data.tipo_accion,
+      razon: data.razon,
+      observaciones: data.observaciones,
+      fecha_efectiva: data.fecha_efectiva,
     };
+
+    // ✅ Petición DELETE con axios
+    await axios.delete("/Profesores/Delete", {
+      data: payload,
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
+
+    alert.success(
+      "Profesor eliminado",
+      "El profesor fue eliminado correctamente del sistema."
+    );
+
+    reset();
+    onClose();
+    navigate("/profesores/eliminados");
+  } catch (error) {
+    console.error("❌ Error al eliminar profesor:", error);
+
+    // ✅ Si hay errores de validación enviados desde el backend
+    if (error.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((e) => {
+        alert.toast(e.field, e.message);
+      });
+    } else {
+      // ❌ Error genérico
+      alert.error(
+        error.title || "Error al eliminar",
+        error.message || "Ocurrió un error al intentar eliminar el profesor."
+      );
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
     return (
         <Modal

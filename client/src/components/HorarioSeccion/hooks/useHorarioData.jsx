@@ -183,14 +183,14 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         return;
       }
 
-      if (!seccion?.idSeccion) {
-        console.warn("Sección no está definida o no tiene idSeccion");
+      if (!seccion?.id_seccion) {
+        console.warn("Sección no está definida o no tiene id_seccion");
         return;
       }
 
       try {
         const profesores = await axios.post(
-          `/profesores/to/seccion/${seccion.idSeccion}`,
+          `/profesores/to/seccion/${seccion.id_seccion}`,
           {
             horas_necesarias: unidadCurricular.horas_clase,
           }
@@ -206,7 +206,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         setProfesores([]);
       }
     },
-    [Custom, unidadesCurriculares, seccion?.idSeccion, axios, setProfesores]
+    [Custom, unidadesCurriculares, seccion?.id_seccion, axios, setProfesores]
   );
 
   // Fetch de aulas CON useCallback
@@ -231,8 +231,8 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         return;
       }
 
-      if (!seccion?.idSeccion) {
-        console.warn("Sección no está definida o no tiene idSeccion");
+      if (!seccion?.id_seccion) {
+        console.warn("Sección no está definida o no tiene id_seccion");
         return;
       }
 
@@ -245,7 +245,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
         const id_profesor = profesor.id_profesor || profesor.idProfesor;
 
         const aulas = await axios.post(
-          `/aulas/to/seccion/${seccion.idSeccion}`,
+          `/aulas/to/seccion/${seccion.id_seccion}`,
           {
             id_profesor,
             horas_necesarias: unidadCurricularSelected.horas_clase,
@@ -628,7 +628,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
                   // ✅ CREAR nueva clase
                   console.log("Creando nueva clase:", datos_clase);
                   const datosNewHorario = {
-                    id_seccion: seccion.idSeccion,
+                    id_seccion: seccion.id_seccion,
                     id_profesor: datos_clase.id_profesor,
                     id_unidad_curricular: datos_clase.id_unidad_curricular,
                     id_aula: datos_clase.id_aula,
