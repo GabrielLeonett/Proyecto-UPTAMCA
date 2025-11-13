@@ -31,6 +31,7 @@ import useSweetAlert from "../../../hook/useSweetAlert";
 import CustomLabel from "../../../components/customLabel";
 import CustomButton from "../../../components/customButton";
 import ResponsiveAppBar from "../../../components/navbar";
+import { config } from "zod/v4/core";
 
 export default function FormRegister() {
   const axios = useApi(false);
@@ -42,10 +43,10 @@ export default function FormRegister() {
     control,
     handleSubmit,
     trigger,
+    watch,
   } = useForm({
     resolver: zodResolver(profesorSchema),
     defaultValues: {
-      telefono_local: "",
       genero: "masculino",
       dedicacion: "Convencional",
       categoria: "Agregado",
@@ -183,7 +184,11 @@ export default function FormRegister() {
     } catch (error) {
       if (error.error.totalErrors > 0) {
         error.error.validationErrors.map((error_validacion) => {
-          alert.toast(error_validacion.field, error_validacion.message);
+          alert.toast({
+            title: error_validacion.field,
+            message: error_validacion.message,
+            config: { icon: "error" },
+          });
         });
       } else {
         alert.error(error.title, error.message);
@@ -447,9 +452,11 @@ export default function FormRegister() {
 
   const Step2EducationalInfo = () => {
     // Estados locales para manejar los valores de cada campo
-    const [areasValor, setAreasValor] = useState([]);
-    const [pregradosValor, setPregradosValor] = useState([]);
-    const [posgradosValor, setPosgradosValor] = useState([]);
+    const [areasValor, setAreasValor] = useState(
+      watch("areas_de_conocimiento")
+    );
+    const [pregradosValor, setPregradosValor] = useState(watch("pre_grado"));
+    const [posgradosValor, setPosgradosValor] = useState(watch("pos_grado"));
 
     // Función para eliminar items de cada lista
     const handleDeleteArea = (index) => {
@@ -743,6 +750,7 @@ export default function FormRegister() {
           helperText={
             errors.categoria?.message || "Seleccione la categoría del profesor"
           }
+          value={watch("categoria")}
           fullWidth
         >
           <MenuItem value="Instructor">Instructor</MenuItem>
@@ -755,15 +763,14 @@ export default function FormRegister() {
         <Controller
           name="fecha_ingreso"
           control={control}
+          rules={{ required: "Seleccione su fecha de ingreso" }}
           render={({ field, fieldState: { error } }) => (
             <CustomCalendar
               label="Fecha de Ingreso"
               value={field.value ? dayjs(field.value, "DD-MM-YYYY") : null}
               onChange={(date) => field.onChange(date?.format("DD-MM-YYYY"))}
-              helperText={
-                error?.message ||
-                "Selecciona tu fecha de ingreso a la institución"
-              }
+              maxDate={dayjs().subtract(18, "year")}
+              helperText={error?.message || "Selecciona tu fecha de ingreso"}
               error={!!error}
               fullWidth
             />
@@ -775,6 +782,7 @@ export default function FormRegister() {
           id="dedicacion"
           label="Dedicación"
           variant="outlined"
+          value={watch("dedicacion")}
           {...register("dedicacion")}
           error={!!errors.dedicacion}
           helperText={errors.dedicacion?.message || "Seleccionar la dedicación"}
@@ -1025,7 +1033,7 @@ export default function FormRegister() {
           sx={{
             m: 3,
             p: 3,
-            borderRadius: 5
+            borderRadius: 5,
           }}
         >
           <AnimatePresence custom={direction} initial={false} mode="wait">

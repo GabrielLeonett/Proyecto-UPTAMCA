@@ -9,13 +9,14 @@ import {
 import { useForm } from "react-hook-form";
 import CustomButton from "./customButton.jsx";
 import CustomLabel from "./customLabel.jsx"; // ✅ tu componente personalizado
-import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useSweetAlert from "../hook/useSweetAlert.jsx";
+import useApi from "../hook/useApi.jsx";
 
 export default function ModalEliminacionProfe({ profesor, open, onClose }) {
     const navigate = useNavigate();
+    const axios = useApi();
     const [isLoading, setIsLoading] = useState(false);
     const alert = useSweetAlert();
 
@@ -48,7 +49,7 @@ export default function ModalEliminacionProfe({ profesor, open, onClose }) {
     };
 
     // ✅ Petición DELETE con axios
-    await axios.delete("/Profesores/Delete", {
+    await axios.delete(`/profesores/${profesor.id_profesor}`, {
       data: payload,
       headers: { "Content-Type": "application/json" },
       withCredentials: true,
