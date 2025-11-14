@@ -1,0 +1,319 @@
+import React, { useCallback, useMemo } from "react";
+import { Box, useTheme } from "@mui/material";
+
+// Hooks
+import useHorarioState from "./hooks/useHorarioState";
+import useHorarioData from "./hooks/useHorarioData";
+import useClassMovement from "./hooks/useClassMovement";
+import useSlotManagement from "./hooks/useSlotManagement";
+import useHorarioEffects from "./hooks/useHorarioEffects";
+
+// Components
+import HorarioTable from "./components/HorarioTable";
+import ClassForm from "./components/ClassForm";
+import TableOverlay from "./components/TableOverlay";
+
+// Utils
+import { UTILS } from "../../utils/utils";
+import useApi from "../../hook/useApi";
+import useSweetAlert from "../../hook/useSweetAlert";
+import useCoordinador from "../../hook/useCoordinador";
+
+const HorarioSeccion = ({
+  pnf,
+  trayecto,
+  seccion,
+  horario: initialHorario,
+  turno,
+}) => {
+  const theme = useTheme();
+  const axios = useApi();
+  const alert = useSweetAlert();
+  const { isCustom } = useCoordinador(pnf?.id_pnf);
+
+  // Props consolidados
+  const componentProps = useMemo(
+    () => ({
+      pnf,
+      trayecto,
+      seccion,
+      horario: initialHorario,
+      turno,
+      isCustom,
+    }),
+    [pnf, trayecto, seccion, initialHorario, turno, isCustom]
+  );
+  console.log("🚀 Renderizando HorarioSeccion con props:", componentProps);
+
+  // 1. Estado principal
+  const {
+    tableHorario,
+    selectedClass,
+    availableSlots,
+    unidadesCurriculares,
+    profesores,
+    aulas,
+    loading,
+    classToMove,
+    overlayVisible,
+    Custom,
+    setOverlayVisible,
+    setCustom,
+    state,
+    stateSetters,
+  } = useHorarioState(componentProps);
+
+  // 2. Datos
+  const dataActions = useHorarioData(
+    axios,
+    componentProps,
+    state,
+    stateSetters,
+    isCustom
+  );
+
+  // 3. Movimiento de clases
+  const movementActions = useClassMovement(state, stateSetters, UTILS, {
+    fetchProfesorCompleto: dataActions.fetchProfesorCompleto,
+    fetchAulaCompleta: dataActions.fetchAulaCompleta,
+    fetchProfesoresHorario: dataActions.fetchProfesoresHorario,
+    fetchAulaHorario: dataActions.fetchAulaHorario,
+  });
+
+  // 4. Gestión de slots
+  const slotActions = useSlotManagement(
+    state,
+    stateSetters,
+    UTILS,
+    movementActions
+  );
+
+  // 5. Efectos
+  useHorarioEffects(
+    componentProps,
+    state,
+    { ...movementActions, ...slotActions },
+    stateSetters
+  );
+
+  // Handlers optimizados
+  const handleUnidadChange = useCallback(
+    (unidadId) => {
+      const unidad = unidadesCurriculares.find(
+        (u) => u.id_unidad_curricular === unidadId
+      );
+      stateSetters.setUnidadCurricularSelected(unidad);
+      dataActions.fetchProfesores(unidad);
+    },
+    [unidadesCurriculares, stateSetters, dataActions.fetchProfesores]
+  );
+
+  const handleProfesorChange = useCallback(
+    (profesorId) => {
+      const profesor = profesores.find((p) => p.id_profesor === profesorId);
+      stateSetters.setProfesorSelected(profesor);
+      dataActions.fetchAulas(profesor);
+    },
+    [profesores, stateSetters, dataActions.fetchAulas]
+  );
+
+  const handleAulaChange = useCallback(
+    (aulaId) => {
+      const aula = aulas.find((a) => a.id_aula === aulaId);
+      stateSetters.setAulaSelected(aula);
+    },
+    [aulas, stateSetters]
+  );
+
+  const handleCancel = useCallback(async () => {
+    try {
+      stateSetters.setLoading(true);
+      stateSetters.setTableHorario(state.tableHorarioOriginal);
+      alert.success(
+        "Cambios cancelados",
+        "Se han restaurado los cambios originales del horario."
+      );
+    } catch (error) {
+      console.error("Error al cancelar cambios:", error);
+      alert.error(
+        "Error",
+        "No se pudieron cancelar los cambios. Intente nuevamente."
+      );
+    } finally {
+      stateSetters.setLoading(false);
+    }
+  }, [stateSetters, alert, state.tableHorarioOriginal]);
+
+  const handleExitModeCustom = useCallback(() => {
+    setCustom(false);
+    stateSetters.setHayCambios(false);
+  }, [setCustom, stateSetters]);
+
+  const handleSave = useCallback(async () => {
+    try {
+      stateSetters.setLoading(true);
+      await dataActions.fetchCambiosTableHorario(alert);
+      alert.success(
+        "horario guardado",
+        "Los cambios se han guardado exitosamente."
+      );
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      alert.error(
+        "Error al guardar",
+        "No se pudieron guardar los cambios. Intente nuevamente."
+      );
+    } finally {
+      stateSetters.setLoading(false);
+    }
+  }, [stateSetters, alert, dataActions.fetchCambiosTableHorario]);
+
+  const handleCloseOverlay = useCallback(() => {
+    setOverlayVisible(false);
+  }, [setOverlayVisible]);
+
+  const handleToggleOverlay = useCallback(() => {
+    setOverlayVisible((prev) => !prev);
+  }, [setOverlayVisible]);
+
+  // Título del horario
+  const horarioTitle = useMemo(() => {
+    const parts = [
+      pnf?.nombre_pnf,
+      trayecto && `Trayecto ${trayecto.valor_trayecto}`,
+      seccion.valor_seccion && `Sección ${seccion.valor_seccion}`,
+    ].filter(Boolean);
+    return parts.join(" - ");
+  }, [pnf, trayecto, seccion]);
+
+  const handlePrint = useCallback(async () => {
+    try {
+      setOverlayVisible(false);
+      const id_seccion = seccion?.id_seccion;
+
+      if (!id_seccion) {
+        alert.warning(
+          "Advertencia",
+          "No se encontró la sección para exportar."
+        );
+        return;
+      }
+
+      const response = await axios.get(`/exportar/seccion/${id_seccion}`, {
+        responseType: "blob",
+      });
+      console.log(response);
+
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `Horario_${horarioTitle}.docx`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+
+      console.log("✅ Archivo PDF descargado correctamente.");
+      alert.success(
+        "Éxito",
+        "El horario se ha exportado y descargado correctamente."
+      );
+    } catch (error) {
+      console.error("❌ Error al descargar el horario:", error);
+      alert.error(
+        "Error al exportar",
+        "No se pudo descargar el horario. Intente nuevamente."
+      );
+    }
+  }, [axios, seccion, setOverlayVisible, alert, horarioTitle]);
+  // Configuración de la tabla
+  const tableConfig = useMemo(
+    () => ({
+      tableHorario,
+      availableSlots,
+      isSlotAvailable: slotActions.isSlotAvailable,
+      handleSlotClick: slotActions.handleSlotClick,
+      handleClassDeleteClick: movementActions.handleDeleteClass,
+      handleMoveRequest: movementActions.handleMoveRequest,
+      handleCancelMoveRequest: movementActions.handleCancelMoveRequest,
+      selectedClass,
+      classToMove,
+      Custom,
+      UnidadesCurriculares: unidadesCurriculares,
+      horarioTitle,
+    }),
+    [
+      unidadesCurriculares,
+      tableHorario,
+      availableSlots,
+      slotActions,
+      movementActions,
+      selectedClass,
+      classToMove,
+      Custom,
+      horarioTitle,
+    ]
+  );
+
+  return (
+    <Box sx={{ position: "relative", minHeight: "400px" }}>
+      {/* Tabla del horario */}
+      <Box
+        sx={{
+          flex: 1,
+          position: "relative",
+          border: overlayVisible
+            ? `2px solid ${theme.palette.primary.main}`
+            : "2px solid transparent",
+          borderRadius: 2,
+          transition: "all 0.3s ease",
+          minHeight: "500px",
+          zIndex: 1,
+          overflow: "hidden",
+          backgroundColor: "background.paper",
+        }}
+        onDoubleClick={handleToggleOverlay}
+      >
+        <HorarioTable {...tableConfig} />
+
+        {/* Overlay de acciones */}
+        {!Custom && (
+          <TableOverlay
+            isVisible={overlayVisible}
+            isCustom={isCustom}
+            setCustom={setCustom}
+            onPrint={handlePrint}
+            onClose={handleCloseOverlay}
+            title={horarioTitle}
+          />
+        )}
+      </Box>
+
+      {/* Formulario para nueva clase */}
+      {Custom && (
+        <Box sx={{ mt: 3 }}>
+          <ClassForm
+            unidadesCurriculares={unidadesCurriculares}
+            unidadCurricularSelected={state.unidadCurricularSelected}
+            profesores={profesores}
+            profesorSelected={state.profesorSelected}
+            aulas={aulas}
+            aulaSelected={state.aulaSelected}
+            onUnidadChange={handleUnidadChange}
+            onProfesorChange={handleProfesorChange}
+            onAulaChange={handleAulaChange}
+            Custom={Custom}
+            loading={loading}
+            errors={{}}
+            ButtonSave={handleSave}
+            ButtonCancel={handleCancel}
+            ButtonExitModeCustom={handleExitModeCustom}
+            HayCambios={state.hayCambios}
+          />
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default React.memo(HorarioSeccion);
