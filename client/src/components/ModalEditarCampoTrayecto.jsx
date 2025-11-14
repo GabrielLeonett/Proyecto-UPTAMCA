@@ -64,10 +64,12 @@ const handleGuardar = async () => {
     onGuardar(campo, valor);
     setError("");
 
-    alert.success(
-      "Campo actualizado",
-      "El valor se guardó correctamente."
-    );
+    // 🔽 Aquí va el toast de éxito
+    alert.toast({
+      title: "Campo actualizado",
+      message: "El valor se guardó correctamente.",
+      config: { icon: "success" },
+    });
 
     onClose();
   } catch (err) {
@@ -76,20 +78,26 @@ const handleGuardar = async () => {
     // ⚠️ Si es un error de validación (Zod)
     if (err.errors && Array.isArray(err.errors)) {
       err.errors.forEach((e) => {
-        alert.toast("Validación", e.message);
+        // 🔽 Aquí va el toast de advertencia de validación
+        alert.toast({
+          title: "Validación",
+          message: e.message,
+          config: { icon: "warning" },
+        });
       });
       setError(err.errors?.[0]?.message || "Error validando campo.");
     } else {
-      // ❌ Error genérico
-      alert.error(
-        "Error",
-        err.message || "El valor ingresado no es válido."
-      );
+      // 🔽 Aquí va el toast de error general
+      alert.toast({
+        title: "Error",
+        message: err.message || "El valor ingresado no es válido.",
+        config: { icon: "error" },
+      });
+
       setError("Error validando campo.");
     }
   }
 };
-
 
   // 🧠 Render dinámico según el campo
   const renderCampo = () => {

@@ -48,7 +48,6 @@ export default function ModalEditarCampoPNF({
     fetchPnfs();
   }, []);
 
-// 💾 Guardar cambios con validación
 const handleGuardar = async () => {
   console.log("🟢 [DEBUG] Guardando campo:", { campo, valor });
 
@@ -68,31 +67,40 @@ const handleGuardar = async () => {
     onGuardar(campo, valor);
     setError("");
 
-    alert.success(
-      "Campo actualizado",
-      "El valor se guardó correctamente."
-    );
+    // 🔽 Aquí debes poner el toast de éxito
+    alert.toast({
+      title: "Campo actualizado",
+      message: "El valor se guardó correctamente.",
+      config: { icon: "success" },
+    });
 
     onClose();
   } catch (err) {
     console.error("❌ [DEBUG] Error validando campo:", err);
 
-    // ✅ Manejo detallado de errores de validación Zod
+    // ⚠️ Manejo detallado de errores de validación Zod
     if (err.errors && Array.isArray(err.errors)) {
       err.errors.forEach((e) => {
-        alert.toast("Validación", e.message);
+        // 🔽 Aquí debes poner el toast de advertencia por cada validación
+        alert.toast({
+          title: "Validación",
+          message: e.message,
+          config: { icon: "warning" },
+        });
       });
       setError(err.errors?.[0]?.message || "Error validando campo.");
     } else {
-      alert.error(
-        "Error al guardar",
-        err.message || "El valor ingresado no es válido."
-      );
+      // 🔽 Aquí debes poner el toast de error general
+      alert.toast({
+        title: "Error al guardar",
+        message: err.message || "El valor ingresado no es válido.",
+        config: { icon: "error" },
+      });
+
       setError("Error validando campo.");
     }
   }
 };
-
 
   // 🧠 Render dinámico según el campo
   const renderCampo = () => {

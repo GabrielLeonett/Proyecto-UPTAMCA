@@ -111,6 +111,7 @@ export default function ModalEditarCampoProfesor({
     }
   };
 
+
   // Función para eliminar un item
   const handleDeleteItem = (indexToDelete) => {
     if (Array.isArray(valor)) {
