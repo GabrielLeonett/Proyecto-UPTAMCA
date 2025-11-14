@@ -28,7 +28,7 @@ export default function ModalEliminacionProfe({ profesor, open, onClose }) {
         },
     });
 
-    const onSubmit = async (data) => {
+const onSubmit = async (data) => {
   try {
     const confirm = await alert.confirm(
       "¿Está seguro de eliminar este profesor?",
@@ -54,10 +54,12 @@ export default function ModalEliminacionProfe({ profesor, open, onClose }) {
       withCredentials: true,
     });
 
-    alert.success(
-      "Profesor eliminado",
-      "El profesor fue eliminado correctamente del sistema."
-    );
+    // 🔽 Reemplazamos alert.success() por toast
+    alert.toast({
+      title: "Profesor eliminado",
+      message: "El profesor fue eliminado correctamente del sistema.",
+      config: { icon: "success" },
+    });
 
     reset();
     onClose();
@@ -68,19 +70,28 @@ export default function ModalEliminacionProfe({ profesor, open, onClose }) {
     // ✅ Si hay errores de validación enviados desde el backend
     if (error.error?.totalErrors > 0) {
       error.error.validationErrors.forEach((e) => {
-        alert.toast(e.field, e.message);
+        // 🔽 toast para cada error de validación
+        alert.toast({
+          title: e.field,
+          message: e.message,
+          config: { icon: "warning" },
+        });
       });
     } else {
-      // ❌ Error genérico
-      alert.error(
-        error.title || "Error al eliminar",
-        error.message || "Ocurrió un error al intentar eliminar el profesor."
-      );
+      // 🔽 Reemplazamos alert.error() por toast
+      alert.toast({
+        title: error.title || "Error al eliminar",
+        message:
+          error.message ||
+          "Ocurrió un error al intentar eliminar el profesor.",
+        config: { icon: "error" },
+      });
     }
   } finally {
     setIsLoading(false);
   }
 };
+
 
     return (
         <Modal

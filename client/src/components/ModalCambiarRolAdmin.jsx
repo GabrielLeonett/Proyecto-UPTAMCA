@@ -142,61 +142,73 @@ export default function ModalEditarRolesAdmin({
     return rol.siempreActivo;
   };
 
-  const handleGuardar = async () => {
-    setCargando(true);
-    setError("");
+const handleGuardar = async () => {
+  setCargando(true);
+  setError("");
 
-    try {
-      // ✅ Confirmar acción antes de enviar
-      const confirm = await alert.confirm(
-        "¿Desea actualizar los roles del administrador?",
-        "Esta acción modificará los permisos asignados al usuario."
-      );
-      if (!confirm) {
-        setCargando(false);
-        return; // 👈 Cancela si el usuario no confirma
-      }
-
-      // ✅ Preparar datos para enviar
-      const datosActualizar = {
-        roles: rolesSeleccionados.map((rol) => ({
-          id_rol: rol.id_rol,
-          nombre_rol: rol.nombre_rol,
-        })),
-      };
-
-      // ✅ Enviar PATCH request
-      const response = await axios.patch(`/admins/${usuario.id}/rol`, datosActualizar);
-
-      if (response.status === 200) {
-        alert.success(
-          "Roles actualizados con éxito",
-          "Los roles del administrador se actualizaron correctamente."
-        );
-
-        onGuardar(rolesSeleccionados);
-        onClose();
-      }
-    } catch (error) {
-      console.error("Error al actualizar roles:", error);
-
-      // ✅ Manejo estandarizado de errores del backend
-      if (error?.error?.totalErrors > 0) {
-        error.error.validationErrors.forEach((error_validacion) => {
-          alert.toast(error_validacion.field, error_validacion.message);
-        });
-      } else {
-        alert.error(
-          error.title || "Error al actualizar los roles",
-          error.message || "No se pudieron actualizar los roles del administrador."
-        );
-      }
-
-      setError("Error al actualizar los roles. Intente nuevamente.");
-    } finally {
+  try {
+    // ✅ Confirmar acción antes de enviar
+    const confirm = await alert.confirm(
+      "¿Desea actualizar los roles del administrador?",
+      "Esta acción modificará los permisos asignados al usuario."
+    );
+    if (!confirm) {
       setCargando(false);
+      return; // 👈 Cancela si el usuario no confirma
     }
-  };
+
+    // ✅ Preparar datos para enviar
+    const datosActualizar = {
+      roles: rolesSeleccionados.map((rol) => ({
+        id_rol: rol.id_rol,
+        nombre_rol: rol.nombre_rol,
+      })),
+    };
+
+    // ✅ Enviar PATCH request
+    const response = await axios.patch(`/admins/${usuario.id}/rol`, datosActualizar);
+
+    if (response.status === 200) {
+      // 🔽 Aquí debes poner el toast de éxito
+      alert.toast({
+        title: "Roles actualizados con éxito",
+        message: "Los roles del administrador se actualizaron correctamente.",
+        config: { icon: "success" },
+      });
+
+      onGuardar(rolesSeleccionados);
+      onClose();
+    }
+  } catch (error) {
+    console.error("Error al actualizar roles:", error);
+
+    // ⚠️ Manejo estandarizado de errores del backend
+    if (error?.error?.totalErrors > 0) {
+      error.error.validationErrors.forEach((error_validacion) => {
+        // 🔽 Aquí el toast de advertencia por cada validación
+        alert.toast({
+          title: error_validacion.field,
+          message: error_validacion.message,
+          config: { icon: "warning" },
+        });
+      });
+    } else {
+      // 🔽 Aquí el toast de error general
+      alert.toast({
+        title: error.title || "Error al actualizar los roles",
+        message:
+          error.message ||
+          "No se pudieron actualizar los roles del administrador.",
+        config: { icon: "error" },
+      });
+    }
+
+    setError("Error al actualizar los roles. Intente nuevamente.");
+  } finally {
+    setCargando(false);
+  }
+};
+
 
   const handleCancelar = () => {
     // Restaurar roles originales al cancelar

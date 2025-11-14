@@ -68,7 +68,7 @@ export default function ModalEditarCampoProfesor({
     fetchCatalogosNecesarios();
   }, [campo, open, axios]);
 
- const handleGuardar = async () => {
+const handleGuardar = async () => {
   try {
     // ✅ Confirmar antes de guardar cambios
     const confirm = await alert.confirm(
@@ -85,31 +85,41 @@ export default function ModalEditarCampoProfesor({
     onGuardar(campo, valor);
     setError("");
 
-    alert.success(
-      "Campo actualizado",
-      "El valor se guardó correctamente."
-    );
+    // 🔽 Aquí va el toast de éxito
+    alert.toast({
+      title: "Campo actualizado",
+      message: "El valor se guardó correctamente.",
+      config: { icon: "success" },
+    });
 
     onClose();
   } catch (err) {
     console.error("❌ ERROR en handleGuardar:", err);
 
-    // ✅ Si hay errores de validación de Zod → mostrar con toast
+    // ⚠️ Si hay errores de validación de Zod → mostrar con toast
     if (err.errors && Array.isArray(err.errors)) {
       err.errors.forEach((e) => {
-        alert.toast("Validación", e.message);
+        // 🔽 Aquí van los toast de advertencia de validación
+        alert.toast({
+          title: "Validación",
+          message: e.message,
+          config: { icon: "warning" },
+        });
       });
       setError(err.errors?.[0]?.message || "Error validando campo.");
     } else {
-      // ✅ Si no hay errores de validación (otro tipo de error)
-      alert.error(
-        "Error al guardar",
-        err.message || "El valor ingresado no es válido."
-      );
+      // 🔽 Aquí va el toast de error general
+      alert.toast({
+        title: "Error al guardar",
+        message: err.message || "El valor ingresado no es válido.",
+        config: { icon: "error" },
+      });
+
       setError("Error validando campo.");
     }
   }
 };
+
 
   // Función para eliminar un item
   const handleDeleteItem = (indexToDelete) => {

@@ -24,51 +24,61 @@ export default function ModalRegisterAreaConocimiento({
     },
   });
 
-  const onSubmit = async (data) => {
-  try {
-    const confirm = await alert.confirm(
-      "¿Desea registrar el área de conocimiento?",
-      "Se agregará una nueva área al catálogo."
-    );
-    if (!confirm) return;
-
-    setIsLoading(true);
-
-    const payload = { area_conocimiento: data.area_conocimiento };
-
-    await axios.post("/catalogos/areas-conocimiento", payload);
-
-    alert.success(
-      "Área registrada",
-      "El área de conocimiento se agregó exitosamente."
-    );
-
-    // 🔄 Recargar lista actualizada
-    const { areas_conocimiento } = await axios.get("/catalogos/areas-conocimiento");
-    setState(areas_conocimiento);
-
-    reset();
-  } catch (error) {
-    console.error("❌ Error al registrar área de conocimiento:", error);
-
-    // ⚠️ Si hay errores de validación desde el backend
-    if (error.error?.totalErrors > 0) {
-      error.error.validationErrors.forEach((e) => {
-        alert.toast(e.field, e.message);
-      });
-    } else {
-      // ❌ Error general
-      alert.error(
-        error.title || "Error al registrar",
-        error.message || "No se pudo registrar el área de conocimiento."
+const onSubmit = async (data) => {
+    try {
+      const confirm = await alert.confirm(
+        "¿Desea registrar el área de conocimiento?",
+        "Se agregará una nueva área al catálogo."
       );
-    }
-  } finally {
-    onClose();
-    setIsLoading(false);
-  }
-};
+      if (!confirm) return;
 
+      setIsLoading(true);
+
+      const payload = { area_conocimiento: data.area_conocimiento };
+
+      await axios.post("/catalogos/areas-conocimiento", payload);
+
+      // ✅ Éxito con toast
+      alert.toast({
+        title: "Área registrada",
+        message: "El área de conocimiento se agregó exitosamente.",
+        config: { icon: "success" },
+      });
+
+      // 🔄 Recargar lista actualizada
+      const { areas_conocimiento } = await axios.get(
+        "/catalogos/areas-conocimiento"
+      );
+      setState(areas_conocimiento);
+
+      reset();
+    } catch (error) {
+      console.error("❌ Error al registrar área de conocimiento:", error);
+
+      // ⚠️ Errores de validación desde backend
+      if (error.error?.totalErrors > 0) {
+        error.error.validationErrors.forEach((e) => {
+          alert.toast({
+            title: e.field,
+            message: e.message,
+            config: { icon: "warning" },
+          });
+        });
+      } else {
+        // ❌ Error general con toast
+        alert.toast({
+          title: error.title || "Error al registrar",
+          message:
+            error.message ||
+            "No se pudo registrar el área de conocimiento. Intente nuevamente.",
+          config: { icon: "error" },
+        });
+      }
+    } finally {
+      onClose();
+      setIsLoading(false);
+    }
+  };
   return (
     <Modal
       open={open}
