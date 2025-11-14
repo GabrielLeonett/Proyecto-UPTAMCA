@@ -1,4 +1,4 @@
-import { Autocomplete } from "@mui/material";
+import { Autocomplete, TextField } from "@mui/material";
 import CustomLabel from "./customLabel";
 import { useTheme } from "@mui/material";
 import { styled } from "@mui/material/styles";
@@ -58,10 +58,10 @@ const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
 }));
 
 // Componente principal mejorado
-export default function CustomAutocomplete({
-  sx = {},
+export default function CustomAutocomplete({ 
+  sx = {}, 
   variantType = "default",
-  ...props
+  ...props 
 }) {
   const theme = useTheme();
 
@@ -92,9 +92,9 @@ export default function CustomAutocomplete({
         ...sx,
       }}
       renderInput={(params) => (
-        <CustomLabel
+        <TextField
           {...params}
-          // Props adicionales del CustomLabel si necesitas
+          // Props adicionales del TextField si necesitas
         />
       )}
       {...props}

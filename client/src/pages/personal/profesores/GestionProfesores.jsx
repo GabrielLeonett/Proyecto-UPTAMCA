@@ -1,7 +1,16 @@
-import { Typography, Box, Grid, Tooltip } from "@mui/material";
+import {
+  Typography,
+  Box,
+  Grid,
+  Tooltip,
+  InputAdornment,
+  Stack,
+  Pagination,
+} from "@mui/material";
 import {
   PersonAdd as PersonAddIcon,
   Route as RouteIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
@@ -10,52 +19,44 @@ import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesor from "../../../components/cardProfesor";
 import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
-import { useTour } from "../../../hook/useTour"; // 👈 Importa el hook
+import { useTour } from "../../../hook/useTour";
 import CustomAutocomplete from "../../../components/CustomAutocomplete";
+import CustomLabel from "../../../components/customLabel";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
   const navigate = useNavigate();
 
   const [profesores, setProfesores] = useState([]);
+  const [profesorSearch, setProfesorSearch] = useState(null);
   const [loading, setLoading] = useState(true);
   const { id_profesor } = useParams();
 
-  // Función para buscar profesores - MEJORADA
+  // Función para buscar profesores
   const fetchProfesores = useCallback(async () => {
     setLoading(true);
     try {
       const endpoint = "/profesores";
       const data = await axios.get(endpoint);
-      console.log("🔍 Profesores obtenidos:", data);
 
       let profesoresData = data.profesores || [];
 
-      // Si hay un id_profesor, buscar y separar ese profesor
       if (id_profesor) {
-        console.log("🎯 Buscando profesor específico:", id_profesor);
-
-        // Buscar el profesor específico
         const profesorEncontrado = profesoresData.find(
           (profesor) =>
             profesor.cedula === id_profesor || profesor.id === id_profesor
         );
 
         if (profesorEncontrado) {
-          console.log("✅ Profesor específico encontrado:", profesorEncontrado);
-
-          // Filtrar los demás profesores (excluir el específico)
           const otrosProfesores = profesoresData.filter(
             (profesor) =>
               profesor.cedula !== id_profesor && profesor.id !== id_profesor
           );
           setProfesores(otrosProfesores);
         } else {
-          console.log("❌ Profesor específico NO encontrado");
-          setProfesores(profesoresData); // Mostrar todos si no se encuentra
+          setProfesores(profesoresData);
         }
       } else {
-        // Si no hay id_profesor, mostrar todos los profesores
         setProfesores(profesoresData);
       }
     } catch (err) {
@@ -66,29 +67,19 @@ export default function GestionProfesores() {
     }
   }, [axios, id_profesor]);
 
-  // Efecto inicial para cargar profesores
   useEffect(() => {
     fetchProfesores();
-  }, [fetchProfesores]); // ✅ Ahora depende de fetchProfesores
+  }, [fetchProfesores]);
 
-  // 🔹 Definición del tour con Intro.js
   const { startTour, resetTour } = useTour(
     [
       {
-        intro:
-          "👋 Bienvenido al módulo de gestión de profesores. Te mostraremos las principales funciones.",
+        intro: "👋 Bienvenido al módulo de gestión de profesores.",
       },
       {
         element: "#profesores-container",
-        intro:
-          "Aquí se muestran todos los profesores registrados en el sistema.",
+        intro: "Aquí se muestran todos los profesores registrados.",
         position: "right",
-      },
-      {
-        element: "#profesor-card-ejemplo",
-        intro:
-          "Cada tarjeta muestra los datos de un profesor, incluyendo su información personal, educativa y profesional.",
-        position: "bottom",
       },
       {
         element: "#btn-registrar-profesor",
@@ -97,12 +88,11 @@ export default function GestionProfesores() {
       },
       {
         element: "#btn-reiniciar-tour",
-        intro:
-          "Puedes volver a ver este recorrido cuando quieras haciendo clic aquí.",
+        intro: "Puedes volver a ver este recorrido cuando quieras.",
         position: "top",
       },
     ],
-    "tourGestionProfesores" // clave única para esta página
+    "tourGestionProfesores"
   );
 
   useEffect(() => {
@@ -123,25 +113,52 @@ export default function GestionProfesores() {
           Visualizar, Editar y Crear Profesores
         </Typography>
 
-        <Box
-          sx={{
-            m: 3,
-          }}
-        >
+        <Box sx={{ m: 3 }}>
           <CustomAutocomplete
-            options={[...profesores]}
+            options={profesores}
+            getOptionLabel={
+              (profesor) => `${profesor.nombres} ${profesor.apellidos}` // ← RETURN implícito
+            }
             value={null}
-            onChange={{}}
+            onChange={(event, newValue) => {
+              // ← CORREGIDO
+              setProfesorSearch(newValue?.id_profesor);
+              console.log("Profesor seleccionado:", newValue);
+            }}
             renderInput={(params) => (
               <CustomLabel
                 {...params}
-                label="Pos Grados"
-                placeholder="Seleccione un posgrado"
+                label="Buscar profesor"
+                placeholder="Nombre, apellido o cédula"
+                InputProps={{
+                  ...params.InputProps,
+                  // ← CORREGIDO: dentro de InputProps
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: "text.secondary" }} />
+                    </InputAdornment>
+                  ),
+                }}
               />
             )}
-            isOptionEqualToValue={
+            isOptionEqualToValue={(option, value) =>
+              option.id_profesor === value?.id_profesor
             }
-            filterOptions={}
+            filterOptions={(options, { inputValue }) => {
+              return options.filter(
+                (option) =>
+                  option.nombres
+                    ?.toLowerCase()
+                    .includes(inputValue.toLowerCase()) ||
+                  option.apellidos
+                    ?.toLowerCase()
+                    .includes(inputValue.toLowerCase()) ||
+                  option.cedula
+                    ?.toLowerCase()
+                    .includes(inputValue.toLowerCase())
+              );
+            }}
+            noOptionsText="No se encontraron profesores"
           />
         </Box>
 
@@ -166,20 +183,9 @@ export default function GestionProfesores() {
                 No hay más profesores registrados
               </Typography>
             ) : (
-              <Grid
-                container
-                spacing={3}
-                sx={{
-                  width: "100%",
-                  margin: 0,
-                }}
-              >
+              <Grid container spacing={3} sx={{ width: "100%", margin: 0 }}>
                 {profesores.map((profesor) => (
-                  <Grid
-                    item
-                    key={profesor.cedula || profesor.id}
-                    id="profesores-container"
-                  >
+                  <Grid item key={profesor.cedula || profesor.id}>
                     <CardProfesor
                       profesor={profesor}
                       isSearch={!!id_profesor}
@@ -191,12 +197,10 @@ export default function GestionProfesores() {
           </Box>
         )}
 
-        <Tooltip title={"Registrar Profesor"} placement="left-start">
+        <Tooltip title="Registrar Profesor" placement="left-start">
           <CustomButton
             id="btn-registrar-profesor"
-            onClick={() => {
-              navigate("/academico/profesores/registrar");
-            }}
+            onClick={() => navigate("/academico/profesores/registrar")}
             sx={{
               position: "fixed",
               bottom: 78,
@@ -210,12 +214,13 @@ export default function GestionProfesores() {
               alignItems: "center",
               justifyContent: "center",
             }}
-            aria-label={"Registrar Profesor"}
+            aria-label="Registrar Profesor"
           >
             <PersonAddIcon />
           </CustomButton>
         </Tooltip>
-        <Tooltip title={"Tutorial"} placement="left-start">
+
+        <Tooltip title="Tutorial" placement="left-start">
           <CustomButton
             id="btn-reiniciar-tour"
             variant="contained"
@@ -233,11 +238,25 @@ export default function GestionProfesores() {
               alignItems: "center",
               justifyContent: "center",
             }}
-            aria-label={"Registrar Profesor"}
+            aria-label="Ver tutorial"
           >
             <RouteIcon />
           </CustomButton>
         </Tooltip>
+
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            alignContent: "center",
+            justifyContent: "center",
+            my: 3,
+          }}
+        >
+          <Stack>
+            <Pagination count={10} color="primary" shape="rounded" />
+          </Stack>
+        </Box>
       </Box>
     </>
   );

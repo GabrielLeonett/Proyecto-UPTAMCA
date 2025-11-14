@@ -190,7 +190,7 @@ export default class ProfesorService {
         Correo: Correo,
         verificarEmail: false,
       });
-      
+
       console.log("📧 Email enviado:", Resultado);
 
       // 6. Enviar notificaciones
@@ -266,7 +266,7 @@ export default class ProfesorService {
   static async obtenerTodos(queryParams = {}) {
     try {
       // Validar parámetros de consulta
-      const allowedParams = ["page", "limit", "sort", "order"];
+      const allowedParams = ["page", "limit", "sort_order", "search"];
       const queryValidation = ValidationService.validateQueryParams(
         queryParams,
         allowedParams
@@ -279,10 +279,10 @@ export default class ProfesorService {
         );
       }
 
-      const respuestaModel = await ProfesorModel.obtenerTodos();
+      const respuestaModel = await ProfesorModel.obtenerTodos(allowedParams);
 
       // Parsear los campos JSON en cada profesor
-      const profesoresProcesados = respuestaModel.data.map((profesor) => ({
+      const profesoresProcesados = respuestaModel.data.profesores.map((profesor) => ({
         ...profesor,
         areas_de_conocimiento: profesor.areas_de_conocimiento
           ? JSON.parse(profesor.areas_de_conocimiento)
@@ -295,19 +295,14 @@ export default class ProfesorService {
       }));
 
       // Reemplazar los datos en la respuesta
-      respuestaModel.data = profesoresProcesados;
+      respuestaModel.data.profesores = profesoresProcesados;
 
       if (FormatterResponseService.isError(respuestaModel)) {
         return respuestaModel;
       }
 
       return FormatterResponseService.success(
-        {
-          profesores: respuestaModel.data,
-          total: respuestaModel.data.length,
-          page: parseInt(queryParams.page) || 1,
-          limit: parseInt(queryParams.limit) || respuestaModel.data.length,
-        },
+        respuestaModel.data,
         "Profesores obtenidos exitosamente",
         {
           status: 200,
