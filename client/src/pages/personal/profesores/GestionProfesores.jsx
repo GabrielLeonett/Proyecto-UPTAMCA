@@ -1,5 +1,8 @@
 import { Typography, Box, Grid, Tooltip } from "@mui/material";
-import { PersonAdd as PersonAddIcon, Route as RouteIcon } from "@mui/icons-material";
+import {
+  PersonAdd as PersonAddIcon,
+  Route as RouteIcon,
+} from "@mui/icons-material";
 import { useState, useEffect, useCallback } from "react";
 import useApi from "../../../hook/useApi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -7,7 +10,8 @@ import ResponsiveAppBar from "../../../components/navbar";
 import CardProfesor from "../../../components/cardProfesor";
 import SkeletonProfesores from "../../../components/SkeletonProfesores";
 import CustomButton from "../../../components/customButton";
-import { useTour } from "../../../hook/useTour"; // 👈 Importa el hook 
+import { useTour } from "../../../hook/useTour"; // 👈 Importa el hook
+import CustomAutocomplete from "../../../components/CustomAutocomplete";
 
 export default function GestionProfesores() {
   const axios = useApi(false);
@@ -20,7 +24,6 @@ export default function GestionProfesores() {
   // Función para buscar profesores - MEJORADA
   const fetchProfesores = useCallback(async () => {
     setLoading(true);
-
     try {
       const endpoint = "/profesores";
       const data = await axios.get(endpoint);
@@ -69,41 +72,44 @@ export default function GestionProfesores() {
   }, [fetchProfesores]); // ✅ Ahora depende de fetchProfesores
 
   // 🔹 Definición del tour con Intro.js
-const { startTour, resetTour } = useTour(
-  [
-    {
-      intro: "👋 Bienvenido al módulo de gestión de profesores. Te mostraremos las principales funciones.",
-    },
-    {
-      element: "#profesores-container",
-      intro: "Aquí se muestran todos los profesores registrados en el sistema.",
-      position: "right",
-    },
-    {
-      element: "#profesor-card-ejemplo",
-      intro: "Cada tarjeta muestra los datos de un profesor, incluyendo su información personal, educativa y profesional.",
-      position: "bottom",
-    },
-    {
-      element: "#btn-registrar-profesor",
-      intro: "Haz clic aquí para registrar un nuevo profesor.",
-      position: "left",
-    },
-    {
-      element: "#btn-reiniciar-tour",
-      intro: "Puedes volver a ver este recorrido cuando quieras haciendo clic aquí.",
-      position: "top",
-    },
-  ],
-  "tourGestionProfesores" // clave única para esta página
-);
+  const { startTour, resetTour } = useTour(
+    [
+      {
+        intro:
+          "👋 Bienvenido al módulo de gestión de profesores. Te mostraremos las principales funciones.",
+      },
+      {
+        element: "#profesores-container",
+        intro:
+          "Aquí se muestran todos los profesores registrados en el sistema.",
+        position: "right",
+      },
+      {
+        element: "#profesor-card-ejemplo",
+        intro:
+          "Cada tarjeta muestra los datos de un profesor, incluyendo su información personal, educativa y profesional.",
+        position: "bottom",
+      },
+      {
+        element: "#btn-registrar-profesor",
+        intro: "Haz clic aquí para registrar un nuevo profesor.",
+        position: "left",
+      },
+      {
+        element: "#btn-reiniciar-tour",
+        intro:
+          "Puedes volver a ver este recorrido cuando quieras haciendo clic aquí.",
+        position: "top",
+      },
+    ],
+    "tourGestionProfesores" // clave única para esta página
+  );
 
-useEffect(() => {
-  if (!loading && profesores.length > 0) {
-    startTour();
-  }
-}, [loading, profesores]);
-
+  useEffect(() => {
+    if (!loading && profesores.length > 0) {
+      startTour();
+    }
+  }, [loading, profesores, startTour]);
 
   return (
     <>
@@ -116,6 +122,28 @@ useEffect(() => {
         <Typography variant="body2" color="text.secondary" mb={3}>
           Visualizar, Editar y Crear Profesores
         </Typography>
+
+        <Box
+          sx={{
+            m: 3,
+          }}
+        >
+          <CustomAutocomplete
+            options={[...profesores]}
+            value={null}
+            onChange={{}}
+            renderInput={(params) => (
+              <CustomLabel
+                {...params}
+                label="Pos Grados"
+                placeholder="Seleccione un posgrado"
+              />
+            )}
+            isOptionEqualToValue={
+            }
+            filterOptions={}
+          />
+        </Box>
 
         {loading ? (
           <Box
@@ -146,8 +174,12 @@ useEffect(() => {
                   margin: 0,
                 }}
               >
-                {profesores.map((profesor, index) => (
-                  <Grid item key={profesor.cedula || profesor.id} id="profesores-container">
+                {profesores.map((profesor) => (
+                  <Grid
+                    item
+                    key={profesor.cedula || profesor.id}
+                    id="profesores-container"
+                  >
                     <CardProfesor
                       profesor={profesor}
                       isSearch={!!id_profesor}
@@ -161,7 +193,7 @@ useEffect(() => {
 
         <Tooltip title={"Registrar Profesor"} placement="left-start">
           <CustomButton
-          id="btn-registrar-profesor"
+            id="btn-registrar-profesor"
             onClick={() => {
               navigate("/academico/profesores/registrar");
             }}
@@ -185,9 +217,9 @@ useEffect(() => {
         </Tooltip>
         <Tooltip title={"Tutorial"} placement="left-start">
           <CustomButton
-           id="btn-reiniciar-tour"
-          variant="contained"
-          onClick={resetTour}
+            id="btn-reiniciar-tour"
+            variant="contained"
+            onClick={resetTour}
             sx={{
               position: "fixed",
               bottom: 128,

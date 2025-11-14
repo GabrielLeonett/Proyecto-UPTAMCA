@@ -29,9 +29,9 @@ import CustomChip from "../../../components/CustomChip";
 import useApi from "../../../hook/useApi";
 import useSweetAlert from "../../../hook/useSweetAlert";
 import CustomLabel from "../../../components/customLabel";
+import CustomAutocomplete from "../../../components/CustomAutocomplete";
 import CustomButton from "../../../components/customButton";
 import ResponsiveAppBar from "../../../components/navbar";
-import { config } from "zod/v4/core";
 
 export default function FormRegister() {
   const axios = useApi(false);
@@ -44,6 +44,7 @@ export default function FormRegister() {
     handleSubmit,
     trigger,
     watch,
+    setValue,
   } = useForm({
     resolver: zodResolver(profesorSchema),
     defaultValues: {
@@ -458,24 +459,22 @@ export default function FormRegister() {
     const [pregradosValor, setPregradosValor] = useState(watch("pre_grado"));
     const [posgradosValor, setPosgradosValor] = useState(watch("pos_grado"));
 
-    // Función para eliminar items de cada lista
     const handleDeleteArea = (index) => {
       const newAreas = areasValor.filter((_, i) => i !== index);
       setAreasValor(newAreas);
-      // Actualizar el valor en react-hook-form
-      control._formValues.areas_de_conocimiento = newAreas;
+      setValue("areas_de_conocimiento", newAreas); // ✅ Usar setValue
     };
 
     const handleDeletePregrado = (index) => {
       const newPregrados = pregradosValor.filter((_, i) => i !== index);
       setPregradosValor(newPregrados);
-      control._formValues.pre_grado = newPregrados;
+      setValue("pre_grado", newPregrados); // ✅ Usar setValue
     };
 
     const handleDeletePosgrado = (index) => {
       const newPosgrados = posgradosValor.filter((_, i) => i !== index);
       setPosgradosValor(newPosgrados);
-      control._formValues.pos_grado = newPosgrados;
+      setValue("pos_grado", newPosgrados); // ✅ Usar setValue
     };
 
     return (
@@ -495,46 +494,48 @@ export default function FormRegister() {
               control={control}
               render={({ field }) => (
                 <>
-                  <CustomLabel
-                    select
-                    label="Áreas de Conocimiento"
-                    fullWidth
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-                      if (selectedValue === "Otro") {
-                        setOpenModalArea(true);
-                      } else if (selectedValue) {
-                        const exists = areasValor.some(
-                          (item) =>
-                            item.nombre_area_conocimiento === selectedValue
-                        );
-                        if (!exists) {
-                          const areaCompleta = areas.find(
-                            (a) => a.nombre_area_conocimiento === selectedValue
+                  <CustomAutocomplete
+                    options={[
+                      ...areas,
+                      {
+                        id_area_conocimiento: "otro",
+                        nombre_area_conocimiento: "Otro",
+                      },
+                    ]}
+                    getOptionLabel={(option) =>
+                      option.nombre_area_conocimiento || ""
+                    }
+                    value={null} // Siempre null para que no muestre valor seleccionado
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        if (newValue.nombre_area_conocimiento === "Otro") {
+                          setOpenModalArea(true);
+                        } else {
+                          const exists = areasValor.some(
+                            (item) =>
+                              item.id_area_conocimiento ===
+                              newValue.id_area_conocimiento
                           );
-                          if (areaCompleta) {
-                            const newAreas = [...areasValor, areaCompleta];
+                          if (!exists) {
+                            const newAreas = [...areasValor, newValue];
                             setAreasValor(newAreas);
                             field.onChange(newAreas);
                           }
                         }
                       }
-                      e.target.value = ""; // Resetear el select
                     }}
-                    value=""
-                  >
-                    <MenuItem value="">Seleccione un área</MenuItem>
-                    {Array.isArray(areas) &&
-                      areas.map((a) => (
-                        <MenuItem
-                          key={a.id_area_conocimiento}
-                          value={a.nombre_area_conocimiento}
-                        >
-                          {a.nombre_area_conocimiento}
-                        </MenuItem>
-                      ))}
-                    <MenuItem value="Otro">Otro</MenuItem>
-                  </CustomLabel>
+                    renderInput={(params) => (
+                      <CustomLabel
+                        {...params}
+                        label="Áreas de Conocimiento"
+                        placeholder="Seleccione un área"
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id_area_conocimiento ===
+                      value?.id_area_conocimiento
+                    }
+                  />
 
                   {/* CustomChips para áreas seleccionadas */}
                   {areasValor.length > 0 && (
@@ -557,69 +558,89 @@ export default function FormRegister() {
                 </>
               )}
             />
-
-            {/* Modal Área */}
-            <ModalRegisterAreaConocimiento
-              open={openModalArea}
-              onClose={() => setOpenModalArea(false)}
-              setState={setAreas}
-            />
           </Grid>
 
-          <Grid spacing={2} size={12}>
-            {/* Pregrado */}
+          {/* Pregrado */}
+          <Grid size={12}>
             <Controller
               name="pre_grado"
               control={control}
               render={({ field }) => (
                 <>
-                  <CustomLabel
-                    select
-                    label="Pre Grados"
-                    fullWidth
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-                      if (selectedValue === "Otro") {
-                        setOpenModalPregrado(true);
-                      } else if (selectedValue) {
-                        const exists = pregradosValor.some(
-                          (item) => item.nombre_pre_grado === selectedValue
-                        );
-                        if (!exists) {
-                          const pregradoCompleto = pregrados.find(
-                            (pg) => pg.nombre_pre_grado === selectedValue
+                  <CustomAutocomplete
+                    options={[
+                      ...pregrados,
+                      {
+                        id_pre_grado: "otro",
+                        nombre_pre_grado: "Otro",
+                        tipo_pre_grado: "",
+                      },
+                    ]}
+                    getOptionLabel={(option) =>
+                      option.tipo_pre_grado &&
+                      option.nombre_pre_grado !== "Otro"
+                        ? `${option.tipo_pre_grado} ${option.nombre_pre_grado}`
+                        : option.nombre_pre_grado
+                    }
+                    groupBy={(option) => {
+                      // Si es la opción "Otro", la ponemos en grupo "Otros"
+                      if (option.tipo_pre_grado === "Otro") {
+                        return "Otros";
+                      }
+                      // Para los demás, usamos su tipo_pos_grado
+                      return option.tipo_pre_grado || "Sin categoría";
+                    }}
+                    value={null}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        if (newValue.nombre_pre_grado === "Otro") {
+                          setOpenModalPregrado(true);
+                        } else {
+                          const exists = pregradosValor.some(
+                            (item) =>
+                              item.id_pre_grado === newValue.id_pre_grado
                           );
-                          if (pregradoCompleto) {
-                            const newPregrados = [
-                              ...pregradosValor,
-                              pregradoCompleto,
-                            ];
+                          if (!exists) {
+                            const newPregrados = [...pregradosValor, newValue];
                             setPregradosValor(newPregrados);
                             field.onChange(newPregrados);
                           }
                         }
                       }
-                      e.target.value = ""; // Resetear el select
                     }}
-                    value=""
-                  >
-                    <MenuItem value="">Seleccione un pregrado</MenuItem>
-                    {Array.isArray(pregrados) &&
-                      pregrados.map((pg) => (
-                        <MenuItem
-                          key={pg.id_pre_grado}
-                          value={pg.nombre_pre_grado}
-                        >
-                          {pg.tipo_pre_grado} {pg.nombre_pre_grado}
-                        </MenuItem>
-                      ))}
-                    <MenuItem value="Otro">Otro</MenuItem>
-                  </CustomLabel>
+                    renderInput={(params) => (
+                      <CustomLabel
+                        {...params}
+                        label="Pre Grados"
+                        placeholder="Seleccione un pregrado"
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id_pre_grado === value?.id_pre_grado
+                    }
+                    filterOptions={(options, { inputValue }) => {
+                      return options.filter(
+                        (option) =>
+                          option.nombre_pre_grado
+                            .toLowerCase()
+                            .includes(inputValue.toLowerCase()) ||
+                          (option.tipo_pre_grado &&
+                            option.tipo_pre_grado
+                              .toLowerCase()
+                              .includes(inputValue.toLowerCase()))
+                      );
+                    }}
+                  />
 
                   {/* CustomChips para mostrar seleccionados */}
                   {pregradosValor.length > 0 && (
                     <Box
-                      sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                      }}
                     >
                       {pregradosValor.map((pregrado, index) => (
                         <CustomChip
@@ -637,69 +658,89 @@ export default function FormRegister() {
                 </>
               )}
             />
-
-            {/* Modal Pregrado */}
-            <ModalRegisterPreGrado
-              open={openModalPregrado}
-              onClose={() => setOpenModalPregrado(false)}
-              setState={setPregrados}
-            />
           </Grid>
 
           {/* Posgrado */}
-          <Grid spacing={2} size={12}>
+          <Grid size={12}>
             <Controller
               name="pos_grado"
               control={control}
               render={({ field }) => (
                 <>
-                  <CustomLabel
-                    select
-                    label="Pos Grados"
-                    fullWidth
-                    onChange={(e) => {
-                      const selectedValue = e.target.value;
-                      if (selectedValue === "Otro") {
-                        setOpenModalPosgrado(true);
-                      } else if (selectedValue) {
-                        const exists = posgradosValor.some(
-                          (item) => item.nombre_pos_grado === selectedValue
-                        );
-                        if (!exists) {
-                          const posgradoCompleto = postgrados.find(
-                            (pg) => pg.nombre_pos_grado === selectedValue
+                  <CustomAutocomplete
+                    options={[
+                      ...postgrados,
+                      {
+                        id_pos_grado: "otro",
+                        nombre_pos_grado: "Otro",
+                        tipo_pos_grado: "Otros", // Agrupar "Otro" en una categoría
+                      },
+                    ]}
+                    getOptionLabel={(option) =>
+                      option.tipo_pos_grado &&
+                      option.nombre_pos_grado !== "Otro"
+                        ? `${option.tipo_pos_grado} ${option.nombre_pos_grado}`
+                        : option.nombre_pos_grado
+                    }
+                    groupBy={(option) => {
+                      // Si es la opción "Otro", la ponemos en grupo "Otros"
+                      if (option.nombre_pos_grado === "Otro") {
+                        return "Otros";
+                      }
+                      // Para los demás, usamos su tipo_pos_grado
+                      return option.tipo_pos_grado || "Sin categoría";
+                    }}
+                    value={null}
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        if (newValue.nombre_pos_grado === "Otro") {
+                          setOpenModalPosgrado(true);
+                        } else {
+                          const exists = posgradosValor.some(
+                            (item) =>
+                              item.id_pos_grado === newValue.id_pos_grado
                           );
-                          if (posgradoCompleto) {
-                            const newPosgrados = [
-                              ...posgradosValor,
-                              posgradoCompleto,
-                            ];
+                          if (!exists) {
+                            const newPosgrados = [...posgradosValor, newValue];
                             setPosgradosValor(newPosgrados);
                             field.onChange(newPosgrados);
                           }
                         }
                       }
-                      e.target.value = ""; // Resetear el select
                     }}
-                    value=""
-                  >
-                    <MenuItem value="">Seleccione un posgrado</MenuItem>
-                    {Array.isArray(postgrados) &&
-                      postgrados.map((pg) => (
-                        <MenuItem
-                          key={pg.id_pos_grado}
-                          value={pg.nombre_pos_grado}
-                        >
-                          {pg.tipo_pos_grado} {pg.nombre_pos_grado}
-                        </MenuItem>
-                      ))}
-                    <MenuItem value="Otro">Otro</MenuItem>
-                  </CustomLabel>
+                    renderInput={(params) => (
+                      <CustomLabel
+                        {...params}
+                        label="Pos Grados"
+                        placeholder="Seleccione un posgrado"
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) =>
+                      option.id_pos_grado === value?.id_pos_grado
+                    }
+                    filterOptions={(options, { inputValue }) => {
+                      return options.filter(
+                        (option) =>
+                          option.nombre_pos_grado
+                            .toLowerCase()
+                            .includes(inputValue.toLowerCase()) ||
+                          (option.tipo_pos_grado &&
+                            option.tipo_pos_grado
+                              .toLowerCase()
+                              .includes(inputValue.toLowerCase()))
+                      );
+                    }}
+                  />
 
                   {/* CustomChips para posgrados seleccionados */}
                   {posgradosValor.length > 0 && (
                     <Box
-                      sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1 }}
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: 1,
+                      }}
                     >
                       {posgradosValor.map((posgrado, index) => (
                         <CustomChip
@@ -717,15 +758,28 @@ export default function FormRegister() {
                 </>
               )}
             />
-
-            {/* Modal Posgrado */}
-            <ModalRegisterPosGrado
-              open={openModalPosgrado}
-              onClose={() => setOpenModalPosgrado(false)}
-              setState={setPostgrados}
-            />
           </Grid>
         </Grid>
+        {/* Modal Área */}
+        <ModalRegisterAreaConocimiento
+          open={openModalArea}
+          onClose={() => setOpenModalArea(false)}
+          setState={setAreas}
+        />
+
+        {/* Modal Pregrado */}
+        <ModalRegisterPreGrado
+          open={openModalPregrado}
+          onClose={() => setOpenModalPregrado(false)}
+          setState={setPregrados}
+        />
+
+        {/* Modal Posgrado */}
+        <ModalRegisterPosGrado
+          open={openModalPosgrado}
+          onClose={() => setOpenModalPosgrado(false)}
+          setState={setPostgrados}
+        />
       </>
     );
   };

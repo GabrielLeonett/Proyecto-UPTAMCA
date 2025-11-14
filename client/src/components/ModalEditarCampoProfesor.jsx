@@ -4,14 +4,16 @@ import {
   DialogContent,
   DialogActions,
   MenuItem,
-  TextField,
-  Autocomplete,
   Box,
-  Chip,
+  TextField,
 } from "@mui/material";
 import CustomButton from "./customButton";
 import CustomLabel from "./customLabel";
 import CustomChip from "./CustomChip";
+import CustomAutocomplete from "./CustomAutocomplete";
+import ModalRegisterAreaConocimiento from "./ModalRegisterAreaConocimiento";
+import ModalRegisterPreGrado from "./ModalRegisterPreGrado";
+import ModalRegisterPosgrado from "./ModalRegisterPosgrado";
 import { useState, useEffect } from "react";
 import { profesorSchema } from "../schemas/profesor.schema";
 import useApi from "../hook/useApi";
@@ -32,6 +34,7 @@ export default function ModalEditarCampoProfesor({
   const [posGrado, setPosGrado] = useState([]);
   const [areaConocimiento, setAreaConocimiento] = useState([]);
   const [cargando, setCargando] = useState(false);
+  const [openModalRegister, setOpenModalRegister] = useState(false);
 
   // Resetear el valor al abrir
   useEffect(() => {
@@ -68,57 +71,45 @@ export default function ModalEditarCampoProfesor({
     fetchCatalogosNecesarios();
   }, [campo, open, axios]);
 
-const handleGuardar = async () => {
-  try {
-    // ✅ Confirmar antes de guardar cambios
-    const confirm = await alert.confirm(
-      "¿Desea guardar los cambios?",
-      "El valor actual del campo será reemplazado por el nuevo."
-    );
-    if (!confirm) return;
+  const handleGuardar = async () => {
+    try {
+      // ✅ Confirmar antes de guardar cambios
+      const confirm = await alert.confirm(
+        "¿Desea guardar los cambios?",
+        "El valor actual del campo será reemplazado por el nuevo."
+      );
+      if (!confirm) return;
 
-    // ✅ Validar campo con esquema de Zod
-    const campoSchema = profesorSchema.pick({ [campo]: true });
-    campoSchema.parse({ [campo]: valor });
+      // ✅ Validar campo con esquema de Zod
+      const campoSchema = profesorSchema.pick({ [campo]: true });
+      campoSchema.parse({ [campo]: valor });
 
-    // ✅ Si pasa validación → guardar cambios
-    onGuardar(campo, valor);
-    setError("");
+      // ✅ Si pasa validación → guardar cambios
+      onGuardar(campo, valor);
+      setError("");
 
-    // 🔽 Aquí va el toast de éxito
-    alert.toast({
-      title: "Campo actualizado",
-      message: "El valor se guardó correctamente.",
-      config: { icon: "success" },
-    });
+      alert.success("Campo actualizado", "El valor se guardó correctamente.");
 
-    onClose();
-  } catch (err) {
-    console.error("❌ ERROR en handleGuardar:", err);
+      onClose();
+    } catch (err) {
+      console.error("❌ ERROR en handleGuardar:", err);
 
-    // ⚠️ Si hay errores de validación de Zod → mostrar con toast
-    if (err.errors && Array.isArray(err.errors)) {
-      err.errors.forEach((e) => {
-        // 🔽 Aquí van los toast de advertencia de validación
-        alert.toast({
-          title: "Validación",
-          message: e.message,
-          config: { icon: "warning" },
+      // ✅ Si hay errores de validación de Zod → mostrar con toast
+      if (err.errors && Array.isArray(err.errors)) {
+        err.errors.forEach((e) => {
+          alert.toast("Validación", e.message);
         });
-      });
-      setError(err.errors?.[0]?.message || "Error validando campo.");
-    } else {
-      // 🔽 Aquí va el toast de error general
-      alert.toast({
-        title: "Error al guardar",
-        message: err.message || "El valor ingresado no es válido.",
-        config: { icon: "error" },
-      });
-
-      setError("Error validando campo.");
+        setError(err.errors?.[0]?.message || "Error validando campo.");
+      } else {
+        // ✅ Si no hay errores de validación (otro tipo de error)
+        alert.error(
+          "Error al guardar",
+          err.message || "El valor ingresado no es válido."
+        );
+        setError("Error validando campo.");
+      }
     }
-  }
-};
+  };
 
 
   // Función para eliminar un item
@@ -133,43 +124,73 @@ const handleGuardar = async () => {
   const renderCampo = () => {
     if (campo === "pre_grados") {
       return (
-        <Box>
-          <CustomLabel
-            selected
-            label="Pre Grados"
-            fullWidth
+        <>
+          <CustomAutocomplete
+            options={[
+              ...preGrado,
+              {
+                id_pre_grado: "otro",
+                nombre_pre_grado: "Otro",
+                tipo_pre_grado: "",
+              },
+            ]}
+            getOptionLabel={(option) =>
+              option.tipo_pre_grado && option.nombre_pre_grado !== "Otro"
+                ? `${option.tipo_pre_grado} ${option.nombre_pre_grado}`
+                : option.nombre_pre_grado
+            }
+            groupBy={(option) => {
+              // Si es la opción "Otro", la ponemos en grupo "Otros"
+              if (option.nombre_pre_grado === "Otro") {
+                return "Otros";
+              }
+              // Para los demás, usamos su tipo_pre_grado (corregí el nombre)
+              return option.tipo_pre_grado || "Sin categoría";
+            }}
+            value={null}
             disabled={cargando}
-            onChange={(e) => {
-              const selectedValue = e.target.value;
-              if (selectedValue === "Otro") {
-                alert("Abrir modal para nuevo pregrado");
-              } else if (selectedValue && Array.isArray(valor)) {
-                const exists = valor.some(
-                  (item) => item.nombre_pre_grado === selectedValue
-                );
-                if (!exists) {
-                  const pregradoCompleto = preGrado.find(
-                    (pg) => pg.nombre_pre_grado === selectedValue
+            onChange={(event, newValue) => {
+              if (newValue) {
+                if (newValue.nombre_pre_grado === "Otro") {
+                  setOpenModalRegister(true); // ← CORREGIDO: usar el estado correcto
+                } else {
+                  const exists = valor.some(
+                    (item) => item.id_pre_grado === newValue.id_pre_grado
                   );
-                  if (pregradoCompleto) {
-                    setValor([...valor, ...pregradoCompleto]);
+                  // ← ELIMINADO: esta condición estaba mal
+                  if (!exists) {
+                    setValor([...valor, newValue]);
                   }
                 }
               }
             }}
-            value=""
-          >
-            <MenuItem value="">
-              {cargando ? "Cargando..." : "Seleccione un pregrado"}
-            </MenuItem>
-            {Array.isArray(preGrado) &&
-              preGrado.map((pg) => (
-                <MenuItem key={pg.id_pre_grado} value={pg.nombre_pre_grado}>
-                  {pg.tipo_pre_grado} {pg.nombre_pre_grado}
-                </MenuItem>
-              ))}
-            <MenuItem value="Otro">Otro</MenuItem>
-          </CustomLabel>
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Pre Grados"
+                placeholder={
+                  cargando ? "Cargando..." : "Seleccione un pregrado"
+                }
+                error={!!error}
+                helperText={error}
+              />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.id_pre_grado === value?.id_pre_grado
+            }
+            filterOptions={(options, { inputValue }) => {
+              return options.filter(
+                (option) =>
+                  option.nombre_pre_grado
+                    .toLowerCase()
+                    .includes(inputValue.toLowerCase()) ||
+                  (option.tipo_pre_grado &&
+                    option.tipo_pre_grado
+                      .toLowerCase()
+                      .includes(inputValue.toLowerCase()))
+              );
+            }}
+          />
 
           {/* CustomChips para mostrar seleccionados */}
           {Array.isArray(valor) && valor.length > 0 && (
@@ -187,49 +208,90 @@ const handleGuardar = async () => {
               ))}
             </Box>
           )}
-        </Box>
+
+          <ModalRegisterPreGrado
+            open={openModalRegister}
+            onClose={() => {
+              setOpenModalRegister(false);
+            }}
+            setState={setPreGrado} // ← Actualizar el estado de preGrado
+            onPregradoCreado={(nuevoPregrado) => {
+              // Agregar el nuevo pregrado a la lista de seleccionados
+              setValor([...valor, nuevoPregrado]);
+            }}
+          />
+        </>
       );
     }
 
     if (campo === "pos_grados") {
       return (
-        <Box>
-          <CustomLabel
-            select
-            label="Pos Grados"
-            fullWidth
+        <>
+          <CustomAutocomplete
+            options={[
+              ...posGrado,
+              {
+                id_pos_grado: "otro",
+                nombre_pos_grado: "Otro",
+                tipo_pos_grado: "",
+              },
+            ]}
+            getOptionLabel={(option) =>
+              option.tipo_pos_grado && option.nombre_pos_grado !== "Otro"
+                ? `${option.tipo_pos_grado} ${option.nombre_pos_grado}`
+                : option.nombre_pos_grado
+            }
+            groupBy={(option) => {
+              // Si es la opción "Otro", la ponemos en grupo "Otros"
+              if (option.nombre_pos_grado === "Otro") {
+                return "Otros";
+              }
+              // Para los demás, usamos su tipo_pos_grado
+              return option.tipo_pos_grado || "Sin categoría";
+            }}
+            value={null}
             disabled={cargando}
-            onChange={(e) => {
-              const selectedValue = e.target.value;
-              if (selectedValue === "Otro") {
-                alert("Abrir modal para nuevo posgrado");
-              } else if (selectedValue && Array.isArray(valor)) {
-                const exists = valor.some(
-                  (item) => item.nombre_pos_grado === selectedValue
-                );
-                if (!exists) {
-                  const posgradoCompleto = posGrado.find(
-                    (pg) => pg.nombre_pos_grado === selectedValue
+            onChange={(event, newValue) => {
+              if (newValue) {
+                if (newValue.nombre_pos_grado === "Otro") {
+                  setOpenModalRegister(true);
+                } else {
+                  const exists = valor.some(
+                    (item) => item.id_pos_grado === newValue.id_pos_grado
                   );
-                  if (posgradoCompleto) {
-                    setValor([...valor, ...posgradoCompleto]);
+                  if (!exists) {
+                    setValor([...valor, newValue]);
                   }
                 }
               }
             }}
-            value=""
-          >
-            <MenuItem value="">
-              {cargando ? "Cargando..." : "Seleccione un posgrado"}
-            </MenuItem>
-            {Array.isArray(posGrado) &&
-              posGrado.map((pg) => (
-                <MenuItem key={pg.id_pos_grado} value={pg.nombre_pos_grado}>
-                  {pg.tipo_pos_grado} {pg.nombre_pos_grado}
-                </MenuItem>
-              ))}
-            <MenuItem value="Otro">Otro</MenuItem>
-          </CustomLabel>
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Pos Grados"
+                placeholder={
+                  cargando ? "Cargando..." : "Seleccione un posgrado"
+                }
+                error={!!error}
+                helperText={error}
+              />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.id_pos_grado === value?.id_pos_grado
+            }
+            filterOptions={(options, { inputValue }) => {
+              return options.filter(
+                (option) =>
+                  option.nombre_pos_grado
+                    .toLowerCase()
+                    .includes(inputValue.toLowerCase()) ||
+                  (option.tipo_pos_grado &&
+                    option.tipo_pos_grado
+                      .toLowerCase()
+                      .includes(inputValue.toLowerCase()))
+              );
+            }}
+          />
 
           {/* CustomChips para posgrados seleccionados */}
           {Array.isArray(valor) && valor.length > 0 && (
@@ -247,52 +309,71 @@ const handleGuardar = async () => {
               ))}
             </Box>
           )}
-        </Box>
+          <ModalRegisterPosgrado
+            open={openModalRegister}
+            onClose={() => {
+              setOpenModalRegister(false);
+            }}
+            setState={posGrado} // ← Actualizar el estado de preGrado
+            onPregradoCreado={(nuevoPosGrado) => {
+              // Agregar el nuevo pregrado a la lista de seleccionados
+              setValor([...valor, nuevoPosGrado]);
+            }}
+          />
+        </>
       );
     }
 
     if (campo === "areas_de_conocimiento") {
       return (
-        <Box>
-          <CustomLabel
-            select
-            label="Áreas de Conocimiento"
-            fullWidth
+        <>
+          <CustomAutocomplete
+            options={[
+              ...areaConocimiento,
+              {
+                id_area_conocimiento: "otro",
+                nombre_area_conocimiento: "Otro",
+              },
+            ]}
+            getOptionLabel={(option) => option.nombre_area_conocimiento || ""}
+            value={null}
             disabled={cargando}
-            onChange={(e) => {
-              const selectedValue = e.target.value;
-              if (selectedValue === "Otro") {
-                alert("Abrir modal para nueva área");
-              } else if (selectedValue && Array.isArray(valor)) {
-                const exists = valor.some(
-                  (item) => item.nombre === selectedValue
-                );
-                if (!exists) {
-                  const areaCompleta = areaConocimiento.find(
-                    (a) => a.nombre_area_conocimiento === selectedValue
+            onChange={(event, newValue) => {
+              if (newValue) {
+                if (newValue.nombre_area_conocimiento === "Otro") {
+                  setOpenModalRegister;
+                } else {
+                  const exists = valor.some(
+                    (item) =>
+                      item.id_area_conocimiento ===
+                      newValue.id_area_conocimiento
                   );
-                  if (areaCompleta) {
-                    setValor([...valor, areaCompleta]);
+                  if (!exists) {
+                    setValor([...valor, newValue]);
                   }
                 }
               }
             }}
-            value=""
-          >
-            <MenuItem value="">
-              {cargando ? "Cargando..." : "Seleccione un área"}
-            </MenuItem>
-            {Array.isArray(areaConocimiento) &&
-              areaConocimiento.map((a) => (
-                <MenuItem
-                  key={a.id_area_conocimiento}
-                  value={a.nombre_area_conocimiento}
-                >
-                  {a.nombre_area_conocimiento}
-                </MenuItem>
-              ))}
-            <MenuItem value="Otro">Otro</MenuItem>
-          </CustomLabel>
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Áreas de Conocimiento"
+                placeholder={cargando ? "Cargando..." : "Seleccione un área"}
+                error={!!error}
+                helperText={error}
+              />
+            )}
+            isOptionEqualToValue={(option, value) =>
+              option.id_area_conocimiento === value?.id_area_conocimiento
+            }
+            filterOptions={(options, { inputValue }) => {
+              return options.filter((option) =>
+                option.nombre_area_conocimiento
+                  .toLowerCase()
+                  .includes(inputValue.toLowerCase())
+              );
+            }}
+          />
 
           {/* CustomChips para áreas seleccionadas */}
           {Array.isArray(valor) && valor.length > 0 && (
@@ -310,7 +391,19 @@ const handleGuardar = async () => {
               ))}
             </Box>
           )}
-        </Box>
+
+          <ModalRegisterAreaConocimiento
+            open={openModalRegister}
+            onClose={() => {
+              setOpenModalRegister(false);
+            }}
+            setState={setAreaConocimiento} // ← Actualizar el estado de preGrado
+            onPregradoCreado={(nuevaAreaConocimiento) => {
+              // Agregar el nuevo pregrado a la lista de seleccionados
+              setValor([...valor, nuevaAreaConocimiento]);
+            }}
+          />
+        </>
       );
     }
 
@@ -377,7 +470,6 @@ const handleGuardar = async () => {
       <DialogTitle sx={{ textTransform: "capitalize" }}>
         Editar {String(campo).replace(/_/g, " ")}
       </DialogTitle>
-
       <DialogContent>{renderCampo()}</DialogContent>
 
       <DialogActions sx={{ padding: "16px" }}>
