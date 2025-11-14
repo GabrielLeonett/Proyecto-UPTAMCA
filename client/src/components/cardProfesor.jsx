@@ -118,7 +118,7 @@ export default function CardProfesor({ profesor, isSearch }) {
   // Eliminar profesor
   const handleProfesorEliminado = () => {
     setTimeout(() => {
-      navigate("/profesores/eliminados");
+      navigate("/profesores/${profesor.id_profesor}");
     }, 1200);
   };
 
