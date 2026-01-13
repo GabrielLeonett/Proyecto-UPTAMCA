@@ -78,6 +78,7 @@ export const joinRoleRooms = (socket, next) => {
  * @throws No lanza excepciones, pero responde con error 400 cuando corresponde
  */
 export const jsonSyntaxErrorHandler = (err, req, res, next) => {
+  console.log(err.message);
   // Verificar si el error es un SyntaxError relacionado con el parsing del body
   if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
     // Log del error para debugging (opcional)

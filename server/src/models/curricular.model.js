@@ -176,7 +176,7 @@ export default class CurricularModel {
    */
   static async registrarUnidadCurricular(idTrayecto, datos, usuario_accion) {
     try {
-      console.log("Datos para registrar Unidad Curricular:", datos);
+      console.log("Datos para registrar Unidad Curricular:", idTrayecto ,datos);
       const {
         nombre_unidad_curricular,
         codigo_unidad_curricular,

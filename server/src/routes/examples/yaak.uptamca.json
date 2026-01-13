@@ -1,14 +1,14 @@
 {
   "yaakVersion": "2025.9.3",
   "yaakSchema": 4,
-  "timestamp": "2026-01-11T16:43:19.828174300",
+  "timestamp": "2026-01-12T21:58:31.038203900",
   "resources": {
     "workspaces": [
       {
         "model": "workspace",
         "id": "wk_2GOhvcRhW5",
         "createdAt": "2025-01-07T16:03:32",
-        "updatedAt": "2026-01-10T17:15:26.368389500",
+        "updatedAt": "2026-01-12T21:01:13.195673900",
         "authentication": {
           "name": "Authorization",
           "payload": "{\n  \"id\": 999999999,\n  \"email\": \"superadmin@uptamca.ve\",\n  \"nombres\": \"Super\",\n  \"apellidos\": \"Administrador\",\n  \"roles\": [\n    \"SuperAdmin\"\n  ],\n  \"userId\": 999999999,\n  \"primera_vez\": false,\n  \"iss\": \"uptamca-api\",\n  \"aud\": \"uptamca-client\"\n}",
@@ -20,14 +20,14 @@
           {
             "enabled": true,
             "name": "autorization",
-            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NjgwNjM3MzYsImV4cCI6MTc2ODY2ODUzNn0.eAvWt12kiM8BDeWeGIyPyyROuB0mrnbWUdqm3nXhvPw;",
+            "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6OTk5OTk5OTk5LCJhcGVsbGlkb3MiOiJBZG1pbmlzdHJhZG9yIiwibm9tYnJlcyI6IlN1cGVyIiwicm9sZXMiOlsiU3VwZXJBZG1pbiJdLCJpYXQiOjE3NjgyNTE2NTgsImV4cCI6MTc2ODg1NjQ1OH0.A6ROQ_NkHasr0mFT6GP34TtVf8ehiVHlmjpbPmxjqPY",
             "id": "mTJsdD6cVS"
           },
           {
             "enabled": true,
             "name": "",
             "value": "",
-            "id": "wTxuWQ5Dbn"
+            "id": "iSAz5upt8M"
           }
         ],
         "name": "UPTAMCA APIs",
@@ -1099,13 +1099,13 @@
         "model": "http_request",
         "id": "rq_s8RULWsPfd",
         "createdAt": "2025-12-15T20:51:36.359160900",
-        "updatedAt": "2025-12-15T20:55:41.297304100",
+        "updatedAt": "2026-01-12T21:05:14.539127",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_bRV3PZgk5c",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n    \"nombre_area\": \"Ciencias de la Computación\",\n    \"descripcion_area\": \"Área dedicada al estudio de algoritmos, estructuras de datos y teoría de la computación\",\n    \"codigo_area\": \"CC001\"\n  }"
+          "text": "{\n    \"area_conocimiento\": \"Ciencias de la Computación\",\n    \"descripcion_area\": \"Área dedicada al estudio de algoritmos, estructuras de datos y teoría de la computación\",\n    \"codigo_area\": \"CC001\"\n  }"
         },
         "bodyType": "application/json",
         "description": "",
@@ -1148,13 +1148,13 @@
         "model": "http_request",
         "id": "rq_Grcr6K3KiG",
         "createdAt": "2025-12-15T20:50:57.975537",
-        "updatedAt": "2025-12-15T20:55:18.508797100",
+        "updatedAt": "2026-01-12T21:23:25.344007500",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_bRV3PZgk5c",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n  \"nombre_posgrado\": \"Maestría en Inteligencia Artificial\",\n  \"descripcion_posgrado\": \"Estudios avanzados en IA y aprendizaje automático\",\n  \"institucion\": \"Universidad Simón Bolívar\",\n  \"anio_graduacion\": 2015,\n  \"duracion_anios\": 2,\n  \"tipo_posgrado\": \"Maestría\"\n}"
+          "text": "{\n  \"nombre_pos_grado\": \"Maestría en Inteligencia Artificial\",\n  \"descripcion_posgrado\": \"Estudios avanzados en IA y aprendizaje automático\",\n  \"tipo_pos_grado\": \"Maestría\"\n}"
         },
         "bodyType": "application/json",
         "description": "",
@@ -1218,13 +1218,13 @@
         "model": "http_request",
         "id": "rq_H2SRtUyECR",
         "createdAt": "2025-12-15T20:49:37.888419800",
-        "updatedAt": "2025-12-15T20:54:43.303407400",
+        "updatedAt": "2026-01-12T21:23:42.799534500",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_bRV3PZgk5c",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n    \"nombre_pregrado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"institucion\": \"Universidad Central de Venezuela\",\n    \"anio_graduacion\": 2010,\n    \"duracion_anios\": 5,\n    \"tipo_pregrado\": \"Licenciatura\"\n  }"
+          "text": "{\n    \"nombre_pre_grado\": \"Ingeniería Informática\",\n    \"descripcion_pregrado\": \"Formación en desarrollo de software y sistemas informáticos\",\n    \"tipo_pre_grado\": \"Licenciatura\"\n  }"
         },
         "bodyType": "application/json",
         "description": "",
@@ -1696,13 +1696,13 @@
         "model": "http_request",
         "id": "rq_7UXMWd3EUJ",
         "createdAt": "2025-12-15T19:56:00.260751800",
-        "updatedAt": "2025-12-15T19:59:07.065815",
+        "updatedAt": "2026-01-12T21:50:27.687982900",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_W9YKzXf2Se",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n  \"id_seccion\": 2,\n  \"idProfesor\": 1,\n  \"idUnidadCurricular\": 1,\n  \"idAula\": 1,\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": \"10:20:00\",\n  \"horaFin\": \"12:00:00\",\n  \"duracion\": 90,\n  \"tipo_clase\": \"teoria\",\n  \"observaciones\": \"Clase regular\"\n}"
+          "text": "{\n  \"id_seccion\": ${[ faker.number.int(options=b64'ewogICJtaW4iOiA1OSwKICAibWF4IjogMjQ5Cn0') ]},\n  \"idProfesor\": ${[ faker.number.int(options=b64'ewogICJtaW4iOiAxMywKICAibWF4IjogNzIKfQ') ]},\n  \"idUnidadCurricular\": ${[ faker.number.int(options=b64'ewogICJtaW4iOiAxMywKICAibWF4IjogMTE0Cn0') ]},\n  \"idAula\": ${[ faker.number.int(options=b64'ewogICJtaW4iOiA0MSwKICAibWF4IjogMTIwCn0') ]},\n  \"diaSemana\": \"Lunes\",\n  \"horaInicio\": ${[ dateAdd(dateTime=b64'MTItMS0yMDI2', years='0', months='0', days='0', hours=b64'JHtbIHJhbmRvbS5yYW5nZShtaW49JzcnLCBtYXg9JzIwJywgZGVjaW1hbHM9JzAnKSBdfQ', minutes='', format=b64'SEg6bW06c3M') ]},\n  \"horaFin\": \"12:00:00\",\n  \"duracion\": 90,\n  \"tipo_clase\": \"teoria\",\n  \"observaciones\": \"Clase regular\"\n}"
         },
         "bodyType": "application/json",
         "description": "",
@@ -2115,13 +2115,13 @@
         "model": "http_request",
         "id": "rq_thqtNaDG62",
         "createdAt": "2025-12-15T19:20:21.553422500",
-        "updatedAt": "2026-01-10T19:28:02.853477800",
+        "updatedAt": "2026-01-12T21:24:05.635260500",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_Hj75saeNkS",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n  \"id_trayecto\": ${[ faker.number.int(options=b64'eyJtaW4iOiA2NSwibWF4IjogMTAwfQ') ]},\n  \"nombre_linea_investigacion\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion\": \"Investigación en aplicaciones prácticas de IA\"\n}"
+          "text": "{\n  \"id_trayecto\": ${[ faker.number.int(options=b64'eyJtaW4iOiA2NSwibWF4IjogMTEwfQ') ]},\n  \"nombre_linea_investigacion\": \"Inteligencia Artificial Aplicada\",\n  \"descripcion\": \"Investigación en aplicaciones prácticas de IA\"\n}"
         },
         "bodyType": "application/json",
         "description": "",
@@ -2136,7 +2136,7 @@
         "method": "POST",
         "name": "Crear línea",
         "sortPriority": 0.02290000000000001,
-        "url": "${[ BACKEND_URL ]}/catalogo/1/linea-investigacion",
+        "url": "${[ BACKEND_URL ]}/catalogo/${[ faker.number.int(options=b64'eyJtaW4iOiA2NSwibWF4IjogMTEwfQ') ]}/linea-investigacion",
         "urlParameters": []
       },
       {
@@ -2192,13 +2192,13 @@
         "model": "http_request",
         "id": "rq_8ReP8coQap",
         "createdAt": "2025-12-15T19:19:02.066802500",
-        "updatedAt": "2026-01-10T19:19:05.121987200",
+        "updatedAt": "2026-01-12T21:12:42.420753100",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_Hj75saeNkS",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n  \"id_trayecto\": ${[ faker.number.int({ \"min\": 1, \"max\": 100 }) ]},\n  \"nombre_unidad_curricular\": ,\n  \"codigo_unidad_curricular\": \"${[ faker.string.alphanumeric({ \"length\": 5, \"casing\": \"upper\" }) ]}\",\n  \"tipo_unidad\": ,\n  \"descripcion_unidad_curricular\": \"${[ faker.lorem.sentence(12).padEnd(40, '.') ]}\",\n  \"carga_horas_academicas\": ${[ faker.number.int({ \"min\": 1, \"max\": 6 }) ]},\n  \"creditos\": ${[ faker.number.int({ \"min\": 0, \"max\": 10 }) ]},\n  \"semanas\": ${[ faker.number.int({ \"min\": 1, \"max\": 36 }) ]},\n  \"areas_conocimiento\": [\n    {\n      \"id_area_conocimiento\": ${[ faker.number.int({ \"min\": 1, \"max\": 50 }) ]},\n      \"nombre_area_conocimiento\":\n    }\n  ],\n  \"lineas_investigacion\": [\n    {\n      \"id_linea_investigacion\": ${[ faker.number.int({ \"min\": 1, \"max\": 50 }) ]},\n      \"nombre_linea_investigacion\": \"Desarrollo de Software Soberano\"\n    }\n  ],\n  \"hte\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hse\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hta\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hsa\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hti\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]},\n  \"hsi\": ${[ faker.number.float({ \"min\": 0, \"max\": 4, \"multipleOf\": 0.5 }) ]}\n}"
+          "text": "{\n  \"id_trayecto\": ${[ faker.number.int(options=b64'eyJtaW4iOjY1LCAibWF4IjoxMTB9') ]},\n  \"nombre_unidad_curricular\": \"${[ faker.lorem.word(options='10') ]}\",\n  \"codigo_unidad_curricular\": \"${[ faker.string.alphanumeric(options=b64'eyJsZW5ndGgiOjYgLCJjYXNpbmciOiAidXBwZXIiIH0') ]}\",\n  \"tipo_unidad\": \"Taller\",\n  \"descripcion_unidad_curricular\": \"${[ faker.lorem.sentence(options='50') ]}\",\n  \"carga_horas_academicas\": ${[ faker.number.int(options=b64'eyJtaW4iOjIsICJtYXgiOjZ9') ]},\n  \"creditos\": ${[ faker.number.int(options=b64'eyJtaW4iOjEsICJtYXgiOjEwfQ') ]},\n  \"semanas\": ${[ faker.number.int(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hte\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hse\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hta\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hsa\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hti\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"hsi\": ${[ faker.number.float(options=b64'eyJtaW4iOjEsICJtYXgiOjIwfQ') ]},\n  \"areas_conocimiento\": [\n    {\n      \"id_area_conocimiento\":14\n    }\n  ]\n}"
         },
         "bodyType": "application/json",
         "description": "",
@@ -2213,7 +2213,7 @@
         "method": "POST",
         "name": "Crear unidad",
         "sortPriority": 0.019900000000000008,
-        "url": "${[ BACKEND_URL ]}/trayectos/1/unidades-curriculares",
+        "url": "${[ BACKEND_URL ]}/trayectos/${[ faker.number.int(options=b64'eyJtaW4iOjY1LCAibWF4IjoxMTB9') ]}/unidades-curriculares",
         "urlParameters": []
       },
       {
@@ -2729,13 +2729,13 @@
         "model": "http_request",
         "id": "rq_Ak7mdUiCL7",
         "createdAt": "2025-12-15T18:53:31.035978400",
-        "updatedAt": "2025-12-15T19:04:13.508447300",
+        "updatedAt": "2026-01-12T21:22:25.168556100",
         "workspaceId": "wk_2GOhvcRhW5",
         "folderId": "fl_zpaTrR6sYi",
         "authentication": {},
         "authenticationType": null,
         "body": {
-          "text": "{\n  \"nombre_aula\": \"LAB-101\",\n  \"tipo_aula\": \"laboratorio\",\n  \"capacidad\": 40,\n  \"ubicacion\": \"Edificio A, Primer Piso\",\n  \"descripcion\": \"Laboratorio de Informática\",\n  \"equipamiento\": \"30 computadoras, proyector, aire acondicionado\",\n  \"disponible\": true,\n  \"id_sede\": 1,\n  \"codigoPNF\": \"INF\"\n}"
+          "text": "{\n  \"tipo\": \"Convencional\",\n  \"capacidad\": 40,\n  \"id_sede\": 5,\n  \"codigo\": \"${[ faker.string.numeric(options='3') ]}\"\n}"
         },
         "bodyType": "application/json",
         "description": "",
