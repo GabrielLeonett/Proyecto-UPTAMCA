@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from "react";
-import { UTILS } from "../../../utils/UTILS.js";
+import { UTILS } from "../../../utils/utils.js";
 
 // Efecto para carga inicial de horario
 const useHorarioInitialization = (props, stateSetters) => {
@@ -33,7 +33,6 @@ const useHorarioInitialization = (props, stateSetters) => {
           }
         }
       });
-      console.log(horasFiltradas)
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -72,6 +71,7 @@ const useHorarioInitialization = (props, stateSetters) => {
             }
           });
         });
+
         setTableHorarioOriginal(nuevaMatriz);
         return nuevaMatriz;
       });
@@ -92,16 +92,10 @@ const dividirUnidadCurricular = (unidadCurricular, maxHorasPorClase = 3) => {
 
   // Validaciones
   if (horasFaltantes <= 0) {
-    console.log(
-      `✅ "${unidadCurricular.nombre_unidad_curricular}" ya está completa`
-    );
     return [];
   }
 
   if (horasFaltantes > horasTotales) {
-    console.warn(
-      `⚠️ Horas faltantes (${horasFaltantes}) exceden horas totales (${horasTotales})`
-    );
     return [horasFaltantes];
   }
 
@@ -176,11 +170,6 @@ const useNewClassEffect = (state, actions, stateSetters) => {
         const horasClase = clasesPendientes[claseActualIndex];
 
         if (horasClase) {
-          console.log(
-            `🔄 Procesando clase ${claseActualIndex + 1}/${
-              clasesPendientes.length
-            }`
-          );
 
           if (classToMove === null && selectedClass === null) {
             // 1. Calcular horarios disponibles para esta clase específica
@@ -205,7 +194,6 @@ const useNewClassEffect = (state, actions, stateSetters) => {
               }));
             } else {
               // Proceso completado
-              console.log("✅ Todas las clases procesadas");
               setProcesoClases({
                 enProgreso: false,
                 clasesPendientes: [],
@@ -218,15 +206,7 @@ const useNewClassEffect = (state, actions, stateSetters) => {
 
       procesarSiguienteClase();
     }
-  }, [
-    procesoClases,
-    calcularHorariosDisponibles,
-    crearClaseEnHorario,
-    profesorSelected,
-    setProcesoClases,
-    classToMove,
-    selectedClass,
-  ]);
+  }, [procesoClases, calcularHorariosDisponibles, crearClaseEnHorario, profesorSelected, setProcesoClases, classToMove, selectedClass, unidadCurricularSelected.id_unidad_curricular]);
 
   return procesoClases.enProgreso;
 };

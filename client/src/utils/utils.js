@@ -120,6 +120,7 @@ export const UTILS = {
 
     return `${horas12}:${String(minutos).padStart(2, "0")} ${periodo}`;
   },
+
   formatearHoraMilitar: (horaMilitar) => {
     const horas = Math.floor(horaMilitar / 100);
     const minutos = horaMilitar % 100;
@@ -128,6 +129,7 @@ export const UTILS = {
 
     return `${ceroAñadido}${horas12}:${String(minutos).padStart(2, "0")}:00`;
   },
+
   formatearHora24: (horaMilitar) => {
     const horas = Math.floor(horaMilitar / 100);
     const minutos = horaMilitar % 100;
@@ -135,10 +137,12 @@ export const UTILS = {
     const minutosStr = minutos.toString().padStart(2, "0");
     return `${horasStr}:${minutosStr}:00`;
   },
+
   obtenerTrayectoNumero(trayecto) {
     const trayectos = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
     return trayectos[trayecto] || 1;
   },
+
   horasMinutos(h, m) {
     return parseInt(h) * 60 + parseInt(m);
   },
@@ -189,6 +193,7 @@ export const UTILS = {
     "18:15",
     "19:00",
     "19:45",
+    "20:30",
   ],
   diasSemana: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 
@@ -215,5 +220,6 @@ export const UTILS = {
     1815: null,
     1900: null,
     1945: null,
+    2030: null,
   },
 };

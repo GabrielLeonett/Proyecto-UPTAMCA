@@ -10,6 +10,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
     profesorSelected,
     aulaSelected,
     unidadCurricularSelected,
+    Custom,
   } = state;
 
   const {
@@ -25,11 +26,27 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
   const { completarMovimiento } = actions;
   const alert = useSweetAlert();
 
+  // Función para limpiar todos los estados de selección
+  const limpiarSelecciones = useCallback(() => {
+    setSelectedClass(null);
+    setClassToMove(null);
+    setProfesorSelected(null);
+    setAulaSelected(null);
+    setUnidadCurricularSelected(null);
+    setAvailableSlots([]);
+  }, [
+    setSelectedClass,
+    setClassToMove,
+    setProfesorSelected,
+    setAulaSelected,
+    setUnidadCurricularSelected,
+    setAvailableSlots,
+  ]);
+
   // Mover clase al horario - DEFINIR PRIMERO
   const MoverClassEnHorario = useCallback(
     (slot) => {
       const { dia_index, hora_inicio, bloques_necesarios } = slot;
-      console.warn("Esto son los datos de el slot:", slot);
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -45,8 +62,6 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           ).padStart(2, "0")}`,
           horaFin: utils.sumar45Minutos(hora_inicio, bloques_necesarios),
         };
-
-        console.warn("Esto son los datos de la nueva clase:", nuevaClase);
 
         // Ocupar los bloques necesarios
         for (let i = 0; i < bloques_necesarios; i++) {
@@ -78,6 +93,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       setSelectedClass([]);
       setAvailableSlots([]);
 
+      // Usar la nueva función de limpieza
+      limpiarSelecciones();
+
       // ALERTA AGREGADA
       alert.success(
         "Clase Programada",
@@ -87,6 +105,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       );
     },
     [
+      limpiarSelecciones,
       classToMove,
       setTableHorario,
       setUnidadCurricularSelected,
@@ -118,35 +137,26 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
   // Manejar click en slots disponibles
   const handleSlotClick = useCallback(
     async (dia_index, hora_inicio) => {
-      // async AGREGADO
-      if (!selectedClass) {
-        // ALERTA AGREGADA
+      if (!selectedClass && !classToMove) {
         alert.warning("Advertencia", "No hay clase seleccionada");
         return;
       }
 
-      console.log("classToMove:", classToMove);
-      console.log("selectedClass:", selectedClass);
-
+      // Buscar el slot específico
       const slot = availableSlots.find(
         (slot) =>
           slot.dia_index === dia_index && slot.hora_inicio === hora_inicio
       );
 
       if (!slot) {
-        // ALERTA AGREGADA
-        alert.error("Error", "Horario no disponible");
+        alert.error("Error", "Este horario ya no está disponible");
         return;
       }
 
       if (classToMove) {
-        console.log("Moviendo clase existente");
-
-        // REEMPLAZO DE window.confirm CON ALERTA
         const result = await alert.confirm(
           "Mover Clase",
           `¿Mover ${
-            classToMove.nombre_unidad_curricular ||
             classToMove.nombre_unidad_curricular
           } a ${utils.obtenerDiaNombre(dia_index)} a ${utils.formatearHora(
             hora_inicio
@@ -156,22 +166,16 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
             cancelButtonText: "Cancelar",
           }
         );
-        console.log("Resultado de la alerta:", result);
 
         if (result) {
           completarMovimiento(slot);
         } else {
-          // ALERTA AGREGADA
           alert.info("Información", "Movimiento cancelado");
         }
       } else {
-        console.log("Agregando clase nueva");
-
-        // REEMPLAZO DE window.confirm CON ALERTA
         const result = await alert.confirm(
           "Programar Clase",
           `¿Programar ${
-            selectedClass.nombre_unidad_curricular ||
             selectedClass.nombre_unidad_curricular
           } en ${utils.obtenerDiaNombre(dia_index)} a ${utils.formatearHora(
             hora_inicio
@@ -182,10 +186,10 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           }
         );
 
-        if (result.isConfirmed) {
+        if (result) {
+          // ✅ CORREGIDO: result es booleano, no tiene isConfirmed
           MoverClassEnHorario(slot);
         } else {
-          // ALERTA AGREGADA
           alert.info("Información", "Programación cancelada");
         }
       }
@@ -197,21 +201,56 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       completarMovimiento,
       MoverClassEnHorario,
       utils,
-      alert, // ALERTA AGREGADA
+      alert,
     ]
   );
 
-  // Crear nueva clase en el estado - VERSIÓN MEJORADA
+  // Crear nueva clase en el estado
   const crearClaseEnHorario = useCallback(
     (numClasesTotales, indexActual, horas_clase) => {
+      // ✅ VERIFICAR SI YA EXISTE UN PROFESOR ASIGNADO PARA ESTA UNIDAD
+      const verificarProfesorExistente = () => {
+        const idUnidad = unidadCurricularSelected.id_unidad_curricular;
+        let profesorAsignado = null;
+
+        // Buscar en el horario actual si ya hay esta unidad curricular con profesor
+        state.tableHorario.forEach((dia) => {
+          Object.values(dia.horas).forEach((hora_actual) => {
+            if (
+              hora_actual?.datos_clase?.id_unidad_curricular === idUnidad &&
+              hora_actual.bloque === 0
+            ) {
+              profesorAsignado = hora_actual.datos_clase.id_profesor;
+            }
+          });
+        });
+
+        return profesorAsignado;
+      };
+
+      const profesorExistente = verificarProfesorExistente();
+
+      // ✅ SI YA HAY PROFESOR ASIGNADO, VERIFICAR QUE SEA EL MISMO
+      if (
+        profesorExistente &&
+        profesorExistente !== profesorSelected.id_profesor
+      ) {
+        alert.error(
+          "Error de consistencia",
+          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada al profesor actual. No puede cambiar de profesor para horas adicionales.`
+        );
+        return; // No crear la clase
+      }
       if (!profesorSelected || !aulaSelected || !unidadCurricularSelected) {
-        console.warn("Datos incompletos para crear clase");
         alert.error("Error", "Datos incompletos para crear la clase");
         return;
       }
 
+      // Crear un ID único que incluya timestamp y índice
       const nuevaClase = {
-        id: Date.now() + indexActual, // ID único por clase
+        id: `${Date.now()}_${indexActual}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         id_profesor: profesorSelected.id_profesor,
         id_aula: aulaSelected.id_aula,
         id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular,
@@ -222,17 +261,17 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           unidadCurricularSelected.nombre_unidad_curricular,
         horas_clase: horas_clase,
         nueva_clase: true,
-        indiceClase: indexActual + 1, // Para tracking
+        indiceClase: indexActual + 1,
         totalClases: numClasesTotales,
       };
 
-
+      // Establecer la nueva clase como seleccionada
       setSelectedClass({ ...nuevaClase });
       setClassToMove({ ...nuevaClase });
 
-      // Solo limpiar cuando sea la ÚLTIMA clase
+      // Si es la última clase, limpiar TODOS los estados
       if (indexActual === numClasesTotales - 1) {
-        console.log("🧹 Limpiando selecciones - última clase creada");
+        // IMPORTANTE: Limpiar en este orden para evitar problemas
         setProfesorSelected(null);
         setAulaSelected(null);
         setUnidadCurricularSelected(null);
@@ -241,15 +280,10 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           "Éxito",
           `Todas las clases (${numClasesTotales}) creadas correctamente`
         );
-      } else {
-        console.log(
-          `📝 Clase ${
-            indexActual + 1
-          }/${numClasesTotales} creada - continuando...`
-        );
       }
     },
     [
+      state.tableHorario,
       profesorSelected,
       aulaSelected,
       unidadCurricularSelected,

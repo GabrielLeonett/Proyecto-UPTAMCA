@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 
-// Función auxiliar para verificar unidades curriculares existentes (fuera del hook)
+// Función auxiliar para verificar unidades curriculares existentes (CORREGIDA)
 const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
   if (!unidades || unidades.length === 0) return unidades;
 
@@ -10,7 +10,11 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
   // Recorrer el horario para encontrar unidades existentes
   tableHorario.forEach((dia) => {
     Object.values(dia.horas).forEach((hora_actual) => {
-      if (hora_actual?.datos_clase?.id_unidad_curricular) {
+      if (
+        hora_actual?.datos_clase?.id_unidad_curricular &&
+        hora_actual.bloque === 0
+      ) {
+        // Solo contar bloques principales (bloque === 0) para evitar duplicados
         const existeUnidad = unidades.find(
           (unidad) =>
             unidad.id_unidad_curricular ===
@@ -30,20 +34,12 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
           );
           const horasRequeridas = existeUnidad.horas_clase;
 
-          if (horasAsignadas < horasRequeridas) {
-            unidadesExistentes.push({
-              ...existeUnidad,
-              faltan_horas_clase: horasRequeridas - horasAsignadas,
-              horas_asignadas: horasAsignadas,
-              esVista: true,
-            });
-          } else {
-            unidadesExistentes.push({
-              ...existeUnidad,
-              horas_asignadas: horasAsignadas,
-              esVista: true,
-            });
-          }
+          unidadesExistentes.push({
+            ...existeUnidad,
+            faltan_horas_clase: Math.max(0, horasRequeridas - horasAsignadas),
+            horas_asignadas: horasAsignadas,
+            esVista: true,
+          });
 
           idsUnidadesExistentes.add(
             hora_actual.datos_clase.id_unidad_curricular
@@ -62,7 +58,7 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
     if (unidadExistente) {
       return {
         ...unidad,
-        ...unidadExistente, // Incluye faltan_horas_clase y horas_asignadas si existen
+        ...unidadExistente,
         esVista: true,
       };
     }
@@ -70,22 +66,32 @@ const verificarSiExisteUnidadCurricular = (unidades, tableHorario) => {
     return {
       ...unidad,
       esVista: false,
+      horas_asignadas: 0,
+      faltan_horas_clase: unidad.horas_clase,
     };
   });
 };
 
-// Función auxiliar para calcular horas asignadas de una unidad curricular
+// Función auxiliar para calcular horas asignadas de una unidad curricular (CORREGIDA)
 const calcularHorasAsignadas = (tableHorario, idUnidadCurricular) => {
   let totalHoras = 0;
+  const horasContadas = new Set(); // Para evitar duplicados
 
   tableHorario.forEach((dia) => {
     Object.values(dia.horas).forEach((hora_actual) => {
       if (
-        hora_actual?.datos_clase?.id_unidad_curricular === idUnidadCurricular
+        hora_actual?.datos_clase?.id_unidad_curricular === idUnidadCurricular &&
+        hora_actual.bloque === 0 && // Solo contar bloques principales
+        !horasContadas.has(hora_actual.datos_clase.id) // Evitar duplicar la misma clase
       ) {
         // Sumar la duración de esta clase (en horas académicas de 45 min)
-        const duracion = hora_actual.datos_clase.duracion_horas || 1;
+        const duracion =
+          hora_actual.datos_clase.horas_clase ||
+          hora_actual.bloques_totales ||
+          hora_actual.datos_clase.duracion_horas ||
+          1;
         totalHoras += duracion;
+        horasContadas.add(hora_actual.datos_clase.id);
       }
     });
   });
@@ -136,12 +142,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchUnidadesCurriculares = useCallback(
     async (tableHorarioParam = null) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!trayecto?.id_trayecto) {
-        console.warn("trayecto no está definido o no tiene id_trayecto");
         return;
       }
 
@@ -155,7 +159,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
           !res.unidades_curriculares ||
           !Array.isArray(res.unidades_curriculares)
         ) {
-          console.error("Respuesta inválida de unidades curriculares:", res);
           return;
         }
 
@@ -170,13 +173,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         if (validarUnidadesCurricularesInicializadas(unidadesActualizadas)) {
           setUnidadesCurriculares(unidadesActualizadas);
         } else {
-          console.error(
-            "Unidades curriculares no tienen la estructura esperada"
-          );
           setUnidadesCurriculares([]);
         }
       } catch (error) {
-        console.error("Error cargando unidades curriculares:", error);
+        console.error("Error fetching unidades curriculares:", error);  
         setUnidadesCurriculares([]);
       }
     },
@@ -193,26 +193,18 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchProfesores = useCallback(
     async (unidadCurricular, search = null) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!validarUnidadesCurricularesInicializadas(unidadesCurriculares)) {
-        console.warn(
-          "Unidades curriculares no están inicializadas o no son válidas"
-        );
         return;
       }
 
       if (!unidadCurricular || !unidadCurricular.horas_clase) {
-        console.warn(
-          "No hay unidad curricular seleccionada o no tiene horas_clase definidas"
-        );
         return;
       }
 
       if (!seccion?.id_seccion) {
-        console.warn("Sección no está definida o no tiene id_seccion");
         return;
       }
 
@@ -260,50 +252,33 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
           }
         }
       } catch (error) {
-        console.error("Error cargando profesores:", error);
+        console.error("Error fetching profesores:", error);
         setProfesores([]);
       }
     },
-    [
-      Custom,
-      unidadesCurriculares,
-      seccion?.id_seccion,
-      axios,
-      setProfesores,
-      tableHorario,
-      alert,
-    ]
+    [Custom, unidadesCurriculares, seccion.id_seccion, axios, setProfesores, alert]
   );
 
   // Fetch de aulas CON useCallback
   const fetchAulas = useCallback(
     async (profesor) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!validarUnidadesCurricularesInicializadas(unidadesCurriculares)) {
-        console.warn(
-          "Unidades curriculares no están inicializadas o no son válidas"
-        );
         return;
       }
 
       if (!unidadCurricularSelected || !unidadCurricularSelected.horas_clase) {
-        console.warn(
-          "No hay unidad curricular seleccionada o no tiene horas_clase definidas"
-        );
         return;
       }
 
       if (!seccion?.id_seccion) {
-        console.warn("Sección no está definida o no tiene id_seccion");
         return;
       }
 
       if (!profesor || (!profesor.id_profesor && !profesor.idProfesor)) {
-        console.warn("No hay profesor seleccionado o no tiene ID válido");
         return;
       }
 
@@ -321,11 +296,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         if (aulas && Array.isArray(aulas)) {
           setAulas(aulas);
         } else {
-          console.error("Respuesta de aulas inválida:", aulas);
           setAulas([]);
         }
       } catch (error) {
-        console.error("Error cargando aulas:", error);
+        console.error("Error fetching aulas:", error);
         setAulas([]);
       }
     },
@@ -343,12 +317,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchProfesoresHorario = useCallback(
     async (profesor) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!profesor) {
-        console.warn("No se proporcionó un profesor para obtener el horario");
         return;
       }
 
@@ -356,7 +328,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
       const id_profesor = profesor.id_profesor || profesor.id_profesor;
 
       if (!id_profesor) {
-        console.warn("El profesor no tiene id definido");
         return;
       }
 
@@ -368,11 +339,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         if (horario) {
           setProfesorHorario(horario);
         } else {
-          console.error("Respuesta de horario del profesor inválida:", horario);
           setProfesorHorario(null);
         }
       } catch (error) {
-        console.error("Error cargando horario del profesor:", error);
+        console.error("Error fetching profesor horario:", error);
         setProfesorHorario(null);
       } finally {
         setLoading(false);
@@ -385,12 +355,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchAulaHorario = useCallback(
     async (aula) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!aula) {
-        console.warn("No se proporcionó un aula para obtener el horario");
         return;
       }
 
@@ -398,7 +366,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
       const idAula = aula.id_aula || aula.idAula;
 
       if (!idAula) {
-        console.warn("El aula no tiene ID definido");
         return;
       }
 
@@ -410,11 +377,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
         if (horario) {
           setAulaHorario(horario);
         } else {
-          console.error("Respuesta de horario del aula inválida:", horario);
           setAulaHorario(null);
         }
       } catch (error) {
-        console.error("Error cargando horario del aula:", error);
+        console.error("Error fetching aula horario:", error);
         setAulaHorario(null);
       } finally {
         setLoading(false);
@@ -427,12 +393,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchProfesorCompleto = useCallback(
     async (profesor) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!profesor) {
-        console.warn("No se proporcionó un profesor para obtener los datos");
         return;
       }
 
@@ -440,7 +404,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
       const id_profesor = profesor.id_profesor || profesor.id;
 
       if (!id_profesor) {
-        console.warn("El profesor no tiene id definido");
         return;
       }
 
@@ -454,7 +417,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
         return response;
       } catch (error) {
-        console.error("Error cargando datos completos del profesor:", error);
+        console.error("Error fetching profesor completo:", error);
         return null;
       } finally {
         setLoading(false);
@@ -467,12 +430,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
   const fetchAulaCompleta = useCallback(
     async (aula) => {
       if (!Custom) {
-        console.warn("Custom no está disponible");
         return;
       }
 
       if (!aula) {
-        console.warn("No se proporcionó un aula para obtener los datos");
         return;
       }
 
@@ -480,7 +441,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
       const id_aula = aula.id_aula || aula.id;
 
       if (!id_aula) {
-        console.warn("El aula no tiene id definido");
         return;
       }
 
@@ -491,7 +451,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
         return response;
       } catch (error) {
-        console.error("Error cargando datos completos del aula:", error);
+        console.error("Error fetching aula completa:", error);
         return null;
       } finally {
         setLoading(false);
@@ -535,22 +495,25 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
               const respuesta = await axios.delete(`/horarios/${id_horario}`);
               if (respuesta.data && respuesta.success) {
                 // ✅ ACTUALIZAR INMEDIATAMENTE: Remover del tableHorario
-                setTableHorario(prev => prev.map(dia => {
-                  const nuevasHoras = { ...dia.horas };
-                  Object.keys(nuevasHoras).forEach(clave => {
-                    const celda = nuevasHoras[clave];
-                    if (celda?.datos_clase?.id_horario === id_horario) {
-                      nuevasHoras[clave] = null; // Eliminar celda
-                    }
-                  });
-                  return { ...dia, horas: nuevasHoras };
-                }));
+                setTableHorario((prev) =>
+                  prev.map((dia) => {
+                    const nuevasHoras = { ...dia.horas };
+                    Object.keys(nuevasHoras).forEach((clave) => {
+                      const celda = nuevasHoras[clave];
+                      if (celda?.datos_clase?.id_horario === id_horario) {
+                        nuevasHoras[clave] = null; // Eliminar celda
+                      }
+                    });
+                    return { ...dia, horas: nuevasHoras };
+                  })
+                );
 
                 alert.success(respuesta.title, respuesta.message);
               } else {
                 alert.error(respuesta.title, respuesta.message);
               }
             } catch (error) {
+              console.error("Error deleting horario:", error);
               alert.error("Error", "No se pudo eliminar el horario");
             }
           }
@@ -571,14 +534,12 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
 
               // Validar que tenga los datos mínimos necesarios
               if (!datos_clase?.id_profesor || !datos_clase?.id_aula) {
-                console.warn("Datos de clase incompletos:", datos_clase);
                 continue;
               }
 
               try {
                 if (datos_clase.clase_move) {
                   // ✅ ACTUALIZAR clase existente
-                  console.log("Actualizando clase:", datos_clase);
                   const respuesta = await axios.put(
                     `/horarios/${datos_clase.id_horario || datos_clase.id}`,
                     datos_clase
@@ -590,7 +551,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                       ...celda.datos_clase,
                       ...respuesta.horario, // Datos actualizados del servidor
                       clase_move: false, // Quitar flag
-                      conflictos: undefined // Limpiar conflictos si existían
+                      conflictos: undefined, // Limpiar conflictos si existían
                     };
 
                     alert.success(
@@ -608,10 +569,8 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                   } else {
                     alert.error(respuesta.title, respuesta.message);
                   }
-
                 } else if (datos_clase.nueva_clase) {
                   // ✅ CREAR nueva clase
-                  console.log("Creando nueva clase:", datos_clase);
                   const datosNewHorario = {
                     id_seccion: seccion.id_seccion,
                     id_profesor: datos_clase.id_profesor,
@@ -619,19 +578,24 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                     id_aula: datos_clase.id_aula,
                     dia_semana: datos_clase.dia_semana,
                     hora_inicio: datos_clase.hora_inicio,
+                    hora_fin: datos_clase.hora_fin,
                     horas_clase: datos_clase.horas_clase,
                   };
 
-                  const respuesta = await axios.post("/horarios", datosNewHorario);
+                  const respuesta = await axios.post(
+                    "/horarios",
+                    datosNewHorario
+                  );
 
                   if (respuesta && respuesta.horario) {
                     // ✅ ACTUALIZAR INMEDIATAMENTE: Reemplazar datos temporales con datos reales del servidor
                     celda.datos_clase = {
                       ...celda.datos_clase,
                       ...respuesta.horario, // Datos reales con ID del servidor
-                      id_horario: respuesta.horario.id_horario || respuesta.horario.id,
+                      id_horario:
+                        respuesta.horario.id_horario || respuesta.horario.id,
                       nueva_clase: false, // Quitar flag
-                      conflictos: undefined // Limpiar conflictos
+                      conflictos: undefined, // Limpiar conflictos
                     };
 
                     alert.success(respuesta.title, respuesta.message);
@@ -640,7 +604,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                   }
                 }
               } catch (error) {
-                console.log("Error en operación de clase:", error);
                 const errorData = error.response?.data || error.data;
 
                 // ❌ Manejar errores con conflictos
@@ -678,9 +641,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
             "Revisa los conflictos en las clases marcadas"
           );
         }
-
       } catch (error) {
-        console.error("Error general en fetchCambiosTableHorario:", error);
         alert.error("Error crítico", "Ocurrió un error inesperado");
         throw error;
       }

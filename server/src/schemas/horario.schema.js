@@ -34,6 +34,13 @@ const horarioSchema = z.object({
     })
     .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Formato de hora inválido (HH:MM:SS)"),
 
+  hora_fin: z
+    .string({
+      invalid_type_error: "La hora de inicio debe ser un texto en formato HH:MM:SS",
+      required_error: "La hora de inicio es obligatoria",
+    })
+    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$/, "Formato de hora inválido (HH:MM:SS)"),
+
   id_aula: z
     .number({
       invalid_type_error: "El id del aula debe ser un número",

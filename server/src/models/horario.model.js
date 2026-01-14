@@ -283,16 +283,12 @@ export default class HorarioModel {
   static async obtenerAulasDisponibles(
     id_seccion,
     id_profesor,
-    horasNecesarias,
+    horasNecesarias
   ) {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
-        [
-          id_seccion,
-          id_profesor,
-          horasNecesarias,
-        ]
+        [id_seccion, id_profesor, horasNecesarias]
       );
 
       console.log("✅ Resultado de aulas:", rows);
@@ -318,6 +314,8 @@ export default class HorarioModel {
    * @param {number} datos.id_aula - ID del aula
    * @param {string} datos.dia_semana - Día de la semana
    * @param {string} datos.hora_inicio - Hora de inicio
+   * @param {string} datos.hora_fin - Hora de fin (nuevo parámetro)
+   * @param {number} datos.horas_clase - Cantidad de horas a registrar
    * @param {number} usuarioId - ID del usuario que realiza la acción
    * @returns {Object} Respuesta formateada del resultado
    */
@@ -331,21 +329,30 @@ export default class HorarioModel {
         dia_semana,
         horas_clase,
         hora_inicio,
+        hora_fin, // Nuevo parámetro
       } = datos;
 
-      console.log('Datos para crear horarios: ', datos)
+      console.log("Datos para crear horarios: ", datos);
+
+      // Verificar que hora_fin esté presente
+      if (!hora_fin) {
+        throw new Error("El parámetro hora_fin es requerido");
+      }
 
       const { rows } = await pg.query(
-        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, TRUE, $8, NULL)",
+        // El procedimiento ahora tiene 10 parámetros: agregamos $8 para hora_fin
+        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULL)",
         [
-          usuarioId,
-          id_seccion,
-          id_profesor,
-          id_unidad_curricular,
-          id_aula,
-          dia_semana,
-          hora_inicio,
-          horas_clase,
+          usuarioId, // $1: p_usuario_accion
+          id_seccion, // $2: p_id_seccion
+          id_profesor, // $3: p_id_profesor
+          id_unidad_curricular, // $4: p_unidad_curricular_id
+          id_aula, // $5: p_id_aula
+          dia_semana, // $6: p_dia_semana
+          hora_inicio, // $7: p_hora_inicio
+          hora_fin, // $8: p_hora_fin (nuevo)
+          true, // $9: p_activo
+          horas_clase, // $10: p_horas_registrar
         ]
       );
       return FormatResponseModel.respuestaPostgres(

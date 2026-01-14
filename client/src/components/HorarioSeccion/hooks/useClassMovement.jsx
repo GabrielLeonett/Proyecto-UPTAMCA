@@ -50,8 +50,8 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
     setClassToMove(null);
     setSelectedClass(null);
     setAulaSelected(null);
-    setProfesorSelected(null)
-    setUnidadCurricularSelected(null)
+    setProfesorSelected(null);
+    setUnidadCurricularSelected(null);
     setOriginalSlot(null);
   }, [setClassToMove, setOriginalSlot, setSelectedClass]);
 
@@ -67,7 +67,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
     async (clase) => {
       // Agregar async aquí
       if (!clase) {
-        console.error("No hay clase para eliminar");
         return;
       }
 
@@ -84,9 +83,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
 
       if (result) {
         setTableHorario((prev) => {
-          console.log("Eliminando clase:", clase);
-          console.log("Horario antes de eliminar:", prev);
-
           let nuevaMatriz = [...prev];
 
           // Buscar y liberar el slot donde está la clase
@@ -101,9 +97,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
                 return prev; // ✅ IMPORTANTE: Retornar el estado anterior si no hay cambios
               });
             }
-            console.log("Horario después de eliminar:", nuevaMatriz);
-          } else {
-            console.warn("No se encontró el slot original para eliminar");
           }
 
           return nuevaMatriz;
@@ -153,7 +146,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       }
 
       if (!profesorSelected) {
-        console.warn(`Profesor con ID ${clase.id_profesor} no encontrado`);
         setAvailableSlots([]);
         return;
       }
@@ -162,8 +154,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         !profesorSelected.disponibilidades ||
         profesorSelected.disponibilidades.length === 0
       ) {
-        console.log(profesorSelected);
-        console.warn("Profesor no tiene disponibilidad definida");
         setAvailableSlots([]);
         return;
       }
@@ -171,49 +161,37 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       const slotsDisponibles = [];
 
       profesorSelected.disponibilidades.forEach((disponibilidad) => {
-        if (
-          !disponibilidad.dia_semana ||
-          !disponibilidad.hora_inicio ||
-          !disponibilidad.hora_fin
-        ) {
-          console.warn("Disponibilidad con datos incompletos", disponibilidad);
-          return;
-        }
-
         const slots = procesarDisponibilidadDocente(
           disponibilidad,
           bloques_necesarios,
           tableHorario,
           (profesor_id, dia_index, hora_inicio, bloques) => {
-            // VERIFICAR PROFESOR
             const profesorDisponible = verificarDisponibilidadProfesor(
               profesor_id,
               dia_index,
               hora_inicio,
               bloques,
               profesorHorario,
-              clase // ✅ Pasar la clase actual para saltarse a sí misma
+              clase // ✅ Pasar la clase actual
             );
 
-            // VERIFICAR AULA - pasando la clase actual
             const aulaDisponible = verificarDisponibilidadAula(
               clase.id_aula,
               dia_index,
               hora_inicio,
               bloques,
               aulaHorario,
-              clase // ✅ Pasar la clase actual para saltarse a sí misma
+              clase // ✅ Pasar la clase actual
             );
 
-            // Solo disponible si AMBOS están libres
             return profesorDisponible && aulaDisponible;
           },
           clase
         );
+
         slotsDisponibles.push(...slots);
       });
 
-      console.log("Slots disponibles (profesor Y aula):", slotsDisponibles);
       setAvailableSlots(slotsDisponibles);
     },
     [
@@ -270,7 +248,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
           // Ahora calcular disponibilidades con TODOS los datos cargados
           calcularHorariosDisponibles(clase);
         } catch (error) {
-          console.error("Error cargando datos para movimiento:", error);
+          console.error("Error al manejar la solicitud de movimiento:", error);
           alert.error(
             "Error",
             "No se pudieron cargar los datos necesarios para el movimiento"
@@ -300,7 +278,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
     (nuevoSlot) => {
       // Verificar si tenemos los datos mínimos necesarios
       if (!classToMove) {
-        console.error("No hay clase para mover");
         return;
       }
 
@@ -310,7 +287,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         // Liberar el slot original si existe (sin importar si es clase nueva o no)
         if (originalSlot) {
           nuevaMatriz = liberarSlotOriginal(originalSlot, nuevaMatriz);
-          console.log("Horario después de liberar:", nuevaMatriz);
         }
 
         // Ocupar el nuevo slot
