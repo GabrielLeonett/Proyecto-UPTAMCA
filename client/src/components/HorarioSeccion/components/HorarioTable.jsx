@@ -435,14 +435,17 @@ const HorarioTable = ({
                   let rowSpanReal = 1;
 
                   const indexGlobalHoraActual = Object.keys(UTILS.initialHours).map(Number).findIndex((h) => h === hora);
-                  Object.keys(UTILS.initialHours).map(Number).forEach((h, idx) => {
-                    if(idx > indexGlobalHoraActual){
-                      if(typeof UTILS.initialHours[h] === "string"){
-                        rowSpanReal += 1;
+                  
+                  const siguienteReceso = 0;
+                  Object.entries(UTILS.initialHours).map((valor, index)=>{
+                    if(index > indexGlobalHoraActual){
+                      if(typeof valor === 'string'){
+                        siguienteReceso = index;
                       }
                     }
-                  });
-                  console.log(rowSpanReal);
+                  })
+                  console.log(rowSpanReal, celda)
+                  rowSpanReal = siguienteReceso - indexGlobalHoraActual;
 
                   if (esHoraIgnorarEnClase && dia_index === 0) {
                     return (
