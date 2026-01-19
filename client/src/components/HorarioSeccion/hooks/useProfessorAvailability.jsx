@@ -4,7 +4,7 @@ import useHorarioState from "./useHorarioState"; // Si necesitas acceder al esta
 
 // En useProfessorAvailability.js
 export const useProfessorAvailability = () => {
-  const { state } = useHorarioState();
+  const { horariosEliminados } = useHorarioState();
   const verificarDisponibilidadProfesor = useCallback(
     (
       profesor_id,
@@ -51,7 +51,7 @@ export const useProfessorAvailability = () => {
           }
 
           // ✅ Saltar horarios eliminados
-          if (state?.horariosEliminados?.includes(clase.id)) {
+          if (horariosEliminados?.includes(clase.id)) {
             return false;
           }
 
@@ -81,7 +81,7 @@ export const useProfessorAvailability = () => {
       const disponible = !tieneConflicto;
       return disponible;
     },
-    [state.horariosEliminados]
+    [horariosEliminados]
   );
 
   return {

@@ -53,7 +53,14 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
     setProfesorSelected(null);
     setUnidadCurricularSelected(null);
     setOriginalSlot(null);
-  }, [setClassToMove, setOriginalSlot, setSelectedClass]);
+  }, [
+    setAulaSelected,
+    setClassToMove,
+    setOriginalSlot,
+    setProfesorSelected,
+    setSelectedClass,
+    setUnidadCurricularSelected,
+  ]);
 
   // Cancelar movimiento
   const cancelarMovimiento = useCallback(() => {
@@ -66,9 +73,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
   const handleDeleteClass = useCallback(
     async (clase) => {
       // Agregar async aquí
-      if (!clase) {
-        return;
-      }
+      if (!clase) return;
 
       // Mostrar confirmación antes de eliminar
       const result = await alert.confirm(
@@ -89,12 +94,13 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
           const slotOriginal = findOriginalSlot(clase, nuevaMatriz);
           if (slotOriginal) {
             nuevaMatriz = liberarSlotOriginal(slotOriginal, nuevaMatriz);
-            if (!clase.nueva_clase) {
+            // ✅ CORREGIDO: Usar id_horario en lugar de id
+            if (!clase.nueva_clase && clase.id_horario) {
               setHorariosEliminados((prev) => {
-                if (!prev.includes(clase.id)) {
-                  return [...prev, clase.id];
+                if (!prev.includes(clase.id_horario)) {
+                  return [...prev, clase.id_horario];
                 }
-                return prev; // ✅ IMPORTANTE: Retornar el estado anterior si no hay cambios
+                return prev;
               });
             }
           }
@@ -175,6 +181,9 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
               clase // ✅ Pasar la clase actual
             );
 
+            return profesorDisponible;
+          },
+          (dia_index, hora_inicio, bloques) => {
             const aulaDisponible = verificarDisponibilidadAula(
               clase.id_aula,
               dia_index,
@@ -184,7 +193,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
               clase // ✅ Pasar la clase actual
             );
 
-            return profesorDisponible && aulaDisponible;
+            return aulaDisponible;
           },
           clase
         );

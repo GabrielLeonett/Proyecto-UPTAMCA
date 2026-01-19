@@ -61,6 +61,7 @@ const HorarioTable = ({
     return theme.palette.divider;
   };
 
+  console.log(tableHorario)
   return (
     <Paper
       elevation={2}
@@ -380,8 +381,8 @@ const HorarioTable = ({
           <TableBody>
             {horasOrdenadas.map((hora) => (
               <TableRow
-              key={hora}
-              sx={{ "&:last-child td": { borderBottom: 0 } }}
+                key={hora}
+                sx={{ "&:last-child td": { borderBottom: 0 } }}
               >
                 {/* Celda de Hora */}
                 <TableCell
@@ -399,11 +400,27 @@ const HorarioTable = ({
                 >
                   <Typography variant="body2" color="text.primary">
                     {UTILS.formatearHora(hora)} -{" "}
-                    {UTILS.formatearHora(
-                      Object.keys(UTILS.initialHours)[
-                        Object.keys(UTILS.initialHours).map(Number).indexOf(hora) + 1
-                      ]
-                    )}
+                    {(() => {
+                      // Convertir todas las horas a números para la búsqueda
+                      const horasNumericas = Object.keys(
+                        UTILS.initialHours
+                      ).map(Number);
+                      const indiceActual = horasNumericas.indexOf(hora);
+
+                      // Si encontramos la hora y hay una siguiente
+                      if (
+                        indiceActual !== -1 &&
+                        indiceActual < horasNumericas.length - 1
+                      ) {
+                        const siguienteHora = horasNumericas[indiceActual + 1];
+                        return UTILS.formatearHora(siguienteHora);
+                      }
+
+                      // Si es la última hora, calcular sumando 45 minutos
+                      return UTILS.formatearHora(
+                        parseInt(UTILS.sumar45Minutos(hora, 1))
+                      );
+                    })()}
                   </Typography>
                 </TableCell>
 
@@ -414,88 +431,130 @@ const HorarioTable = ({
                   const disponible =
                     selectedClass && isSlotAvailable(dia_index, hora);
 
-                  // Omitir celdas que no son el primer bloque de una clase
-                  if (celda?.ocupado && celda.bloque !== 0) {
-                    return null;
+                  // ✅ NUEVA LÓGICA: Determinar si mostrar o no la celda
+                  let rowSpanReal = 1;
+
+                  //Esta hora es una hora de receso o comida
+                  const esHoraIgnorarEnClase =
+                    typeof UTILS.initialHours[hora] === "string";
+
+                  if (esHoraIgnorarEnClase && dia_index === 0) {
+                    return (
+                      <TableCell
+                        key={cellKey}
+                        colSpan={7}
+                        sx={{
+                          position: "relative",
+                          width: { xs: 130, sm: 140, md: 150, lg: 160 },
+                          padding: 0,
+                          verticalAlign: "top",
+                          height: "60px",
+                          backgroundColor: "primary.main",
+                          transition: "all 0.2s ease-in-out",
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexDirection: "column",
+                            gap: 0.5,
+                            p: 1,
+                          }}
+                        >
+                          <Typography
+                            color="white"
+                            variant="h6"
+                            fontWeight={700}
+                          >
+                            {UTILS.initialHours[hora]}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    );
                   }
 
-                  return (
-                    <TableCell
-                      key={cellKey}
-                      rowSpan={celda?.ocupado ? celda.bloques_totales : 1}
-                      sx={{
-                        width: { xs: 130, sm: 140, md: 150, lg: 160 },
-                        padding: 0,
-                        verticalAlign: "top",
-                        height: celda?.ocupado
-                          ? `${celda.bloques_totales * 60}px`
-                          : "60px",
-                        border: `1px solid ${getCellBorderColor(
-                          dia_index,
-                          hora,
-                          celda,
-                          disponible
-                        )}`,
-                        backgroundColor: getCellBackgroundColor(
-                          dia_index,
-                          hora,
-                          celda,
-                          disponible
-                        ),
-                        position: "relative",
-                        transition: "all 0.2s ease-in-out",
-                        "&:hover": disponible
-                          ? {
-                              backgroundColor: alpha(
-                                theme.palette.success.main,
-                                0.2
-                              ),
-                              cursor: "pointer",
-                              transform: "scale(0.98)",
-                              boxShadow: `0 0 0 2px ${theme.palette.success.main}`,
-                            }
-                          : {},
-                      }}
-                      onClick={() =>
-                        disponible && handleSlotClick(dia_index, hora)
-                      }
-                    >
-                      {celda?.ocupado ? (
-                        <Clase
-                          clase={celda.datos_clase}
-                          {...(Custom && {
-                            onMoveRequest: handleMoveRequest,
-                            onCancelMove: handleCancelMoveRequest,
-                            onDeleteClass: handleClassDeleteClick,
-                            isSelected:
-                              selectedClass?.id === celda.datos_clase?.id,
-                          })}
-                        />
-                      ) : (
-                        disponible && (
-                          <Box
-                            sx={{
-                              height: "100%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              flexDirection: "column",
-                              gap: 0.5,
-                              p: 1,
-                            }}
-                          >
-                            <Chip
-                              icon={<ClassIcon sx={{ fontSize: "1rem" }} />}
-                              label="Disponible"
-                              size="mediun"
-                              color="success"
-                              variant="outlined"
-                            />
-                          </Box>
-                        )
-                      )}
-                    </TableCell>
-                  );
+                  if (!esHoraIgnorarEnClase) {
+                    return (
+                      <TableCell
+                        key={cellKey}
+                        rowSpan={celda?.ocupado ? rowSpanReal : 1} // ✅ Usar rowSpan real
+                        sx={{
+                          width: { xs: 130, sm: 140, md: 150, lg: 160 },
+                          padding: 0,
+                          verticalAlign: "top",
+                          height: celda?.ocupado
+                            ? `${rowSpanReal * 60}px` // ✅ Usar altura real
+                            : "60px",
+                          border: `1px solid ${getCellBorderColor(
+                            dia_index,
+                            hora,
+                            celda,
+                            disponible
+                          )}`,
+                          backgroundColor: getCellBackgroundColor(
+                            dia_index,
+                            hora,
+                            celda,
+                            disponible
+                          ),
+                          position: "relative",
+                          transition: "all 0.2s ease-in-out",
+                          "&:hover": disponible
+                            ? {
+                                backgroundColor: alpha(
+                                  theme.palette.success.main,
+                                  0.2
+                                ),
+                                cursor: "pointer",
+                                transform: "scale(0.98)",
+                                boxShadow: `0 0 0 2px ${theme.palette.success.main}`,
+                              }
+                            : {},
+                        }}
+                        onClick={() =>
+                          disponible && handleSlotClick(dia_index, hora)
+                        }
+                      >
+                        {celda?.ocupado ? (
+                          <Clase
+                            clase={celda.datos_clase}
+                            {...(Custom && {
+                              onMoveRequest: handleMoveRequest,
+                              onCancelMove: handleCancelMoveRequest,
+                              onDeleteClass: handleClassDeleteClick,
+                              isSelected:
+                                selectedClass?.id === celda.datos_clase?.id,
+                            })}
+                          />
+                        ) : (
+                          disponible && (
+                            <Box
+                              sx={{
+                                height: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                flexDirection: "column",
+                                gap: 0.5,
+                                p: 1,
+                              }}
+                            >
+                              <Chip
+                                icon={<ClassIcon sx={{ fontSize: "1rem" }} />}
+                                label="Disponible"
+                                size="mediun"
+                                color="success"
+                                variant="outlined"
+                              />
+                            </Box>
+                          )
+                        )}
+                      </TableCell>
+                    );
+                  }
                 })}
               </TableRow>
             ))}

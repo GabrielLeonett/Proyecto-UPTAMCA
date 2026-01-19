@@ -28,11 +28,10 @@ const useHorarioInitialization = (props, stateSetters) => {
       Object.keys(UTILS.initialHours).forEach((key) => {
         const horaHHMM = Number(key);
         if (horaHHMM >= horaInicioHHMM && horaHHMM < horaFinHHMM) {
-          if(UTILS.initialHours[key] != 'ignorar'){
-            horasFiltradas[key] = UTILS.initialHours[key];
-          }
+          horasFiltradas[key] = UTILS.initialHours[key];
         }
       });
+      const horasKeys = Object.keys(horasFiltradas).map((h) => Number(h));
 
       setTableHorario((prev) => {
         const nuevaMatriz = prev.map((item) => ({
@@ -47,28 +46,25 @@ const useHorarioInitialization = (props, stateSetters) => {
           if (idDia === -1) return;
 
           dia.clases.forEach((clase) => {
-            const [hIni, mIni] = clase.hora_inicio.split(":");
-            const [hFin, mFin] = clase.hora_fin.split(":");
-            const inicio = UTILS.horasMinutos(hIni, mIni);
-            const fin = UTILS.horasMinutos(hFin, mFin);
-            const bloques = Math.ceil((fin - inicio) / 45);
-
-            for (let i = 0; i < bloques; i++) {
-              const minutosActual = inicio + i * 45;
-              const h = Math.floor(minutosActual / 60);
-              const m = minutosActual % 60;
-              const horaHHMM = h * 100 + m;
-
-              // Verificar si la hora existe en las horas filtradas
-              if (horasFiltradas[horaHHMM] !== undefined) {
-                nuevaMatriz[idDia].horas[horaHHMM] = {
-                  ocupado: true,
-                  datos_clase: { ...clase, horas_clase: bloques },
-                  bloque: i,
-                  bloques_totales: bloques,
-                };
+            const inicio = UTILS.deshacerHora24(clase.hora_inicio);
+            const fin = UTILS.deshacerHora24(clase.hora_fin);
+            const bloques = horasKeys.indexOf(fin) - horasKeys.indexOf(inicio);
+            console.log(bloques, fin, inicio, horasKeys.indexOf(fin), horasKeys.indexOf(inicio), horasKeys);
+            horasKeys.forEach((horaHHMM, i) => {
+              if (horaHHMM >= inicio && horaHHMM < fin) {
+                if (
+                  typeof horasFiltradas[horaHHMM] !== String ||
+                  horasFiltradas[horaHHMM] !== undefined
+                ) {
+                  nuevaMatriz[idDia].horas[horaHHMM] = {
+                    ocupado: true,
+                    datos_clase: { ...clase, horas_clase: bloques },
+                    bloque: i,
+                    bloques_totales: bloques,
+                  };
+                }
               }
-            }
+            });
           });
         });
 
@@ -76,7 +72,7 @@ const useHorarioInitialization = (props, stateSetters) => {
         return nuevaMatriz;
       });
     },
-    [obtenerTurno, setTableHorario, setTableHorarioOriginal]
+    [obtenerTurno, setTableHorario, setTableHorarioOriginal],
   );
 
   useEffect(() => {
@@ -170,20 +166,20 @@ const useNewClassEffect = (state, actions, stateSetters) => {
         const horasClase = clasesPendientes[claseActualIndex];
 
         if (horasClase) {
-
           if (classToMove === null && selectedClass === null) {
             // 1. Calcular horarios disponibles para esta clase específica
             await calcularHorariosDisponibles({
               id_profesor: profesorSelected.id_profesor,
               horas_clase: horasClase,
-              id_unidad_curricular: unidadCurricularSelected.id_unidad_curricular
+              id_unidad_curricular:
+                unidadCurricularSelected.id_unidad_curricular,
             });
 
             // 3. Crear la clase
             crearClaseEnHorario(
               clasesPendientes.length,
               claseActualIndex,
-              horasClase
+              horasClase,
             );
 
             // 4. Pasar a la siguiente clase o finalizar
@@ -206,7 +202,16 @@ const useNewClassEffect = (state, actions, stateSetters) => {
 
       procesarSiguienteClase();
     }
-  }, [procesoClases, calcularHorariosDisponibles, crearClaseEnHorario, profesorSelected, setProcesoClases, classToMove, selectedClass, unidadCurricularSelected.id_unidad_curricular]);
+  }, [
+    procesoClases,
+    calcularHorariosDisponibles,
+    crearClaseEnHorario,
+    profesorSelected,
+    setProcesoClases,
+    classToMove,
+    selectedClass,
+    unidadCurricularSelected,
+  ]);
 
   return procesoClases.enProgreso;
 };

@@ -51,6 +51,7 @@ export default function GestionProfesores() {
       const endpoint = `/profesores?page=${pagination.page}&limit=${
         pagination.limit
       }&sort_order=${sortOrder}&search=${profesorSearch || ""}`;
+      console.log(endpoint)
       const data = await axios.get(endpoint);
 
       let profesoresData = data.profesores || [];
@@ -187,7 +188,7 @@ export default function GestionProfesores() {
                 if (typeof option === "string") {
                   return option;
                 }
-                return `${option.nombres} ${option.apellidos} - ${option.cedula}`;
+                return `${option.nombres}`;
               }}
               renderInput={(params) => (
                 <CustomLabel

@@ -3,7 +3,7 @@ import { UTILS } from "../../../utils/utils";
 import useHorarioState from "./useHorarioState";
 
 export const useAulaAvailability = () => {
-  const { state } = useHorarioState();
+  const { horariosEliminados } = useHorarioState();
   const verificarDisponibilidadAula = useCallback(
     (
       id_aula,
@@ -42,8 +42,8 @@ export const useAulaAvailability = () => {
             return false;
           }
           if (
-            state.horariosEliminados &&
-            state.horariosEliminados.includes(clase.id_horario)
+            horariosEliminados &&
+            horariosEliminados.includes(clase.id_horario)
           ) {
             return false;
           }
@@ -69,7 +69,7 @@ export const useAulaAvailability = () => {
         });
       });
     },
-    [state.horariosEliminados]
+    [horariosEliminados]
   );
 
   return {

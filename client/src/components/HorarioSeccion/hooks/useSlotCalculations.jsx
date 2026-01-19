@@ -8,64 +8,72 @@ export const useSlotCalculations = () => {
       bloquesNecesarios,
       tableHorario,
       verificarDisponibilidadProfesor,
+      verificarDisponibilidadAula, // ✅ AGREGAR para verificar aula también
       clase
     ) => {
       const slotsDisponibles = [];
+
       try {
-        // Validar parámetros críticos primero
+        // 1. VALIDACIONES BÁSICAS
         if (
           !disponibilidad ||
           !disponibilidad.hora_inicio ||
-          !disponibilidad.hora_fin
+          !disponibilidad.hora_fin ||
+          !disponibilidad.dia_semana
         ) {
+          console.warn("Disponibilidad incompleta", disponibilidad);
           return slotsDisponibles;
         }
-
-        if (!clase || !clase.id_profesor || !clase.id_unidad_curricular) {
-          return slotsDisponibles;
-        }
-
-        if (!verificarDisponibilidadProfesor) {
-          return slotsDisponibles;
-        }
-
-        const [horaInicio, minutoInicio] = disponibilidad.hora_inicio
-          .split(":")
-          .map(Number);
-        const [horaFin, minutoFin] = disponibilidad.hora_fin
-          .split(":")
-          .map(Number);
 
         if (
-          isNaN(horaInicio) ||
-          isNaN(minutoInicio) ||
-          isNaN(horaFin) ||
-          isNaN(minutoFin)
+          !clase ||
+          !clase.id_profesor ||
+          !clase.id_unidad_curricular ||
+          !clase.id_aula
         ) {
+          console.warn("Clase incompleta", clase);
+          return slotsDisponibles;
+        }
+
+        // 2. CONVERTIR HORAS
+        const horaHHMMInicio = UTILS.convertirDuracion(
+          disponibilidad.hora_inicio
+        );
+        const horaHHMMFin = UTILS.convertirHoraStringAHHMM(
+          disponibilidad.hora_fin
+        );
+
+        if (
+          horaHHMMInicio === null ||
+          horaHHMMFin === null ||
+          horaHHMMInicio >= horaHHMMFin
+        ) {
+          console.warn("Rango de horas inválido", {
+            horaHHMMInicio,
+            horaHHMMFin,
+          });
           return slotsDisponibles;
         }
 
         const diaDisponibilidad = UTILS.obtenerDiaId(disponibilidad.dia_semana);
-
         if (diaDisponibilidad === null || diaDisponibilidad === undefined) {
+          console.warn("Día inválido", disponibilidad.dia_semana);
           return slotsDisponibles;
         }
 
+        // 3. VERIFICAR SI LA UNIDAD CURRICULAR YA ESTÁ EN ESE DÍA
         const unidadCurricularYaAsignadaEnDia = () => {
           const horasDia = tableHorario[diaDisponibilidad]?.horas;
-          if (!horasDia) {
-            return false;
-          }
+          if (!horasDia) return false;
 
           for (const horaKey in horasDia) {
             const celda = horasDia[horaKey];
-            if (celda && celda.datos_clase) {
-              // Si encontramos la misma unidad curricular en el mismo día (y no es la misma clase)
-              if (
-                celda.datos_clase.id_unidad_curricular ===
-                  clase.id_unidad_curricular &&
-                celda.datos_clase.id !== clase.id
-              ) {
+            if (
+              celda?.datos_clase?.id_unidad_curricular ===
+              clase.id_unidad_curricular
+            ) {
+              // Si es diferente clase (misma unidad curricular)
+              if (celda.datos_clase.id !== clase.id) {
                 return true;
               }
             }
@@ -73,88 +81,119 @@ export const useSlotCalculations = () => {
           return false;
         };
 
-        // Si la unidad curricular ya está asignada en este día, saltar completamente
         if (unidadCurricularYaAsignadaEnDia()) {
+          console.log("Unidad curricular ya asignada en este día");
           return slotsDisponibles;
         }
 
-        const horaHHMMInicio = UTILS.calcularHorasHHMM(
-          UTILS.horasMinutos(horaInicio, minutoInicio)
-        );
-        const horaHHMMFin = UTILS.calcularHorasHHMM(
-          UTILS.horasMinutos(horaFin, minutoFin)
-        );
-
-        if (horaHHMMInicio >= horaHHMMFin) {
-          return slotsDisponibles;
-        }
-
-        // Filtrar horas dentro del rango disponible
+        // 4. FILTRAR HORAS DENTRO DEL RANGO (excluyendo "ignorar")
         const horasFiltradas = Object.keys(UTILS.initialHours)
           .map(Number)
-          .filter(
-            (horaHHMM) => horaHHMM >= horaHHMMInicio && horaHHMM < horaHHMMFin
-          )
+          .filter((horaHHMM) => {
+            // Solo horas dentro del rango de disponibilidad
+            const dentroDelRango =
+              horaHHMM >= horaHHMMInicio && horaHHMM < horaHHMMFin;
+            // Excluir horas "ignorar"
+            const noEsIgnorar = UTILS.initialHours[horaHHMM] !== "ignorar";
+            return dentroDelRango && noEsIgnorar;
+          })
           .sort((a, b) => a - b);
-
-        if (horasFiltradas.length < bloquesNecesarios) {
-          return slotsDisponibles;
+          if (horasFiltradas.length < bloquesNecesarios) {
+            console.log("Horas filtradas:", horasFiltradas.length, bloquesNecesarios);
+            console.log("Horas insuficientes en el rango");
+            return slotsDisponibles;
         }
 
-        for (let i = 0; i <= horasFiltradas.length - bloquesNecesarios; i++) {
-          const esConsecutivo = () => {
-            for (let j = 0; j < bloquesNecesarios - 1; j++) {
-              const indexActual = i + j;
-              const indexSiguiente = i + j + 1;
+        // 5. FUNCIÓN PARA VERIFICAR CONSECUTIVIDAD CONSIDERANDO "IGNORAR"
+        const obtenerHorasConsecutivas = (indiceInicio) => {
+          const horasConsecutivas = [];
+          let indiceActual = horasFiltradas.indexOf(
+            horasFiltradas[indiceInicio]
+          );
 
-              if (indexSiguiente >= horasFiltradas.length) {
-                return false;
+          if (indiceActual === -1) return [];
+
+          // Ir buscando horas consecutivas en UTILS.initialHours
+          for (let bloque = 0; bloque < bloquesNecesarios; bloque++) {
+            // Encontrar la siguiente hora no-ignorar
+            let horaEncontrada = null;
+
+            while (indiceActual < horasFiltradas.length && !horaEncontrada) {
+              const horaActual = horasFiltradas[indiceActual];
+
+              // Verificar que esta hora sea consecutiva con la anterior
+              if (horasConsecutivas.length > 0) {
+                const ultimaHora =
+                  horasConsecutivas[horasConsecutivas.length - 1];
+                // Buscar la posición en initialHours para verificar consecutividad
+                const horasOrdenadas = Object.keys(UTILS.initialHours)
+                  .map(Number)
+                  .sort((a, b) => a - b);
+
+                const indexUltima = horasOrdenadas.indexOf(ultimaHora);
+                const indexActual = horasOrdenadas.indexOf(horaActual);
+
+                // Deben ser consecutivas (sin brechas de otras horas no-ignorar)
+                if (indexActual !== indexUltima + 1) {
+                  return []; // Hay una brecha, no es consecutivo
+                }
               }
 
-              const horaActual = horasFiltradas[indexActual];
-              const horaSiguiente = horasFiltradas[indexSiguiente];
-
-              if (horaSiguiente <= horaActual) {
-                return false;
-              }
+              horaEncontrada = horaActual;
+              horasConsecutivas.push(horaActual);
+              indiceActual++;
             }
-            return true;
-          };
 
-          if (!esConsecutivo()) {
-            continue;
+            if (!horaEncontrada) {
+              return []; // No se encontraron suficientes horas consecutivas
+            }
           }
 
-          // Verificar disponibilidad en horario
-          const horasBloque = horasFiltradas.slice(i, i + bloquesNecesarios);
+          return horasConsecutivas;
+        };
 
-          const esDisponible = horasBloque.every((hora) => {
+        // 6. VERIFICAR DISPONIBILIDAD EN CADA POSICIÓN POSIBLE
+        for (let i = 0; i <= horasFiltradas.length - bloquesNecesarios; i++) {
+          const horasConsecutivas = obtenerHorasConsecutivas(i);
+
+          if (horasConsecutivas.length !== bloquesNecesarios) {
+            continue; // No son consecutivas
+          }
+
+          // 7. VERIFICAR QUE LAS CELDAS ESTÉN DISPONIBLES
+          const celdasDisponibles = horasConsecutivas.every((hora) => {
             const celda = tableHorario[diaDisponibilidad]?.horas?.[hora];
-            // Si la celda está vacía, está disponible
+
+            // Celda vacía = disponible
             if (celda === null || celda === undefined) {
               return true;
             }
 
-            // Si la celda tiene datos, verificamos diferentes casos
-            const datosCelda = celda.datos_clase;
+            // Celda ocupada = verificar conflictos
+            if (celda.datos_clase) {
+              // Mismo profesor = conflicto
+              if (celda.datos_clase.id_profesor === clase.id_profesor) {
+                return false;
+              }
 
-            // CASO 2: Mismo profesor pero DIFERENTE clase - NO disponible
-            if (datosCelda.id_profesor === clase.id_profesor) {
-              return false;
+              // Misma aula = conflicto (a menos que ya esté verificando aula en otro lugar)
+              if (celda.datos_clase.id_aula === clase.id_aula) {
+                return false;
+              }
             }
 
-            // CASO 3: Diferente profesor y diferente aula - disponible
             return true;
           });
 
-          if (!esDisponible) {
+          if (!celdasDisponibles) {
             continue;
           }
 
+          // 8. VERIFICAR DISPONIBILIDAD DEL PROFESOR
           const profesorDisponible = verificarDisponibilidadProfesor(
             clase.id_profesor,
             diaDisponibilidad,
-            horasFiltradas[i],
+            horasConsecutivas[0], // hora_inicio
             bloquesNecesarios,
             clase
           );
@@ -163,11 +202,35 @@ export const useSlotCalculations = () => {
             continue;
           }
 
+          // 9. VERIFICAR DISPONIBILIDAD DEL AULA (si se pasa la función)
+          let aulaDisponible = true;
+          if (verificarDisponibilidadAula) {
+            aulaDisponible = verificarDisponibilidadAula(
+              clase.id_aula,
+              diaDisponibilidad,
+              horasConsecutivas[0], // hora_inicio
+              bloquesNecesarios,
+              clase
+            );
+          }
+
+          if (!aulaDisponible) {
+            continue;
+          }
+
+          // 10. CALCULAR HORA FIN CORRECTAMENTE
+          const horaInicio = horasConsecutivas[0];
+          const horaFinCalculada = UTILS.calcularHoraFinConIgnorar(
+            horaInicio,
+            bloquesNecesarios
+          );
+
+          // 11. CREAR SLOT VÁLIDO
           const slot = {
             dia_index: diaDisponibilidad,
-            hora_inicio: horasFiltradas[i],
-            hora_fin: horasFiltradas[i + bloquesNecesarios],
-            horas_bloques: horasBloque,
+            hora_inicio: horaInicio,
+            hora_fin: horaFinCalculada, // ✅ Usar cálculo correcto, no índice del array
+            horas_bloques: horasConsecutivas,
             bloques_necesarios: bloquesNecesarios,
           };
 
@@ -182,13 +245,34 @@ export const useSlotCalculations = () => {
     []
   );
 
+  // ✅ AGREGAR FUNCIÓN DE VALIDACIÓN MEJORADA
   const validarDatosClase = useCallback((clase) => {
-    if (!clase || !clase.id_profesor || !clase.horas_clase) {
+    if (!clase) {
+      console.warn("Clase no definida");
+      return false;
+    }
+
+    // Validaciones esenciales
+    const validaciones = {
+      id_profesor: !!clase.id_profesor,
+      id_unidad_curricular: !!clase.id_unidad_curricular,
+      id_aula: !!clase.id_aula,
+      horas_clase: !!clase.horas_clase && !isNaN(parseInt(clase.horas_clase)),
+    };
+
+    const errores = Object.entries(validaciones)
+      .filter(([_, valida]) => !valida)
+      .map(([campo]) => campo);
+
+    if (errores.length > 0) {
+      console.warn("Clase inválida. Campos faltantes:", errores, clase);
       return false;
     }
 
     const bloquesNecesarios = parseInt(clase.horas_clase);
-    if (isNaN(bloquesNecesarios) || bloquesNecesarios <= 0) {
+    if (bloquesNecesarios <= 0 || bloquesNecesarios > 10) {
+      // Límite razonable
+      console.warn("Bloques necesarios inválidos:", bloquesNecesarios);
       return false;
     }
 

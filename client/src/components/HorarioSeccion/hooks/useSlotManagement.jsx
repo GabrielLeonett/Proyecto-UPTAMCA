@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 import useSweetAlert from "../../../hook/useSweetAlert";
+import { UTILS } from "../../../utils/utils";
 
 // Gestión de slots y disponibilidad
 const useSlotManagement = (state, stateSetters, utils, actions) => {
@@ -57,10 +58,10 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
         // Crear la clase con formato correcto
         const nuevaClase = {
           ...classToMove,
-          hora_inicio: `${Math.floor(hora_inicio / 100)}:${String(
-            hora_inicio % 100
-          ).padStart(2, "0")}`,
-          horaFin: utils.sumar45Minutos(hora_inicio, bloques_necesarios),
+          hora_inicio: UTILS.formatearHora24(hora_inicio),
+          horaFin: parseInt(
+            UTILS.calcularHoraFinConIgnorar(hora_inicio, bloques_necesarios)
+          ),
         };
 
         // Ocupar los bloques necesarios
@@ -237,10 +238,11 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       ) {
         alert.error(
           "Error de consistencia",
-          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada al profesor actual. No puede cambiar de profesor para horas adicionales.`
+          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada a otro profesor (ID: ${profesorExistente}). No puede cambiar de profesor para horas adicionales.`
         );
-        return; // No crear la clase
+        return;
       }
+
       if (!profesorSelected || !aulaSelected || !unidadCurricularSelected) {
         alert.error("Error", "Datos incompletos para crear la clase");
         return;
@@ -263,6 +265,8 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
         nueva_clase: true,
         indiceClase: indexActual + 1,
         totalClases: numClasesTotales,
+        hora_inicio: null, // Se establecerá al mover
+        horaFin: null, // Se calculará al mover
       };
 
       // Establecer la nueva clase como seleccionada
