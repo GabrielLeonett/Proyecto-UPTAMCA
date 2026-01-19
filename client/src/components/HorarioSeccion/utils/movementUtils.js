@@ -9,7 +9,6 @@ export const findOriginalSlot = (clase, tableHorario) => {
     for (const hora of horas) {
       const celda = dia.horas[hora];
       if (celda?.ocupado && celda.datos_clase.id === clase.id) {
-
         const bloques_necesarios = celda.bloques_totales;
         return {
           dia_index,
@@ -38,8 +37,8 @@ export const liberarSlotOriginal = (originalSlot, tableHorario) => {
             parseInt(
               UTILS.sumar45Minutos(
                 originalSlot.hora_inicio,
-                originalSlot.bloques_necesarios
-              )
+                originalSlot.bloques_necesarios,
+              ),
             )
         ) {
           acc[hora] = null;
@@ -62,10 +61,10 @@ export const ocuparNuevoSlot = (nuevoSlot, classToMove, tableHorario) => {
     ...(index === dia_index && {
       horas: Object.keys(item.horas).reduce((acc, hora) => {
         const horaNum = parseInt(hora);
-        const hora_fin = parseInt(
-          UTILS.sumar45Minutos(hora_inicio, bloques_necesarios)
-        );
-
+        const horaFinIndex = Object.keys(UTILS.initialHours).map(Number).findIndex(initialHours => initialHours === hora_inicio) + bloques_necesarios;
+        const hora_fin = Object.keys(UTILS.initialHours).map(Number)[horaFinIndex];
+        console.log(horaFinIndex, hora_fin, hora_inicio, bloques_necesarios);
+        
         if (horaNum >= hora_inicio && horaNum < hora_fin) {
           const bloqueIndex = Math.floor((horaNum - hora_inicio) / 45);
           acc[hora] = {
@@ -73,16 +72,14 @@ export const ocuparNuevoSlot = (nuevoSlot, classToMove, tableHorario) => {
             datos_clase: {
               ...classToMove,
               dia_semana: UTILS.obtenerDiaNombre(dia_index),
-              hora_inicio: UTILS.sumar45MinutosHHMM(hora_inicio, 0),
-              hora_fin: UTILS.sumar45MinutosHHMM(
-                hora_inicio,
-                bloques_necesarios
-              ),
+              hora_inicio: UTILS.formatearHora24(hora_inicio),
+              hora_fin: UTILS.formatearHora24(hora_fin),
               ...(!classToMove.nueva_clase && { clase_move: true }),
             },
             bloque: bloqueIndex,
             bloques_totales: bloques_necesarios,
           };
+          console.log(acc[hora])
         } else {
           acc[hora] = item.horas[hora];
         }

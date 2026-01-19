@@ -7,14 +7,8 @@ const useHorarioInitialization = (props, stateSetters) => {
   const { setTableHorario, setTableHorarioOriginal } = stateSetters;
 
   const obtenerTurno = useCallback((turno) => {
-    const [hora_inicio, minInicio] = turno.hora_inicio.split(":");
-    const [hora_fin, minFin] = turno.hora_fin.split(":");
-
-    const MinutosInicio = UTILS.horasMinutos(hora_inicio, minInicio);
-    const MinutosFin = UTILS.horasMinutos(hora_fin, minFin);
-
-    const horaInicioHHMM = UTILS.calcularHorasHHMM(MinutosInicio);
-    const horaFinHHMM = UTILS.calcularHorasHHMM(MinutosFin);
+    const horaInicioHHMM = UTILS.deshacerHora24(turno.hora_inicio);
+    const horaFinHHMM = UTILS.deshacerHora24(turno.hora_fin);
 
     return { horaInicioHHMM, horaFinHHMM };
   }, []);
@@ -46,10 +40,8 @@ const useHorarioInitialization = (props, stateSetters) => {
           if (idDia === -1) return;
 
           dia.clases.forEach((clase) => {
-            const [hIni, mIni] = clase.hora_inicio.split(":");
-            const [hFin, mFin] = clase.hora_fin.split(":");
-            const inicio = UTILS.horasMinutos(hIni, mIni);
-            const fin = UTILS.horasMinutos(hFin, mFin);
+            const inicio = UTILS.deshacerHora24(turno.hora_inicio);
+            const fin = UTILS.deshacerHora24(turno.hora_fin)
             const bloques = Math.ceil((fin - inicio) / 45);
 
             for (let i = 0; i < bloques; i++) {

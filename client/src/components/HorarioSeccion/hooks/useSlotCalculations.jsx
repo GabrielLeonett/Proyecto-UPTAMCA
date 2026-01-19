@@ -36,10 +36,10 @@ export const useSlotCalculations = () => {
         }
 
         // 2. CONVERTIR HORAS
-        const horaHHMMInicio = UTILS.convertirDuracion(
+        const horaHHMMInicio = UTILS.deshacerHora24(
           disponibilidad.hora_inicio
         );
-        const horaHHMMFin = UTILS.convertirHoraStringAHHMM(
+        const horaHHMMFin = UTILS.deshacerHora24(
           disponibilidad.hora_fin
         );
 
@@ -86,16 +86,14 @@ export const useSlotCalculations = () => {
           return slotsDisponibles;
         }
 
-        // 4. FILTRAR HORAS DENTRO DEL RANGO (excluyendo "ignorar")
+        // 4. FILTRAR HORAS DENTRO DEL RANGO (excluyendo "string")
         const horasFiltradas = Object.keys(UTILS.initialHours)
           .map(Number)
           .filter((horaHHMM) => {
             // Solo horas dentro del rango de disponibilidad
             const dentroDelRango =
               horaHHMM >= horaHHMMInicio && horaHHMM < horaHHMMFin;
-            // Excluir horas "ignorar"
-            const noEsIgnorar = UTILS.initialHours[horaHHMM] !== "ignorar";
-            return dentroDelRango && noEsIgnorar;
+            return dentroDelRango ;
           })
           .sort((a, b) => a - b);
           if (horasFiltradas.length < bloquesNecesarios) {
@@ -252,27 +250,11 @@ export const useSlotCalculations = () => {
       return false;
     }
 
-    // Validaciones esenciales
-    const validaciones = {
-      id_profesor: !!clase.id_profesor,
-      id_unidad_curricular: !!clase.id_unidad_curricular,
-      id_aula: !!clase.id_aula,
-      horas_clase: !!clase.horas_clase && !isNaN(parseInt(clase.horas_clase)),
-    };
-
-    const errores = Object.entries(validaciones)
-      .filter(([_, valida]) => !valida)
-      .map(([campo]) => campo);
-
-    if (errores.length > 0) {
-      console.warn("Clase inválida. Campos faltantes:", errores, clase);
-      return false;
-    }
-
     const bloquesNecesarios = parseInt(clase.horas_clase);
+
     if (bloquesNecesarios <= 0 || bloquesNecesarios > 10) {
       // Límite razonable
-      console.warn("Bloques necesarios inválidos:", bloquesNecesarios);
+      console.warn("Bloques necesarios inválidos:", clase);
       return false;
     }
 

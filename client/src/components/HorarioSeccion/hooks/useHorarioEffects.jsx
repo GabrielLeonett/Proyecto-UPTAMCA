@@ -48,12 +48,20 @@ const useHorarioInitialization = (props, stateSetters) => {
           dia.clases.forEach((clase) => {
             const inicio = UTILS.deshacerHora24(clase.hora_inicio);
             const fin = UTILS.deshacerHora24(clase.hora_fin);
-            const bloques = horasKeys.indexOf(fin) - horasKeys.indexOf(inicio);
-            console.log(bloques, fin, inicio, horasKeys.indexOf(fin), horasKeys.indexOf(inicio), horasKeys);
+            let recesos = 0;
+            horasKeys.filter((horaHHMM) => {
+              if (
+                horaHHMM > inicio && horaHHMM < fin && typeof UTILS.initialHours[horaHHMM] === "string"
+              ){
+                recesos += 1;
+              }
+            });
+            const bloques = horasKeys.indexOf(fin) - horasKeys.indexOf(inicio) - recesos;
+
             horasKeys.forEach((horaHHMM, i) => {
               if (horaHHMM >= inicio && horaHHMM < fin) {
                 if (
-                  typeof horasFiltradas[horaHHMM] !== String ||
+                  typeof UTILS.initialHours[horaHHMM] !== "string" &&
                   horasFiltradas[horaHHMM] !== undefined
                 ) {
                   nuevaMatriz[idDia].horas[horaHHMM] = {

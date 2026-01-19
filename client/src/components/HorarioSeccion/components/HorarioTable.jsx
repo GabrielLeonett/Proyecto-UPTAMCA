@@ -428,15 +428,21 @@ const HorarioTable = ({
                 {tableHorario.map((columna, dia_index) => {
                   const celda = columna.horas[hora];
                   const cellKey = `${columna.dia}-${hora}`;
-                  const disponible =
-                    selectedClass && isSlotAvailable(dia_index, hora);
-
-                  // ✅ NUEVA LÓGICA: Determinar si mostrar o no la celda
-                  let rowSpanReal = 1;
+                  const disponible = selectedClass && isSlotAvailable(dia_index, hora);
 
                   //Esta hora es una hora de receso o comida
-                  const esHoraIgnorarEnClase =
-                    typeof UTILS.initialHours[hora] === "string";
+                  const esHoraIgnorarEnClase = typeof UTILS.initialHours[hora] === "string";
+                  let rowSpanReal = 1;
+
+                  const indexGlobalHoraActual = Object.keys(UTILS.initialHours).map(Number).findIndex((h) => h === hora);
+                  Object.keys(UTILS.initialHours).map(Number).forEach((h, idx) => {
+                    if(idx > indexGlobalHoraActual){
+                      if(typeof UTILS.initialHours[h] === "string"){
+                        rowSpanReal += 1;
+                      }
+                    }
+                  });
+                  console.log(rowSpanReal);
 
                   if (esHoraIgnorarEnClase && dia_index === 0) {
                     return (
