@@ -7,14 +7,8 @@ const useHorarioInitialization = (props, stateSetters) => {
   const { setTableHorario, setTableHorarioOriginal } = stateSetters;
 
   const obtenerTurno = useCallback((turno) => {
-    const [hora_inicio, minInicio] = turno.hora_inicio.split(":");
-    const [hora_fin, minFin] = turno.hora_fin.split(":");
-
-    const MinutosInicio = UTILS.horasMinutos(hora_inicio, minInicio);
-    const MinutosFin = UTILS.horasMinutos(hora_fin, minFin);
-
-    const horaInicioHHMM = UTILS.calcularHorasHHMM(MinutosInicio);
-    const horaFinHHMM = UTILS.calcularHorasHHMM(MinutosFin);
+    const horaInicioHHMM = UTILS.deshacerHora24(turno.hora_inicio);
+    const horaFinHHMM = UTILS.deshacerHora24(turno.hora_fin);
 
     return { horaInicioHHMM, horaFinHHMM };
   }, []);
@@ -51,14 +45,20 @@ const useHorarioInitialization = (props, stateSetters) => {
             let recesos = 0;
             horasKeys.filter((horaHHMM) => {
               if (
-                horaHHMM > inicio && horaHHMM < fin && typeof UTILS.initialHours[horaHHMM] === "string"
-              ){
+                horaHHMM > inicio &&
+                horaHHMM < fin &&
+                typeof UTILS.initialHours[horaHHMM] === "string"
+              ) {
                 recesos += 1;
               }
             });
-            const bloques = horasKeys.indexOf(fin) - horasKeys.indexOf(inicio) - recesos;
 
-            horasKeys.forEach((horaHHMM, i) => {
+            const bloques =
+              Object.keys(UTILS.initialHours).map(Number).indexOf(fin) -
+              horasKeys.indexOf(inicio) -
+              recesos;
+            let bloquesCoinciden = 0;
+            horasKeys.forEach((horaHHMM) => {
               if (horaHHMM >= inicio && horaHHMM < fin) {
                 if (
                   typeof UTILS.initialHours[horaHHMM] !== "string" &&
@@ -67,9 +67,10 @@ const useHorarioInitialization = (props, stateSetters) => {
                   nuevaMatriz[idDia].horas[horaHHMM] = {
                     ocupado: true,
                     datos_clase: { ...clase, horas_clase: bloques },
-                    bloque: i,
+                    bloque: bloquesCoinciden,
                     bloques_totales: bloques,
                   };
+                  bloquesCoinciden++;
                 }
               }
             });
@@ -150,7 +151,6 @@ const useNewClassEffect = (state, actions, stateSetters) => {
       aulaSelected?.codigo_aula
     ) {
       const horasClase = dividirUnidadCurricular(unidadCurricularSelected);
-
       // Iniciar proceso secuencial
       setProcesoClases({
         enProgreso: true,
@@ -179,6 +179,7 @@ const useNewClassEffect = (state, actions, stateSetters) => {
             await calcularHorariosDisponibles({
               id_profesor: profesorSelected.id_profesor,
               horas_clase: horasClase,
+              id_aula: aulaSelected.id_aula,
               id_unidad_curricular:
                 unidadCurricularSelected.id_unidad_curricular,
             });
@@ -212,6 +213,7 @@ const useNewClassEffect = (state, actions, stateSetters) => {
     }
   }, [
     procesoClases,
+    aulaSelected,
     calcularHorariosDisponibles,
     crearClaseEnHorario,
     profesorSelected,

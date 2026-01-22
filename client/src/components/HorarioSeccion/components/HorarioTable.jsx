@@ -61,7 +61,6 @@ const HorarioTable = ({
     return theme.palette.divider;
   };
 
-  console.log(tableHorario)
   return (
     <Paper
       elevation={2}
@@ -124,7 +123,7 @@ const HorarioTable = ({
                                   UnidadesCurriculares.filter(
                                     (unidad) =>
                                       unidad.esVista &&
-                                      !unidad.faltan_horas_clase
+                                      !unidad.faltan_horas_clase,
                                   ).length
                                 }
                                 )
@@ -132,7 +131,8 @@ const HorarioTable = ({
                               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                                 {UnidadesCurriculares.filter(
                                   (unidad) =>
-                                    unidad.esVista && !unidad.faltan_horas_clase
+                                    unidad.esVista &&
+                                    !unidad.faltan_horas_clase,
                                 ).map((uc) => (
                                   <Typography
                                     component="li"
@@ -151,7 +151,7 @@ const HorarioTable = ({
                           {/* Unidades incompletas */}
                           {UnidadesCurriculares.filter(
                             (unidad) =>
-                              unidad.esVista && unidad.faltan_horas_clase
+                              unidad.esVista && unidad.faltan_horas_clase,
                           ).length > 0 && (
                             <Box sx={{ mb: 1 }}>
                               <Typography
@@ -164,7 +164,7 @@ const HorarioTable = ({
                                   UnidadesCurriculares.filter(
                                     (unidad) =>
                                       unidad.esVista &&
-                                      unidad.faltan_horas_clase
+                                      unidad.faltan_horas_clase,
                                   ).length
                                 }
                                 )
@@ -172,7 +172,7 @@ const HorarioTable = ({
                               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                                 {UnidadesCurriculares.filter(
                                   (unidad) =>
-                                    unidad.esVista && unidad.faltan_horas_clase
+                                    unidad.esVista && unidad.faltan_horas_clase,
                                 ).map((uc) => (
                                   <Typography
                                     component="li"
@@ -190,7 +190,7 @@ const HorarioTable = ({
 
                           {/* Unidades pendientes */}
                           {UnidadesCurriculares.filter(
-                            (unidad) => !unidad.esVista
+                            (unidad) => !unidad.esVista,
                           ).length > 0 && (
                             <Box>
                               <Typography
@@ -201,14 +201,14 @@ const HorarioTable = ({
                                 ❌ Pendientes (
                                 {
                                   UnidadesCurriculares.filter(
-                                    (unidad) => !unidad.esVista
+                                    (unidad) => !unidad.esVista,
                                   ).length
                                 }
                                 )
                               </Typography>
                               <Box component="ul" sx={{ m: 0, pl: 2 }}>
                                 {UnidadesCurriculares.filter(
-                                  (unidad) => !unidad.esVista
+                                  (unidad) => !unidad.esVista,
                                 ).map((uc) => (
                                   <Typography
                                     component="li"
@@ -239,31 +239,31 @@ const HorarioTable = ({
                           py: 0.5,
                           backgroundColor:
                             UnidadesCurriculares.filter(
-                              (unidad) => !unidad.esVista
+                              (unidad) => !unidad.esVista,
                             ).length > 0
                               ? "error.light"
                               : UnidadesCurriculares.filter(
-                                  (unidad) => unidad.faltan_horas_clase
-                                ).length > 0
-                              ? "warning.light"
-                              : "success.light",
+                                    (unidad) => unidad.faltan_horas_clase,
+                                  ).length > 0
+                                ? "warning.light"
+                                : "success.light",
                           "&:hover": {
                             backgroundColor:
                               UnidadesCurriculares.filter(
-                                (unidad) => !unidad.esVista
+                                (unidad) => !unidad.esVista,
                               ).length > 0
                                 ? "error.main"
                                 : UnidadesCurriculares.filter(
-                                    (unidad) => unidad.faltan_horas_clase
-                                  ).length > 0
-                                ? "warning.main"
-                                : "success.main",
+                                      (unidad) => unidad.faltan_horas_clase,
+                                    ).length > 0
+                                  ? "warning.main"
+                                  : "success.main",
                           },
                         }}
                       >
                         {/* Icono dinámico según el estado */}
                         {UnidadesCurriculares.filter(
-                          (unidad) => !unidad.esVista
+                          (unidad) => !unidad.esVista,
                         ).length > 0 ? (
                           <InfoIcon
                             sx={{
@@ -273,7 +273,7 @@ const HorarioTable = ({
                             }}
                           />
                         ) : UnidadesCurriculares.filter(
-                            (unidad) => unidad.faltan_horas_clase
+                            (unidad) => unidad.faltan_horas_clase,
                           ).length > 0 ? (
                           <WarningIcon
                             sx={{
@@ -298,33 +298,33 @@ const HorarioTable = ({
                             fontWeight: "medium",
                             color:
                               UnidadesCurriculares.filter(
-                                (unidad) => !unidad.esVista
+                                (unidad) => !unidad.esVista,
                               ).length > 0
                                 ? "error.dark"
                                 : UnidadesCurriculares.filter(
-                                    (unidad) => unidad.faltan_horas_clase
-                                  ).length > 0
-                                ? "warning.dark"
-                                : "success.dark",
+                                      (unidad) => unidad.faltan_horas_clase,
+                                    ).length > 0
+                                  ? "warning.dark"
+                                  : "success.dark",
                           }}
                         >
                           {/* Mostrar solo las pendientes en el contador principal */}
                           {
                             UnidadesCurriculares.filter(
-                              (unidad) => !unidad.esVista
+                              (unidad) => !unidad.esVista,
                             ).length
                           }
 
                           {/* Opcional: Mostrar también las incompletas entre paréntesis */}
                           {UnidadesCurriculares.filter(
-                            (unidad) => unidad.faltan_horas_clase
+                            (unidad) => unidad.faltan_horas_clase,
                           ).length > 0 && (
                             <span style={{ opacity: 0.7 }}>
                               {" "}
                               (+
                               {
                                 UnidadesCurriculares.filter(
-                                  (unidad) => unidad.faltan_horas_clase
+                                  (unidad) => unidad.faltan_horas_clase,
                                 ).length
                               }
                               )
@@ -403,7 +403,7 @@ const HorarioTable = ({
                     {(() => {
                       // Convertir todas las horas a números para la búsqueda
                       const horasNumericas = Object.keys(
-                        UTILS.initialHours
+                        UTILS.initialHours,
                       ).map(Number);
                       const indiceActual = horasNumericas.indexOf(hora);
 
@@ -418,7 +418,7 @@ const HorarioTable = ({
 
                       // Si es la última hora, calcular sumando 45 minutos
                       return UTILS.formatearHora(
-                        parseInt(UTILS.sumar45Minutos(hora, 1))
+                        parseInt(UTILS.sumar45Minutos(hora, 1)),
                       );
                     })()}
                   </Typography>
@@ -428,49 +428,37 @@ const HorarioTable = ({
                 {tableHorario.map((columna, dia_index) => {
                   const celda = columna.horas[hora];
                   const cellKey = `${columna.dia}-${hora}`;
-                  const disponible = selectedClass && isSlotAvailable(dia_index, hora);
+                  const disponible =
+                    selectedClass && isSlotAvailable(dia_index, hora);
 
-                  //Esta hora es una hora de receso o comida
-                  const esHoraIgnorarEnClase = typeof UTILS.initialHours[hora] === "string";
-                  let rowSpanReal = 1;
-
-                  const indexGlobalHoraActual = Object.keys(UTILS.initialHours).map(Number).findIndex((h) => h === hora);
-                  
-                  const siguienteReceso = 0;
-                  Object.entries(UTILS.initialHours).map((valor, index)=>{
-                    if(index > indexGlobalHoraActual){
-                      if(typeof valor === 'string'){
-                        siguienteReceso = index;
-                      }
-                    }
-                  })
-                  console.log(rowSpanReal, celda)
-                  rowSpanReal = siguienteReceso - indexGlobalHoraActual;
-
-                  if (esHoraIgnorarEnClase && dia_index === 0) {
+                  // 1. LÓGICA DE RECESO / COMIDA
+                  const esHoraIgnorarClase =
+                    typeof UTILS.initialHours[hora] === "string";
+                  if (esHoraIgnorarClase) {
+                    // Solo dibujamos la celda de receso en la primera columna (dia_index 0)
+                    // y le damos un colSpan de 7 para que cubra toda la fila.
+                    if (dia_index !== 0) return null;
                     return (
                       <TableCell
                         key={cellKey}
                         colSpan={7}
                         sx={{
-                          position: "relative",
                           width: { xs: 130, sm: 140, md: 150, lg: 160 },
-                          padding: 0,
-                          verticalAlign: "top",
                           height: "60px",
-                          backgroundColor: "primary.main",
+                          border: `1px solid ${getCellBorderColor(
+                            dia_index,
+                            hora,
+                            celda,
+                          )}`,
+                          backgroundColor: theme.palette.primary.main,
                           transition: "all 0.2s ease-in-out",
                         }}
                       >
                         <Box
                           sx={{
-                            height: "100%",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            flexDirection: "column",
-                            gap: 0.5,
-                            p: 1,
                           }}
                         >
                           <Typography
@@ -485,29 +473,67 @@ const HorarioTable = ({
                     );
                   }
 
-                  if (!esHoraIgnorarEnClase) {
+                  // 2. LÓGICA DE COMBINACIÓN (Evitar duplicados)
+                  const indexGlobalHoraActual = horasOrdenadas.findIndex(
+                    (h) => Number(h) === hora,
+                  );
+                  const horaAnteriorKey =
+                    horasOrdenadas[indexGlobalHoraActual - 1];
+
+                  // Si la clase actual es la misma que la de la hora anterior, NO renderizamos esta celda
+                  const esContinuacion =
+                    celda?.ocupado &&
+                    horaAnteriorKey !== undefined &&
+                    columna.horas[horaAnteriorKey]?.datos_clase?.id ===
+                      celda.datos_clase?.id;
+
+                  if (esContinuacion) {
+                    return null;
+                  }
+
+                  // 3. CALCULAR CUÁNTO VA A DURAR HACIA ABAJO
+                  let rowSpanCalculado = 1;
+
+                  if (celda?.ocupado) {
+                    let nextIdx = indexGlobalHoraActual + 1;
+                    // Mientras la siguiente hora exista y tenga el mismo ID de clase, aumentamos el rowSpan
+                    while (nextIdx < horasOrdenadas.length) {
+                      const siguienteHoraKey = horasOrdenadas[nextIdx];
+                      if (
+                        columna.horas[siguienteHoraKey]?.datos_clase?.id ===
+                        celda.datos_clase?.id
+                      ) {
+                        rowSpanCalculado++;
+                        nextIdx++;
+                      } else {
+                        break; // Rompemos el bucle si la clase cambia o termina
+                      }
+                    }
+                  }
+
+                  if (!esHoraIgnorarClase) {
                     return (
                       <TableCell
                         key={cellKey}
-                        rowSpan={celda?.ocupado ? rowSpanReal : 1} // ✅ Usar rowSpan real
+                        rowSpan={celda?.ocupado ? rowSpanCalculado : 1} // ✅ Usar rowSpan real
                         sx={{
                           width: { xs: 130, sm: 140, md: 150, lg: 160 },
                           padding: 0,
                           verticalAlign: "top",
                           height: celda?.ocupado
-                            ? `${rowSpanReal * 60}px` // ✅ Usar altura real
+                            ? `${rowSpanCalculado * 60}px` // ✅ Usar altura real
                             : "60px",
                           border: `1px solid ${getCellBorderColor(
                             dia_index,
                             hora,
                             celda,
-                            disponible
+                            disponible,
                           )}`,
                           backgroundColor: getCellBackgroundColor(
                             dia_index,
                             hora,
                             celda,
-                            disponible
+                            disponible,
                           ),
                           position: "relative",
                           transition: "all 0.2s ease-in-out",
@@ -515,7 +541,7 @@ const HorarioTable = ({
                             ? {
                                 backgroundColor: alpha(
                                   theme.palette.success.main,
-                                  0.2
+                                  0.2,
                                 ),
                                 cursor: "pointer",
                                 transform: "scale(0.98)",

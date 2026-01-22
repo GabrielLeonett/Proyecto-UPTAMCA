@@ -60,7 +60,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           ...classToMove,
           hora_inicio: UTILS.formatearHora24(hora_inicio),
           horaFin: parseInt(
-            UTILS.calcularHoraFinConIgnorar(hora_inicio, bloques_necesarios)
+            UTILS.calcularHoraFinConIgnorar(hora_inicio, bloques_necesarios),
           ),
         };
 
@@ -101,8 +101,8 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       alert.success(
         "Clase Programada",
         `Clase programada exitosamente para ${utils.obtenerDiaNombre(
-          dia_index
-        )} a ${utils.formatearHora(hora_inicio)}`
+          dia_index,
+        )} a ${utils.formatearHora(hora_inicio)}`,
       );
     },
     [
@@ -116,23 +116,26 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       setAvailableSlots,
       utils,
       alert, // ALERTA AGREGADA
-    ]
+    ],
   );
 
   // Verificar si un slot está disponible
   const isSlotAvailable = useCallback(
     (dia_index, hora) => {
-      return availableSlots.some(
-        (slot) =>
-          slot.dia_index === dia_index &&
-          hora >= slot.hora_inicio &&
-          hora <
-            parseInt(
-              utils.sumar45Minutos(slot.hora_inicio, slot.bloques_necesarios)
-            )
-      );
+      const horaNum = Number(hora);
+
+      const SlotsLibres = availableSlots.some((slot) => {
+        if (slot.dia_index !== dia_index) return false;
+
+        // La hora debe ser mayor o igual al inicio y estrictamente menor al fin
+        // Esto cubre el bloque completo aunque haya recesos en medio
+        return (
+          horaNum >= Number(slot.hora_inicio) && horaNum < Number(slot.hora_fin)
+        );
+      });
+      return SlotsLibres;
     },
-    [availableSlots, utils]
+    [availableSlots],
   );
 
   // Manejar click en slots disponibles
@@ -146,8 +149,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       // Buscar el slot específico
       const slot = availableSlots.find(
         (slot) =>
-          slot.dia_index === dia_index && slot.hora_inicio === hora_inicio
+          slot.dia_index === dia_index && slot.hora_inicio === hora_inicio,
       );
+
 
       if (!slot) {
         alert.error("Error", "Este horario ya no está disponible");
@@ -160,12 +164,12 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           `¿Mover ${
             classToMove.nombre_unidad_curricular
           } a ${utils.obtenerDiaNombre(dia_index)} a ${utils.formatearHora(
-            hora_inicio
+            hora_inicio,
           )}?`,
           {
             confirmButtonText: "Mover",
             cancelButtonText: "Cancelar",
-          }
+          },
         );
 
         if (result) {
@@ -179,12 +183,12 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           `¿Programar ${
             selectedClass.nombre_unidad_curricular
           } en ${utils.obtenerDiaNombre(dia_index)} a ${utils.formatearHora(
-            hora_inicio
+            hora_inicio,
           )}?`,
           {
             confirmButtonText: "Programar",
             cancelButtonText: "Cancelar",
-          }
+          },
         );
 
         if (result) {
@@ -203,7 +207,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       MoverClassEnHorario,
       utils,
       alert,
-    ]
+    ],
   );
 
   // Crear nueva clase en el estado
@@ -238,7 +242,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       ) {
         alert.error(
           "Error de consistencia",
-          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada a otro profesor (ID: ${profesorExistente}). No puede cambiar de profesor para horas adicionales.`
+          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada a otro profesor (ID: ${profesorExistente}). No puede cambiar de profesor para horas adicionales.`,
         );
         return;
       }
@@ -282,7 +286,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
 
         alert.success(
           "Éxito",
-          `Todas las clases (${numClasesTotales}) creadas correctamente`
+          `Todas las clases (${numClasesTotales}) creadas correctamente`,
         );
       }
     },
@@ -297,7 +301,7 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       setAulaSelected,
       setUnidadCurricularSelected,
       alert,
-    ]
+    ],
   );
 
   return {

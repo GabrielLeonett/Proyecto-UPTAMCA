@@ -4,72 +4,69 @@ import useHorarioState from "./useHorarioState";
 
 export const useAulaAvailability = () => {
   const { horariosEliminados } = useHorarioState();
+
   const verificarDisponibilidadAula = useCallback(
     (
       id_aula,
       dia_index,
-      hora_inicio,
-      bloques_necesarios,
+      horaInicio,
+      horaFin,
       aulas_horarios,
-      claseActual = null
+      claseActual = null,
     ) => {
-      // 1. Verificar si el objeto existe y si tiene la propiedad 'horario'
+      const esClaseNueva = claseActual && !claseActual.id;
+
       if (!aulas_horarios || !aulas_horarios.horario) {
-        return true; // O manejar el error
+        return true;
       }
 
-      // 2. Si el array existe, verificar si está vacío
-      if (aulas_horarios.horario.length === 0) {
-        return true; // No hay horarios que buscar
+      if (aulas_horarios.aula?.id_aula && aulas_horarios.aula.id_aula !== id_aula) {
+        return false;
       }
+
+      if (aulas_horarios.horario.length === 0) {
+        return true;
+      }
+
       const horarioAula = aulas_horarios.horario.find(
         (aula) => aula.idAula === id_aula || aula.id_aula === id_aula
       );
-      if (!horarioAula || !horarioAula.dias) return true;
 
-      // Calcular hora fin
-      const horaFin = parseInt(
-        UTILS.sumar45Minutos(hora_inicio, bloques_necesarios)
-      );
+      if (!horarioAula || !horarioAula.dias) {
+        return true;
+      }
 
-      // Verificar si el aula ya tiene clase en este día y rango de horas
-      return !horarioAula.dias.some((dias) => {
-        if (UTILS.obtenerDiaId(dias.nombre) !== dia_index) return false;
+      const tieneConflicto = horarioAula.dias.some((dia) => {
+        const diaId = UTILS.obtenerDiaId(dia.nombre);
+        if (diaId !== dia_index) return false;
 
-        return dias.clases.some((clase) => {
-          // ✅ SALTEAR la clase que se está moviendo
-          if (claseActual && clase.id_horario === claseActual.id_horario) {
-            return false;
-          }
+        return dia.clases.some((clase) => {
           if (
-            horariosEliminados &&
-            horariosEliminados.includes(clase.id_horario)
+            claseActual &&
+            !esClaseNueva &&
+            clase.id === claseActual.id
           ) {
             return false;
           }
 
-          const [claseHoraIni, claseMinIni] = clase.hora_inicio.split(":");
-          const [claseHoraFin, claseMinFin] = clase.horaFin.split(":");
+          if (horariosEliminados?.includes(clase.id)) {
+            return false;
+          }
 
-          const claseInicioMinutos =
-            parseInt(claseHoraIni) * 60 + parseInt(claseMinIni);
-          const claseFinMinutos =
-            parseInt(claseHoraFin) * 60 + parseInt(claseMinFin);
+          const claseInicioMinutos = UTILS.deshacerHora24(clase.hora_inicio);
+          const claseFinMinutos = UTILS.deshacerHora24(clase.hora_fin);
 
-          const nuevaInicioMinutos =
-            Math.floor(hora_inicio / 100) * 60 + (hora_inicio % 100);
-          const nuevaFinMinutos =
-            Math.floor(horaFin / 100) * 60 + (horaFin % 100);
+          const hayConflicto =
+            horaInicio < claseFinMinutos &&
+            horaFin > claseInicioMinutos;
 
-          // Verificar superposición de horarios
-          return (
-            nuevaInicioMinutos < claseFinMinutos &&
-            nuevaFinMinutos > claseInicioMinutos
-          );
+          return hayConflicto;
         });
       });
+
+      return !tieneConflicto;
     },
-    [horariosEliminados]
+    [horariosEliminados],
   );
 
   return {

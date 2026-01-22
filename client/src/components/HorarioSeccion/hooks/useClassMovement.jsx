@@ -95,11 +95,12 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
           if (slotOriginal) {
             nuevaMatriz = liberarSlotOriginal(slotOriginal, nuevaMatriz);
             // ✅ CORREGIDO: Usar id_horario en lugar de id
-            if (!clase.nueva_clase && clase.id_horario) {
+            if (!clase.nueva_clase && clase.id) {
               setHorariosEliminados((prev) => {
-                if (!prev.includes(clase.id_horario)) {
-                  return [...prev, clase.id_horario];
+                if (!prev.includes(clase.id)) {
+                  return [...prev, clase.id];
                 }
+                console.log("Guardado para eliminar mas tarde: ", prev)
                 return prev;
               });
             }
@@ -164,6 +165,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         return;
       }
 
+
       const slotsDisponibles = [];
 
       profesorSelected.disponibilidades.forEach((disponibilidad) => {
@@ -226,7 +228,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
 
       const original = findOriginalSlot(clase, tableHorario);
       setOriginalSlot(original);
-
       if (original) {
         setSelectedClass(clase);
 
@@ -289,7 +290,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       if (!classToMove) {
         return;
       }
-
+      
       setTableHorario((prev) => {
         let nuevaMatriz = [...prev];
 
@@ -297,13 +298,11 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         if (originalSlot) {
           nuevaMatriz = liberarSlotOriginal(originalSlot, nuevaMatriz);
         }
-
+        
         // Ocupar el nuevo slot
         nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-
         return nuevaMatriz;
       });
-
       // Limpiar estados
       cancelarMovimiento();
 

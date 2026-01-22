@@ -12,16 +12,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.clases_completas WHERE id_profesor = $1",
-        [id_profesor]
+        [id_profesor],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horarios obtenidos exitosamente"
+        "Horarios obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener los horarios del profesor"
+        "Error al obtener los horarios del profesor",
       );
     }
   }
@@ -36,16 +36,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.clases_completas WHERE id_horario = $1",
-        [id_horario]
+        [id_horario],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horarios obtenidos exitosamente"
+        "Horarios obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener los horarios del profesor"
+        "Error al obtener los horarios del profesor",
       );
     }
   }
@@ -59,16 +59,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         "SELECT id_cedula as id FROM profesores WHERE id_profesor = $1",
-        [id_profesor]
+        [id_profesor],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Cedula obtenida exitosa"
+        "Cedula obtenida exitosa",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener la cedula del profesor"
+        "Error al obtener la cedula del profesor",
       );
     }
   }
@@ -107,16 +107,16 @@ export default class HorarioModel {
           codigo_pnf
          FROM public.clases_completas 
          WHERE id_seccion = $1`,
-        [id_seccion]
+        [id_seccion],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horarios de sección obtenidos exitosamente"
+        "Horarios de sección obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener los horarios de la sección"
+        "Error al obtener los horarios de la sección",
       );
     }
   }
@@ -131,16 +131,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.clases_completas WHERE id_aula = $1",
-        [id_aula]
+        [id_aula],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horarios de aula obtenidos exitosamente"
+        "Horarios de aula obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener los horarios del aula"
+        "Error al obtener los horarios del aula",
       );
     }
   }
@@ -155,16 +155,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         `SELECT * FROM buscar_profesor_cambiar_horario($1) AS p_resultado;`,
-        [id_profesor]
+        [id_profesor],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Profesores disponibles obtenidos exitosamente"
+        "Profesores disponibles obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener profesores disponibles"
+        "Error al obtener profesores disponibles",
       );
     }
   }
@@ -179,16 +179,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         `SELECT * FROM buscar_aula_cambiar_horario($1) AS p_resultado;`,
-        [id_aula]
+        [id_aula],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Profesores disponibles obtenidos exitosamente"
+        "Profesores disponibles obtenidos exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener profesores disponibles"
+        "Error al obtener profesores disponibles",
       );
     }
   }
@@ -203,7 +203,7 @@ export default class HorarioModel {
     horasNecesarias,
     id_unidad_curricular,
     search,
-    modo = "general"
+    modo = "general",
   ) {
     try {
       let funcionPostgres;
@@ -214,7 +214,7 @@ export default class HorarioModel {
         case "nueva_asignacion":
           if (!id_unidad_curricular) {
             throw new Error(
-              "Para nueva asignación se requiere id_unidad_curricular"
+              "Para nueva asignación se requiere id_unidad_curricular",
             );
           }
           funcionPostgres = "buscar_profesores_nueva_asignacion";
@@ -232,7 +232,7 @@ export default class HorarioModel {
         case "completar_horas":
           if (!id_unidad_curricular) {
             throw new Error(
-              "Para completar horas se requiere id_unidad_curricular"
+              "Para completar horas se requiere id_unidad_curricular",
             );
           }
           funcionPostgres = "buscar_profesores_completar_horas";
@@ -255,17 +255,17 @@ export default class HorarioModel {
       // Usar la consulta y los parámetros definidos en el switch
       const { rows } = await pg.query(
         consultaSQL, // <<-- Uso de la variable dinámica
-        parametros
+        parametros,
       );
 
       return FormatResponseModel.respuestaPostgres(
         rows,
-        `Profesores disponibles obtenidos exitosamente (modo: ${modo})`
+        `Profesores disponibles obtenidos exitosamente (modo: ${modo})`,
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        `Error al obtener profesores disponibles (modo: ${modo})`
+        `Error al obtener profesores disponibles (modo: ${modo})`,
       );
     }
   }
@@ -283,27 +283,28 @@ export default class HorarioModel {
   static async obtenerAulasDisponibles(
     id_seccion,
     id_profesor,
-    horasNecesarias
+    horasNecesarias,
   ) {
     try {
       const { rows } = await pg.query(
         "SELECT * FROM public.buscar_aulas_disponibles($1, $2, $3) AS p_resultado;",
-        [id_seccion, id_profesor, horasNecesarias]
+        [id_seccion, id_profesor, horasNecesarias],
       );
 
       console.log("✅ Resultado de aulas:", rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Aulas disponibles obtenidas exitosamente"
+        "Aulas disponibles obtenidas exitosamente",
       );
     } catch (error) {
       console.error("❌ Error al obtener aulas:", error);
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al obtener aulas disponibles"
+        "Error al obtener aulas disponibles",
       );
     }
   }
+
   /**
    * @name crear
    * @description Crear un nuevo horario
@@ -340,29 +341,29 @@ export default class HorarioModel {
       }
 
       const { rows } = await pg.query(
-        // El procedimiento ahora tiene 10 parámetros: agregamos $8 para hora_fin
-        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NULL)",
+        "CALL public.registrar_horario_completo($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL)",
         [
-          usuarioId, // $1: p_usuario_accion
-          id_seccion, // $2: p_id_seccion
-          id_profesor, // $3: p_id_profesor
-          id_unidad_curricular, // $4: p_unidad_curricular_id
-          id_aula, // $5: p_id_aula
-          dia_semana, // $6: p_dia_semana
-          hora_inicio, // $7: p_hora_inicio
-          hora_fin, // $8: p_hora_fin (nuevo)
-          true, // $9: p_activo
-          horas_clase, // $10: p_horas_registrar
-        ]
+          usuarioId, // $1 p_usuario_accion
+          dia_semana, // $2 p_dia_semana
+          hora_inicio, // $3 p_hora_inicio
+          hora_fin, // $4 p_hora_fin
+          id_unidad_curricular, // $5 p_unidad_curricular_id
+          id_seccion, // $6 p_id_seccion
+          id_profesor, // $7 p_id_profesor
+          id_aula, // $8 p_id_aula
+          horas_clase, // $9 p_horas_registrar
+        ],
       );
+
+      console.log(rows);
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horario creado exitosamente"
+        "Horario creado exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al crear el horario"
+        "Error al crear el horario",
       );
     }
   }
@@ -387,27 +388,28 @@ export default class HorarioModel {
       });
 
       const { rows } = await pg.query(
-        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6)",
+        "CALL public.actualizar_horario_completo_o_parcial($1, $2, $3, $4, $5, $6, NULL)",
         [
-          usuarioId,
-          idHorario,
-          datos.dia_semana || null,
-          datos.hora_inicio || null,
-          datos.horas_clase || null,
-          null,
-        ]
+          usuarioId, // $1 p_usuario_accion
+          idHorario, // $2 p_id_horario
+          datos.dia_semana || null, // $3 p_dia_semana
+          datos.hora_inicio || null, // $4 p_hora_inicio
+          datos.hora_fin || null, // $5 p_hora_fin
+          datos.horas_clase || null, // $6 p_horas_registrar
+        ],
       );
+
       console.log(rows[0].p_resultado);
 
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horario actualizado exitosamente"
+        "Horario actualizado exitosamente",
       );
     } catch (error) {
       console.error("💥 Error en HorarioModel.actualizar:", error);
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al actualizar el horario"
+        "Error al actualizar el horario",
       );
     }
   }
@@ -423,16 +425,16 @@ export default class HorarioModel {
     try {
       const { rows } = await pg.query(
         "CALL public.eliminar_horario($1, $2, NULL)",
-        [usuarioId, idHorario]
+        [usuarioId, idHorario],
       );
       return FormatResponseModel.respuestaPostgres(
         rows,
-        "Horario eliminado exitosamente"
+        "Horario eliminado exitosamente",
       );
     } catch (error) {
       throw FormatResponseModel.respuestaError(
         error,
-        "Error al eliminar el horario"
+        "Error al eliminar el horario",
       );
     }
   }

@@ -577,6 +577,7 @@ export const UTILS = {
    * // returns [700, 745] (excluye automáticamente horas "ignorar")
    */
   obtenerHorasConsecutivasDesde: (horaInicio, cantidadBloques) => {
+
     const horasOrdenadas = Object.keys(UTILS.initialHours)
       .map(Number)
       .sort((a, b) => a - b);
@@ -627,7 +628,7 @@ export const UTILS = {
    * @returns {number} Número de filas necesarias para mostrar la clase
    * @example
    * calcularFilasReales(700, 2)
-   * // returns 3 (700, 745, [830 ignorar] = 3 filas)
+   * returns 3 (700, 745, [830 ignorar] = 3 filas)
    */
   calcularFilasReales: (horaInicio, bloquesNecesarios) => {
     const horasOrdenadas = Object.keys(UTILS.initialHours)

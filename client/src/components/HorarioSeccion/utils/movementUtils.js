@@ -25,66 +25,100 @@ export const findOriginalSlot = (clase, tableHorario) => {
 export const liberarSlotOriginal = (originalSlot, tableHorario) => {
   if (!originalSlot) return tableHorario;
 
-  return tableHorario.map((item, index) => ({
-    ...item,
-    horas: { ...item.horas },
-    ...(index === originalSlot.dia_index && {
+  // Calculamos el límite superior una sola vez fuera del loop para ahorrar recursos
+  const horaFinLimpieza = parseInt(
+    UTILS.sumar45Minutos(
+      originalSlot.hora_inicio,
+      originalSlot.bloques_necesarios,
+    ),
+  );
+
+  return tableHorario.map((item, index) => {
+    // Si no es el día que queremos limpiar, devolvemos el día intacto
+    if (index !== originalSlot.dia_index) return item;
+
+    return {
+      ...item,
       horas: Object.keys(item.horas).reduce((acc, hora) => {
         const horaNum = parseInt(hora);
-        if (
-          horaNum >= originalSlot.hora_inicio &&
-          horaNum <
-            parseInt(
-              UTILS.sumar45Minutos(
-                originalSlot.hora_inicio,
-                originalSlot.bloques_necesarios,
-              ),
-            )
-        ) {
+        const valorActual = item.horas[hora];
+
+        // REGLA DE ORO: Si es un string (receso), no lo tocamos NUNCA
+        if (typeof valorActual === "string") {
+          acc[hora] = valorActual;
+          return acc;
+        }
+
+        // Si la hora está dentro del rango de la clase que se va, la ponemos en null
+        if (horaNum >= originalSlot.hora_inicio && horaNum < horaFinLimpieza) {
           acc[hora] = null;
         } else {
-          acc[hora] = item.horas[hora];
+          // Si no, mantenemos lo que había (puede ser otra clase o estar vacío)
+          acc[hora] = valorActual;
         }
+
         return acc;
       }, {}),
-    }),
-  }));
+    };
+  });
 };
 
-// Función para ocupar nuevo slot
 export const ocuparNuevoSlot = (nuevoSlot, classToMove, tableHorario) => {
-  const { dia_index, hora_inicio, bloques_necesarios } = nuevoSlot;
+  const {
+    dia_index,
+    hora_inicio,
+    hora_fin, // <-- Usaremos esta que viene del slot calculado
+    horas_bloques,
+    bloques_necesarios,
+  } = nuevoSlot;
 
-  return tableHorario.map((item, index) => ({
-    ...item,
-    horas: { ...item.horas },
-    ...(index === dia_index && {
+  // 1. Definimos los datos de la "clase real" UNA SOLA VEZ
+  // Esto evita discrepancias entre bloques
+  const datosClaseReal = {
+    ...classToMove,
+    dia_semana: UTILS.obtenerDiaNombre(dia_index),
+    hora_inicio: UTILS.formatearHora24(hora_inicio),
+    // Usamos la hora_fin que ya calculamos correctamente con el (+1) antes
+    hora_fin: UTILS.formatearHora24(Object.keys(UTILS.initialHours)[Object.keys(UTILS.initialHours).map(Number).findIndex(h => h >= hora_fin) + 1]),
+    ...(!classToMove.nueva_clase && { clase_move: true }),
+  };
+
+  return tableHorario.map((item, index) => {
+    if (index !== dia_index) return item;
+
+    return {
+      ...item,
       horas: Object.keys(item.horas).reduce((acc, hora) => {
         const horaNum = parseInt(hora);
-        const horaFinIndex = Object.keys(UTILS.initialHours).map(Number).findIndex(initialHours => initialHours === hora_inicio) + bloques_necesarios;
-        const hora_fin = Object.keys(UTILS.initialHours).map(Number)[horaFinIndex];
-        console.log(horaFinIndex, hora_fin, hora_inicio, bloques_necesarios);
-        
-        if (horaNum >= hora_inicio && horaNum < hora_fin) {
-          const bloqueIndex = Math.floor((horaNum - hora_inicio) / 45);
+        const valorOriginal = item.horas[hora];
+        const esString = typeof valorOriginal === "string";
+
+        // PRIORIDAD: Si es un receso, no se toca
+        if (esString) {
+          acc[hora] = valorOriginal;
+          return acc;
+        }
+
+        const debeOcuparEstaHora = horas_bloques.includes(horaNum);
+
+        if (debeOcuparEstaHora) {
+          // Calculamos qué número de bloque es este (0, 1, 2...)
+          const bloqueActualIndex = horas_bloques
+            .filter((h) => h < horaNum)
+            .filter((h) => typeof item.horas[h] !== "string").length;
+
           acc[hora] = {
             ocupado: true,
-            datos_clase: {
-              ...classToMove,
-              dia_semana: UTILS.obtenerDiaNombre(dia_index),
-              hora_inicio: UTILS.formatearHora24(hora_inicio),
-              hora_fin: UTILS.formatearHora24(hora_fin),
-              ...(!classToMove.nueva_clase && { clase_move: true }),
-            },
-            bloque: bloqueIndex,
+            datos_clase: datosClaseReal, // <-- Insertamos la misma data real en todos
+            bloque: bloqueActualIndex,
             bloques_totales: bloques_necesarios,
           };
-          console.log(acc[hora])
         } else {
-          acc[hora] = item.horas[hora];
+          acc[hora] = valorOriginal;
         }
+
         return acc;
       }, {}),
-    }),
-  }));
+    };
+  });
 };
