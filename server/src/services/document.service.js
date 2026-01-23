@@ -1,6 +1,4 @@
 import fs from "fs";
-import axios from "axios";
-import FormData from "form-data";
 import {
   Document,
   Packer,
@@ -20,7 +18,6 @@ import {
 } from "docx";
 import sharp from "sharp";
 import { UTILS } from "../utils/utilis.js";
-import { loadEnv } from "../utils/utilis.js";
 import path from "path";
 
 // Estilos globales
@@ -31,16 +28,16 @@ const ESTILOS = {
     subtitulo: 28,
     encabezado: 14,
     contenido: 12,
-    hora: 10,
+    hora: 11,
     detalle: 11,
     informacion: 16,
   },
   espaciado: {
-    paddingCelda: 80,
-    marginInterno: 40,
-    alturaFila: 600,
-    entreLineas: 250,
-    alturaFilaInformacion: 800,
+    paddingCelda: 120, // ⬅️ uniforme
+    marginInterno: 80,
+    alturaFila: 850, // ⬅️ altura fija para TODAS las filas
+    entreLineas: 220,
+    alturaFilaInformacion: 850,
   },
   colores: {
     primario: "2E75B5",
@@ -86,7 +83,7 @@ class DocumentServices {
       console.log(
         "✅ Logo leído correctamente, tamaño:",
         logoData.length,
-        "bytes"
+        "bytes",
       );
 
       const imagenProcesada = await sharp(logoData)
@@ -232,12 +229,12 @@ class DocumentServices {
 
     return new TableCell({
       children: Array.isArray(children) ? children : [children],
-      shading: shading,
-      rowSpan: rowSpan,
+      shading,
+      rowSpan,
       columnSpan: colSpan,
-      borders: borders,
-      margins: margins,
-      verticalAlign: verticalAlign,
+      borders,
+      margins,
+      verticalAlign,
     });
   }
 
@@ -283,7 +280,7 @@ class DocumentServices {
    */
   static procesarHorario(
     horario = [],
-    turno = { hora_inicio: "07:00", hora_fin: "20:00" }
+    turno = { hora_inicio: "07:00", hora_fin: "20:00" },
   ) {
     const diasSemana = [
       "Lunes",
@@ -293,60 +290,84 @@ class DocumentServices {
       "Viernes",
       "Sábado",
     ];
-    const horasDisponibles = this.generarHorasDisponibles(turno);
 
+    const { horaInicioHHMM, horaFinHHMM } = UTILS.obtenerTurno(turno);
+
+    // Filtrar horas dentro del turno
+    const horasFiltradas = {};
+    Object.keys(UTILS.initialHours).forEach((key) => {
+      const horaHHMM = Number(key);
+      if (horaHHMM >= horaInicioHHMM && horaHHMM < horaFinHHMM) {
+        horasFiltradas[key] = UTILS.initialHours[key];
+      }
+    });
+
+    const horasKeys = Object.keys(horasFiltradas).map(Number);
+
+    // Inicializar matriz
     const matrizHorario = diasSemana.map((dia) => ({
       dia,
-      horas: horasDisponibles.reduce((acc, hora) => {
-        acc[hora] = null;
-        return acc;
-      }, {}),
+      horas: { ...horasFiltradas },
     }));
 
-    // Llenar con las clases del horario
-    if (horario && horario.length > 0) {
-      horario.forEach((dia) => {
-        if (!dia.nombre) return;
+    if (!horario || horario.length === 0) {
+      return {
+        matrizHorario,
+        horasDisponibles: horasKeys.sort((a, b) => a - b),
+      };
+    }
 
-        const diaIndex = diasSemana.indexOf(dia.nombre.toLowerCase());
-        if (diaIndex === -1) return;
+    horario.forEach((dia) => {
+      if (!dia.nombre) return;
 
-        dia.clases?.forEach((clase) => {
-          const [hIni, mIni] = clase.hora_inicio.split(":");
-          const [hFin, mFin] = clase.hora_fin.split(":");
-          const inicio = UTILS.horasMinutos(parseInt(hIni), parseInt(mIni));
-          const fin = UTILS.horasMinutos(parseInt(hFin), parseInt(mFin));
-          const bloques = Math.ceil((fin - inicio) / 45);
+      const idDia = UTILS.obtenerDiaId(dia.nombre.toLowerCase());
+      if (idDia === -1) return;
 
-          for (let i = 0; i < bloques; i++) {
-            const minutosActual = inicio + i * 45;
-            const h = Math.floor(minutosActual / 60);
-            const m = minutosActual % 60;
-            const horaHHMM = h * 100 + m;
+      dia.clases?.forEach((clase) => {
+        const inicio = UTILS.deshacerHora24(clase.hora_inicio);
+        const fin = UTILS.deshacerHora24(clase.hora_fin);
 
-            if (matrizHorario[diaIndex].horas[horaHHMM] !== undefined) {
-              if (i === 0) {
-                matrizHorario[diaIndex].horas[horaHHMM] = {
-                  ocupado: true,
-                  datos_clase: { ...clase, horas_clase: bloques },
-                  bloque: i,
-                  bloques_totales: bloques,
-                };
-              } else {
-                matrizHorario[diaIndex].horas[horaHHMM] = {
-                  ocupado: true,
-                  es_continuacion: true,
-                };
-              }
+        // Contar recesos entre inicio y fin
+        let recesos = 0;
+        horasKeys.forEach((horaHHMM) => {
+          if (
+            horaHHMM > inicio &&
+            horaHHMM < fin &&
+            typeof UTILS.initialHours[horaHHMM] === "string"
+          ) {
+            recesos += 1;
+          }
+        });
+
+        const bloques =
+          Object.keys(UTILS.initialHours).map(Number).indexOf(fin) -
+          horasKeys.indexOf(inicio) -
+          recesos;
+
+        let bloquesCoinciden = 0;
+
+        horasKeys.forEach((horaHHMM) => {
+          if (horaHHMM >= inicio && horaHHMM < fin) {
+            if (
+              typeof UTILS.initialHours[horaHHMM] !== "string" &&
+              matrizHorario[idDia].horas[horaHHMM] !== undefined
+            ) {
+              matrizHorario[idDia].horas[horaHHMM] = {
+                ocupado: true,
+                datos_clase: { ...clase, horas_clase: bloques },
+                bloque: bloquesCoinciden,
+                bloques_totales: bloques,
+              };
+              bloquesCoinciden++;
             }
           }
         });
       });
-    }
+    });
 
     return {
       matrizHorario,
-      horasDisponibles: horasDisponibles.sort((a, b) => a - b),
+      horasDisponibles: horasKeys.sort((a, b) => a - b),
     };
   }
 
@@ -374,13 +395,13 @@ class DocumentServices {
                 bold: true,
                 size: ESTILOS.tamanos.informacion,
                 color: ESTILOS.colores.textoClaro,
-              })
+              }),
             ),
           ],
           {
             shading: { fill: ESTILOS.colores.primario },
             colSpan: numColumnas,
-          }
+          },
         ),
       ],
       height: {
@@ -406,21 +427,15 @@ class DocumentServices {
     horasDisponibles,
     pnf,
     trayecto,
-    seccion
+    seccion,
   ) {
     const filas = [];
 
-    // Fila de información
     const totalColumnas = 1 + matrizHorario.length;
-    const filaInfo = this.crearFilaInformacion(
-      totalColumnas,
-      pnf,
-      trayecto,
-      seccion
+    filas.push(
+      this.crearFilaInformacion(totalColumnas, pnf, trayecto, seccion),
     );
-    filas.push(filaInfo);
 
-    // Fila de encabezado con días
     const filaEncabezado = new TableRow({
       children: [
         this.crearCeldaEstilizada(
@@ -429,94 +444,98 @@ class DocumentServices {
               bold: true,
               size: ESTILOS.tamanos.encabezado,
               color: ESTILOS.colores.textoClaro,
-            })
+            }),
           ),
-          {
-            shading: { fill: ESTILOS.colores.primario },
-          }
+          { shading: { fill: ESTILOS.colores.primario } },
         ),
         ...matrizHorario.map((dia) =>
           this.crearCeldaEstilizada(
             this.crearParrafoEstilizado(
-              this.crearTextoEstilizado(
-                dia.dia.charAt(0).toUpperCase() + dia.dia.slice(1),
-                {
-                  bold: true,
-                  size: ESTILOS.tamanos.encabezado,
-                  color: ESTILOS.colores.textoClaro,
-                }
-              )
+              this.crearTextoEstilizado(dia.dia, {
+                bold: true,
+                size: ESTILOS.tamanos.encabezado,
+                color: ESTILOS.colores.textoClaro,
+              }),
             ),
-            {
-              shading: { fill: ESTILOS.colores.primario },
-            }
-          )
+            { shading: { fill: ESTILOS.colores.primario } },
+          ),
         ),
       ],
     });
+
     filas.push(filaEncabezado);
 
-    // Array para trackear rowSpans activos por día
-    const rowSpansActivos = matrizHorario.map(() => ({
-      activo: false,
-      filasRestantes: 0,
-    }));
-
-    // Filas con horarios y clases
     horasDisponibles.forEach((hora, index) => {
-    const horas = `${UTILS.formatearHora(hora)} - ${UTILS.horariosAcademicos[index+1]}`
+      const horasLabel = `${UTILS.formatearHora(hora)} - ${
+        UTILS.horariosAcademicos[index + 1] || ""
+      }`;
+
       const celdas = [
         this.crearCeldaEstilizada(
           this.crearParrafoEstilizado(
-            this.crearTextoEstilizado(horas, {
+            this.crearTextoEstilizado(horasLabel, {
               bold: true,
               size: ESTILOS.tamanos.hora,
-            })
+            }),
           ),
-          {
-            shading: { fill: ESTILOS.colores.secundario },
-          }
+          { shading: { fill: ESTILOS.colores.secundario } },
         ),
       ];
 
-      // Procesar cada día
+      let filaTieneReceso = false;
+
       matrizHorario.forEach((dia, diaIndex) => {
-        const celdaInfo = dia.horas[hora];
-        const rowSpanInfo = rowSpansActivos[diaIndex];
+        if (filaTieneReceso) return; // ⛔️ NO seguir agregando celdas
 
-        // 1. Si hay un rowSpan activo para este día
-        if (rowSpanInfo.activo) {
-          rowSpanInfo.filasRestantes--;
+        const celda = dia.horas[hora];
+        const horasOrdenadas = horasDisponibles;
+        const indexHora = horasOrdenadas.indexOf(hora);
+        const horaAnterior = horasOrdenadas[indexHora - 1];
 
-          if (rowSpanInfo.filasRestantes === 0) {
-            rowSpanInfo.activo = false;
+        const esContinuacion =
+          celda?.ocupado &&
+          horaAnterior !== undefined &&
+          dia.horas[horaAnterior]?.datos_clase?.id === celda.datos_clase?.id;
+
+        if (esContinuacion) return;
+
+        let rowSpanCalculado = 1;
+
+        if (celda?.ocupado) {
+          let nextIdx = indexHora + 1;
+          while (nextIdx < horasOrdenadas.length) {
+            const siguienteHora = horasOrdenadas[nextIdx];
+            if (
+              dia.horas[siguienteHora]?.datos_clase?.id ===
+              celda.datos_clase?.id
+            ) {
+              rowSpanCalculado++;
+              nextIdx++;
+            } else {
+              break;
+            }
           }
-          return; // Salir sin agregar celda
         }
 
-        // 2. Si es una continuación de otra clase
-        if (celdaInfo?.es_continuacion) {
-          return; // Salir sin agregar celda
-        }
-        
-        // 3. Si es el inicio de una nueva clase con múltiples bloques
-        if (celdaInfo?.ocupado && celdaInfo.bloque === 0) {
-          const clase = celdaInfo.datos_clase;
-          console.log(clase.nombres_profesor || clase.apellido_profesor)  
+        if (celda?.ocupado) {
+          const clase = celda.datos_clase;
+
           const contenido = [
             this.crearParrafoEstilizado(
               this.crearTextoEstilizado(
                 clase.nombre_unidad_curricular || clase.materia || "Clase",
-                { bold: true, size: ESTILOS.tamanos.contenido }
-              )
+                { bold: true, size: ESTILOS.tamanos.contenido },
+              ),
             ),
-            ...(clase.nombres_profesor || clase.apellido_profesor
+            ...(clase.nombre_profesor || clase.apellido_profesor
               ? [
                   this.crearParrafoEstilizado(
                     this.crearTextoEstilizado(
-                      `Prof: ${clase.nombre_profesor?.split(" ")[0]} ${clase.apellido_profesor?.split(" ")[0]}`,
-                      { size: ESTILOS.tamanos.detalle }
-                    )
+                      `Prof: ${clase.nombre_profesor?.split(" ")[0] || ""} ${
+                        clase.apellido_profesor?.split(" ")[0] || ""
+                      }`,
+                      { size: ESTILOS.tamanos.detalle },
+                    ),
                   ),
                 ]
               : []),
@@ -525,7 +544,7 @@ class DocumentServices {
                   this.crearParrafoEstilizado(
                     this.crearTextoEstilizado(`Aula: ${clase.codigo_aula}`, {
                       size: ESTILOS.tamanos.detalle,
-                    })
+                    }),
                   ),
                 ]
               : []),
@@ -535,27 +554,38 @@ class DocumentServices {
                 {
                   size: ESTILOS.tamanos.detalle,
                   color: ESTILOS.colores.textoGris,
-                }
-              )
+                },
+              ),
             ),
           ];
 
           celdas.push(
             this.crearCeldaEstilizada(contenido, {
-              rowSpan: celdaInfo.bloques_totales,
+              rowSpan: rowSpanCalculado,
               shading: { fill: ESTILOS.colores.fondoClase },
-            })
+            }),
+          );
+        } else if (typeof celda === "string") {
+          const contenido = [
+            this.crearParrafoEstilizado(
+              this.crearTextoEstilizado(celda, {
+                bold: true,
+                size: ESTILOS.tamanos.contenido,
+              }),
+            ),
+          ];
+
+          celdas.push(
+            this.crearCeldaEstilizada(contenido, {
+              colSpan: matrizHorario.length, // ✅ dinámico
+              shading: { fill: ESTILOS.colores.fondoClase },
+            }),
           );
 
-          // Activar el tracking de rowSpan
-          rowSpansActivos[diaIndex] = {
-            activo: true,
-            filasRestantes: celdaInfo.bloques_totales - 1,
-          };
+          filaTieneReceso = true;
         } else {
-          // 4. Celda vacía normal
           celdas.push(
-            this.crearCeldaEstilizada([this.crearParrafoEstilizado("")])
+            this.crearCeldaEstilizada([this.crearParrafoEstilizado("")]),
           );
         }
       });
@@ -565,9 +595,10 @@ class DocumentServices {
           children: celdas,
           height: {
             value: ESTILOS.espaciado.alturaFila,
-            rule: "atLeast",
+            //rule: "exact" , // 🔒 altura fija 
+            rule: "atLeast" // altura flexible
           },
-        })
+        }),
       );
     });
 
@@ -604,7 +635,7 @@ class DocumentServices {
     // Procesar el horario
     const { matrizHorario, horasDisponibles } = this.procesarHorario(
       horario,
-      turno
+      turno,
     );
 
     // Obtener la marca de agua
@@ -624,7 +655,7 @@ class DocumentServices {
       horasDisponibles,
       pnf,
       trayecto,
-      seccion
+      seccion,
     );
 
     // Crear el documento Word
@@ -703,12 +734,12 @@ class DocumentServices {
    * @author Gabriel Leonett
    */
   static generarHorasDisponibles(turno) {
-    const [hora_inicio, minInicio] = turno.hora_inicio.split(":");
-    const [hora_fin, minFin] = turno.hora_fin.split(":");
+    const [hora_inicio, minInicio] = turno.hora_inicio;
+    const [hora_fin, minFin] = turno.hora_fin;
 
     const MinutosInicio = UTILS.horasMinutos(
       parseInt(hora_inicio),
-      parseInt(minInicio)
+      parseInt(minInicio),
     );
     const MinutosFin = UTILS.horasMinutos(parseInt(hora_fin), parseInt(minFin));
 

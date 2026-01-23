@@ -6,16 +6,9 @@ const useHorarioInitialization = (props, stateSetters) => {
   const { horario, turno } = props;
   const { setTableHorario, setTableHorarioOriginal } = stateSetters;
 
-  const obtenerTurno = useCallback((turno) => {
-    const horaInicioHHMM = UTILS.deshacerHora24(turno.hora_inicio);
-    const horaFinHHMM = UTILS.deshacerHora24(turno.hora_fin);
-
-    return { horaInicioHHMM, horaFinHHMM };
-  }, []);
-
   const obtenerClases = useCallback(
     (Dias, turno) => {
-      const { horaInicioHHMM, horaFinHHMM } = obtenerTurno(turno);
+      const { horaInicioHHMM, horaFinHHMM } = UTILS.obtenerTurno(turno);
 
       // Filtrar horas dentro del turno
       const horasFiltradas = {};
@@ -81,7 +74,7 @@ const useHorarioInitialization = (props, stateSetters) => {
         return nuevaMatriz;
       });
     },
-    [obtenerTurno, setTableHorario, setTableHorarioOriginal],
+    [setTableHorario, setTableHorarioOriginal],
   );
 
   useEffect(() => {

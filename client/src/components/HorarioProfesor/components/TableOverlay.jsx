@@ -218,7 +218,7 @@ const TableOverlay = ({
               />
             }
             title="Imprimir"
-            description="Generar PDF del horario"
+            description="Generar WORD del horario"
             onClick={handlePrintClick}
           />
         </Stack>
@@ -237,7 +237,7 @@ const TableOverlay = ({
         >
           {!isCustom
             ? "El modo de edición no está disponible en esta vista. Solo puedes imprimir el horario."
-            : "Haz clic en 'Editar' para modificar el horario o 'Imprimir' para generar un PDF."}
+            : "Haz clic en 'Editar' para modificar el horario o 'Imprimir' para generar un WORD."}
         </Typography>
       </Box>
     </Fade>

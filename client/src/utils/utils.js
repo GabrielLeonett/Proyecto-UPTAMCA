@@ -208,12 +208,12 @@ export const UTILS = {
   deshacerHora24: (hora24) => {
     // Dividimos el string por los dos puntos para obtener las partes
     const [horas, minutos] = hora24.split(":");
-    
+
     // Convertimos a número: (horas * 100) + minutos
     // Usamos Number() para asegurar que la suma sea aritmética y no una concatenación
     return Number(horas) * 100 + Number(minutos);
   },
-  
+
   /**
    * Formatea una hora militar (HHMM) a formato 24-horas HH:MM:SS
    * @param {number} horaMilitar - Hora en formato HHMM
@@ -412,6 +412,13 @@ export const UTILS = {
     return null; // No hay suficientes horas disponibles
   },
 
+  obtenerTurno: (turno) => {
+    const horaInicioHHMM = UTILS.deshacerHora24(turno.hora_inicio);
+    const horaFinHHMM = UTILS.deshacerHora24(turno.hora_fin);
+
+    return { horaInicioHHMM, horaFinHHMM };
+  },
+  
   /**
    * Calcula la hora de finalización de una clase considerando horas "ignorar"
    * @param {number} hora_inicio - Hora de inicio en formato HHMM
@@ -424,7 +431,7 @@ export const UTILS = {
   calcularHoraFinConIgnorar: (hora_inicio, bloques_necesarios) => {
     const siguienteHoraValida = UTILS.obtenerSiguienteHoraValida(
       hora_inicio,
-      bloques_necesarios
+      bloques_necesarios,
     );
 
     if (!siguienteHoraValida) {
@@ -577,7 +584,6 @@ export const UTILS = {
    * // returns [700, 745] (excluye automáticamente horas "ignorar")
    */
   obtenerHorasConsecutivasDesde: (horaInicio, cantidadBloques) => {
-
     const horasOrdenadas = Object.keys(UTILS.initialHours)
       .map(Number)
       .sort((a, b) => a - b);
