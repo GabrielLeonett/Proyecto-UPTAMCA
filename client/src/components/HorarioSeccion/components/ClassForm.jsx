@@ -197,14 +197,12 @@ const ClassForm = ({
                   }
                   value={profesorSelected}
                   onChange={(event, newValue) => {
-                    console.log("Profesor seleccionado:", newValue);
                     // Solo permitir seleccionar profesores válidos o búsqueda libre
                     if (typeof newValue === "string" || newValue?.es_valido) {
                       onProfesorChange(newValue);
                     }
                   }}
                   onInputChange={(event, newInputValue, reason) => {
-                    console.log("Input change:", newInputValue, reason);
                     if (reason === "input" && newInputValue.length >= 3) {
                       // Búsqueda en tiempo real opcional
                     }

@@ -14,11 +14,10 @@ import useApi from "../../hook/useApi";
 import useSweetAlert from "../../hook/useSweetAlert";
 
 const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
-  console.log("🧑‍🏫 Profesor en HorarioProfesor:", profesor);
   const theme = useTheme();
   const axios = useApi();
   const alert = useSweetAlert();
-
+  
   // Props consolidados
   const componentProps = useMemo(
     () => ({
@@ -27,14 +26,13 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
     }),
     [initialHorario, turno]
   );
-
+  
   // 1. Estado principal
   const {
     tableHorario,
     selectedClass,
     availableSlots,
     unidadesCurriculares,
-
     classToMove,
     overlayVisible,
     Custom,
@@ -43,14 +41,14 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
     state,
     stateSetters,
   } = useHorarioState(componentProps);
-
+  
   // 5. Efectos
   useHorarioEffects(componentProps, state, stateSetters);
-
+  
   const handlePrint = useCallback(async () => {
     try {
       setOverlayVisible(false);
-
+      
       console.log("✅ Archivo PDF descargado correctamente.");
     } catch (error) {
       console.error("❌ Error al descargar el horario:", error);
@@ -60,15 +58,15 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
       );
     }
   }, [axios, setOverlayVisible, alert]);
-
+  
   const handleCloseOverlay = useCallback(() => {
     setOverlayVisible(false);
   }, [setOverlayVisible]);
-
+  
   const handleToggleOverlay = useCallback(() => {
     setOverlayVisible((prev) => !prev);
   }, [setOverlayVisible]);
-
+  
   // Título del horario
   const horarioTitle = useMemo(() => {
     const parts = [
@@ -77,7 +75,7 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
     ].filter(Boolean);
     return parts.join("  ");
   }, [profesor]);
-
+  
   // Configuración de la tabla
   const tableConfig = useMemo(
     () => ({
@@ -88,18 +86,11 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
       classToMove,
       Custom,
       UnidadesCurriculares: unidadesCurriculares,
+      horarioTitle: horarioTitle
     }),
-    [
-      profesor,
-      unidadesCurriculares,
-      tableHorario,
-      availableSlots,
-      selectedClass,
-      classToMove,
-      Custom,
-    ]
+    [profesor, tableHorario, availableSlots, selectedClass, classToMove, Custom, unidadesCurriculares, horarioTitle]
   );
-
+  
   return (
     <Box sx={{ position: "relative", minHeight: "400px" }}>
       {/* Tabla del horario */}
@@ -110,17 +101,18 @@ const HorarioProfesor = ({ profesor, horario: initialHorario, turno }) => {
           border: overlayVisible
             ? `2px solid ${theme.palette.primary.main}`
             : "2px solid transparent",
-          borderRadius: 2,
-          transition: "all 0.3s ease",
+            borderRadius: 2,
+            transition: "all 0.3s ease",
           minHeight: "500px",
           zIndex: 1,
           overflow: "hidden",
           backgroundColor: "background.paper",
         }}
         onDoubleClick={handleToggleOverlay}
-      >
-        <HorarioTable {...tableConfig} />
+        >
+        <HorarioTable {...tableConfig } />
 
+        
         {/* Overlay de acciones */}
         {!Custom && (
           <TableOverlay

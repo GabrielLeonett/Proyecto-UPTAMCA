@@ -13,12 +13,6 @@ export const useSlotCalculations = () => {
       const slotsDisponibles = [];
 
       try {
-        console.log("=== INICIANDO PROCESAMIENTO DISPONIBILIDAD ===");
-        console.log("Disponibilidad recibida:", disponibilidad);
-        console.log("Bloques necesarios:", bloquesNecesarios);
-        console.log("Clase:", clase);
-        console.log("TableHorario length:", tableHorario?.length);
-
         // Validar parámetros críticos primero
         if (
           !disponibilidad ||
@@ -48,9 +42,6 @@ export const useSlotCalculations = () => {
           .split(":")
           .map(Number);
 
-        console.log("Hora inicio parseada:", { horaInicio, minutoInicio });
-        console.log("Hora fin parseada:", { horaFin, minutoFin });
-
         if (
           isNaN(horaInicio) ||
           isNaN(minutoInicio) ||
@@ -62,12 +53,6 @@ export const useSlotCalculations = () => {
         }
 
         const diaDisponibilidad = UTILS.obtenerDiaId(disponibilidad.dia_semana);
-        console.log(
-          "Día disponibilidad:",
-          disponibilidad.dia_semana,
-          "->",
-          diaDisponibilidad
-        );
 
         if (diaDisponibilidad === null || diaDisponibilidad === undefined) {
           console.warn("❌ Día de semana inválido", disponibilidad.dia_semana);
@@ -80,9 +65,6 @@ export const useSlotCalculations = () => {
         const horaHHMMFin = UTILS.calcularHorasHHMM(
           UTILS.horasMinutos(horaFin, minutoFin)
         );
-
-        console.log("Hora HHMM inicio:", horaHHMMInicio);
-        console.log("Hora HHMM fin:", horaHHMMFin);
 
         if (horaHHMMInicio >= horaHHMMFin) {
           console.warn(
@@ -100,17 +82,11 @@ export const useSlotCalculations = () => {
           )
           .sort((a, b) => a - b);
 
-        console.log("Horas filtradas disponibles:", horasFiltradas);
-        console.log("Total horas filtradas:", horasFiltradas.length);
 
         if (horasFiltradas.length < bloquesNecesarios) {
-          console.log("❌ No hay suficientes horas disponibles");
           return slotsDisponibles;
         }
 
-        // Buscar bloques consecutivos
-        console.log("Buscando bloques consecutivos...");
-        let bloquesEncontrados = 0;
 
         for (let i = 0; i <= horasFiltradas.length - bloquesNecesarios; i++) {
           const esConsecutivo = () => {
@@ -119,9 +95,6 @@ export const useSlotCalculations = () => {
               const indexSiguiente = i + j + 1;
 
               if (indexSiguiente >= horasFiltradas.length) {
-                console.log(
-                  `  ❌ Índice siguiente fuera de rango: ${indexSiguiente}`
-                );
                 return false;
               }
 
@@ -129,9 +102,6 @@ export const useSlotCalculations = () => {
               const horaSiguiente = horasFiltradas[indexSiguiente];
 
               if (horaSiguiente <= horaActual) {
-                console.log(
-                  `  ❌ Horas no consecutivas: ${horaActual} -> ${horaSiguiente}`
-                );
                 return false;
               }
             }
@@ -142,28 +112,20 @@ export const useSlotCalculations = () => {
 
           // Verificar disponibilidad en horario
           const horasBloque = horasFiltradas.slice(i, i + bloquesNecesarios);
-          console.log(`  Probando bloque ${i}:`, horasBloque);
 
           const esDisponible = horasBloque.every((hora) => {
             const celda = tableHorario[diaDisponibilidad]?.horas?.[hora];
             const estaDisponible = celda === null;
 
-            if (!estaDisponible) {
-              console.log(`    ❌ Hora ${hora} no disponible:`, celda);
-            }
 
             return estaDisponible;
           });
 
           if (!esDisponible) {
-            console.log(`  ❌ Bloque ${i} no disponible`);
             continue;
           }
 
           // Verificar disponibilidad del profesor
-          console.log(
-            `  ✅ Bloque ${i} disponible en horario, verificando profesor...`
-          );
           const profesorDisponible = verificarDisponibilidadProfesor(
             clase.id_profesor,
             diaDisponibilidad,
@@ -173,11 +135,9 @@ export const useSlotCalculations = () => {
           );
 
           if (!profesorDisponible) {
-            console.log(`  ❌ Profesor no disponible para bloque ${i}`);
             continue;
           }
 
-          console.log(`  ✅✅ Bloque ${i} COMPLETAMENTE DISPONIBLE`);
           slotsDisponibles.push({
             dia_index: diaDisponibilidad,
             hora_inicio: horasFiltradas[i],
@@ -185,12 +145,8 @@ export const useSlotCalculations = () => {
             horas_bloques: horasBloque,
             bloques_necesarios: bloquesNecesarios,
           });
-          bloquesEncontrados++;
         }
 
-        console.log(
-          `=== FIN PROCESAMIENTO: ${bloquesEncontrados} bloques encontrados ===`
-        );
       } catch (error) {
         console.error("❌ ERROR procesando disponibilidad:", error, {
           disponibilidad,
@@ -207,7 +163,6 @@ export const useSlotCalculations = () => {
   const validarDatosClase = useCallback((clase) => {
     if (!clase || !clase.id_profesor || !clase.horas_clase) {
       console.warn("Datos de clase incompletos");
-      console.log(clase)
       return false;
     }
 

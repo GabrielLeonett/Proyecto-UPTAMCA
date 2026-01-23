@@ -125,8 +125,6 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
         return;
       }
 
-      console.log("classToMove:", classToMove);
-      console.log("selectedClass:", selectedClass);
 
       const slot = availableSlots.find(
         (slot) =>
@@ -140,7 +138,6 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       }
 
       if (classToMove) {
-        console.log("Moviendo clase existente");
 
         // REEMPLAZO DE window.confirm CON ALERTA
         const result = await alert.confirm(
@@ -164,7 +161,6 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           alert.info("Información", "Movimiento cancelado");
         }
       } else {
-        console.log("Agregando clase nueva");
 
         // REEMPLAZO DE window.confirm CON ALERTA
         const result = await alert.confirm(

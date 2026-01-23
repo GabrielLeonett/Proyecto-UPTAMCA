@@ -80,8 +80,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
 
       if (result.isConfirmed) {
         setTableHorario((prev) => {
-          console.log("Eliminando clase:", clase);
-          console.log("Horario antes de eliminar:", prev);
 
           let nuevaMatriz = [...prev];
 
@@ -97,7 +95,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
                 return prev; // ✅ IMPORTANTE: Retornar el estado anterior si no hay cambios
               });
             }
-            console.log("Horario después de eliminar:", nuevaMatriz);
           } else {
             console.warn("No se encontró el slot original para eliminar");
           }
@@ -158,7 +155,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         !profesorSelected.disponibilidades ||
         profesorSelected.disponibilidades.length === 0
       ) {
-        console.log(profesorSelected);
         console.warn("Profesor no tiene disponibilidad definida");
         setAvailableSlots([]);
         return;
@@ -209,7 +205,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         slotsDisponibles.push(...slots);
       });
 
-      console.log("Slots disponibles (profesor Y aula):", slotsDisponibles);
       setAvailableSlots(slotsDisponibles);
     },
     [
@@ -296,24 +291,17 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         return;
       }
 
-      console.log("Moviendo clase:", classToMove);
-      console.log("Desde:", originalSlot);
-      console.log("Hacia:", nuevoSlot);
-
       setTableHorario((prev) => {
-        console.log("Horario antes de modificar:", prev);
 
         let nuevaMatriz = [...prev];
 
         // Liberar el slot original si existe (sin importar si es clase nueva o no)
         if (originalSlot) {
           nuevaMatriz = liberarSlotOriginal(originalSlot, nuevaMatriz);
-          console.log("Horario después de liberar:", nuevaMatriz);
         }
 
         // Ocupar el nuevo slot
         nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-        console.log("Horario después de ocupar:", nuevaMatriz);
 
         return nuevaMatriz;
       });

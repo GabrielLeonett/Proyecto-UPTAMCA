@@ -557,6 +557,7 @@ const HorarioTable = ({
                           <Clase
                             clase={celda.datos_clase}
                             {...(Custom && {
+                              dia_index: dia_index,
                               onMoveRequest: handleMoveRequest,
                               onCancelMove: handleCancelMoveRequest,
                               onDeleteClass: handleClassDeleteClick,
