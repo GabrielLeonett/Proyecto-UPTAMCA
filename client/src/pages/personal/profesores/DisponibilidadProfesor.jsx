@@ -35,15 +35,22 @@ export default function DisponibilidadProfesor() {
   const { id_profesor } = useParams();
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-
   // Estados
   const [selectedBlocks, setSelectedBlocks] = useState({});
+  const [horariosBlock, setHorariosBlock] = useState(() => {
+    const init = {};
+    DAYS.forEach((day) => {
+      init[day] = [];
+    });
+    return init;
+  });
+
   const [profesor, setProfesor] = useState(false);
   const [horasDocenciaSemanales, setHorasDocenciaSemanales] = useState(0);
   const [loading, setLoading] = useState(false);
   const [existingDisponibilidades, setExistingDisponibilidades] = useState([]);
   const timeBlocks = Object.keys(UTILS.initialHours).filter(
-    (hora) => UTILS.initialHours[hora] !== "ignorar"
+    (hora) => typeof UTILS.initialHours[hora] !== "string",
   );
   // 🔥 FUNCIÓN PARA CALCULAR HORAS SELECCIONADAS - ACTUALIZADA
   const calcularHorasSeleccionadas = useCallback((bloques) => {
@@ -54,53 +61,21 @@ export default function DisponibilidadProfesor() {
 
       // Ordenar y eliminar duplicados
       const bloquesOrdenados = [...new Set(bloquesDia)].sort(
-        (a, b) => parseInt(a) - parseInt(b)
+        (a, b) => parseInt(a) - parseInt(b),
       );
-
-      console.log("🔍 Bloques únicos ordenados:", bloquesOrdenados);
 
       // Calcular minutos para cada bloque
       for (let i = 0; i < bloquesOrdenados.length; i++) {
-        const horaActual = parseInt(bloquesOrdenados[i]);
-
         // Si NO es el primer bloque del día, calcular diferencia con el anterior
         if (i > 0) {
-          const horaAnterior = parseInt(bloquesOrdenados[i - 1]);
-
-          // Convertir a minutos y calcular diferencia
-          const minutosActual =
-            Math.floor(horaActual / 100) * 60 + (horaActual % 100);
-          const minutosAnterior =
-            Math.floor(horaAnterior / 100) * 60 + (horaAnterior % 100);
-
-          const diferenciaMinutos = minutosActual - minutosAnterior;
-
-          console.log(
-            `   ${horaAnterior} → ${horaActual} = ${diferenciaMinutos}min`
-          );
-
           // Solo sumar si la diferencia es positiva (evitar valores negativos)
-          if (diferenciaMinutos > 0) {
-            totalMinutos += diferenciaMinutos;
-          } else {
-            // Si hay duplicados o horas iguales, sumar 45 minutos
-            totalMinutos += 45;
-            console.log(`   ⚠️  Diferencia negativa, usando 45min por defecto`);
-          }
+          totalMinutos += 45;
         } else {
           // Para el primer bloque del día, asumir 45 minutos
-          console.log(`   ${horaActual} = 45min (primer bloque)`);
           totalMinutos += 45;
         }
       }
     });
-
-    console.log(
-      "📊 Total minutos:",
-      totalMinutos,
-      "Total horas:",
-      totalMinutos / 60
-    );
     return totalMinutos / 60;
   }, []);
 
@@ -118,12 +93,13 @@ export default function DisponibilidadProfesor() {
 
       try {
         const respuesta = await axios.get(
-          `/profesores?id_profesor=${profesorId}`
+          `/profesores?id_profesor=${profesorId}`,
         );
         setProfesor(respuesta.profesor);
 
         // 🔥 CALCULAR HORAS DE DOCENCIA SEMANALES
         const horasDocencia = respuesta.profesor.horas_docencia_semanales;
+
         if (horasDocencia) {
           const totalHoras = horasDocencia.hours || 0;
           const totalMinutos = (horasDocencia.minutes || 0) / 60;
@@ -134,7 +110,7 @@ export default function DisponibilidadProfesor() {
         console.log("Error al traer informacion del profesor: ", error);
       }
     },
-    [axios]
+    [axios],
   );
 
   // Efecto para validar id_profesor
@@ -156,7 +132,7 @@ export default function DisponibilidadProfesor() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `/profesores/${id_profesor}/disponibilidad`
+        `/profesores/${id_profesor}/disponibilidad`,
       );
 
       const disponibilidades =
@@ -171,25 +147,12 @@ export default function DisponibilidadProfesor() {
 
       disponibilidades.forEach((disp) => {
         try {
-          const [horaInicio, minutosInicio] = disp.hora_inicio
-            .split(":")
-            .map(Number);
-
-          const [horaFin, minutosFin] = disp.hora_fin.split(":").map(Number);
-
-          const inicioTotalMinutos = UTILS.horasMinutos(
-            horaInicio,
-            minutosInicio
-          );
-          const finTotalMinutos = UTILS.horasMinutos(horaFin, minutosFin);
-
-          const horasMilitarInicio =
-            UTILS.calcularHorasHHMM(inicioTotalMinutos);
-          const horasMilitarFin = UTILS.calcularHorasHHMM(finTotalMinutos);
+          const horasMilitarInicio = UTILS.deshacerHora24(disp.hora_inicio);
+          const horasMilitarFin = UTILS.deshacerHora24(disp.hora_fin);
 
           const bloquesDia = UTILS.RangoHorasSeguidasDisponibilidad(
             horasMilitarInicio,
-            horasMilitarFin
+            horasMilitarFin,
           );
 
           nuevosBloques[disp.dia_semana] = [
@@ -197,7 +160,7 @@ export default function DisponibilidadProfesor() {
             ...bloquesDia,
           ];
         } catch (error) {
-          console.error("Error procesando horario:", disp, error);
+          console.error("Error procesando disponibilidad:", disp, error);
         }
       });
 
@@ -220,10 +183,75 @@ export default function DisponibilidadProfesor() {
     }
   }, [axios, id_profesor, alert]);
 
+  const cargarHorarioExistente = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      const respuestaHorario = await axios.get(
+        `/horarios/profesor/${id_profesor}`,
+      );
+
+      const horarioData = respuestaHorario.horario || [];
+
+      const nuevosBloques = {};
+      DAYS.forEach((day) => {
+        nuevosBloques[day] = [];
+      });
+
+      horarioData.forEach((dia) => {
+        if (!dia?.nombre) return;
+
+        const idDia = dia.nombre;
+        if (idDia === null) return;
+
+        dia.clases?.forEach((clase) => {
+          const inicio = UTILS.deshacerHora24(clase.hora_inicio);
+          const fin = UTILS.deshacerHora24(clase.hora_fin);
+
+          // Generar bloques entre inicio y fin
+          const bloquesDia = UTILS.RangoHorasSeguidasDisponibilidad(
+            inicio,
+            fin,
+          );
+
+          nuevosBloques[idDia] = [
+            ...(nuevosBloques[idDia] || []),
+            ...bloquesDia,
+          ];
+        });
+      });
+
+      console.log(nuevosBloques);
+      setHorariosBlock(nuevosBloques);
+    } catch (error) {
+      console.error("Error al cargar la disponibilidad existente:", error);
+      alert.error({
+        icon: "error",
+        title: "Error",
+        text: "No se pudo cargar la disponibilidad existente del profesor",
+      });
+
+      const bloquesVacios = {};
+      DAYS.forEach((day) => {
+        bloquesVacios[day] = [];
+      });
+      setHorariosBlock(bloquesVacios);
+    } finally {
+      setLoading(false);
+    }
+  }, [axios, id_profesor, alert]);
+
   // Efecto para cargar la disponibilidad
   useEffect(() => {
     if (id_profesor) {
       cargarDisponibilidadExistente();
+    }
+  }, [id_profesor]);
+
+  // Efecto para cargar el horario
+  useEffect(() => {
+    if (id_profesor) {
+      cargarHorarioExistente();
     }
   }, [id_profesor]);
 
@@ -244,11 +272,11 @@ export default function DisponibilidadProfesor() {
       alert.info(
         "Límite alcanzado",
         `No puedes agregar más horas. Ya has cubierto ${horasRegistradas.toFixed(
-          1
+          1,
         )} de ${horasDocenciaSemanales} horas (${porcentajeCumplimiento.toFixed(
-          0
+          0,
         )}%)`,
-        { timer: 2000 }
+        { timer: 2000 },
       );
       return;
     }
@@ -285,7 +313,7 @@ export default function DisponibilidadProfesor() {
       return "Casi completo - Te falta 1 hora por cubrir";
     }
     return `Te faltan ${horasFaltantes.toFixed(
-      1
+      1,
     )} horas por cubrir de las ${horasDocenciaSemanales} requeridas`;
   };
 
@@ -296,7 +324,7 @@ export default function DisponibilidadProfesor() {
 
       // Ordenar los bloques numéricamente
       const bloquesOrdenados = [...bloques].sort(
-        (a, b) => parseInt(a) - parseInt(b)
+        (a, b) => parseInt(a) - parseInt(b),
       );
 
       const rangos = [];
@@ -344,7 +372,7 @@ export default function DisponibilidadProfesor() {
 
       return rangos;
     },
-    [timeBlocks]
+    [timeBlocks],
   );
 
   // 🔥 FUNCIÓN PARA FORMATEAR RESUMEN - CON USECALLBACK
@@ -366,7 +394,7 @@ export default function DisponibilidadProfesor() {
     return existingDisponibilidades.find(
       (disp) =>
         disp.dia_semana === dia &&
-        (disp.hora_inicio >= horaInicio || disp.hora_fin <= horaFin)
+        (disp.hora_inicio >= horaInicio || disp.hora_fin <= horaFin),
     );
   };
 
@@ -385,9 +413,9 @@ export default function DisponibilidadProfesor() {
         icon: "warning",
         title: "Horas insuficientes",
         text: `Debes cubrir al menos ${(horasDocenciaSemanales - 1).toFixed(
-          1
+          1,
         )} de las ${horasDocenciaSemanales} horas de docencia semanales. Actualmente tienes ${horasRegistradas.toFixed(
-          1
+          1,
         )} horas registradas.`,
       });
       return;
@@ -422,12 +450,12 @@ export default function DisponibilidadProfesor() {
         // Buscar si esta disponibilidad existe en los nuevos datos
         const sigueExistiendo = disponibilidadData.some(
           (dispNueva) =>
-            dispNueva.id_disponibilidad === dispExistente.id_disponibilidad
+            dispNueva.id_disponibilidad === dispExistente.id_disponibilidad,
         );
 
         // Si NO existe en los nuevos datos, hay que eliminarla
         return !sigueExistiendo;
-      }
+      },
     );
 
     console.log("🗑️ Disponibilidades a eliminar:", disponibilidadesAEliminar);
@@ -455,16 +483,16 @@ export default function DisponibilidadProfesor() {
         for (const dispAEliminar of disponibilidadesAEliminar) {
           try {
             await axios.delete(
-              `/profesores/${id_profesor}/disponibilidad/${dispAEliminar.id_disponibilidad}`
+              `/profesores/${id_profesor}/disponibilidad/${dispAEliminar.id_disponibilidad}`,
             );
             console.log(`✅ Eliminado ID: ${dispAEliminar.id_disponibilidad}`);
           } catch (error) {
             console.error(
               `❌ Error eliminando ID ${dispAEliminar.id_disponibilidad}:`,
-              error
+              error,
             );
             throw new Error(
-              `Error eliminando disponibilidad: ${error.message}`
+              `Error eliminando disponibilidad: ${error.message}`,
             );
           }
         }
@@ -472,7 +500,7 @@ export default function DisponibilidadProfesor() {
 
       // PASO 2: ACTUALIZAR las existentes
       const disponibilidadesAActualizar = disponibilidadData.filter(
-        (item) => item.id_disponibilidad
+        (item) => item.id_disponibilidad,
       );
 
       if (disponibilidadesAActualizar.length > 0) {
@@ -484,10 +512,10 @@ export default function DisponibilidadProfesor() {
           } catch (error) {
             console.error(
               `❌ Error actualizando ID ${item.id_disponibilidad}:`,
-              error
+              error,
             );
             throw new Error(
-              `Error actualizando disponibilidad: ${error.message}`
+              `Error actualizando disponibilidad: ${error.message}`,
             );
           }
         }
@@ -495,7 +523,7 @@ export default function DisponibilidadProfesor() {
 
       // PASO 3: CREAR las nuevas
       const disponibilidadesACrear = disponibilidadData.filter(
-        (item) => !item.id_disponibilidad
+        (item) => !item.id_disponibilidad,
       );
 
       if (disponibilidadesACrear.length > 0) {
@@ -504,7 +532,7 @@ export default function DisponibilidadProfesor() {
           try {
             await axios.post(`/profesores/${id_profesor}/disponibilidad`, item);
             console.log(
-              `✅ Creada nueva disponibilidad para ${item.dia_semana}`
+              `✅ Creada nueva disponibilidad para ${item.dia_semana}`,
             );
           } catch (error) {
             console.error(`❌ Error creando disponibilidad:`, error);
@@ -519,18 +547,13 @@ export default function DisponibilidadProfesor() {
         disponibilidadesAActualizar.length +
         disponibilidadesACrear.length;
 
-      console.log(`✅ Operaciones completadas: ${totalOperaciones}`);
-      console.log(`   - Eliminadas: ${disponibilidadesAEliminar.length}`);
-      console.log(`   - Actualizadas: ${disponibilidadesAActualizar.length}`);
-      console.log(`   - Creadas: ${disponibilidadesACrear.length}`);
-
       alert.success(
         "¡Éxito!",
         `Disponibilidad guardada correctamente\n` +
           `• Horas cubiertas: ${horasRegistradas.toFixed(
-            1
+            1,
           )}/${horasDocenciaSemanales.toFixed(1)}\n` +
-          `• Operaciones: ${totalOperaciones} realizadas`
+          `• Operaciones: ${totalOperaciones} realizadas`,
       );
 
       // Recargar la disponibilidad para sincronizar el estado
@@ -563,7 +586,6 @@ export default function DisponibilidadProfesor() {
   // Obtener resumen para mostrar en UI
   const resumen = getResumenPorDias();
 
-  // Vista móvil simplificada
   const renderMobileView = () => (
     <Box>
       {DAYS.map((day) => (
@@ -575,33 +597,55 @@ export default function DisponibilidadProfesor() {
             >
               {day}
             </Typography>
+
             <Grid container spacing={1}>
-              {timeBlocks.map((hour) => (
-                <Grid size={4} key={hour}>
-                  <Chip
-                    label={`${UTILS.formatearHora(hour)} -
-                    ${UTILS.formatearHora(
-                      Object.keys(UTILS.initialHours)[
-                        Object.keys(UTILS.initialHours).indexOf(
-                          hour.toString()
-                        ) + 1
-                      ]
-                    )}`}
-                    onClick={() => toggleBlock(day, hour)}
-                    color={
-                      selectedBlocks[day]?.includes(hour)
-                        ? "primary"
-                        : "default"
-                    }
-                    variant={
-                      selectedBlocks[day]?.includes(hour)
-                        ? "filled"
-                        : "outlined"
-                    }
-                    sx={{ width: "100%" }}
-                  />
-                </Grid>
-              ))}
+              {timeBlocks.map((hour) => {
+                const estaOcupado = horariosBlock[day]?.includes(hour);
+                const estaSeleccionado = selectedBlocks[day]?.includes(hour);
+                const puedeInteractuar = !estaOcupado;
+
+                return (
+                  <Grid size={4} key={hour}>
+                    <Chip
+                      label={
+                        estaOcupado
+                          ? `🔒 ${UTILS.formatearHora(hour)}`
+                          : `${UTILS.formatearHora(hour)} - ${UTILS.formatearHora(
+                              Object.keys(UTILS.initialHours)[
+                                Object.keys(UTILS.initialHours).indexOf(
+                                  hour.toString(),
+                                ) + 1
+                              ],
+                            )}`
+                      }
+                      onClick={() => {
+                        if (puedeInteractuar) toggleBlock(day, hour);
+                      }}
+                      color={
+                        estaSeleccionado
+                          ? "success"
+                          : estaOcupado
+                            ? "error"
+                            : "default"
+                      }
+                      variant={estaSeleccionado ? "filled" : "outlined"}
+                      sx={{
+                        width: "100%",
+                        opacity: puedeInteractuar ? 1 : 0.6,
+                        cursor: puedeInteractuar ? "pointer" : "not-allowed",
+                        borderColor: estaOcupado
+                          ? theme.palette.error.main
+                          : undefined,
+                        "&:hover": {
+                          backgroundColor: puedeInteractuar
+                            ? theme.palette.action.hover
+                            : undefined, // ❌ sin hover si está bloqueado
+                        },
+                      }}
+                    />
+                  </Grid>
+                );
+              })}
             </Grid>
           </CardContent>
         </Card>
@@ -609,7 +653,6 @@ export default function DisponibilidadProfesor() {
     </Box>
   );
 
-  // Vista desktop completa
   const renderDesktopView = () => (
     <Table
       sx={{
@@ -642,55 +685,75 @@ export default function DisponibilidadProfesor() {
           ))}
         </TableRow>
       </TableHead>
+
       <TableBody>
-        {timeBlocks.map((hour) => (
-          <TableRow
-            key={hour}
-            sx={{
-              "&:nth-of-type(odd)": {
-                backgroundColor: theme.palette.action.hover,
-              },
-            }}
-          >
-            <TableCell
+        {timeBlocks.map((hour) => {
+          if (typeof UTILS.initialHours[hour] === "string") return null;
+
+          return (
+            <TableRow
+              key={hour}
               sx={{
-                fontWeight: "bold",
-                width: 200,
-                borderRight: `1px solid ${theme.palette.divider}`,
+                "&:nth-of-type(odd)": {
+                  backgroundColor: theme.palette.action.hover,
+                },
               }}
             >
-              {UTILS.formatearHora(hour)} -{" "}
-              {UTILS.formatearHora(
-                Object.keys(UTILS.initialHours)[
-                  Object.keys(UTILS.initialHours).indexOf(hour.toString()) + 1
-                ]
-              )}
-            </TableCell>
-            {DAYS.map((day) => (
               <TableCell
-                key={day}
-                onClick={() => toggleBlock(day, hour)}
                 sx={{
-                  cursor: "pointer",
-                  textAlign: "center",
-                  backgroundColor: selectedBlocks[day]?.includes(hour)
-                    ? theme.palette.success.main
-                    : "transparent",
-                  color: selectedBlocks[day]?.includes(hour)
-                    ? theme.palette.success.contrastText
-                    : "inherit",
-                  "&:hover": {
-                    backgroundColor: selectedBlocks[day]?.includes(hour)
-                      ? theme.palette.success.dark
-                      : theme.palette.action.hover,
-                  },
+                  fontWeight: "bold",
+                  width: 200,
+                  borderRight: `1px solid ${theme.palette.divider}`,
                 }}
               >
-                {selectedBlocks[day]?.includes(hour) ? "✔" : ""}
+                {UTILS.formatearHora(hour)} -{" "}
+                {UTILS.formatearHora(
+                  Object.keys(UTILS.initialHours)[
+                    Object.keys(UTILS.initialHours).indexOf(hour.toString()) + 1
+                  ],
+                )}
               </TableCell>
-            ))}
-          </TableRow>
-        ))}
+
+              {DAYS.map((day) => {
+                const estaOcupado = horariosBlock[day]?.includes(hour);
+                const estaSeleccionado = selectedBlocks[day]?.includes(hour);
+                const puedeInteractuar = !estaOcupado;
+
+                return (
+                  <TableCell
+                    key={day}
+                    onClick={() => {
+                      if (puedeInteractuar) toggleBlock(day, hour);
+                    }}
+                    sx={{
+                      cursor: puedeInteractuar ? "pointer" : "not-allowed",
+                      textAlign: "center",
+                      backgroundColor: estaOcupado
+                        ? theme.palette.error.light
+                        : estaSeleccionado
+                          ? theme.palette.success.main
+                          : "transparent",
+                      color: estaOcupado
+                        ? theme.palette.error.contrastText
+                        : estaSeleccionado
+                          ? theme.palette.success.contrastText
+                          : "inherit",
+                      "&:hover": {
+                        backgroundColor: puedeInteractuar
+                          ? estaSeleccionado
+                            ? theme.palette.success.dark
+                            : theme.palette.action.hover
+                          : undefined, // ❌ sin hover si está bloqueado
+                      },
+                    }}
+                  >
+                    {estaOcupado ? "🔒" : estaSeleccionado ? "✔" : ""}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          );
+        })}
       </TableBody>
     </Table>
   );
@@ -816,8 +879,8 @@ export default function DisponibilidadProfesor() {
                           horasFaltantes === 0
                             ? "success"
                             : horasFaltantes <= 1
-                            ? "warning"
-                            : "error"
+                              ? "warning"
+                              : "error"
                         }
                         sx={{ mb: 1 }}
                       >
@@ -901,7 +964,7 @@ export default function DisponibilidadProfesor() {
                           <Chip
                             key={index}
                             label={`${UTILS.formatearHora(
-                              rango.inicio
+                              rango.inicio,
                             )} - ${UTILS.formatearHora(rango.fin)}`}
                             size="small"
                             color="success"

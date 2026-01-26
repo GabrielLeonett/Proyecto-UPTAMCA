@@ -17,6 +17,7 @@ const useHorarioInitialization = (props, stateSetters) => {
         if (horaHHMM >= horaInicioHHMM && horaHHMM < horaFinHHMM) {
           horasFiltradas[key] = UTILS.initialHours[key];
         }
+        
       });
       const horasKeys = Object.keys(horasFiltradas).map((h) => Number(h));
 
