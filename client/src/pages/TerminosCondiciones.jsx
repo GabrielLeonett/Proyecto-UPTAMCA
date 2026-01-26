@@ -64,7 +64,6 @@ export default function TerminosCondiciones() {
         </div>
       </div>
 
-      <Footer />
     </>
   );
 }

@@ -60,7 +60,7 @@ export default function PoliticaPrivacidad() {
         </div>
       </div>
 
-      <Footer />
+      
     </>
   );
 }         

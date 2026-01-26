@@ -1,10 +1,8 @@
 import { useState } from "react";
 import ResponsiveAppBar from "../components/navbar";
 import Typography from "@mui/material/Typography";
-import Slider from "../components/slider";
 import { useScrollDetection } from "../hook/useScrollDetection";
 import imageEstudiantes from "../assets/estudiantes.jpg";
-import Footer from "../components/footer";
 
 export default function Inicio() {
   const [scrolled, setScrolled] = useState(false);
@@ -38,23 +36,6 @@ export default function Inicio() {
           </Typography>
         </div>
       </section>
-      <div className="container mx-auto px-4 py-8">
-        <Typography variant="h2" component="h2" gutterBottom>
-          Programas Nacionales de Formación
-        </Typography>
-
-        <Slider />
-      </div>
-      {/* Sección de núcleos */}
-      <div className="container mx-auto px-4 py-8">
-        <Typography variant="h2" component="h2" gutterBottom>
-          Núcleos de Nuestra Institución
-        </Typography>
-
-      </div>
-      {/* Footer */}
-      <Footer
-      />
 
     </>
   );
