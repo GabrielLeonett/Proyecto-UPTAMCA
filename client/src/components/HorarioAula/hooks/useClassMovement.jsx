@@ -75,14 +75,11 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         {
           confirmButtonText: "Eliminar",
           cancelButtonText: "Cancelar",
-        }
+        },
       );
 
       if (result.isConfirmed) {
         setTableHorario((prev) => {
-          console.log("Eliminando clase:", clase);
-          console.log("Horario antes de eliminar:", prev);
-
           let nuevaMatriz = [...prev];
 
           // Buscar y liberar el slot donde está la clase
@@ -97,7 +94,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
                 return prev; // ✅ IMPORTANTE: Retornar el estado anterior si no hay cambios
               });
             }
-            console.log("Horario después de eliminar:", nuevaMatriz);
           } else {
             console.warn("No se encontró el slot original para eliminar");
           }
@@ -113,7 +109,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         setHayCambios(true);
         alert.success(
           "Clase Eliminada",
-          "La clase ha sido eliminada exitosamente del horario"
+          "La clase ha sido eliminada exitosamente del horario",
         );
       } else {
         // ALERTA AGREGADA
@@ -127,7 +123,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       cancelarMovimiento,
       setHayCambios,
       setHorariosEliminados,
-    ]
+    ],
   );
 
   // Eliminar clase actual seleccionada
@@ -158,7 +154,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         !profesorSelected.disponibilidades ||
         profesorSelected.disponibilidades.length === 0
       ) {
-        console.log(profesorSelected);
         console.warn("Profesor no tiene disponibilidad definida");
         setAvailableSlots([]);
         return;
@@ -188,7 +183,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
               hora_inicio,
               bloques,
               profesorHorario,
-              clase // ✅ Pasar la clase actual para saltarse a sí misma
+              clase, // ✅ Pasar la clase actual para saltarse a sí misma
             );
 
             // VERIFICAR AULA - pasando la clase actual
@@ -198,18 +193,17 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
               hora_inicio,
               bloques,
               aulaHorario,
-              clase // ✅ Pasar la clase actual para saltarse a sí misma
+              clase, // ✅ Pasar la clase actual para saltarse a sí misma
             );
 
             // Solo disponible si AMBOS están libres
             return profesorDisponible && aulaDisponible;
           },
-          clase
+          clase,
         );
         slotsDisponibles.push(...slots);
       });
 
-      console.log("Slots disponibles (profesor Y aula):", slotsDisponibles);
       setAvailableSlots(slotsDisponibles);
     },
     [
@@ -222,7 +216,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       procesarDisponibilidadDocente,
       verificarDisponibilidadProfesor,
       verificarDisponibilidadAula,
-    ]
+    ],
   );
 
   // Manejar solicitud de movimiento
@@ -266,7 +260,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
           console.error("Error cargando datos para movimiento:", error);
           alert.error(
             "Error",
-            "No se pudieron cargar los datos necesarios para el movimiento"
+            "No se pudieron cargar los datos necesarios para el movimiento",
           );
         }
       }
@@ -284,7 +278,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       setSelectedClass,
       setProfesorSelected,
       tableHorario,
-    ]
+    ],
   );
 
   // Completar movimiento
@@ -296,24 +290,16 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         return;
       }
 
-      console.log("Moviendo clase:", classToMove);
-      console.log("Desde:", originalSlot);
-      console.log("Hacia:", nuevoSlot);
-
       setTableHorario((prev) => {
-        console.log("Horario antes de modificar:", prev);
-
         let nuevaMatriz = [...prev];
 
         // Liberar el slot original si existe (sin importar si es clase nueva o no)
         if (originalSlot) {
           nuevaMatriz = liberarSlotOriginal(originalSlot, nuevaMatriz);
-          console.log("Horario después de liberar:", nuevaMatriz);
         }
 
         // Ocupar el nuevo slot
         nuevaMatriz = ocuparNuevoSlot(nuevoSlot, classToMove, nuevaMatriz);
-        console.log("Horario después de ocupar:", nuevaMatriz);
 
         return nuevaMatriz;
       });
@@ -331,19 +317,19 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
         // Primera vez que se coloca una clase nueva
         tipoOperacion = "Clase Agregada";
         mensaje = `Clase agregada exitosamente a ${utils.obtenerDiaNombre(
-          nuevoSlot.dia_index
+          nuevoSlot.dia_index,
         )} ${utils.formatearHora(nuevoSlot.hora_inicio)}`;
       } else if (classToMove.nueva_clase && originalSlot) {
         // Moviendo una clase nueva que ya estaba colocada
         tipoOperacion = "Clase Reubicada";
         mensaje = `Clase reubicada a ${utils.obtenerDiaNombre(
-          nuevoSlot.dia_index
+          nuevoSlot.dia_index,
         )} ${utils.formatearHora(nuevoSlot.hora_inicio)}`;
       } else {
         // Moviendo una clase existente (no nueva)
         tipoOperacion = "Clase Movida";
         mensaje = `Clase movida exitosamente a ${utils.obtenerDiaNombre(
-          nuevoSlot.dia_index
+          nuevoSlot.dia_index,
         )} ${utils.formatearHora(nuevoSlot.hora_inicio)}`;
       }
 
@@ -357,7 +343,7 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       utils,
       alert,
       setHayCambios,
-    ]
+    ],
   );
 
   return {
@@ -373,14 +359,14 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
       profesor_id,
       dia_index,
       hora_inicio,
-      bloques_necesarios
+      bloques_necesarios,
     ) =>
       verificarDisponibilidadProfesor(
         profesor_id,
         dia_index,
         hora_inicio,
         bloques_necesarios,
-        profesorHorario
+        profesorHorario,
       ),
   };
 };

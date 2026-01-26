@@ -1,8 +1,7 @@
 import { Typography, Box, IconButton } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import ModalConflictoClase from "./ModalConflictoClase";
 
-export default function Clase({ clase }) {
+export default function Clase({ clase, dia_index}) {
   const [activo, setActivo] = useState(false);
 
   // Función memorizada para convertir a minutos
@@ -24,8 +23,10 @@ export default function Clase({ clase }) {
       const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
       const inicioMin = convertirAMinutos(clase.hora_inicio);
       const finMin = convertirAMinutos(clase.hora_fin);
-
-      setActivo(minutosActuales >= inicioMin && minutosActuales <= finMin);
+      const esDiaClase = dia_index === ahora.getDay();
+      if (esDiaClase) {
+        setActivo(minutosActuales >= inicioMin && minutosActuales <= finMin);
+      }
     };
 
     verificarSiActiva();
@@ -34,7 +35,7 @@ export default function Clase({ clase }) {
     const interval = setInterval(verificarSiActiva, 60000);
 
     return () => clearInterval(interval);
-  }, [clase, convertirAMinutos]);
+  }, [clase, convertirAMinutos, dia_index]);
 
   // Determinar estilos basados en el estado
   const getEstilos = () => {

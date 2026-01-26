@@ -152,7 +152,6 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
           slot.dia_index === dia_index && slot.hora_inicio === hora_inicio,
       );
 
-
       if (!slot) {
         alert.error("Error", "Este horario ya no está disponible");
         return;
@@ -242,8 +241,9 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       ) {
         alert.error(
           "Error de consistencia",
-          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada a otro profesor (ID: ${profesorExistente}). No puede cambiar de profesor para horas adicionales.`,
+          `La unidad curricular "${unidadCurricularSelected.nombre_unidad_curricular}" ya está asignada a otro profesor (${profesorSelected.nombres + " " + profesorSelected.apellidos}). No puede cambiar de profesor para horas adicionales.`,
         );
+        limpiarSelecciones();
         return;
       }
 
@@ -291,16 +291,17 @@ const useSlotManagement = (state, stateSetters, utils, actions) => {
       }
     },
     [
-      state.tableHorario,
       profesorSelected,
       aulaSelected,
       unidadCurricularSelected,
       setSelectedClass,
       setClassToMove,
+      state.tableHorario,
+      alert,
+      limpiarSelecciones,
       setProfesorSelected,
       setAulaSelected,
       setUnidadCurricularSelected,
-      alert,
     ],
   );
 

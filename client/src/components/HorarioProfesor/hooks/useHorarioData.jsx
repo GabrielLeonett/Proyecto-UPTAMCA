@@ -297,7 +297,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
       // Verificar si existe en cache y es válido
       const cachedHorario = cache.profesorHorarios[id_profesor];
       if (cachedHorario && isCacheValid(cachedHorario.timestamp)) {
-        console.log("✅ Usando horario de profesor desde cache");
         setProfesorHorario(cachedHorario.data);
         return;
       }
@@ -363,7 +362,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
       // Verificar si existe en cache y es válido
       const cachedHorario = cache.aulaHorarios[idAula];
       if (cachedHorario && isCacheValid(cachedHorario.timestamp)) {
-        console.log("✅ Usando horario de aula desde cache");
         setAulaHorario(cachedHorario.data);
         return;
       }
@@ -576,7 +574,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
               try {
                 if (datos_clase.clase_move) {
                   // ✅ ACTUALIZAR clase existente
-                  console.log("Actualizando clase:", datos_clase);
                   const respuesta = await axios.put(
                     `/horarios/${datos_clase.id_horario || datos_clase.id}`,
                     datos_clase
@@ -598,10 +595,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
                       respuesta.data.data &&
                       respuesta.data.data.conflictos
                     ) {
-                      console.log(
-                        "🔄 Conflictos detectados:",
-                        respuesta.data.data.conflictos
-                      );
                       datos_clase.conflictos = respuesta.data.data.conflictos;
                       hayConflictos = true;
                       resultados.push({
@@ -626,7 +619,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
                   }
                 } else if (datos_clase.nueva_clase) {
                   // ✅ CREAR nueva clase
-                  console.log("Creando nueva clase:", datos_clase);
                   const datosNewHorario = {
                     id_seccion: Seccion.idSeccion,
                     id_profesor: datos_clase.id_profesor,
@@ -641,7 +633,6 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
                     datosNewHorario
                   );
 
-                  console.log(respuesta);
 
                   if (respuesta.data && respuesta.data.success) {
                     // Limpiar flags y actualizar con ID del servidor
@@ -669,16 +660,10 @@ const useHorarioData = (axios, props, state, stateSetters, Custom) => {
                   }
                 }
               } catch (error) {
-                console.log("Error en operación de clase:", error);
                 const errorData = error.response?.data || error.data;
-                console.log("💥 Error capturado:", errorData);
 
                 // CORRECCIÓN PARA ERRORES 409 CON CONFLICTOS
                 if (error?.status === 409 && errorData.data?.conflictos) {
-                  console.log(
-                    "🔄 Conflictos en error 409:",
-                    errorData.data.conflictos
-                  );
                   datos_clase.conflictos = errorData.data.conflictos;
                   hayConflictos = true;
                   resultados.push({

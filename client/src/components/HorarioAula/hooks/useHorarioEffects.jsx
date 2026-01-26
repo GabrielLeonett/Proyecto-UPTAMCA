@@ -15,7 +15,6 @@ const useHorarioInitialization = (props, stateSetters) => {
 
   const obtenerClases = useCallback(
     (Dias, turno) => {
-      console.log("⏳ Cargando clases en el horario...");
       const { horaInicioHHMM, horaFinHHMM } = obtenerTurno(turno);
 
       // Filtrar horas dentro del turno

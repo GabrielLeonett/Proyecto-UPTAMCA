@@ -100,7 +100,6 @@ const useClassMovement = (state, stateSetters, utils, actionData) => {
                 if (!prev.includes(clase.id)) {
                   return [...prev, clase.id];
                 }
-                console.log("Guardado para eliminar mas tarde: ", prev)
                 return prev;
               });
             }

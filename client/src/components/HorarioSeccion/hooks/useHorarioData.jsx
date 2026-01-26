@@ -522,13 +522,13 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
               } else {
                 setTimeout(() => {
                   alert.error(respuesta.title, respuesta.message);
-                }, 3000);
+                }, 1000);
               }
             } catch (error) {
               console.error("Error deleting horario:", error);
               setTimeout(() => {
                 alert.error("Error", "No se pudo eliminar el horario");
-              }, 3000);
+              }, 1000);
             }
           }
           setHorariosEliminados([]);
@@ -573,7 +573,7 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                         "Actualización exitosa",
                         `Se actualizó satisfactoriamente el horario`,
                       );
-                    }, 3000);
+                    }, 1000);
                   } else if (respuesta.data?.conflictos) {
                     // ❌ Manejar conflictos - mantener en tableHorario con flag de conflicto
                     celda.datos_clase.conflictos = respuesta.data.conflictos;
@@ -583,11 +583,11 @@ const useHorarioData = (axios, props, state, stateSetters, Custom, alert) => {
                         "Conflictos detectados",
                         `Se encontraron ${respuesta.data.conflictos.length} conflictos al mover la clase`,
                       );
-                    }, 3000);
+                    }, 1000);
                   } else {
                     setTimeout(() => {
                       alert.error(respuesta.title, respuesta.message);
-                    }, 3000);
+                    }, 1000);
                   }
                 } else if (datos_clase.nueva_clase) {
                   // ✅ CREAR nueva clase

@@ -5,6 +5,7 @@ import ModalConflictoClase from "./ModalConflictoClase";
 
 export default function Clase({
   clase,
+  dia_index,
   isSelected,
   onMoveRequest,
   onCancelMove,
@@ -37,8 +38,10 @@ export default function Clase({
       const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
       const inicioMin = convertirAMinutos(clase.hora_inicio);
       const finMin = convertirAMinutos(clase.hora_fin);
-
-      setActivo(minutosActuales >= inicioMin && minutosActuales <= finMin);
+      const esDiaClase = dia_index === ahora.getDay();
+      if (esDiaClase) {
+        setActivo(minutosActuales >= inicioMin && minutosActuales <= finMin);
+      }
     };
 
     verificarSiActiva();
@@ -47,7 +50,7 @@ export default function Clase({
     const interval = setInterval(verificarSiActiva, 60000);
 
     return () => clearInterval(interval);
-  }, [clase, convertirAMinutos]);
+  }, [clase, convertirAMinutos, dia_index]);
 
   // Determinar estilos basados en el estado
   const getEstilos = () => {
@@ -133,8 +136,8 @@ export default function Clase({
           justifyContent: "center",
           alignItems: "center",
           textAlign: "center",
-          width: {xs: 130 ,sm: 140, md: 150, lg: 160},
-          height: '100%',
+          width: { xs: 130, sm: 140, md: 150, lg: 160 },
+          height: "100%",
           padding: {},
           borderRadius: "4px",
           transition: "all 0.2s ease-in-out",
@@ -259,7 +262,9 @@ export default function Clase({
               pointerEvents: "none",
             }}
           >
-            {nombre || apellido ? `Prof. ${nombre} ${apellido}` : "Sin profesor"}
+            {nombre || apellido
+              ? `Prof. ${nombre} ${apellido}`
+              : "Sin profesor"}
           </Typography>
 
           {/* Horario de la clase */}
